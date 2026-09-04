@@ -8,15 +8,17 @@ const harness = vi.hoisted(() => {
   const model = { id: "orchestrator-model" };
   const checkpointer = { id: "platform-checkpointer" };
   const graph = { id: "atlas-graph" };
-  const hitlMiddleware = { name: "atlas-hitl" };
+  const legacyHitlMiddleware = { name: "langchain-hitl" };
+  const magentaReviewMiddleware = { name: "magenta-tool-review" };
 
   return {
     tools,
     model,
     checkpointer,
     graph,
-    hitlMiddleware,
-    hitlConfig: undefined as unknown,
+    legacyHitlMiddleware,
+    magentaReviewMiddleware,
+    humanInTheLoopMiddleware: vi.fn(() => legacyHitlMiddleware),
     startupEvents: [] as string[],
     agentWorkdirAtAppConstruction: undefined as string | undefined,
     appName: undefined as string | undefined,
@@ -31,12 +33,13 @@ vi.mock("langchain", async (importOriginal) => {
   const actual = await importOriginal<typeof import("langchain")>();
   return {
     ...actual,
-    humanInTheLoopMiddleware: vi.fn((config: unknown) => {
-      harness.hitlConfig = config;
-      return harness.hitlMiddleware;
-    }),
+    humanInTheLoopMiddleware: harness.humanInTheLoopMiddleware,
   };
 });
+
+vi.mock("./toolReview.js", () => ({
+  mutativeToolReviewMiddleware: harness.magentaReviewMiddleware,
+}));
 
 vi.mock("@magenta/magenta-sdklanggraph-ts", () => ({
   MagentaToolPodBackend: class {
@@ -86,6 +89,7 @@ describe("Atlas Explorer graph assembly", () => {
   beforeEach(() => {
     harness.buildLLM.mockClear();
     harness.deepAgent.mockClear();
+    harness.humanInTheLoopMiddleware.mockClear();
   });
 
   it("builds a single Magenta deep agent with MCP tools, skills, and platform checkpoints", async () => {
@@ -114,39 +118,14 @@ describe("Atlas Explorer graph assembly", () => {
         checkpointer: harness.checkpointer,
         middleware: expect.arrayContaining([
           expect.objectContaining({ name: "stripOpenAIToolEcho" }),
-          harness.hitlMiddleware,
+          harness.magentaReviewMiddleware,
         ]),
       }),
     );
     expect(harness.deepAgent.mock.calls[0]?.[1]).not.toHaveProperty(
       "subagents",
     );
-    expect(harness.hitlConfig).toEqual({
-      interruptOn: {
-        mongodb__drop_database: true,
-        mongodb__drop_collection: true,
-        mongodb__drop_index: true,
-        mongodb__insert_many: true,
-        mongodb__create_index: true,
-        mongodb__update_one: true,
-        mongodb__delete_many: true,
-        mongodb__update_many: true,
-        mongodb__rename_collection: true,
-        mongodb__create_collection: true,
-        mongodb__atlas_create_free_cluster: true,
-        mongodb__atlas_create_cluster: true,
-        mongodb__atlas_load_sample_dataset: true,
-        mongodb__atlas_create_access_list: true,
-        mongodb__atlas_create_db_user: true,
-        mongodb__atlas_create_project: true,
-        mongodb__atlas_upgrade_cluster: true,
-        mongodb__atlas_pause_resume_cluster: true,
-        mongodb__atlas_streams_build: true,
-        mongodb__atlas_streams_manage: true,
-        mongodb__atlas_streams_teardown: true,
-      },
-      descriptionPrefix: "MongoDB or Atlas operation pending approval",
-    });
+    expect(harness.humanInTheLoopMiddleware).not.toHaveBeenCalled();
     const backend = (
       harness.deepAgent.mock.calls[0]?.[1] as {
         backend?: { id?: string; execute?: unknown };

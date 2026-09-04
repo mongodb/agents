@@ -24,6 +24,7 @@ atlas-explorer/agents/atlas-explorer/
     ├── agentPolicy.ts                 # tool filtering and destructive-tool policy
     ├── modelResponse.ts               # removes repeated OpenAI tool metadata
     ├── toolErrors.ts                  # recoverable MCP error handling
+    ├── toolReview.ts                  # Magenta-compatible mutation review
     ├── systemMessage.ts               # Atlas Explorer instructions
     └── llm.ts                         # provider selection
 ```
@@ -99,15 +100,20 @@ Open the playground at http://localhost:3000. Stop the stack with
 - Ask it to diagnose a query or propose an index. The agent can load the
   relevant MongoDB skill on demand.
 - Ask it to drop a collection. The graph suspends before the MCP call and
-  resumes only after an approve/edit/reject/respond decision.
+  appears under **Pending Reviews** with `approve` and `reject` decisions.
+  Reviewer notes are optional. Approval executes the tool once; rejection
+  skips it and returns control to the agent.
 
 ## Safety and runtime notes
 
-- Every persistent mutation is protected by LangChain HITL middleware using
-  Magenta's persistent checkpointer and suspend/resume adapter. This includes
-  database writes; Atlas cluster creation, upgrades, and pause/resume; sample
-  dataset loads; project, database-user, and access-list creation; and Atlas
-  Streams build, management, and teardown operations.
+- Every persistent mutation is protected by an after-model review middleware
+  that calls LangGraph `interrupt()` with Magenta's documented
+  `suspend_reason`, `suspend_context`, and `allowed_decisions` contract. The
+  platform's persistent checkpointer replays completed steps on resume, so the
+  reviewed tool runs only after approval and does not run twice. Protected
+  operations include database writes; Atlas cluster creation, upgrades, and
+  pause/resume; sample dataset loads; project, database-user, and access-list
+  creation; and Atlas Streams build, management, and teardown operations.
 - `aggregate` remains available for read-only exploration; the agent is
   explicitly forbidden from using `$out` or `$merge` write stages because HITL
   is applied at tool granularity.

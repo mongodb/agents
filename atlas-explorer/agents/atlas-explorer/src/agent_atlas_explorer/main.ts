@@ -2,14 +2,13 @@
 
 import "dotenv/config";
 
-import { humanInTheLoopMiddleware } from "langchain";
-
 import { withoutShellExecution } from "./agentBackend.js";
-import { MUTATIVE_MCP_INTERRUPT_ON, selectAtlasTools } from "./agentPolicy.js";
+import { selectAtlasTools } from "./agentPolicy.js";
 import { buildLLM } from "./llm.js";
 import { stripToolEchoMiddleware } from "./modelResponse.js";
 import { SYSTEM_PROMPT } from "./systemMessage.js";
 import { recoverToolErrorsMiddleware } from "./toolErrors.js";
+import { mutativeToolReviewMiddleware } from "./toolReview.js";
 
 function log(level: "INFO" | "WARN" | "ERROR", msg: string): void {
   const t = new Date().toISOString().slice(11, 19);
@@ -33,10 +32,6 @@ export const buildAgent = app.entrypoint(() => {
     app.getTools() as readonly { name: string }[],
   );
   const saver = app.checkpointer();
-  const mutativeToolReview = humanInTheLoopMiddleware({
-    interruptOn: MUTATIVE_MCP_INTERRUPT_ON,
-    descriptionPrefix: "MongoDB or Atlas operation pending approval",
-  });
 
   return app.deepAgent(
     buildLLM({
@@ -51,7 +46,7 @@ export const buildAgent = app.entrypoint(() => {
       checkpointer: (saver ?? false) as never,
       middleware: [
         stripToolEchoMiddleware,
-        mutativeToolReview,
+        mutativeToolReviewMiddleware,
         recoverToolErrorsMiddleware,
       ] as never,
     },
