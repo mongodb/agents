@@ -2,6 +2,7 @@
 
 import "dotenv/config";
 
+import { App, MagentaToolPodBackend } from "@magenta/magenta-sdklanggraph-ts";
 import { humanInTheLoopMiddleware } from "langchain";
 
 import { withoutShellExecution } from "./agentBackend.js";
@@ -16,12 +17,10 @@ function log(level: "INFO" | "WARN" | "ERROR", msg: string): void {
   console.log(`${t} | ${level.padEnd(8)} | ${msg}`);
 }
 
-// The Tool Pod snapshots its read-only skill roots while the Magenta modules
-// load. Establish the source root first so bundled skills remain readable
-// through the audited filesystem tools in local and deployed runtimes.
+// runner-shared resolves its read-only skill roots lazily on first filesystem
+// access. Establish the source root before App/tool setup in local and deployed
+// runtimes.
 process.env.AGENTIC_AGENT_WORKDIR ||= process.cwd();
-const { App, MagentaToolPodBackend } =
-  await import("@magenta/magenta-sdklanggraph-ts");
 
 export const app = new App({ appName: "atlas-explorer" });
 log("INFO", "App created; Atlas MCP tools will be discovered from agent.yaml");

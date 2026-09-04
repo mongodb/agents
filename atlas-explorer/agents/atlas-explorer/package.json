@@ -10,12 +10,13 @@
     "atlas-explorer": "dist/agent_atlas_explorer/main.js"
   },
   "scripts": {
-    "build": "tsc",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json --noEmit",
-    "start": "node --enable-source-maps dist/agent_atlas_explorer/main.js",
-    "dev": "tsx watch src/agent_atlas_explorer/main.ts"
+    "patch:runner-shared": "node scripts/patch-runner-shared.mjs",
+    "build": "node scripts/patch-runner-shared.mjs && tsc",
+    "test": "node scripts/patch-runner-shared.mjs && vitest run",
+    "test:watch": "node scripts/patch-runner-shared.mjs && vitest",
+    "typecheck": "node scripts/patch-runner-shared.mjs && tsc --noEmit && tsc -p tsconfig.test.json --noEmit",
+    "start": "node scripts/patch-runner-shared.mjs && node --enable-source-maps dist/agent_atlas_explorer/main.js",
+    "dev": "node scripts/patch-runner-shared.mjs && tsx watch src/agent_atlas_explorer/main.ts"
   },
   "dependencies": {
     "@langchain/anthropic": "^1.4.0",
