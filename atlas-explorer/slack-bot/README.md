@@ -109,6 +109,12 @@ Channel mention routing validates the Slack user ID in the raw event. A local
 app can therefore use a display name such as `AtlasExplorer Local` without a
 bot named `AtlasExplorer` treating that structured mention as its own.
 
+As a general circuit breaker, Atlas Explorer leaves a thread after any ten
+incoming messages arrive within thirty seconds. The limit applies regardless
+of whether the authors are humans or bots, or whether they are authorized.
+After unsubscribing, the bot posts one final message explaining that it left
+the thread.
+
 By default, the local bot invokes a deployed Magenta workspace. The Atlas MCP
 client credentials remain configured on Magenta and never enter the Slack bot
 environment.

@@ -51,6 +51,44 @@ export class MemoryThreadStore implements ThreadStore {
     this.evictOldestRecords();
   }
 
+  async recordMessage(
+    threadId: string,
+    seenAt: Date,
+    windowStart: Date,
+  ): Promise<Date[]> {
+    const key = threadKey(threadId);
+    const existing = this.records.get(key);
+    const messageSeenAt = [
+      ...(existing?.messageSeenAt ?? []).filter(
+        (timestamp) =>
+          timestamp.getTime() >= windowStart.getTime(),
+      ),
+      seenAt,
+    ];
+    this.records.set(
+      key,
+      structuredClone({
+        ...(existing ?? { retentionState: "inactive" }),
+        threadId,
+        messageSeenAt,
+        updatedAt: seenAt,
+      }),
+    );
+    this.removeExpiredRecords();
+    this.evictOldestRecords();
+    return structuredClone(messageSeenAt);
+  }
+
+  async clearMessageWindow(threadId: string): Promise<void> {
+    const key = threadKey(threadId);
+    const existing = this.records.get(key);
+    if (!existing) {
+      return;
+    }
+    const { messageSeenAt: _messageSeenAt, ...updated } = existing;
+    this.records.set(key, structuredClone(updated));
+  }
+
   async claimTurn(
     threadId: string,
     eventId: string,

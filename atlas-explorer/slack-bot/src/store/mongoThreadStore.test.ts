@@ -12,6 +12,7 @@ import {
 import { MongoThreadStore } from "./mongoThreadStore.js";
 import {
   exercisesDeliveryCompletion,
+  exercisesMessageWindow,
   exercisesReviewClaim,
   exercisesRoundTrip,
   exercisesTurnClaim,
@@ -43,6 +44,10 @@ describe("MongoThreadStore", () => {
 
   it("round-trips a chat-to-Magenta record", async () => {
     await exercisesRoundTrip(store);
+  });
+
+  it("atomically records and clears a message window", async () => {
+    await exercisesMessageWindow(store);
   });
 
   it("creates neutral unique and retention indexes", async () => {

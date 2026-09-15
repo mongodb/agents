@@ -4,6 +4,7 @@ import { MemoryThreadStore } from "./memoryThreadStore.js";
 import {
   baseRecord,
   exercisesDeliveryCompletion,
+  exercisesMessageWindow,
   exercisesReviewClaim,
   exercisesRoundTrip,
   exercisesTurnClaim,
@@ -23,6 +24,10 @@ function createStore(
 describe("MemoryThreadStore", () => {
   it("round-trips a chat-to-Magenta thread record", async () => {
     await exercisesRoundTrip(createStore());
+  });
+
+  it("atomically records and clears a message window", async () => {
+    await exercisesMessageWindow(createStore());
   });
 
   it("expires records after the configured TTL", async () => {

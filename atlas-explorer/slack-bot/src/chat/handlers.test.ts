@@ -191,6 +191,89 @@ describe("registerChatHandlers", () => {
     expect(adapter.postMessage).not.toHaveBeenCalled();
   });
 
+  it("unsubscribes when any ten messages flood a thread", async () => {
+    const restrictedBot = new Chat({
+      adapters: { slack: adapter },
+      concurrency: "concurrent",
+      logger: "silent",
+      state,
+      userName: "AtlasExplorer",
+    });
+    registerChatHandlers(restrictedBot, {
+      agent,
+      authorizedActorIds: new Set(["slack:U999"]),
+      store,
+    });
+    await restrictedBot.initialize();
+    await state.subscribe(CHANNEL_THREAD_ID);
+
+    for (let index = 0; index < 9; index += 1) {
+      const isBot = index < 5;
+      await restrictedBot.processMessage(
+        adapter,
+        CHANNEL_THREAD_ID,
+        testMessage(
+          `message-flood-${index}`,
+          CHANNEL_THREAD_ID,
+          `Message ${index}`,
+          {
+            author: {
+              ...author(),
+              userId: isBot ? "B999" : "U123",
+              isBot,
+            },
+          },
+        ),
+      );
+    }
+
+    expect(await state.isSubscribed(CHANNEL_THREAD_ID)).toBe(true);
+
+    await restrictedBot.processMessage(
+      adapter,
+      CHANNEL_THREAD_ID,
+      testMessage(
+        "message-flood-9",
+        CHANNEL_THREAD_ID,
+        "Authorized message",
+        {
+          author: {
+            ...author(),
+            userId: "U999",
+          },
+        },
+      ),
+    );
+
+    expect(await state.isSubscribed(CHANNEL_THREAD_ID)).toBe(false);
+    expect(agent.invokeInputs).toEqual([]);
+    expect(adapter.postMessage).toHaveBeenCalledWith(
+      CHANNEL_THREAD_ID,
+      expect.stringMatching(/left this thread/i),
+    );
+    expect(
+      vi.mocked(adapter.postMessage).mock.calls.filter(
+        ([, message]) =>
+          typeof message === "string" &&
+          /left this thread/i.test(message),
+      ),
+    ).toHaveLength(1);
+
+    const replyCount = vi.mocked(adapter.postMessage).mock.calls.length;
+    await restrictedBot.processMessage(
+      adapter,
+      CHANNEL_THREAD_ID,
+      testMessage(
+        "message-after-flood",
+        CHANNEL_THREAD_ID,
+        "One more",
+      ),
+    );
+    expect(vi.mocked(adapter.postMessage).mock.calls).toHaveLength(
+      replyCount,
+    );
+  });
+
   it.each([
     [REVIEW_APPROVE_ACTION_ID, "approve"],
     [REVIEW_REJECT_ACTION_ID, "reject"],

@@ -140,6 +140,52 @@ export class MongoThreadStore implements ThreadStore {
     );
   }
 
+  async recordMessage(
+    threadId: string,
+    seenAt: Date,
+    windowStart: Date,
+  ): Promise<Date[]> {
+    await this.ensureInitialized();
+    const document = await this.collection.findOneAndUpdate(
+      { _id: threadKey(threadId) },
+      [
+        {
+          $set: {
+            threadId,
+            messageSeenAt: {
+              $concatArrays: [
+                {
+                  $filter: {
+                    input: { $ifNull: ["$messageSeenAt", []] },
+                    as: "seenAt",
+                    cond: {
+                      $gte: ["$$seenAt", windowStart],
+                    },
+                  },
+                },
+                [seenAt],
+              ],
+            },
+            retentionState: {
+              $ifNull: ["$retentionState", "inactive"],
+            },
+            updatedAt: seenAt,
+          },
+        },
+      ],
+      { returnDocument: "after", upsert: true },
+    );
+    return document?.messageSeenAt ?? [seenAt];
+  }
+
+  async clearMessageWindow(threadId: string): Promise<void> {
+    await this.ensureInitialized();
+    await this.collection.updateOne(
+      { _id: threadKey(threadId) },
+      { $unset: { messageSeenAt: "" } },
+    );
+  }
+
   async claimTurn(
     threadId: string,
     eventId: string,

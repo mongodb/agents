@@ -10,6 +10,10 @@ import {
   REVIEW_REJECT_ACTION_ID,
 } from "./cards.js";
 import { handleConversationMessage } from "./conversation.js";
+import {
+  isFlood,
+  MESSAGE_FLOOD_WINDOW_MS,
+} from "./flood.js";
 import { platformActorId } from "./identity.js";
 import { handleReviewDecision } from "./review.js";
 import {
@@ -22,6 +26,9 @@ import type {
   HandlerLogger,
 } from "./types.js";
 import type { ThreadStore } from "../store/threadStore.js";
+
+const FLOOD_FAREWELL =
+  "Atlas Explorer left this thread after receiving too many messages in a short period. Mention the bot again if you still need help.";
 
 export interface ChatHandlerOptions {
   agent: AgentGateway;
@@ -58,6 +65,9 @@ export function registerChatHandlers(
       );
       return;
     }
+    if (await stopFloodedThread(thread, options)) {
+      return;
+    }
 
     const actorId = actorIdFor(thread, message);
     if (
@@ -70,10 +80,16 @@ export function registerChatHandlers(
   });
 
   chat.onDirectMessage(async (thread, message) => {
+    if (await stopFloodedThread(thread, options)) {
+      return;
+    }
     await dispatchMessage(thread, message, options);
   });
 
   chat.onSubscribedMessage(async (thread, message) => {
+    if (await stopFloodedThread(thread, options)) {
+      return;
+    }
     await dispatchMessage(thread, message, options);
   });
 
@@ -154,6 +170,29 @@ async function dispatchMessage(
       ...(options.logger ? { logger: options.logger } : {}),
     },
   );
+}
+
+async function stopFloodedThread(
+  thread: Thread<unknown>,
+  options: ChatHandlerOptions,
+): Promise<boolean> {
+  const now = new Date();
+  const seenAt = await options.store.recordMessage(
+    thread.id,
+    now,
+    new Date(now.getTime() - MESSAGE_FLOOD_WINDOW_MS),
+  );
+  if (!isFlood(seenAt)) {
+    return false;
+  }
+
+  await thread.unsubscribe();
+  await options.store.clearMessageWindow(thread.id);
+  options.logger?.warn?.("Unsubscribed flooded thread", {
+    threadId: thread.id,
+  });
+  await createConversationSurface(thread).post(FLOOD_FAREWELL);
+  return true;
 }
 
 function actorIdFor(

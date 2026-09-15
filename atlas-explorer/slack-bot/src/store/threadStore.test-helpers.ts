@@ -12,6 +12,10 @@ export async function exercisesRoundTrip(
 ): Promise<void> {
   const record: ThreadRecord = {
     ...baseRecord,
+    messageSeenAt: [
+      new Date("2026-09-08T11:59:50.000Z"),
+      new Date("2026-09-08T11:59:55.000Z"),
+    ],
     pendingExecutionId: "execution-1",
     pendingInterruptId: "interrupt-1",
     pendingResumeSchema: { type: "object" },
@@ -23,6 +27,44 @@ export async function exercisesRoundTrip(
 
   expect(await store.get(record.threadId)).toEqual(record);
   expect(await store.get("slack:C-other:1")).toBeNull();
+}
+
+export async function exercisesMessageWindow(
+  store: ThreadStore,
+): Promise<void> {
+  const threadId = baseRecord.threadId;
+  const start = new Date("2026-09-08T12:00:00.000Z");
+  const timestamps = Array.from(
+    { length: 10 },
+    (_, index) => new Date(start.getTime() + index),
+  );
+
+  await Promise.all(
+    timestamps.map((timestamp) =>
+      store.recordMessage(
+        threadId,
+        timestamp,
+        new Date(start.getTime() - 30_000),
+      ),
+    ),
+  );
+
+  expect((await store.get(threadId))?.messageSeenAt).toHaveLength(
+    10,
+  );
+
+  const current = new Date(start.getTime() + 60_000);
+  const retained = await store.recordMessage(
+    threadId,
+    current,
+    new Date(current.getTime() - 30_000),
+  );
+  expect(retained).toEqual([current]);
+
+  await store.clearMessageWindow(threadId);
+  expect(
+    (await store.get(threadId))?.messageSeenAt,
+  ).toBeUndefined();
 }
 
 export async function exercisesReviewClaim(

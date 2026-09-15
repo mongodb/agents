@@ -6,6 +6,7 @@ import type {
 export interface ThreadRecord {
   threadId: string;
   magentaSessionId?: string;
+  messageSeenAt?: Date[];
   recentEventIds?: string[];
   inFlightEventId?: string;
   inFlightStartedAt?: Date;
@@ -45,6 +46,12 @@ export interface TurnClaim {
 export interface ThreadStore {
   get(threadId: string): Promise<ThreadRecord | null>;
   put(record: ThreadRecord): Promise<void>;
+  recordMessage(
+    threadId: string,
+    seenAt: Date,
+    windowStart: Date,
+  ): Promise<Date[]>;
+  clearMessageWindow(threadId: string): Promise<void>;
   claimTurn(
     threadId: string,
     eventId: string,
