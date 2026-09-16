@@ -4,10 +4,8 @@ import {
   READ_ONLY_SYSTEM_PROMPT,
   WRITE_ENABLED_SYSTEM_PROMPT,
 } from "./systemMessage.js";
-import {
-  prepareAtlasExplorerInput,
-  stampResumeClientUserMiddleware,
-} from "./userRun.js";
+import { stampResumeClientUserMiddleware } from "./stampResume.js";
+import { prepareAtlasExplorerInput } from "./userRun.js";
 
 const harness = vi.hoisted(() => {
   const tools = [

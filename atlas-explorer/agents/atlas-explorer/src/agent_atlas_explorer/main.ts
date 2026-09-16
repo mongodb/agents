@@ -14,10 +14,8 @@ import { buildLLM } from "./llm.js";
 import { stripToolEchoMiddleware } from "./modelResponse.js";
 import { buildSystemPrompt } from "./systemMessage.js";
 import { recoverToolErrorsMiddleware } from "./toolErrors.js";
-import {
-  prepareAtlasExplorerInput,
-  stampResumeClientUserMiddleware,
-} from "./userRun.js";
+import { stampResumeClientUserMiddleware } from "./stampResume.js";
+import { prepareAtlasExplorerInput } from "./userRun.js";
 import { App, MagentaToolPodBackend } from "@magenta/magenta-sdklanggraph-ts";
 
 function log(level: "INFO" | "WARN" | "ERROR", msg: string): void {
