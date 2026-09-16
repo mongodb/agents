@@ -4,6 +4,10 @@ import {
   READ_ONLY_SYSTEM_PROMPT,
   WRITE_ENABLED_SYSTEM_PROMPT,
 } from "./systemMessage.js";
+import {
+  prepareAtlasExplorerInput,
+  stampResumeClientUserMiddleware,
+} from "./userRun.js";
 
 const harness = vi.hoisted(() => {
   const tools = [
@@ -27,6 +31,7 @@ const harness = vi.hoisted(() => {
     agentWorkdirAtAppConstruction: undefined as string | undefined,
     appName: undefined as string | undefined,
     builder: undefined as (() => unknown) | undefined,
+    prepareAgentInput: undefined as ((...args: never[]) => unknown) | undefined,
     buildLLM: vi.fn((_options: unknown) => model),
     deepAgent: vi.fn((_model: unknown, _options: unknown) => graph),
     run: vi.fn(),
@@ -44,10 +49,6 @@ vi.mock("langchain", async (importOriginal) => {
   };
 });
 
-vi.mock("@magenta/runner-shared-ts", () => ({
-  getCurrentPayload: () => undefined,
-}));
-
 vi.mock("@magenta/magenta-sdklanggraph-ts", () => ({
   MagentaToolPodBackend: class {
     readonly id = "magenta-toolpod";
@@ -63,6 +64,11 @@ vi.mock("@magenta/magenta-sdklanggraph-ts", () => ({
 
     entrypoint(fn: () => unknown): () => unknown {
       harness.builder = fn;
+      return fn;
+    }
+
+    prepareAgentInput(fn: (...args: never[]) => unknown): (...args: never[]) => unknown {
+      harness.prepareAgentInput = fn;
       return fn;
     }
 
@@ -152,27 +158,18 @@ describe("Atlas Explorer graph assembly", () => {
         systemPrompt: READ_ONLY_SYSTEM_PROMPT,
         skills: ["skills"],
         checkpointer: harness.checkpointer,
-        middleware: expect.arrayContaining([
-          expect.objectContaining({ name: "persistUserRuns" }),
+        middleware: [
+          stampResumeClientUserMiddleware,
           expect.objectContaining({ name: "stripOpenAIToolEcho" }),
           harness.hitlMiddleware,
-        ]),
+          expect.objectContaining({ name: "recoverAtlasToolErrors" }),
+        ],
       }),
     );
+    expect(harness.prepareAgentInput).toBe(prepareAtlasExplorerInput);
     expect(harness.deepAgent.mock.calls[0]?.[1]).not.toHaveProperty(
       "subagents",
     );
-    const middleware = (
-      harness.deepAgent.mock.calls[0]?.[1] as {
-        middleware: Array<{ name?: string }>;
-      }
-    ).middleware;
-    const persistIndex = middleware.findIndex(
-      (entry) => entry.name === "persistUserRuns",
-    );
-    const hitlIndex = middleware.indexOf(harness.hitlMiddleware);
-    expect(persistIndex).toBeGreaterThanOrEqual(0);
-    expect(persistIndex).toBeLessThan(hitlIndex);
     expect(harness.hitlConfig).toEqual({
       interruptOn: {},
       descriptionPrefix: "MongoDB or Atlas operation pending approval",

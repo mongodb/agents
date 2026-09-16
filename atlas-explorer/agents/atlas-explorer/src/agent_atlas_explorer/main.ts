@@ -14,7 +14,10 @@ import { buildLLM } from "./llm.js";
 import { stripToolEchoMiddleware } from "./modelResponse.js";
 import { buildSystemPrompt } from "./systemMessage.js";
 import { recoverToolErrorsMiddleware } from "./toolErrors.js";
-import { persistUserRunsMiddleware } from "./userRunAudit.js";
+import {
+  prepareAtlasExplorerInput,
+  stampResumeClientUserMiddleware,
+} from "./userRun.js";
 import { App, MagentaToolPodBackend } from "@magenta/magenta-sdklanggraph-ts";
 
 function log(level: "INFO" | "WARN" | "ERROR", msg: string): void {
@@ -25,6 +28,7 @@ function log(level: "INFO" | "WARN" | "ERROR", msg: string): void {
 process.env.AGENTIC_AGENT_WORKDIR ||= process.cwd();
 
 export const app = new App({ appName: "atlas-explorer" });
+app.prepareAgentInput(prepareAtlasExplorerInput);
 log("INFO", "App created; Atlas MCP tools will be discovered from agent.yaml");
 
 export const buildAgent = app.entrypoint(() => {
@@ -62,7 +66,7 @@ export const buildAgent = app.entrypoint(() => {
       backend: withoutShellExecution(new MagentaToolPodBackend()) as never,
       checkpointer: (saver ?? false) as never,
       middleware: [
-        persistUserRunsMiddleware,
+        stampResumeClientUserMiddleware,
         stripToolEchoMiddleware,
         mutativeToolReview,
         recoverToolErrorsMiddleware,
