@@ -1,5 +1,6 @@
 import type {
   AgenticClientConfig,
+  ClientUserMetadata,
   InvocationProgressHandler,
   InvocationResult,
   InvokeInput,
@@ -94,6 +95,7 @@ export class MagentaClient {
       ...(this.config.invokeTarget === "local" ? { wait: true } : {}),
       ...(input.sessionId ? { session_id: input.sessionId } : {}),
       user_id: input.actorId,
+      ...clientUserBody(input),
     });
   }
 
@@ -116,6 +118,7 @@ export class MagentaClient {
         message,
         ...(input.sessionId ? { session_id: input.sessionId } : {}),
         user_id: input.actorId,
+        ...clientUserBody(input),
       },
       onProgress,
     );
@@ -127,6 +130,7 @@ export class MagentaClient {
       user_id: input.actorId,
       ...(this.config.invokeTarget === "local" ? { wait: true } : {}),
       resume_map: buildResumeMap(input),
+      ...clientUserBody(input),
     });
   }
 
@@ -139,6 +143,7 @@ export class MagentaClient {
         session_id: input.sessionId,
         user_id: input.actorId,
         resume_map: buildResumeMap(input),
+        ...clientUserBody(input),
       },
       onProgress,
     );
@@ -576,6 +581,16 @@ async function readResponseText(response: Response): Promise<string> {
       },
     );
   }
+}
+
+function clientUserBody(input: {
+  client?: string;
+  user?: ClientUserMetadata;
+}): Record<string, unknown> {
+  return {
+    ...(input.client !== undefined ? { client: input.client } : {}),
+    ...(input.user !== undefined ? { user: input.user } : {}),
+  };
 }
 
 function buildResumeMap(input: ResumeInput): Record<string, unknown> {

@@ -10,7 +10,11 @@ import {
   REVIEW_REJECT_ACTION_ID,
 } from "./cards.js";
 import { handleConversationMessage } from "./conversation.js";
-import { platformActorId } from "./identity.js";
+import {
+  clientUserFromAuthor,
+  platformActorId,
+  SLACK_CHAT_CLIENT,
+} from "./identity.js";
 import { handleReviewDecision } from "./review.js";
 import {
   createConversationSurface,
@@ -110,6 +114,8 @@ export function registerChatHandlers(
             event.adapter.name,
             event.user.userId,
           ),
+          client: SLACK_CHAT_CLIENT,
+          user: clientUserFromAuthor(event.adapter.name, event.user),
           decision:
             event.actionId === REVIEW_APPROVE_ACTION_ID
               ? "approve"
@@ -141,6 +147,8 @@ async function dispatchMessage(
       actorId: actorIdFor(thread, message),
       authorIsBot: message.author.isBot === true,
       text: message.text,
+      client: SLACK_CHAT_CLIENT,
+      user: clientUserFromAuthor(thread.adapter.name, message.author),
     },
     {
       agent: options.agent,

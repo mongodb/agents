@@ -332,6 +332,101 @@ describe("MagentaClient", () => {
     });
   });
 
+  it("forwards client and user extras on invoke and resume", async () => {
+    const user = {
+      id: "U123",
+      username: "ada",
+      full_name: "Ada Lovelace",
+      actor_id: "slack:U123",
+    };
+    const fetchFn = vi.fn<typeof fetch>(async (input) => {
+      const url = String(input);
+      if (url.endsWith("/invokeStream")) {
+        return streamResponse(
+          [
+            {
+              chunk_type: "done",
+              content: "There are three projects.",
+              metadata: { status: "completed" },
+            },
+          ],
+          "session-1",
+        );
+      }
+      return jsonResponse({
+        success: true,
+        response: "There are three projects.",
+        session_id: "session-1",
+        status: "completed",
+      });
+    });
+    const client = gatewayClient(fetchFn);
+
+    await client.invoke({
+      message: "List projects",
+      actorId: "slack:U123",
+      client: "slack",
+      user,
+    });
+    await client.invokeStream({
+      message: "List projects",
+      actorId: "slack:U123",
+      client: "slack",
+      user,
+    });
+    await client.resume({
+      sessionId: "session-1",
+      actorId: "slack:U123",
+      interruptId: "interrupt-1",
+      decision: { type: "approve" },
+      client: "slack",
+      user,
+    });
+    await client.resumeStream({
+      sessionId: "session-1",
+      actorId: "slack:U123",
+      interruptId: "interrupt-1",
+      decision: { type: "approve" },
+      client: "slack",
+      user,
+    });
+
+    expect(
+      fetchFn.mock.calls.map(([, init]) => JSON.parse(String(init?.body))),
+    ).toEqual([
+      {
+        message: "List projects",
+        user_id: "slack:U123",
+        client: "slack",
+        user,
+      },
+      {
+        message: "List projects",
+        user_id: "slack:U123",
+        client: "slack",
+        user,
+      },
+      {
+        session_id: "session-1",
+        user_id: "slack:U123",
+        resume_map: {
+          "interrupt-1": { decisions: [{ type: "approve" }] },
+        },
+        client: "slack",
+        user,
+      },
+      {
+        session_id: "session-1",
+        user_id: "slack:U123",
+        resume_map: {
+          "interrupt-1": { decisions: [{ type: "approve" }] },
+        },
+        client: "slack",
+        user,
+      },
+    ]);
+  });
+
   it("accepts the minimal successful response emitted by Agentic CLI", async () => {
     const fetchFn = vi.fn<typeof fetch>().mockResolvedValue(
       new Response(

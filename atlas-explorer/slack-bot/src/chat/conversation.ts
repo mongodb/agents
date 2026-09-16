@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 
 import type {
+  ClientUserMetadata,
   InvocationProgress,
   InvocationProgressHandler,
   InvocationResult,
@@ -18,9 +19,11 @@ const REVIEW_CLAIM_MAX_MS = 10 * 60 * 1_000;
 export interface ConversationMessageInput {
   actorId: string;
   authorIsBot?: boolean;
+  client?: string;
   eventId?: string;
   text: string;
   threadId: string;
+  user?: ClientUserMetadata;
 }
 
 export type InvocationClaim =
@@ -129,6 +132,8 @@ export async function handleConversationMessage(
           ? { sessionId: activeRecord.magentaSessionId }
           : {}),
         actorId: input.actorId,
+        ...(input.client !== undefined ? { client: input.client } : {}),
+        ...(input.user !== undefined ? { user: input.user } : {}),
       },
       createProgressHandler(
         dependencies.conversation,

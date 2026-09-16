@@ -16,6 +16,7 @@ import {
   completed,
   FakeAgentGateway,
   seedPendingReview,
+  slackAdaClientUser,
 } from "./handlers.test-helpers.js";
 import { registerChatHandlers } from "./handlers.js";
 
@@ -73,6 +74,7 @@ describe("registerChatHandlers", () => {
       {
         actorId: "slack:U123",
         message: "List projects",
+        ...slackAdaClientUser,
       },
     ]);
   });
@@ -173,6 +175,7 @@ describe("registerChatHandlers", () => {
       {
         actorId: "slack:U123",
         message: "List projects",
+        ...slackAdaClientUser,
       },
     ]);
   });
@@ -293,6 +296,7 @@ describe("registerChatHandlers", () => {
       expect(agent.resumeInputs[0]).toMatchObject({
         actorId: "slack:U123",
         interruptId: "interrupt-1",
+        ...slackAdaClientUser,
         decision: expect.arrayContaining([
           expect.objectContaining({ type: decision }),
         ]),

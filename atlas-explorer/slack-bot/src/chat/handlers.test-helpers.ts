@@ -14,6 +14,16 @@ import type {
   DeliveryStatus,
 } from "./types.js";
 
+export const slackAdaClientUser = {
+  client: "slack" as const,
+  user: {
+    id: "U123",
+    username: "ada",
+    full_name: "Ada Lovelace",
+    actor_id: "slack:U123",
+  },
+};
+
 export class FakeAgentGateway implements AgentGateway {
   invokeInputs: InvokeInput[] = [];
   resumeInputs: ResumeInput[] = [];

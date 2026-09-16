@@ -125,6 +125,37 @@ describe("handleConversationMessage", () => {
     ]);
   });
 
+  it("forwards client and user extras to Magenta", async () => {
+    agent.invokeResult = completed;
+    const user = {
+      id: "U123",
+      username: "ada",
+      full_name: "Ada Lovelace",
+      actor_id: ACTOR_ID,
+    };
+
+    await handleConversationMessage(
+      {
+        threadId: THREAD_ID,
+        eventId: "event-1",
+        actorId: ACTOR_ID,
+        text: "List projects",
+        client: "slack",
+        user,
+      },
+      { agent, conversation, store },
+    );
+
+    expect(agent.invokeInputs).toEqual([
+      {
+        message: "List projects",
+        actorId: ACTOR_ID,
+        client: "slack",
+        user,
+      },
+    ]);
+  });
+
   it("silently rejects an unauthorized bot", async () => {
     agent.invokeResult = completed;
     const logger = { error: vi.fn(), warn: vi.fn() };

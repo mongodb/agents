@@ -119,10 +119,19 @@ export type InvocationProgressHandler = (
   progress: InvocationProgress,
 ) => void | Promise<void>;
 
+export interface ClientUserMetadata {
+  id?: string;
+  username?: string;
+  full_name?: string;
+  actor_id?: string;
+}
+
 export interface InvokeInput {
   message: string;
   actorId: string;
   sessionId?: string;
+  client?: string;
+  user?: ClientUserMetadata;
 }
 
 export interface ResumeInput {
@@ -134,4 +143,6 @@ export interface ResumeInput {
     decision: ReviewDecision | ReviewDecision[];
   }>;
   actorId: string;
+  client?: string;
+  user?: ClientUserMetadata;
 }

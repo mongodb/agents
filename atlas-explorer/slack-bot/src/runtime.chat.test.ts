@@ -12,6 +12,7 @@ import {
   FakeAgentGateway,
   completed,
   seedPendingReview,
+  slackAdaClientUser,
 } from "./chat/handlers.test-helpers.js";
 import type { SlackBotConfig } from "./config.js";
 import { createRuntime } from "./runtime.js";
@@ -46,6 +47,7 @@ describe("Chat SDK runtime", () => {
       {
         actorId: "slack:U123",
         message: "List projects",
+        ...slackAdaClientUser,
       },
     ]);
     expect(adapter.initialize).toHaveBeenCalledTimes(1);

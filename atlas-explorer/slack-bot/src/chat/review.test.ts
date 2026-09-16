@@ -87,6 +87,36 @@ describe("handleReviewDecision", () => {
     expect(outcomes).toContain("missing");
   });
 
+  it("forwards client and user extras to Magenta", async () => {
+    await seedPendingReview(store);
+    agent.resumeResult = completed;
+    const user = {
+      id: "U123",
+      username: "ada",
+      full_name: "Ada Lovelace",
+      actor_id: ACTOR_ID,
+    };
+
+    const outcome = await handleReviewDecision(
+      {
+        threadId: THREAD_ID,
+        interruptId: "interrupt-1",
+        actorId: ACTOR_ID,
+        decision: "approve",
+        client: "slack",
+        user,
+      },
+      { agent, conversation, store },
+    );
+
+    expect(outcome).toBe("completed");
+    expect(agent.resumeInputs[0]).toMatchObject({
+      actorId: ACTOR_ID,
+      client: "slack",
+      user,
+    });
+  });
+
   it.each(["approve", "reject"] as const)(
     "restricts %s decisions to the original platform-qualified actor",
     async (decision) => {

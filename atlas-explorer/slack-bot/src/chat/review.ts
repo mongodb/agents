@@ -1,4 +1,5 @@
 import { AgenticApiError } from "../magenta/client.js";
+import type { ClientUserMetadata } from "../magenta/types.js";
 import {
   createProgressHandler,
   publishInvocationResult,
@@ -15,9 +16,11 @@ export type ReviewOutcome =
 
 export interface ReviewInput {
   actorId: string;
+  client?: string;
   decision: "approve" | "reject";
   interruptId: string;
   threadId: string;
+  user?: ClientUserMetadata;
 }
 
 export async function handleReviewDecision(
@@ -117,6 +120,8 @@ export async function handleReviewDecision(
           ? { additionalInterrupts }
           : {}),
         actorId: input.actorId,
+        ...(input.client !== undefined ? { client: input.client } : {}),
+        ...(input.user !== undefined ? { user: input.user } : {}),
       },
       createProgressHandler(
         dependencies.conversation,
