@@ -44,6 +44,10 @@ vi.mock("langchain", async (importOriginal) => {
   };
 });
 
+vi.mock("@magenta/runner-shared-ts", () => ({
+  getCurrentPayload: () => undefined,
+}));
+
 vi.mock("@magenta/magenta-sdklanggraph-ts", () => ({
   MagentaToolPodBackend: class {
     readonly id = "magenta-toolpod";
@@ -149,6 +153,7 @@ describe("Atlas Explorer graph assembly", () => {
         skills: ["skills"],
         checkpointer: harness.checkpointer,
         middleware: expect.arrayContaining([
+          expect.objectContaining({ name: "persistUserRuns" }),
           expect.objectContaining({ name: "stripOpenAIToolEcho" }),
           harness.hitlMiddleware,
         ]),
@@ -157,6 +162,17 @@ describe("Atlas Explorer graph assembly", () => {
     expect(harness.deepAgent.mock.calls[0]?.[1]).not.toHaveProperty(
       "subagents",
     );
+    const middleware = (
+      harness.deepAgent.mock.calls[0]?.[1] as {
+        middleware: Array<{ name?: string }>;
+      }
+    ).middleware;
+    const persistIndex = middleware.findIndex(
+      (entry) => entry.name === "persistUserRuns",
+    );
+    const hitlIndex = middleware.indexOf(harness.hitlMiddleware);
+    expect(persistIndex).toBeGreaterThanOrEqual(0);
+    expect(persistIndex).toBeLessThan(hitlIndex);
     expect(harness.hitlConfig).toEqual({
       interruptOn: {},
       descriptionPrefix: "MongoDB or Atlas operation pending approval",

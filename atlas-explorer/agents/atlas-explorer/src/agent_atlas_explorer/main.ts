@@ -14,6 +14,7 @@ import { buildLLM } from "./llm.js";
 import { stripToolEchoMiddleware } from "./modelResponse.js";
 import { buildSystemPrompt } from "./systemMessage.js";
 import { recoverToolErrorsMiddleware } from "./toolErrors.js";
+import { persistUserRunsMiddleware } from "./userRunAudit.js";
 import { App, MagentaToolPodBackend } from "@magenta/magenta-sdklanggraph-ts";
 
 function log(level: "INFO" | "WARN" | "ERROR", msg: string): void {
@@ -61,6 +62,7 @@ export const buildAgent = app.entrypoint(() => {
       backend: withoutShellExecution(new MagentaToolPodBackend()) as never,
       checkpointer: (saver ?? false) as never,
       middleware: [
+        persistUserRunsMiddleware,
         stripToolEchoMiddleware,
         mutativeToolReview,
         recoverToolErrorsMiddleware,
