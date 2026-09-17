@@ -14,6 +14,7 @@ import { buildLLM } from "./llm.js";
 import { stripToolEchoMiddleware } from "./modelResponse.js";
 import { buildSystemPrompt } from "./systemMessage.js";
 import { recoverToolErrorsMiddleware } from "./toolErrors.js";
+import { withRequesterMetadata } from "./requesterMetadata.js";
 import { stampResumeClientUserMiddleware } from "./stampResume.js";
 import { prepareAtlasExplorerInput } from "./userRun.js";
 import { App, MagentaToolPodBackend } from "@magenta/magenta-sdklanggraph-ts";
@@ -44,7 +45,9 @@ export const buildAgent = app.entrypoint(() => {
     discoveredTools,
     allowWriteOperations,
   );
-  const saver = app.checkpointer();
+  const platformSaver = app.checkpointer();
+  const saver =
+    platformSaver === null ? null : withRequesterMetadata(platformSaver);
   const mutativeToolReview = humanInTheLoopMiddleware({
     interruptOn: allowWriteOperations
       ? mutativeInterruptOn(availableAtlasTools)

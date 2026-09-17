@@ -1,5 +1,12 @@
+import { HumanMessage } from "@langchain/core/messages";
+import {
+  MemorySaver,
+  emptyCheckpoint,
+  type BaseCheckpointSaver,
+} from "@langchain/langgraph";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { stampClientUser } from "./clientUser.js";
 import {
   READ_ONLY_SYSTEM_PROMPT,
   WRITE_ENABLED_SYSTEM_PROMPT,
@@ -14,14 +21,15 @@ const harness = vi.hoisted(() => {
     { name: "mongodb__future_mutating_operation" },
   ];
   const model = { id: "orchestrator-model" };
-  const checkpointer = { id: "platform-checkpointer" };
   const graph = { id: "atlas-graph" };
   const hitlMiddleware = { name: "atlas-hitl" };
 
   return {
     tools,
     model,
-    checkpointer,
+    // Replaced with a fresh saver per test so the in-place wrapper applied by
+    // main.ts cannot stack across builds.
+    checkpointer: undefined as unknown,
     graph,
     hitlMiddleware,
     hitlConfig: undefined as unknown,
@@ -74,7 +82,7 @@ vi.mock("@magenta/magenta-sdklanggraph-ts", () => ({
       return harness.tools;
     }
 
-    checkpointer(): object {
+    checkpointer(): unknown {
       return harness.checkpointer;
     }
 
@@ -121,6 +129,7 @@ describe("Atlas Explorer graph assembly", () => {
   beforeEach(() => {
     harness.buildLLM.mockClear();
     harness.deepAgent.mockClear();
+    harness.checkpointer = new MemorySaver();
     delete process.env.ALLOW_WRITE_OPERATIONS;
   });
 
@@ -185,6 +194,39 @@ describe("Atlas Explorer graph assembly", () => {
     } else {
       process.env.AGENTIC_AGENT_WORKDIR = previousAgentWorkdir;
     }
+  });
+
+  it("hands the deep agent a checkpointer that records the requester", async () => {
+    const builder = await loadBuilder();
+    builder();
+
+    const { checkpointer } = harness.deepAgent.mock.calls[0]?.[1] as {
+      checkpointer: BaseCheckpointSaver;
+    };
+    const config = { configurable: { thread_id: "thread-1" } };
+    const ada = { id: "U123", username: "ada", actor_id: "slack:U123" };
+    await checkpointer.put(
+      config,
+      {
+        ...emptyCheckpoint(),
+        channel_values: {
+          messages: [
+            stampClientUser(new HumanMessage({ id: "m1", content: "hi" }), {
+              client: "slack",
+              user: ada,
+            }),
+          ],
+        },
+      },
+      { source: "loop", step: 1, parents: {} },
+      {},
+    );
+
+    const tuple = await checkpointer.getTuple(config);
+    expect(tuple?.metadata).toMatchObject({
+      source: "loop",
+      requester: { client: "slack", user: ada, message_type: "human" },
+    });
   });
 
   it("keeps write tools hidden when ALLOW_WRITE_OPERATIONS is empty", async () => {
