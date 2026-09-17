@@ -230,28 +230,19 @@ export VERCEL_URL=https://atlas-explorer-three.vercel.app
    role. Vercel uses dynamic outbound IPs, so do not restrict this development
    service account to a fixed IP access list. If static Vercel egress is added
    later, restrict the account to those addresses.
-3. Run the local gates, then build the production artifact locally:
+3. Deploy to the Vercel production alias (`$VERCEL_URL`):
 
    ```bash
-   pnpm test
-   pnpm typecheck
-   pnpm build
-   pnpm vercel build --prod --yes --scope "$VERCEL_SCOPE"
-   test -d .vercel/output/functions/api/webhooks/slack.func
+   pnpm deploy
    ```
 
-   `.vercel/output/functions` must contain the Slack webhook and no test
-   function. `pnpm build` is a TypeScript verification gate; Vercel's Build
-   Command is intentionally empty because Vercel compiles the function.
-4. Deploy the verified artifact with
-   `pnpm vercel deploy --prebuilt --prod --scope "$VERCEL_SCOPE"`.
-   Confirm the deployment is ready and that Vercel automatically advances
+   That runs `vercel deploy --prod`. Confirm the deployment is ready and that Vercel automatically advances
    `$VERCEL_URL`. Do not set a separate alias.
-5. On the hosted **AtlasExplorer** app created from `manifest.json`, replace
+4. On the hosted **AtlasExplorer** app created from `manifest.json`, replace
    every `https://example.com/api/webhooks/slack` URL with the stable webhook
    URL above. Configure both Event Subscriptions and Interactivity &
    Shortcuts. Leave the **AtlasExplorer Local** app on Socket Mode.
-6. Disable Socket Mode on the hosted app, save the Slack app changes, and
+5. Disable Socket Mode on the hosted app, save the Slack app changes, and
    reinstall only if Slack requests it or OAuth scopes changed. Slack must
    accept Event Subscriptions URL verification before testing messages.
 
@@ -298,7 +289,7 @@ agentic service-account rotate "$AGENTIC_SA_CLIENT_ID" \
   --secret-expires-in 2160h
 pnpm vercel env add AGENTIC_SA_CLIENT_SECRET production \
   --force --scope "$VERCEL_SCOPE"
-pnpm vercel deploy --prebuilt --prod --scope "$VERCEL_SCOPE"
+pnpm deploy
 ```
 
 Enter the newly issued secret when prompted. The previous secret remains valid
