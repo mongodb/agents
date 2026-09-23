@@ -74,11 +74,12 @@ function requesterFromMessage(message: unknown): Requester | undefined {
   if (extras === undefined) {
     return undefined;
   }
-  const id = (message as { id?: unknown }).id;
+  const rawId = (message as { id?: unknown }).id;
+  const id = typeof rawId === "string" && rawId !== "" ? rawId : undefined;
   return {
     client: extras.client,
     user: extras.user,
-    ...(typeof id === "string" && id !== "" ? { message_id: id } : {}),
+    ...(id !== undefined ? { message_id: id } : {}),
     message_type: messageType(message),
   };
 }
