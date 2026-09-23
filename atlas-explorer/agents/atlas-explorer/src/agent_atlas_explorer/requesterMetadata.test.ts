@@ -13,18 +13,18 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { stampClientUser } from "./clientUser.js";
 import { withRequesterMetadata } from "./requesterMetadata.js";
 
-const nick = {
-  id: "U0C20STT4CS",
-  username: "nick.larew",
-  full_name: "Nicholas Larew",
-  actor_id: "slack:U0C20STT4CS",
+const ada = {
+  id: "U100",
+  username: "ada",
+  full_name: "Ada Lovelace",
+  actor_id: "slack:U100",
 };
 
-const ben = {
-  id: "U0C0EF6NLPK",
-  username: "ben.p",
-  full_name: "Ben Perlmutter",
-  actor_id: "slack:U0C0EF6NLPK",
+const grace = {
+  id: "U200",
+  username: "grace",
+  full_name: "Grace Hopper",
+  actor_id: "slack:U200",
 };
 
 function checkpointWith(channelValues: Record<string, unknown>): Checkpoint {
@@ -50,11 +50,11 @@ describe("withRequesterMetadata", () => {
         messages: [
           stampClientUser(
             new HumanMessage({ id: "m1", content: "what can you do" }),
-            { client: "slack", user: nick },
+            { client: "slack", user: ada },
           ),
           stampClientUser(
             new HumanMessage({ id: "m2", content: "connect to the cluster" }),
-            { client: "slack", user: ben },
+            { client: "slack", user: grace },
           ),
         ],
       }),
@@ -62,7 +62,7 @@ describe("withRequesterMetadata", () => {
 
     expect(metadata.requester).toEqual({
       client: "slack",
-      user: ben,
+      user: grace,
       message_id: "m2",
       message_type: "human",
     });
@@ -74,7 +74,7 @@ describe("withRequesterMetadata", () => {
         messages: [
           stampClientUser(new HumanMessage({ id: "m1", content: "hi" }), {
             client: "slack",
-            user: nick,
+            user: ada,
           }),
         ],
       }),
@@ -93,7 +93,7 @@ describe("withRequesterMetadata", () => {
           messages: [
             stampClientUser(
               new HumanMessage({ id: "m1", content: "what can you do" }),
-              { client: "slack", user: nick },
+              { client: "slack", user: ada },
             ),
           ],
           user_id: "6aa41c21338e53cedff0159c",
@@ -103,7 +103,7 @@ describe("withRequesterMetadata", () => {
 
     expect(metadata.requester).toEqual({
       client: "slack",
-      user: nick,
+      user: ada,
       message_id: "m1",
       message_type: "human",
     });
@@ -115,11 +115,11 @@ describe("withRequesterMetadata", () => {
         messages: [
           stampClientUser(new HumanMessage({ id: "m1", content: "drop it" }), {
             client: "slack",
-            user: nick,
+            user: ada,
           }),
           stampClientUser(new AIMessage({ id: "m2", content: "approved?" }), {
             client: "slack",
-            user: ben,
+            user: grace,
           }),
         ],
       }),
@@ -127,7 +127,7 @@ describe("withRequesterMetadata", () => {
 
     expect(metadata.requester).toEqual({
       client: "slack",
-      user: ben,
+      user: grace,
       message_id: "m2",
       message_type: "ai",
     });
@@ -187,7 +187,7 @@ describe("withRequesterMetadata on the MongoDB checkpointer", () => {
   /** Mirrors a fresh invoke, where the input still sits under `__start__`. */
   async function putStampedInvoke(
     threadId: string,
-    user: typeof nick,
+    user: typeof ada,
   ): Promise<void> {
     await mongoSaver().put(
       { configurable: { thread_id: threadId, checkpoint_ns: "" } },
@@ -208,7 +208,7 @@ describe("withRequesterMetadata on the MongoDB checkpointer", () => {
   }
 
   it("writes the requester as plain BSON beside the serialized checkpoint", async () => {
-    await putStampedInvoke(THREAD_ID, nick);
+    await putStampedInvoke(THREAD_ID, ada);
 
     const doc = await database
       .collection("checkpoints")
@@ -220,7 +220,7 @@ describe("withRequesterMetadata on the MongoDB checkpointer", () => {
       parents: {},
       requester: {
         client: "slack",
-        user: nick,
+        user: ada,
         message_id: "m1",
         message_type: "human",
       },
@@ -231,25 +231,25 @@ describe("withRequesterMetadata on the MongoDB checkpointer", () => {
   });
 
   it("finds a thread by requester without decoding any checkpoint", async () => {
-    await putStampedInvoke(THREAD_ID, nick);
-    await putStampedInvoke("other-session:workspace-xyz", ben);
+    await putStampedInvoke(THREAD_ID, ada);
+    await putStampedInvoke("other-session:workspace-xyz", grace);
 
     const matches = await database
       .collection("checkpoints")
-      .find({ "metadata_search.requester.user.actor_id": nick.actor_id })
+      .find({ "metadata_search.requester.user.actor_id": ada.actor_id })
       .toArray();
 
     expect(matches.map((doc) => doc.thread_id)).toEqual([THREAD_ID]);
   });
 
   it("exposes the requester to the checkpointer's own list filter", async () => {
-    await putStampedInvoke(THREAD_ID, nick);
-    await putStampedInvoke("other-session:workspace-xyz", ben);
+    await putStampedInvoke(THREAD_ID, ada);
+    await putStampedInvoke("other-session:workspace-xyz", grace);
 
     const threadIds: unknown[] = [];
     for await (const tuple of mongoSaver().list(
       { configurable: {} },
-      { filter: { "requester.user.username": nick.username } },
+      { filter: { "requester.user.username": ada.username } },
     )) {
       threadIds.push(tuple.config.configurable?.["thread_id"]);
     }
