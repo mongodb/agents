@@ -17,7 +17,7 @@ import { recoverToolErrorsMiddleware } from "./toolErrors.js";
 import { withRequesterMetadata } from "./requesterMetadata.js";
 import { stampResumeClientUserMiddleware } from "./stampResume.js";
 import { prepareAtlasExplorerInput } from "./userRun.js";
-import { App, MagentaToolPodBackend } from "@magenta/magenta-sdklanggraph-ts";
+import { App, AgentEngineToolSandboxBackend } from "@mongodb-js/agent-engine-sdk-langgraph";
 
 function log(level: "INFO" | "WARN" | "ERROR", msg: string): void {
   const t = new Date().toISOString().slice(11, 19);
@@ -64,7 +64,7 @@ export const buildAgent = app.entrypoint(() => {
       tools: availableAtlasTools as never,
       systemPrompt: buildSystemPrompt(allowWriteOperations),
       skills: ["skills"],
-      backend: withoutShellExecution(new MagentaToolPodBackend()) as never,
+      backend: withoutShellExecution(new AgentEngineToolSandboxBackend()) as never,
       checkpointer: (saver ?? false) as never,
       middleware: [
         stampResumeClientUserMiddleware,

@@ -1,11 +1,11 @@
 ---
 name: troubleshoot-deploy
-description: Diagnose failed or stuck deployments using the agentic CLI. Guides through status checks, deploy event logs, and runtime logs to identify the root cause and recommend fixes.
+description: Diagnose failed or stuck deployments using the agentengine CLI. Guides through status checks, deploy event logs, and runtime logs to identify the root cause and recommend fixes.
 ---
 
 # Troubleshoot Failed Deployments
 
-Diagnose deployments that are stuck, failed, or succeeded-but-not-working using only the `agentic` CLI.
+Diagnose deployments that are stuck, failed, or succeeded-but-not-working using only the `agentengine` CLI.
 
 ---
 
@@ -14,16 +14,16 @@ Diagnose deployments that are stuck, failed, or succeeded-but-not-working using 
 Authenticate before running any diagnostic commands:
 
 ```bash
-agentic auth login
+agentengine auth login
 ```
 
 Confirm you're targeting the correct workspace:
 
 ```bash
-agentic status
+agentengine status
 ```
 
-If you see `not logged in` or `not initialized`, run `agentic auth login` and `agentic init` first.
+If you see `not logged in` or `not initialized`, run `agentengine auth login` and `agentengine init` first.
 
 ---
 
@@ -34,7 +34,7 @@ Run these in order — each reveals a different layer of the deployment stack.
 ### Step 1: Check overall state
 
 ```bash
-agentic status --verbose
+agentengine status --verbose
 ```
 
 This shows: workspace state (ready / failed / degraded / deploying), component health, deployment ID, and image details.
@@ -42,7 +42,7 @@ This shows: workspace state (ready / failed / degraded / deploying), component h
 ### Step 2: Check deployment events
 
 ```bash
-agentic deploy logs --severity error
+agentengine deploy logs --severity error
 ```
 
 Shows error-level events from the most recent deployment timeline.
@@ -51,10 +51,10 @@ Shows error-level events from the most recent deployment timeline.
 
 ```bash
 # Agent execution runtime (your code)
-agentic workspace logs --source aer --level error --since 30m
+agentengine workspace logs --source aer --level error --since 30m
 
 # Tool executor
-agentic workspace logs --source tool-pod --level error --since 30m
+agentengine workspace logs --source tool-pod --level error --since 30m
 ```
 
 OE and memory-server logs are platform operator logs. Use the admin UI or
@@ -63,8 +63,8 @@ OE and memory-server logs are platform operator logs. Use the admin UI or
 ### Step 4: If the build failed
 
 ```bash
-agentic build list
-agentic build logs <build-id>
+agentengine build list
+agentengine build logs <build-id>
 ```
 
 ---
@@ -76,38 +76,38 @@ Deploy failed?
 │
 ├─ Failed in under 5 minutes?
 │  → Infrastructure dependency issue (OE or memory-server can't start)
-│  → Check: agentic deploy logs --severity error
+│  → Check: agentengine deploy logs --severity error
 │  → Check: platform operator logs in admin UI or /api/v1/operator-logs
 │  → See: "Deploy Fails Fast" below
 │
 ├─ Timed out after ~30 minutes?
 │  → A component couldn't reach a healthy state
-│  → Check: agentic deploy logs (look for which component stalled)
+│  → Check: agentengine deploy logs (look for which component stalled)
 │  → See: Common Issues section (secrets, Atlas connectivity, auth)
 │
 ├─ "ImagePullBackOff" in deploy events?
 │  → Image no longer available in registry
-│  → Fix: agentic deploy (creates a fresh image)
+│  → Fix: agentengine deploy (creates a fresh image)
 │  → If persists after redeploy → contact support
 │
 ├─ "exec: --work: executable file not found" in events?
 │  → Platform-side rollback issue — contact support
 │
 └─ Build failed?
-   → agentic build logs <build-id>
+   → agentengine build logs <build-id>
    → Check Dockerfile, dependencies, or syntax errors
 
 Deploy succeeded but workspace doesn't respond?
 │
-├─ agentic status shows "degraded"?
-│  → agentic status --verbose (identify unhealthy component)
+├─ agentengine status shows "degraded"?
+│  → agentengine status --verbose (identify unhealthy component)
 │  → Check logs for that component
 │
 ├─ "code = Unimplemented" errors when invoking?
-│  → Fix: agentic deploy (forces routing reconciliation)
+│  → Fix: agentengine deploy (forces routing reconciliation)
 │
 └─ Agent crashes after startup?
-   → agentic workspace logs --source aer --level error --since 1h
+   → agentengine workspace logs --source aer --level error --since 1h
    → Look for stack traces or connection errors
 ```
 
@@ -141,7 +141,7 @@ Secrets were set at the *workspace* level instead of the *project* level. The or
    - `MONGODB_URI` — your MongoDB Atlas connection string
    - `VOYAGE_API_KEY` — your Voyage AI API key (required if memory is enabled)
 3. Wait 1–2 minutes for secrets to propagate
-4. Redeploy: `agentic deploy`
+4. Redeploy: `agentengine deploy`
 
 ---
 
@@ -171,7 +171,7 @@ Your Atlas project's IP Access List doesn't include the platform's egress IP add
 1. Go to **Atlas → Network Access → IP Access List**
 2. Make sure you're editing the correct Atlas project (the one your `MONGODB_URI` points to)
 3. Add the platform egress CIDR ranges (contact your platform administrator for the current list)
-4. Connections will succeed on the next retry — or redeploy: `agentic deploy`
+4. Connections will succeed on the next retry — or redeploy: `agentengine deploy`
 
 **Common mistake:** Adding IPs to the wrong Atlas project. If you have multiple Atlas projects, add the allowlist to the one containing your target cluster.
 
@@ -204,7 +204,7 @@ The username or password in your `MONGODB_URI` is wrong, the database user doesn
 3. URL-encode special characters in the password (`@` → `%40`, `#` → `%23`)
 4. Confirm `authSource=admin` is in your URI (standard for Atlas)
 5. Update `MONGODB_URI` in **Project → Secrets** if needed
-6. Redeploy: `agentic deploy`
+6. Redeploy: `agentengine deploy`
 
 ---
 
@@ -268,7 +268,7 @@ An older platform version created an index under an auto-generated name. The cur
 On current tenant software, a redeploy usually auto-clears this — the memory server drops conflicting legacy indexes on boot:
 
 ```bash
-agentic deploy
+agentengine deploy
 ```
 
 If the error persists after redeploying (e.g., on older memory-server builds), manually drop the legacy-named index in Atlas Data Explorer or mongosh:
@@ -307,7 +307,7 @@ The `MONGODB_URI` value is missing the protocol prefix, has extra whitespace, or
 2. Edit `MONGODB_URI` — ensure it starts with `mongodb://` or `mongodb+srv://`
 3. Remove any leading/trailing whitespace
 4. Correct format: `mongodb+srv://user:password@cluster0.xxxxx.mongodb.net/?retryWrites=true&w=majority`
-5. Redeploy: `agentic deploy`
+5. Redeploy: `agentengine deploy`
 
 ---
 
@@ -316,7 +316,7 @@ The `MONGODB_URI` value is missing the protocol prefix, has extra whitespace, or
 **How to detect:**
 
 ```bash
-agentic deploy logs --severity error
+agentengine deploy logs --severity error
 # Look for: "ImagePullBackOff" or "Failed to pull image ... not found"
 ```
 
@@ -327,7 +327,7 @@ The workspace hasn't been deployed recently, and the previous image was cleaned 
 **How to fix:**
 
 ```bash
-agentic deploy
+agentengine deploy
 ```
 
 If `ImagePullBackOff` persists after a fresh deploy, contact support — this indicates a platform-side registry issue.
@@ -339,7 +339,7 @@ If `ImagePullBackOff` persists after a fresh deploy, contact support — this in
 **How to detect:**
 
 - Invoking the agent returns: `rpc error: code = Unimplemented`
-- `agentic status` shows `ready` but the agent doesn't respond
+- `agentengine status` shows `ready` but the agent doesn't respond
 
 **Why this happens:**
 
@@ -348,7 +348,7 @@ A workspace migration left internal routing in an inconsistent state.
 **How to fix:**
 
 ```bash
-agentic deploy
+agentengine deploy
 ```
 
 A fresh deploy forces the platform to reconcile routing. If errors persist after redeploy, contact support.
@@ -361,7 +361,7 @@ A fresh deploy forces the platform to reconcile routing. If errors persist after
 
 ```bash
 # Deploy failed in under 5 minutes
-agentic deploy logs --severity error
+agentengine deploy logs --severity error
 
 # Check underlying services in platform operator logs:
 # service=orchestration-engine, level=ERROR
@@ -377,7 +377,7 @@ Your agent depends on the orchestration engine or memory server at startup. If t
 1. **Do NOT immediately redeploy** — the same failure will recur
 2. Identify and fix the underlying issue (usually one of issues 1–6 above)
 3. Verify platform operator logs show no new OE or memory-server errors
-4. Then redeploy: `agentic deploy`
+4. Then redeploy: `agentengine deploy`
 
 ---
 
@@ -388,18 +388,18 @@ Contact support if you see any of these — they indicate platform-side issues y
 | Signal | Meaning |
 |---|---|
 | `exec: --work: executable file not found` in deploy events | Platform rollback corruption |
-| `ImagePullBackOff` persists after a fresh `agentic deploy` | Platform registry issue |
+| `ImagePullBackOff` persists after a fresh `agentengine deploy` | Platform registry issue |
 | Deploy fails repeatedly with no errors in workspace logs | Platform component failure |
-| `agentic status` shows `not_deployed` immediately after deploying | Platform lost deployment state |
+| `agentengine status` shows `not_deployed` immediately after deploying | Platform lost deployment state |
 | All components healthy but agent unreachable | Platform routing issue |
 
 **Gathering info for a support request:**
 
 ```bash
-agentic status --verbose --json > status.json
-agentic deploy logs --json > deploy-events.json
-agentic workspace logs --all --since 2h --json > runtime-logs.json
-agentic deploy list --limit 5 --json > deploy-history.json
+agentengine status --verbose --json > status.json
+agentengine deploy logs --json > deploy-events.json
+agentengine workspace logs --all --since 2h --json > runtime-logs.json
+agentengine deploy list --limit 5 --json > deploy-history.json
 ```
 
 Include your **workspace ID**, **project ID**, **deployment ID**, and these JSON files.
@@ -410,21 +410,21 @@ Include your **workspace ID**, **project ID**, **deployment ID**, and these JSON
 
 | Command | What It Shows |
 |---|---|
-| `agentic status` | Workspace state: ready, failed, degraded, deploying |
-| `agentic status --verbose` | Component-level health, IDs, image details |
-| `agentic status --json` | Machine-readable output (for sharing with support) |
-| `agentic deploy logs` | Deployment event timeline (latest deploy) |
-| `agentic deploy logs --severity error` | Error events only |
-| `agentic deploy logs -f` | Follow events live during a deploy |
-| `agentic deploy get` | Full deployment detail with components |
-| `agentic deploy get -f` | Follow deployment until it completes |
-| `agentic deploy list --status failed` | Recent failed deployments |
-| `agentic workspace logs` | Runtime logs (default: last hour) |
-| `agentic workspace logs --source <svc>` | Filter by service: `aer`, `tool-pod` |
-| `agentic workspace logs --level error` | Error-level only |
-| `agentic workspace logs --grep "<text>"` | Search messages (case-insensitive) |
-| `agentic workspace logs --since 30m` | Logs from the last 30 minutes |
-| `agentic workspace logs -f` | Tail logs in real-time |
-| `agentic workspace logs --all --since 6h` | All logs in time range (auto-paginates) |
-| `agentic build list` | List builds |
-| `agentic build logs <build-id>` | Stream build output |
+| `agentengine status` | Workspace state: ready, failed, degraded, deploying |
+| `agentengine status --verbose` | Component-level health, IDs, image details |
+| `agentengine status --json` | Machine-readable output (for sharing with support) |
+| `agentengine deploy logs` | Deployment event timeline (latest deploy) |
+| `agentengine deploy logs --severity error` | Error events only |
+| `agentengine deploy logs -f` | Follow events live during a deploy |
+| `agentengine deploy get` | Full deployment detail with components |
+| `agentengine deploy get -f` | Follow deployment until it completes |
+| `agentengine deploy list --status failed` | Recent failed deployments |
+| `agentengine workspace logs` | Runtime logs (default: last hour) |
+| `agentengine workspace logs --source <svc>` | Filter by service: `aer`, `tool-pod` |
+| `agentengine workspace logs --level error` | Error-level only |
+| `agentengine workspace logs --grep "<text>"` | Search messages (case-insensitive) |
+| `agentengine workspace logs --since 30m` | Logs from the last 30 minutes |
+| `agentengine workspace logs -f` | Tail logs in real-time |
+| `agentengine workspace logs --all --since 6h` | All logs in time range (auto-paginates) |
+| `agentengine build list` | List builds |
+| `agentengine build logs <build-id>` | Stream build output |

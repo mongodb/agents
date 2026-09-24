@@ -14,7 +14,7 @@ features:
     deep_agent: true
 # Declare which secrets each workload may access. Entries are secret NAMES
 # (e.g. OPENAI_API_KEY), never secret values - values go in .env locally, or
-# in the platform secret store (`agentic secret set`) for deployed agents.
+# in the platform secret store (`agentengine secret set`) for deployed agents.
 # MONGODB_URI is injected into every workload and need not be listed.
 # invoke_llm is a reserved tool name: the platform runs model calls in a tool
 # pod, so the LLM provider key must also be declared under tools.invoke_llm.

@@ -1,5 +1,5 @@
 import { HumanMessage } from "@langchain/core/messages";
-import type { AgentInput, RequestContext } from "@magenta/sdk-core-ts";
+import type { AgentInput, RequestContext } from "@mongodb-js/agent-engine-sdk";
 
 import { parseClientUserPayload, stampClientUser } from "./clientUser.js";
 

@@ -1,21 +1,21 @@
 overrides:
   "zod": "4.4.3"
-  "@magenta/sdk-core-ts": "git+https://github.com/10gen/magenta-client-libraries.git#8780ea124e6be996ef7b96885f14588195b98d96&path:packages/sdk-core-ts"
-  "@magenta/agentic-platform-memory-ts": "git+https://github.com/10gen/magenta-client-libraries.git#8780ea124e6be996ef7b96885f14588195b98d96&path:packages/agentic-platform-memory-ts"
-  "@magenta/runner-shared-ts": "git+https://github.com/10gen/magenta-client-libraries.git#8780ea124e6be996ef7b96885f14588195b98d96&path:packages/runner-shared-ts"
-  "@magenta/magenta-sdklanggraph-ts": "git+https://github.com/10gen/magenta-client-libraries.git#8780ea124e6be996ef7b96885f14588195b98d96&path:packages/magenta-sdklanggraph-ts"
+  "@mongodb-js/agent-engine-sdk": "git+https://github.com/10gen/magenta-client-libraries.git#32656f78169d9ffebcde33b2762a35c64f28fdaa&path:packages/javascript/packages/agent-engine-sdk"
+  "@mongodb-js/agent-engine-sdk-memory": "git+https://github.com/10gen/magenta-client-libraries.git#32656f78169d9ffebcde33b2762a35c64f28fdaa&path:packages/javascript/packages/agent-engine-memory"
+  "@mongodb-js/agent-engine-runner-shared": "git+https://github.com/10gen/magenta-client-libraries.git#32656f78169d9ffebcde33b2762a35c64f28fdaa&path:packages/javascript/packages/agent-engine-runner-shared"
+  "@mongodb-js/agent-engine-sdk-langgraph": "git+https://github.com/10gen/magenta-client-libraries.git#32656f78169d9ffebcde33b2762a35c64f28fdaa&path:packages/javascript/packages/agent-engine-sdk-langgraph"
 
 allowBuilds:
   # pnpm evaluates git dependencies under both authored and canonicalized URLs
   # while preparing the selected package and its internal Magenta dependencies.
-  "@magenta/sdk-core-ts@git+https://github.com/10gen/magenta-client-libraries.git#8780ea124e6be996ef7b96885f14588195b98d96&path:packages/sdk-core-ts": true
-  "@magenta/agentic-platform-memory-ts@git+https://github.com/10gen/magenta-client-libraries.git#8780ea124e6be996ef7b96885f14588195b98d96&path:packages/agentic-platform-memory-ts": true
-  "@magenta/runner-shared-ts@git+https://github.com/10gen/magenta-client-libraries.git#8780ea124e6be996ef7b96885f14588195b98d96&path:packages/runner-shared-ts": true
-  "@magenta/magenta-sdklanggraph-ts@git+https://github.com/10gen/magenta-client-libraries.git#8780ea124e6be996ef7b96885f14588195b98d96&path:packages/magenta-sdklanggraph-ts": true
-  "@magenta/sdk-core-ts@git+https://git@github.com:10gen/magenta-client-libraries.git#8780ea124e6be996ef7b96885f14588195b98d96&path:packages/sdk-core-ts": true
-  "@magenta/agentic-platform-memory-ts@git+https://git@github.com:10gen/magenta-client-libraries.git#8780ea124e6be996ef7b96885f14588195b98d96&path:packages/agentic-platform-memory-ts": true
-  "@magenta/runner-shared-ts@git+https://git@github.com:10gen/magenta-client-libraries.git#8780ea124e6be996ef7b96885f14588195b98d96&path:packages/runner-shared-ts": true
-  "@magenta/magenta-sdklanggraph-ts@git+https://git@github.com:10gen/magenta-client-libraries.git#8780ea124e6be996ef7b96885f14588195b98d96&path:packages/magenta-sdklanggraph-ts": true
+  "@mongodb-js/agent-engine-sdk@git+https://github.com/10gen/magenta-client-libraries.git#32656f78169d9ffebcde33b2762a35c64f28fdaa&path:packages/javascript/packages/agent-engine-sdk": true
+  "@mongodb-js/agent-engine-sdk-memory@git+https://github.com/10gen/magenta-client-libraries.git#32656f78169d9ffebcde33b2762a35c64f28fdaa&path:packages/javascript/packages/agent-engine-memory": true
+  "@mongodb-js/agent-engine-runner-shared@git+https://github.com/10gen/magenta-client-libraries.git#32656f78169d9ffebcde33b2762a35c64f28fdaa&path:packages/javascript/packages/agent-engine-runner-shared": true
+  "@mongodb-js/agent-engine-sdk-langgraph@git+https://github.com/10gen/magenta-client-libraries.git#32656f78169d9ffebcde33b2762a35c64f28fdaa&path:packages/javascript/packages/agent-engine-sdk-langgraph": true
+  "@mongodb-js/agent-engine-sdk@git+https://git@github.com:10gen/magenta-client-libraries.git#32656f78169d9ffebcde33b2762a35c64f28fdaa&path:packages/javascript/packages/agent-engine-sdk": true
+  "@mongodb-js/agent-engine-sdk-memory@git+https://git@github.com:10gen/magenta-client-libraries.git#32656f78169d9ffebcde33b2762a35c64f28fdaa&path:packages/javascript/packages/agent-engine-memory": true
+  "@mongodb-js/agent-engine-runner-shared@git+https://git@github.com:10gen/magenta-client-libraries.git#32656f78169d9ffebcde33b2762a35c64f28fdaa&path:packages/javascript/packages/agent-engine-runner-shared": true
+  "@mongodb-js/agent-engine-sdk-langgraph@git+https://git@github.com:10gen/magenta-client-libraries.git#32656f78169d9ffebcde33b2762a35c64f28fdaa&path:packages/javascript/packages/agent-engine-sdk-langgraph": true
   esbuild: true
 
 blockExoticSubdeps: false

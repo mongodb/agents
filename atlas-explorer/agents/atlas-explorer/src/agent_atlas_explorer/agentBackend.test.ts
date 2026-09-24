@@ -5,7 +5,7 @@ import { withoutShellExecution } from "./agentBackend.js";
 describe("Atlas deep-agent backend", () => {
   it("keeps audited filesystem methods but hides shell execution", async () => {
     const source = {
-      id: "magenta-toolpod",
+      id: "agent-engine-toolpod",
       marker: "source",
       execute: vi.fn(),
       ls: vi.fn(function (this: { marker: string }, path: string) {

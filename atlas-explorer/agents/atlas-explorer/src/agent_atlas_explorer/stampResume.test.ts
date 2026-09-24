@@ -12,7 +12,7 @@ const payloadMock = vi.hoisted(() => ({
   current: null as Record<string, unknown> | null,
 }));
 
-vi.mock("@magenta/runner-shared-ts", () => ({
+vi.mock("@mongodb-js/agent-engine-runner-shared", () => ({
   getCurrentPayload: () => payloadMock.current,
 }));
 

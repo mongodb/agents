@@ -55,9 +55,9 @@ vi.mock("langchain", async (importOriginal) => {
   };
 });
 
-vi.mock("@magenta/magenta-sdklanggraph-ts", () => ({
-  MagentaToolPodBackend: class {
-    readonly id = "magenta-toolpod";
+vi.mock("@mongodb-js/agent-engine-sdk-langgraph", () => ({
+  AgentEngineToolSandboxBackend: class {
+    readonly id = "agent-engine-toolpod";
 
     execute(): void {}
   },
@@ -186,7 +186,7 @@ describe("Atlas Explorer graph assembly", () => {
         backend?: { id?: string; execute?: unknown };
       }
     ).backend;
-    expect(backend?.id).toBe("magenta-toolpod");
+    expect(backend?.id).toBe("agent-engine-toolpod");
     expect(backend?.execute).toBeUndefined();
 
     if (previousAgentWorkdir === undefined) {

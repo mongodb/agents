@@ -1,4 +1,4 @@
-import { MessageSchema } from "@magenta/sdk-core-ts";
+import { MessageSchema } from "@mongodb-js/agent-engine-sdk";
 import { describe, expect, it } from "vitest";
 
 describe("pinned Magenta runtime compatibility", () => {

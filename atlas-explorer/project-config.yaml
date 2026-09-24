@@ -6,7 +6,7 @@ memory:
 
   # Voyage AI embeddings.
   # The Voyage API key is NOT set here — upload it as a project secret with:
-  #   agentic secret set VOYAGE_API_KEY
+  #   agentengine secret set VOYAGE_API_KEY
   voyage:
     model: "voyage-4-large"
     dimension: 1024
@@ -20,7 +20,7 @@ memory:
 
   # LLM used for background extraction.
   # The provider's API key is NOT set here — upload it as a project secret with:
-  #   agentic secret set <PROVIDER>_API_KEY   (e.g. OPENAI_API_KEY)
+  #   agentengine secret set <PROVIDER>_API_KEY   (e.g. OPENAI_API_KEY)
   extraction_llm:
     provider: openai             # one of: openai | anthropic | gemini | cerebras
     model: null                  # overrides the provider's default model

@@ -1,6 +1,6 @@
 import { AIMessage, type BaseMessage } from "@langchain/core/messages";
 import { Command } from "@langchain/langgraph";
-import { getCurrentPayload } from "@magenta/runner-shared-ts";
+import { getCurrentPayload } from "@mongodb-js/agent-engine-runner-shared";
 import { createMiddleware } from "langchain";
 
 import {

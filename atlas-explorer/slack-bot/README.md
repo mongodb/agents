@@ -21,7 +21,7 @@ workspace; access is not scoped to each user's Atlas identity.
 - Node.js 22 and pnpm
 - A Slack workspace where you can create and install an app
 - Either a deployed Atlas Explorer workspace and project-scoped Agentic
-  service-account credentials, or a local Atlas Explorer `agentic dev` stack
+  service-account credentials, or a local Atlas Explorer `agentengine dev` stack
 - MongoDB 5.0+ in production for Chat SDK state, durable workflow state, and
   partial TTL retention indexes. Local Socket Mode can start an ephemeral
   MongoDB automatically.
@@ -31,13 +31,13 @@ Configure and verify the Atlas Explorer agent first. Its
 
 ```bash
 cd ../agents/atlas-explorer
-agentic build
-agentic deploy
-agentic service-account create atlas-explorer-slack-bot \
-  --project-id <agentic-project-id> \
+agentengine build
+agentengine deploy
+agentengine service-account create atlas-explorer-slack-bot \
+  --project-id <project-id> \
   --role AGENT_DEVELOPER \
   --secret-expires-in 2160h
-agentic invoke --json "List the Atlas projects I can access"
+agentengine invoke --json "List the Atlas projects I can access"
 ```
 
 For a deployed agent, the JSON probe confirms the project/workspace target and
@@ -152,7 +152,7 @@ start Atlas Explorer in its own terminal:
 
 ```bash
 cd ../agents/atlas-explorer
-agentic dev up
+agentengine dev up
 ```
 
 Then configure the Slack bot:
@@ -276,7 +276,7 @@ and `FUNCTION_INVOCATION_TIMEOUT`:
 pnpm vercel logs --project "$VERCEL_PROJECT" --environment production \
   --since 30m --expand --no-branch --scope "$VERCEL_SCOPE"
 pnpm vercel env run -e production --scope "$VERCEL_SCOPE" -- sh -c \
-  'agentic --no-log logs --source "agent,tool" --since 30m \
+  'agentengine --no-log logs --source "agent,tool" --since 30m \
   --workspace-id "$AGENTIC_WORKSPACE_ID" \
   --project-id "$AGENTIC_PROJECT_ID"'
 ```
@@ -284,7 +284,7 @@ pnpm vercel env run -e production --scope "$VERCEL_SCOPE" -- sh -c \
 Rotate the Agentic client secret before its configured expiry:
 
 ```bash
-agentic service-account rotate "$AGENTIC_SA_CLIENT_ID" \
+agentengine service-account rotate "$AGENTIC_SA_CLIENT_ID" \
   --project-id "$AGENTIC_PROJECT_ID" \
   --secret-expires-in 2160h
 pnpm vercel env add AGENTIC_SA_CLIENT_SECRET production \

@@ -1,4 +1,4 @@
-# .agenticignore — files left out of the source archive uploaded by 'agentic build'.
+# .agentengineignore — files left out of the source archive uploaded by 'agentengine build'.
 # Read from the archive root (the repo/workspace root for monorepos).
 # Uses standard .gitignore syntax (globs, **, !negation); edit to fit your project.
 # .env / .env.* files, *.pem / *.key secrets, and the .git directory are always
@@ -28,7 +28,7 @@ build
 .env.*
 
 # Agentic local state
-.agentic
+.agentengine
 
 # OS junk
 .DS_Store

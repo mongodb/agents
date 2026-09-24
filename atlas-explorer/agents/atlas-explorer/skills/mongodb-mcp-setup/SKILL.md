@@ -57,12 +57,12 @@ client secrets or access tokens.
 ```bash
 cp env.example .env
 # Set the three ATLAS_* Admin API values and an LLM provider key in .env.
-agentic dev up
+agentengine dev up
 ```
 
 The operator must not set `ATLAS_MCP_CLIENT_ID` or
 `ATLAS_MCP_CLIENT_SECRET`; Atlas Explorer generates them during process
-startup. Use `agentic dev logs` to confirm that both runtime processes created
+startup. Use `agentengine dev logs` to confirm that both runtime processes created
 distinct `atlas-explorer-*` identities and that MongoDB tools were registered.
 
 ## Recovery guidance

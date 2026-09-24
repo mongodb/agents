@@ -24,9 +24,9 @@
     "@langchain/google-genai": "^2.1.0",
     "@langchain/langgraph": "^1.3.0",
     "@langchain/openai": "^1.4.7",
-    "@magenta/magenta-sdklanggraph-ts": "git+https://github.com/10gen/magenta-client-libraries.git#8780ea124e6be996ef7b96885f14588195b98d96&path:packages/magenta-sdklanggraph-ts",
-    "@magenta/runner-shared-ts": "git+https://github.com/10gen/magenta-client-libraries.git#8780ea124e6be996ef7b96885f14588195b98d96&path:packages/runner-shared-ts",
-    "@magenta/sdk-core-ts": "git+https://github.com/10gen/magenta-client-libraries.git#8780ea124e6be996ef7b96885f14588195b98d96&path:packages/sdk-core-ts",
+    "@mongodb-js/agent-engine-sdk-langgraph": "*",
+    "@mongodb-js/agent-engine-runner-shared": "*",
+    "@mongodb-js/agent-engine-sdk": "*",
     "dotenv": "^16.4.5",
     "langchain": "^1.5.10",
     "zod": "4.4.3"

@@ -1,4 +1,4 @@
-# Local services exposed by the app during `agentic dev`.
+# Local services exposed by the app during `agentengine dev`.
 # Most host ports are assigned randomly so multiple agents can run at once.
 # The playground stays pinned to 3000 because it is the primary browser UI.
 # To pin another service, uncomment its block, change the port, and restart
