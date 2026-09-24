@@ -4,10 +4,22 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-// The pinned SDK packages export ./dist, but that directory is not committed
-// and the packages no longer have a prepare script. pnpm therefore installs
-// them without an entry point. Build the JavaScript workspace at the same
-// commit and copy dist into the installed packages.
+// TEMPORARY. Delete this file and the package.json "postinstall" entry once
+// @mongodb-js/agent-engine-* is published to npm with dist already in the
+// tarball. Until then the git pin is the only way to consume the packages,
+// and that pin does not work on its own:
+//
+//   - package.json "exports" point at ./dist/index.js
+//   - dist/ is not committed
+//   - the old prepare script that compiled on install was removed
+//   - pnpm packs only the published "files" list, so node_modules gets a
+//     package.json and no entry point
+//   - a pnpm patch cannot put prepare back: pnpm decides whether to build,
+//     and which files to keep, before it applies patches
+//
+// This postinstall clones packages/javascript at COMMIT, builds it with npm,
+// and copies dist/ into the already-installed packages. It is intentionally
+// ugly. Do not extend it.
 const COMMIT = "32656f78169d9ffebcde33b2762a35c64f28fdaa";
 const REPO = "https://github.com/10gen/magenta-client-libraries.git";
 const packageRoot = fileURLToPath(new URL("..", import.meta.url));
