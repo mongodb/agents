@@ -10,7 +10,7 @@ platform checkpoints · read-only by default · runtime approval for writes
 ## Layout
 
 ```
-atlas-explorer/agents/atlas-explorer/
+agent-engine-templates/agents/atlas-explorer/
 ├── agent.yaml                         # app, MCP, features, and required secret names
 ├── package.json / tsconfig.json       # TypeScript build
 ├── pnpm-workspace.yaml / pnpm-lock.yaml

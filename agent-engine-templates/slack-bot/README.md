@@ -196,7 +196,7 @@ export VERCEL_PROJECT=atlas-explorer
 export VERCEL_URL=https://atlas-explorer-three.vercel.app
 ```
 
-1. Link `atlas-explorer/slack-bot` to the Vercel project:
+1. Link `agent-engine-templates/slack-bot` to the Vercel project:
 
    ```bash
    pnpm install --frozen-lockfile

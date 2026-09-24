@@ -3,14 +3,14 @@ name: Slack bot unit tests
 on:
   pull_request:
     paths:
-      - "atlas-explorer/slack-bot/**"
+      - "agent-engine-templates/slack-bot/**"
       - ".github/workflows/unit-tests.yml"
       - ".github/workflows/unit-tests-slack-bot.yml"
   push:
     branches:
       - main
     paths:
-      - "atlas-explorer/slack-bot/**"
+      - "agent-engine-templates/slack-bot/**"
       - ".github/workflows/unit-tests.yml"
       - ".github/workflows/unit-tests-slack-bot.yml"
 
@@ -26,4 +26,4 @@ jobs:
   test:
     uses: ./.github/workflows/unit-tests.yml
     with:
-      working-directory: atlas-explorer/slack-bot
+      working-directory: agent-engine-templates/slack-bot

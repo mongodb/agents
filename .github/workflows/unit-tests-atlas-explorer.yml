@@ -3,14 +3,14 @@ name: Atlas Explorer unit tests
 on:
   pull_request:
     paths:
-      - "atlas-explorer/agents/atlas-explorer/**"
+      - "agent-engine-templates/agents/atlas-explorer/**"
       - ".github/workflows/unit-tests.yml"
       - ".github/workflows/unit-tests-atlas-explorer.yml"
   push:
     branches:
       - main
     paths:
-      - "atlas-explorer/agents/atlas-explorer/**"
+      - "agent-engine-templates/agents/atlas-explorer/**"
       - ".github/workflows/unit-tests.yml"
       - ".github/workflows/unit-tests-atlas-explorer.yml"
 
@@ -28,5 +28,5 @@ jobs:
     secrets:
       MAGENTA_GITHUB_TOKEN: ${{ secrets.MAGENTA_GITHUB_TOKEN }}
     with:
-      working-directory: atlas-explorer/agents/atlas-explorer
+      working-directory: agent-engine-templates/agents/atlas-explorer
       private-git-deps: true
