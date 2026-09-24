@@ -122,6 +122,84 @@ describe("registerChatHandlers", () => {
     expect(agent.invokeInputs[0]?.message).toBe("Follow up");
   });
 
+  it("ignores a subscribed message addressed to another person", async () => {
+    await state.subscribe(CHANNEL_THREAD_ID);
+
+    await bot.processMessage(
+      adapter,
+      CHANNEL_THREAD_ID,
+      testMessage(
+        "message-other",
+        CHANNEL_THREAD_ID,
+        "<@U999> can you take this?",
+        {
+          raw: {
+            type: "message",
+            text: "<@U999> can you take this?",
+          },
+        },
+      ),
+    );
+
+    expect(await state.isSubscribed(CHANNEL_THREAD_ID)).toBe(true);
+    expect(agent.invokeInputs).toEqual([]);
+    expect(adapter.postMessage).not.toHaveBeenCalled();
+  });
+
+  it("routes a subscribed message that also mentions the bot", async () => {
+    await state.subscribe(CHANNEL_THREAD_ID);
+
+    await bot.processMessage(
+      adapter,
+      CHANNEL_THREAD_ID,
+      testMessage(
+        "message-bot",
+        CHANNEL_THREAD_ID,
+        "<@B123> and <@U999> please look",
+        {
+          raw: {
+            type: "message",
+            text: "<@B123> and <@U999> please look",
+          },
+        },
+      ),
+    );
+
+    expect(agent.invokeInputs).toEqual([
+      {
+        actorId: "slack:U123",
+        message: "<@B123> and <@U999> please look",
+        ...slackAdaClientUser,
+      },
+    ]);
+  });
+
+  it("routes a DM that mentions someone else", async () => {
+    await bot.processMessage(
+      adapter,
+      DM_THREAD_ID,
+      testMessage(
+        "dm-other",
+        DM_THREAD_ID,
+        "<@U999> thoughts?",
+        {
+          raw: {
+            type: "message",
+            text: "<@U999> thoughts?",
+          },
+        },
+      ),
+    );
+
+    expect(agent.invokeInputs).toEqual([
+      {
+        actorId: "slack:U123",
+        message: "<@U999> thoughts?",
+        ...slackAdaClientUser,
+      },
+    ]);
+  });
+
   it("does not subscribe an unauthorized mention", async () => {
     const restrictedBot = new Chat({
       adapters: { slack: adapter },

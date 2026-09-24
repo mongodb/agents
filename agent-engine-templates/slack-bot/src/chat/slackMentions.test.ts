@@ -4,7 +4,10 @@ import {
 } from "@chat-adapter/tests";
 import { describe, expect, it } from "vitest";
 
-import { shouldIgnoreUnstructuredSlackMention } from "./slackMentions.js";
+import {
+  shouldIgnoreSlackMessageAddressedToSomeoneElse,
+  shouldIgnoreUnstructuredSlackMention,
+} from "./slackMentions.js";
 
 const slack = createMockAdapter("slack", {
   botUserId: "B123",
@@ -71,6 +74,120 @@ describe("shouldIgnoreUnstructuredSlackMention", () => {
     ).toBe(false);
     expect(
       shouldIgnoreUnstructuredSlackMention(
+        createMockAdapter("discord", { botUserId: "B123" }),
+        message,
+      ),
+    ).toBe(false);
+  });
+});
+
+describe("shouldIgnoreSlackMessageAddressedToSomeoneElse", () => {
+  it("ignores a text mention of another user", () => {
+    const message = createTestMessage("message-1", "<@U999> can you take this?", {
+      raw: {
+        type: "message",
+        text: "<@U999> can you take this?",
+      },
+    });
+
+    expect(
+      shouldIgnoreSlackMessageAddressedToSomeoneElse(slack, message),
+    ).toBe(true);
+  });
+
+  it("ignores a structured mention of another user", () => {
+    const message = createTestMessage("message-1", "can you take this?", {
+      raw: {
+        type: "message",
+        blocks: [
+          {
+            type: "rich_text",
+            elements: [
+              {
+                type: "rich_text_section",
+                elements: [{ type: "user", user_id: "U999" }],
+              },
+            ],
+          },
+        ],
+      },
+    });
+
+    expect(
+      shouldIgnoreSlackMessageAddressedToSomeoneElse(slack, message),
+    ).toBe(true);
+  });
+
+  it("keeps a message that mentions the bot and another user", () => {
+    const message = createTestMessage(
+      "message-1",
+      "<@B123> and <@U999> please look",
+      {
+        raw: {
+          type: "message",
+          text: "<@B123> and <@U999> please look",
+        },
+      },
+    );
+
+    expect(
+      shouldIgnoreSlackMessageAddressedToSomeoneElse(slack, message),
+    ).toBe(false);
+  });
+
+  it("keeps a follow-up with no user mention", () => {
+    const message = createTestMessage("message-1", "Follow up", {
+      raw: {
+        type: "message",
+        text: "Follow up",
+      },
+    });
+
+    expect(
+      shouldIgnoreSlackMessageAddressedToSomeoneElse(slack, message),
+    ).toBe(false);
+  });
+
+  it("keeps an app_mention event", () => {
+    const message = createTestMessage("message-1", "hello", {
+      raw: {
+        type: "app_mention",
+        text: "hello",
+      },
+    });
+
+    expect(
+      shouldIgnoreSlackMessageAddressedToSomeoneElse(slack, message),
+    ).toBe(false);
+  });
+
+  it("ignores channel and subteam markers", () => {
+    const message = createTestMessage(
+      "message-1",
+      "<!channel> and <!subteam^S123> FYI",
+      {
+        raw: {
+          type: "message",
+          text: "<!channel> and <!subteam^S123> FYI",
+        },
+      },
+    );
+
+    expect(
+      shouldIgnoreSlackMessageAddressedToSomeoneElse(slack, message),
+    ).toBe(false);
+  });
+
+  it("leaves uninspectable and non-Slack messages unchanged", () => {
+    const message = createTestMessage("message-1", "hello", {
+      raw: {},
+    });
+
+    expect(
+      shouldIgnoreSlackMessageAddressedToSomeoneElse(slack, message),
+    ).toBe(false);
+    expect(
+      shouldIgnoreSlackMessageAddressedToSomeoneElse(
         createMockAdapter("discord", { botUserId: "B123" }),
         message,
       ),

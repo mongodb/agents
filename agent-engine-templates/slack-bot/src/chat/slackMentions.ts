@@ -28,6 +28,25 @@ export function shouldIgnoreUnstructuredSlackMention(
   );
 }
 
+export function shouldIgnoreSlackMessageAddressedToSomeoneElse(
+  adapter: Adapter,
+  message: Message,
+): boolean {
+  if (adapter.name !== "slack" || !adapter.botUserId) {
+    return false;
+  }
+
+  const event = asSlackEvent(message.raw);
+  if (!event || event.type === "app_mention") {
+    return false;
+  }
+
+  const mentionedUserIds = slackUserMentionIds(event.text, event.blocks);
+  return (
+    mentionedUserIds.size > 0 && !mentionedUserIds.has(adapter.botUserId)
+  );
+}
+
 function asSlackEvent(raw: unknown): SlackEvent | null {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
     return null;
@@ -42,6 +61,43 @@ function asSlackEvent(raw: unknown): SlackEvent | null {
     return null;
   }
   return event;
+}
+
+function slackUserMentionIds(...values: unknown[]): Set<string> {
+  const ids = new Set<string>();
+  for (const value of values) {
+    addSlackUserMentionIds(value, ids);
+  }
+  return ids;
+}
+
+function addSlackUserMentionIds(value: unknown, ids: Set<string>): void {
+  if (typeof value === "string") {
+    for (const match of value.matchAll(/<@!?([A-Z0-9]+)(?:\|[^>]*)?>/g)) {
+      const id = match[1];
+      if (id) {
+        ids.add(id);
+      }
+    }
+    return;
+  }
+  if (Array.isArray(value)) {
+    for (const entry of value) {
+      addSlackUserMentionIds(entry, ids);
+    }
+    return;
+  }
+  if (!value || typeof value !== "object") {
+    return;
+  }
+
+  const entry = value as Record<string, unknown>;
+  if (entry.type === "user" && typeof entry.user_id === "string") {
+    ids.add(entry.user_id);
+  }
+  for (const nested of Object.values(entry)) {
+    addSlackUserMentionIds(nested, ids);
+  }
 }
 
 function containsSlackUserMention(

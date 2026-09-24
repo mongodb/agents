@@ -20,7 +20,10 @@ import {
   createConversationSurface,
   type DeliveryBoundary,
 } from "./surface.js";
-import { shouldIgnoreUnstructuredSlackMention } from "./slackMentions.js";
+import {
+  shouldIgnoreSlackMessageAddressedToSomeoneElse,
+  shouldIgnoreUnstructuredSlackMention,
+} from "./slackMentions.js";
 import type {
   AgentGateway,
   HandlerLogger,
@@ -78,6 +81,21 @@ export function registerChatHandlers(
   });
 
   chat.onSubscribedMessage(async (thread, message) => {
+    if (
+      shouldIgnoreSlackMessageAddressedToSomeoneElse(
+        thread.adapter,
+        message,
+      )
+    ) {
+      options.logger?.warn?.(
+        "Ignored Slack thread message addressed to another person",
+        {
+          messageId: message.id,
+          threadId: thread.id,
+        },
+      );
+      return;
+    }
     await dispatchMessage(thread, message, options);
   });
 
