@@ -15,7 +15,8 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json --noEmit",
     "start": "node --enable-source-maps dist/agent_atlas_explorer/main.js",
-    "dev": "tsx watch src/agent_atlas_explorer/main.ts"
+    "dev": "tsx watch src/agent_atlas_explorer/main.ts",
+    "postinstall": "node scripts/build-agent-engine-sdks.mjs"
   },
   "dependencies": {
     "@langchain/anthropic": "^1.4.0",
