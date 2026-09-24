@@ -17,5 +17,8 @@ allowBuilds:
   "@mongodb-js/agent-engine-runner-shared@git+https://git@github.com:10gen/magenta-client-libraries.git#32656f78169d9ffebcde33b2762a35c64f28fdaa&path:packages/javascript/packages/agent-engine-runner-shared": true
   "@mongodb-js/agent-engine-sdk-langgraph@git+https://git@github.com:10gen/magenta-client-libraries.git#32656f78169d9ffebcde33b2762a35c64f28fdaa&path:packages/javascript/packages/agent-engine-sdk-langgraph": true
   esbuild: true
+  # Transitive OpenTelemetry dependency. Its postinstall only warns about
+  # versionScheme and is not required to load the package.
+  protobufjs: false
 
 blockExoticSubdeps: false
