@@ -153,10 +153,15 @@ the agent, and then revoke the previous secret. After migrating, remove unused
 
 ```bash
 pnpm test
+pnpm test:integration
 pnpm typecheck
 pnpm build
 agentengine dev up
 ```
+
+`pnpm test` is what CI runs. `pnpm test:integration` is local-only: it calls
+OpenAI and Anthropic to confirm `OPENAI_API_KEY` and `ANTHROPIC_API_KEY` in
+`.env` both return a completion. It is not part of CI.
 
 Open the playground at http://localhost:3000. Stop the stack with
 `agentengine dev stop`.

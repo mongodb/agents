@@ -13,6 +13,7 @@
     "build": "tsc",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json --noEmit",
     "start": "node --enable-source-maps dist/agent_atlas_explorer/main.js",
     "dev": "tsx watch src/agent_atlas_explorer/main.ts",
