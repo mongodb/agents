@@ -5,6 +5,7 @@ import { resolveOpenAIResponsesApi } from "./llm.js";
 describe("resolveOpenAIResponsesApi", () => {
   it("enables the Responses API for OpenAI reasoning models by default", () => {
     expect(resolveOpenAIResponsesApi("gpt-5.4-mini", {})).toBe(true);
+    expect(resolveOpenAIResponsesApi("gpt-6-luna", {})).toBe(true);
     expect(resolveOpenAIResponsesApi("o4-mini", {})).toBe(true);
     expect(resolveOpenAIResponsesApi("gpt-4o", {})).toBeUndefined();
   });

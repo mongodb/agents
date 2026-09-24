@@ -21,6 +21,7 @@ agent-engine-templates/agents/atlas-explorer/
 ├── skills/                            # vendored MongoDB Agent Skills
 └── src/agent_atlas_explorer/
     ├── main.ts                        # Magenta deep agent
+    ├── config.ts                      # non-secret LLM provider and model
     ├── agentBackend.ts                # audited filesystem without model shell access
     ├── agentPolicy.ts                 # tool filtering and destructive-tool policy
     ├── modelResponse.ts               # removes repeated OpenAI tool metadata
@@ -125,8 +126,8 @@ to prevent ordinary write-tool use:
 2. Set `ALLOW_WRITE_OPERATIONS` to a non-empty value other than `"false"`
    locally or with `agentengine secret set ALLOW_WRITE_OPERATIONS`.
 
-The application selects OpenAI `gpt-5.6-luna` in `main.ts`. To use another
-provider, model, or custom-compatible endpoint, update that code together with
+The application selects OpenAI `gpt-6-luna` in `config.ts`. To use another
+provider, model, or custom-compatible endpoint, update that file together with
 the provider-key entries under `required_secrets` and the Tool Pod destination
 under `network.egress`. The checked-in manifest permits the default OpenAI
 endpoint plus the Atlas OAuth and Managed MCP hosts needed by AER discovery and

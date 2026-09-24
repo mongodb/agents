@@ -35,7 +35,8 @@ export function resolveOpenAIResponsesApi(
 
   const isReasoningModel =
     /^o\d/.test(model) ||
-    (model.startsWith("gpt-5") && !model.startsWith("gpt-5-chat"));
+    (model.startsWith("gpt-5") && !model.startsWith("gpt-5-chat")) ||
+    (model.startsWith("gpt-6") && !model.startsWith("gpt-6-chat"));
   return isReasoningModel ? true : undefined;
 }
 

@@ -7,6 +7,7 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { stampClientUser } from "./clientUser.js";
+import { atlasExplorerConfig } from "./config.js";
 import {
   READ_ONLY_SYSTEM_PROMPT,
   WRITE_ENABLED_SYSTEM_PROMPT,
@@ -155,8 +156,8 @@ describe("Atlas Explorer graph assembly", () => {
     harness.builder!();
 
     expect(harness.buildLLM).toHaveBeenCalledWith({
-      provider: "openai",
-      model: "gpt-5.6-luna",
+      provider: atlasExplorerConfig.llm.provider,
+      model: atlasExplorerConfig.llm.model,
     });
     expect(harness.deepAgent).toHaveBeenCalledWith(
       harness.model,

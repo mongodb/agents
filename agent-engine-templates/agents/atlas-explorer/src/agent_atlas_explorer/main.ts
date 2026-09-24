@@ -10,6 +10,7 @@ import {
   selectAtlasTools,
   writeOperationsAllowed,
 } from "./agentPolicy.js";
+import { atlasExplorerConfig } from "./config.js";
 import { buildLLM } from "./llm.js";
 import { stripToolEchoMiddleware } from "./modelResponse.js";
 import { buildSystemPrompt } from "./systemMessage.js";
@@ -57,8 +58,8 @@ export const buildAgent = app.entrypoint(() => {
 
   return app.deepAgent(
     buildLLM({
-      provider: "openai",
-      model: "gpt-5.6-luna",
+      provider: atlasExplorerConfig.llm.provider,
+      model: atlasExplorerConfig.llm.model,
     }),
     {
       tools: availableAtlasTools as never,

@@ -2,6 +2,7 @@ import "dotenv/config";
 
 import { describe, expect, it } from "vitest";
 
+import { atlasExplorerConfig } from "./config.js";
 import { buildLLM } from "./llm.js";
 
 const PROMPT = "Reply with the single word pong.";
@@ -54,9 +55,13 @@ async function pingProvider(
 
 describe.skipIf(Boolean(process.env.CI))("LLM API keys", () => {
   it(
-    "OpenAI gpt-5.6-luna accepts OPENAI_API_KEY",
+    `OpenAI ${atlasExplorerConfig.llm.model} accepts OPENAI_API_KEY`,
     async () => {
-      await pingProvider("openai", "gpt-5.6-luna", "OPENAI_API_KEY");
+      await pingProvider(
+        atlasExplorerConfig.llm.provider,
+        atlasExplorerConfig.llm.model,
+        "OPENAI_API_KEY",
+      );
     },
     TIMEOUT_MS,
   );
