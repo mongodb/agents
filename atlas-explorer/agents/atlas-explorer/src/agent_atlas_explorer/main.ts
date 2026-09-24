@@ -11,6 +11,7 @@ import {
   writeOperationsAllowed,
 } from "./agentPolicy.js";
 import { buildLLM } from "./llm.js";
+import { installAtlasMcpClientInfo } from "./mcpClientInfo.js";
 import { stripToolEchoMiddleware } from "./modelResponse.js";
 import { buildSystemPrompt } from "./systemMessage.js";
 import { recoverToolErrorsMiddleware } from "./toolErrors.js";
@@ -25,6 +26,8 @@ function log(level: "INFO" | "WARN" | "ERROR", msg: string): void {
 }
 
 process.env.AGENTIC_AGENT_WORKDIR ||= process.cwd();
+
+installAtlasMcpClientInfo();
 
 export const app = new App({ appName: "atlas-explorer" });
 app.prepareAgentInput(prepareAtlasExplorerInput);
