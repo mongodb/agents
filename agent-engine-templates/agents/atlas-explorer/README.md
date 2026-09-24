@@ -21,7 +21,7 @@ agent-engine-templates/agents/atlas-explorer/
 ├── skills/                            # vendored MongoDB Agent Skills
 └── src/agent_atlas_explorer/
     ├── main.ts                        # Magenta deep agent
-    ├── config.ts                      # non-secret LLM provider and model
+    ├── config.ts                      # non-secret LLM, agent name, and custom instructions
     ├── agentBackend.ts                # audited filesystem without model shell access
     ├── agentPolicy.ts                 # tool filtering and destructive-tool policy
     ├── modelResponse.ts               # removes repeated OpenAI tool metadata
@@ -132,6 +132,12 @@ the provider-key entries under `required_secrets` and the Tool Pod destination
 under `network.egress`. The checked-in manifest permits the default OpenAI
 endpoint plus the Atlas OAuth and Managed MCP hosts needed by AER discovery and
 Tool Pod calls.
+
+`config.ts` also owns the system-prompt persona. Set
+`systemPrompt.name` to change how the agent introduces itself; leave it empty
+to keep **Atlas Explorer**. Set `systemPrompt.customInstructions` to append
+operator-specific guidance after the built-in operating rules. Leave that
+field empty to skip extra prompt text. Built-in safety rules still apply.
 
 ## MCP credential lifecycle
 

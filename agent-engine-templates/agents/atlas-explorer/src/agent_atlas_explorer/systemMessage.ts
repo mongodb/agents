@@ -1,3 +1,5 @@
+const DEFAULT_AGENT_NAME = "Atlas Explorer";
+
 const SHARED_CAPABILITIES = `- Design and review MongoDB schemas.
 - Optimize queries and indexes.
 - Use the MongoDB skills for detailed workflow guidance and current best practices.`;
@@ -10,7 +12,18 @@ const SHARED_RULES = `- Use the server-prefixed MongoDB MCP tools exposed by the
 const AGGREGATE_WRITE_STAGE_RULE =
   "Treat mongodb__aggregate, mongodb__aggregate_db, and aggregation-backed mongodb__export as read-only. Never use $out or $merge because those write stages cannot be approved independently by the tool-level policy.";
 
-export const READ_ONLY_SYSTEM_PROMPT = `You are Atlas Explorer, an AI agent specialized in MongoDB and MongoDB Atlas operations.
+export type SystemPromptOptions = {
+  name?: string;
+  customInstructions?: string;
+};
+
+function resolveAgentName(name?: string): string {
+  const trimmed = name?.trim();
+  return trimmed ? trimmed : DEFAULT_AGENT_NAME;
+}
+
+function readOnlyPrompt(name: string): string {
+  return `You are ${name}, an AI agent specialized in MongoDB and MongoDB Atlas operations.
 You can inspect and query databases, clusters, and Atlas infrastructure on behalf of the user.
 You cannot execute write operations. If the user asks to mutate data or infrastructure, explain the limitation and provide the exact commands, configuration, or Atlas UI steps they can apply themselves.
 
@@ -27,8 +40,10 @@ ${SHARED_CAPABILITIES}
 - ${AGGREGATE_WRITE_STAGE_RULE}
 ${SHARED_RULES}
 `;
+}
 
-export const WRITE_ENABLED_SYSTEM_PROMPT = `You are Atlas Explorer, an AI agent specialized in MongoDB and MongoDB Atlas operations.
+function writeEnabledPrompt(name: string): string {
+  return `You are ${name}, an AI agent specialized in MongoDB and MongoDB Atlas operations.
 You can manage databases, clusters, and Atlas infrastructure on behalf of the user.
 Only perform actions the user explicitly requests. Protected mutations must go through runtime approval.
 
@@ -47,7 +62,27 @@ ${SHARED_CAPABILITIES}
 - ${AGGREGATE_WRITE_STAGE_RULE}
 ${SHARED_RULES}
 `;
+}
 
-export function buildSystemPrompt(writeEnabled: boolean): string {
-  return writeEnabled ? WRITE_ENABLED_SYSTEM_PROMPT : READ_ONLY_SYSTEM_PROMPT;
+function appendCustomInstructions(
+  prompt: string,
+  customInstructions?: string,
+): string {
+  const trimmed = customInstructions?.trim();
+  if (!trimmed) {
+    return prompt;
+  }
+  return `${prompt}\n## Custom instructions\n\n${trimmed}\n`;
+}
+
+export const READ_ONLY_SYSTEM_PROMPT = readOnlyPrompt(DEFAULT_AGENT_NAME);
+export const WRITE_ENABLED_SYSTEM_PROMPT = writeEnabledPrompt(DEFAULT_AGENT_NAME);
+
+export function buildSystemPrompt(
+  writeEnabled: boolean,
+  options: SystemPromptOptions = {},
+): string {
+  const name = resolveAgentName(options.name);
+  const base = writeEnabled ? writeEnabledPrompt(name) : readOnlyPrompt(name);
+  return appendCustomInstructions(base, options.customInstructions);
 }

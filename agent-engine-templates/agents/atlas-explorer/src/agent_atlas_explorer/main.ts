@@ -63,7 +63,10 @@ export const buildAgent = app.entrypoint(() => {
     }),
     {
       tools: availableAtlasTools as never,
-      systemPrompt: buildSystemPrompt(allowWriteOperations),
+      systemPrompt: buildSystemPrompt(
+        allowWriteOperations,
+        atlasExplorerConfig.systemPrompt,
+      ),
       skills: ["skills"],
       backend: withoutShellExecution(new AgentEngineToolSandboxBackend()) as never,
       checkpointer: (saver ?? false) as never,
