@@ -51,10 +51,10 @@ Shows error-level events from the most recent deployment timeline.
 
 ```bash
 # Agent execution runtime (your code)
-agentengine workspace logs --source aer --level error --since 30m
+agentengine logs --source agent --level error --since 30m
 
 # Tool executor
-agentengine workspace logs --source tool-pod --level error --since 30m
+agentengine logs --source tool --level error --since 30m
 ```
 
 OE and memory-server logs are platform operator logs. Use the admin UI or
@@ -107,7 +107,7 @@ Deploy succeeded but workspace doesn't respond?
 │  → Fix: agentengine deploy (forces routing reconciliation)
 │
 └─ Agent crashes after startup?
-   → agentengine workspace logs --source aer --level error --since 1h
+   → agentengine logs --source agent --level error --since 1h
    → Look for stack traces or connection errors
 ```
 
@@ -398,7 +398,7 @@ Contact support if you see any of these — they indicate platform-side issues y
 ```bash
 agentengine status --verbose --json > status.json
 agentengine deploy logs --json > deploy-events.json
-agentengine workspace logs --all --since 2h --json > runtime-logs.json
+agentengine logs --all --since 2h --json > runtime-logs.json
 agentengine deploy list --limit 5 --json > deploy-history.json
 ```
 
@@ -419,12 +419,12 @@ Include your **workspace ID**, **project ID**, **deployment ID**, and these JSON
 | `agentengine deploy get` | Full deployment detail with components |
 | `agentengine deploy get -f` | Follow deployment until it completes |
 | `agentengine deploy list --status failed` | Recent failed deployments |
-| `agentengine workspace logs` | Runtime logs (default: last hour) |
-| `agentengine workspace logs --source <svc>` | Filter by service: `aer`, `tool-pod` |
-| `agentengine workspace logs --level error` | Error-level only |
-| `agentengine workspace logs --grep "<text>"` | Search messages (case-insensitive) |
-| `agentengine workspace logs --since 30m` | Logs from the last 30 minutes |
-| `agentengine workspace logs -f` | Tail logs in real-time |
-| `agentengine workspace logs --all --since 6h` | All logs in time range (auto-paginates) |
+| `agentengine logs` | Runtime logs (default: last hour) |
+| `agentengine logs --source <sandbox>` | Filter by sandbox: `agent`, `tool` |
+| `agentengine logs --level error` | Error-level only |
+| `agentengine logs --grep "<text>"` | Search messages (case-insensitive) |
+| `agentengine logs --since 30m` | Logs from the last 30 minutes |
+| `agentengine logs -f` | Tail logs in real-time |
+| `agentengine logs --all --since 6h` | All logs in time range (auto-paginates) |
 | `agentengine build list` | List builds |
 | `agentengine build logs <build-id>` | Stream build output |
