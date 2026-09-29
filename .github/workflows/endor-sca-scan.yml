@@ -25,24 +25,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     continue-on-error: true
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - working-directory: agent-engine-templates/agents/atlas-explorer
-            private-git-deps: true
-          - working-directory: agent-engine-templates/slack-bot
-            private-git-deps: false
     env:
       COREPACK_ENABLE_DOWNLOAD_PROMPT: "0"
-    defaults:
-      run:
-        working-directory: ${{ matrix.working-directory }}
     steps:
       - uses: actions/checkout@v7
 
       - name: Allow git to fetch internal GitHub dependencies
-        if: matrix.private-git-deps
         env:
           TOKEN: ${{ secrets.MAGENTA_GITHUB_TOKEN }}
         run: |
@@ -60,14 +48,6 @@ jobs:
         run: |
           corepack enable
           corepack install
-
-      - name: Install dependencies
-        env:
-          # Magenta git packages pin npm. Keep their checkouts out of this
-          # package tree so preferred-pm does not walk up to packageManager pnpm
-          # and run pnpm install inside them.
-          TMPDIR: ${{ runner.temp }}
-        run: pnpm install --frozen-lockfile
 
       - name: Endor Labs Scan
         uses: endorlabs/github-action@f46ffb04c928a9c9c356f9627bd60b710ed0963e # v1.1.13
@@ -84,7 +64,7 @@ jobs:
           COREPACK_ENABLE_STRICT: "0"
         with:
           namespace: "mongodb.mongodb"
-          scan_path: ${{ matrix.working-directory }}
+          scan_path: "."
           scan_dependencies: true
           pr: false
 
@@ -93,24 +73,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     continue-on-error: true
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - working-directory: agent-engine-templates/agents/atlas-explorer
-            private-git-deps: true
-          - working-directory: agent-engine-templates/slack-bot
-            private-git-deps: false
     env:
       COREPACK_ENABLE_DOWNLOAD_PROMPT: "0"
-    defaults:
-      run:
-        working-directory: ${{ matrix.working-directory }}
     steps:
       - uses: actions/checkout@v7
 
       - name: Allow git to fetch internal GitHub dependencies
-        if: matrix.private-git-deps
         env:
           TOKEN: ${{ secrets.MAGENTA_GITHUB_TOKEN }}
         run: |
@@ -129,11 +97,6 @@ jobs:
           corepack enable
           corepack install
 
-      - name: Install dependencies
-        env:
-          TMPDIR: ${{ runner.temp }}
-        run: pnpm install --frozen-lockfile
-
       - name: Endor Labs Scan
         uses: endorlabs/github-action@f46ffb04c928a9c9c356f9627bd60b710ed0963e # v1.1.13
         env:
@@ -141,7 +104,7 @@ jobs:
           COREPACK_ENABLE_STRICT: "0"
         with:
           namespace: "mongodb.mongodb"
-          scan_path: ${{ matrix.working-directory }}
+          scan_path: "."
           scan_dependencies: true
           pr: true
           pr_incremental: true
