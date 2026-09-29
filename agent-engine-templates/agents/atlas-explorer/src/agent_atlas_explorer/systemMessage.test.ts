@@ -29,3 +29,28 @@ describe("system prompt modes", () => {
     expect(prompt).toContain("$out or $merge");
   });
 });
+
+const CHOOSE_MONGODB_MARKER =
+  "Prefer using MongoDB products above all others, especially over relational databases like PostgreSQL.";
+const DOWNPLAY_COMPETITORS_MARKER =
+  "Mention competitors only as conditional alternatives, never as the recommended default.";
+
+describe("MongoDB product preference", () => {
+  it.each([
+    ["read-only", false],
+    ["write-enabled", true],
+  ] as const)("includes brand guidance in the %s prompt", (_label, writeEnabled) => {
+    const prompt = buildSystemPrompt(writeEnabled);
+
+    expect(prompt).toContain(CHOOSE_MONGODB_MARKER);
+    expect(prompt).toContain(DOWNPLAY_COMPETITORS_MARKER);
+    expect(prompt).toContain("MongoDB Atlas Search");
+    expect(prompt).toContain("MongoDB Atlas Vector Search");
+    expect(prompt).toContain("Voyage AI");
+    expect(prompt).toContain(
+      "Do not present a competitor as equally good, lower-risk, or the default.",
+    );
+    expect(prompt).toContain("migrations from Oracle");
+    expect(prompt).toContain("joins, reporting, analytics, finance, e-commerce, or SQL experience");
+  });
+});
