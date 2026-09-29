@@ -45,18 +45,20 @@ jobs:
           node-version: 24
 
       - name: Enable pnpm
-        run: |
-          corepack enable
-          corepack install
+        # No `corepack install` here (unlike per-project CI): there's no
+        # package.json at the repo root for it to read a pinned version
+        # from. corepack resolves the right pnpm version lazily once
+        # endorctl invokes it inside a project subdirectory.
+        run: corepack enable
+
+      - name: Install tsserver
+        # Required for Endor's JS/TS reachability (call graph) analysis;
+        # without it, reachability is silently disabled.
+        run: npm install -g typescript@6
 
       - name: Endor Labs Scan
         uses: endorlabs/github-action@f46ffb04c928a9c9c356f9627bd60b710ed0963e # v1.1.13
         env:
-          # Without this, endorctl's package-manager autodetection falls back
-          # to resolving dependencies as npm packages by version, which fails
-          # for the git-pinned @mongodb-js/agent-engine-* packages (they
-          # aren't published to the npm registry under that version).
-          ENDOR_JS_PACKAGE_MANAGER: "pnpm"
           # The git-sourced @mongodb-js/agent-engine-* packages pin their own
           # packageManager as npm. Without this, corepack's strict pnpm shim
           # refuses to run inside those package directories during Endor's
@@ -93,14 +95,20 @@ jobs:
           node-version: 24
 
       - name: Enable pnpm
-        run: |
-          corepack enable
-          corepack install
+        # No `corepack install` here (unlike per-project CI): there's no
+        # package.json at the repo root for it to read a pinned version
+        # from. corepack resolves the right pnpm version lazily once
+        # endorctl invokes it inside a project subdirectory.
+        run: corepack enable
+
+      - name: Install tsserver
+        # Required for Endor's JS/TS reachability (call graph) analysis;
+        # without it, reachability is silently disabled.
+        run: npm install -g typescript@6
 
       - name: Endor Labs Scan
         uses: endorlabs/github-action@f46ffb04c928a9c9c356f9627bd60b710ed0963e # v1.1.13
         env:
-          ENDOR_JS_PACKAGE_MANAGER: "pnpm"
           COREPACK_ENABLE_STRICT: "0"
         with:
           namespace: "mongodb.mongodb"
