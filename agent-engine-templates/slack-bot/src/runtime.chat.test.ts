@@ -18,6 +18,8 @@ import type { SlackBotConfig } from "./loadConfig.js";
 import { createRuntime } from "./runtime.js";
 import { MemoryThreadStore } from "./store/memoryThreadStore.js";
 
+const BOT_NAME = "TestBot";
+
 describe("Chat SDK runtime", () => {
   it("composes one Chat instance with shared handlers and injected adapters", async () => {
     const adapter = createMockAdapter("slack", {
@@ -84,7 +86,7 @@ describe("Chat SDK runtime", () => {
     expect(agent.invokeInputs).toEqual([]);
     expect(adapter.postMessage).toHaveBeenCalledWith(
       "slack:D123:1720000000.000100",
-      expect.stringMatching(/not authorized/i),
+      `You are not authorized to use this ${BOT_NAME} bot.`,
     );
     await runtime.bot.shutdown();
   });
@@ -157,7 +159,7 @@ describe("Chat SDK runtime", () => {
     );
 
     expect(logger.error).toHaveBeenCalledWith(
-      "AtlasExplorer invocation failed",
+      `${BOT_NAME} invocation failed`,
       failure,
     );
     await runtime.bot.shutdown();
@@ -172,7 +174,7 @@ function config(): SlackBotConfig {
     },
     slack: {
       appToken: "xapp-test",
-      botDisplayName: "AtlasExplorer",
+      botDisplayName: BOT_NAME,
       botToken: "xoxb-test",
     },
     agentic: {

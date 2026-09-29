@@ -20,6 +20,7 @@ import {
 } from "./handlers.test-helpers.js";
 import { registerChatHandlers } from "./handlers.js";
 
+const BOT_NAME = "TestBot";
 const CHANNEL_THREAD_ID = "slack:C123:1720000000.000100";
 const DM_THREAD_ID = "slack:D123:1720000000.000100";
 
@@ -41,7 +42,7 @@ describe("registerChatHandlers", () => {
       concurrency: "concurrent",
       logger: "silent",
       state,
-      userName: "AtlasExplorer",
+      userName: BOT_NAME,
     });
     agent = new FakeAgentGateway();
     agent.invokeResult = completed;
@@ -49,7 +50,7 @@ describe("registerChatHandlers", () => {
     store = new MemoryThreadStore();
     registerChatHandlers(bot, {
       agent,
-      botName: "AtlasExplorer",
+      botName: BOT_NAME,
       reviewInterruptIdForAdapter: (
         _adapter,
         value,
@@ -129,12 +130,12 @@ describe("registerChatHandlers", () => {
       concurrency: "concurrent",
       logger: "silent",
       state,
-      userName: "AtlasExplorer",
+      userName: BOT_NAME,
     });
     registerChatHandlers(restrictedBot, {
       agent,
       authorizedActorIds: new Set(["slack:U999"]),
-      botName: "AtlasExplorer",
+      botName: BOT_NAME,
       store,
     });
     await restrictedBot.initialize();
@@ -239,12 +240,12 @@ describe("registerChatHandlers", () => {
       concurrency: "concurrent",
       logger: "silent",
       state,
-      userName: "AtlasExplorer",
+      userName: BOT_NAME,
     });
     registerChatHandlers(restrictedBot, {
       agent,
       authorizedActorIds: new Set(["slack:U999"]),
-      botName: "AtlasExplorer",
+      botName: BOT_NAME,
       store,
     });
     await restrictedBot.initialize();
@@ -320,12 +321,12 @@ describe("registerChatHandlers", () => {
         concurrency: "concurrent",
         logger: "silent",
         state,
-        userName: "AtlasExplorer",
+        userName: BOT_NAME,
       });
       registerChatHandlers(restrictedBot, {
         agent,
         authorizedActorIds: new Set(["slack:U123"]),
-        botName: "AtlasExplorer",
+        botName: BOT_NAME,
         store,
       });
       await restrictedBot.initialize();
@@ -414,12 +415,12 @@ describe("registerChatHandlers", () => {
       concurrency: "concurrent",
       logger: "silent",
       state,
-      userName: "AtlasExplorer",
+      userName: BOT_NAME,
     });
     registerChatHandlers(restrictedBot, {
       agent,
       authorizedActorIds: new Set(["slack:U123"]),
-      botName: "AtlasExplorer",
+      botName: BOT_NAME,
       reviewInterruptIdForAdapter: () => null,
       store,
     });
@@ -534,12 +535,12 @@ describe("registerChatHandlers", () => {
       concurrency: "concurrent",
       logger: "silent",
       state,
-      userName: "AtlasExplorer",
+      userName: BOT_NAME,
     });
     registerChatHandlers(restrictedBot, {
       agent,
       authorizedActorIds,
-      botName: "AtlasExplorer",
+      botName: BOT_NAME,
       store,
     });
     await restrictedBot.initialize();
