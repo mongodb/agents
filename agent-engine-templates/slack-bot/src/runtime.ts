@@ -10,7 +10,7 @@ import type {
 import {
   loadConfig,
   type SlackBotConfig,
-} from "./config.js";
+} from "./loadConfig.js";
 import { MagentaClient } from "./magenta/client.js";
 import {
   createSlackDeliveryBoundary,
@@ -116,6 +116,7 @@ export async function createRuntime(
     authorizedActorIds: normalizeAllowedActors(
       config.chat.allowedActorIds,
     ),
+    botName: config.slack.botDisplayName,
     logger: options.logger ?? console,
     deliveryForAdapter: (adapter) =>
       adapter.name === slackAdapter.name ? delivery : undefined,

@@ -36,9 +36,11 @@ describe("buildReviewCard", () => {
         },
       ],
       "interrupt-1",
+      "AtlasExplorer",
     ) as PostableCard;
 
     expect(message.fallbackText).toMatch(/requires approval/i);
+    expect(message.fallbackText).toContain("AtlasExplorer");
     expect(message.card.title).toBe("Atlas operation requires approval");
     expect(message.card.subtitle).toBe("mongodb__insert_many");
     expect(textContents(message)).toEqual([
@@ -90,6 +92,7 @@ describe("buildReviewCard", () => {
         },
       ],
       "interrupt-2",
+      "AtlasExplorer",
     ) as PostableCard;
 
     expect(message.card.subtitle).toBe("2 operations");
@@ -126,6 +129,7 @@ describe("buildReviewCard", () => {
         args: { index },
       })),
       "interrupt-overflow",
+      "AtlasExplorer",
     ) as PostableCard;
 
     expect(message.card.subtitle).toBe("45 operations");

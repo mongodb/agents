@@ -39,7 +39,7 @@ describe("handleConversationMessage", () => {
         actorId: ACTOR_ID,
         text: "List projects",
       },
-      { agent, conversation, store },
+      { agent, conversation, store, botName: "AtlasExplorer" },
     );
 
     agent.invokeResult = {
@@ -53,7 +53,7 @@ describe("handleConversationMessage", () => {
         actorId: ACTOR_ID,
         text: "What about the first?",
       },
-      { agent, conversation, store },
+      { agent, conversation, store, botName: "AtlasExplorer" },
     );
 
     expect(agent.invokeInputs).toEqual([
@@ -88,6 +88,7 @@ describe("handleConversationMessage", () => {
         conversation,
         logger,
         store,
+        botName: "AtlasExplorer",
         authorizedActorIds: new Set(["discord:U123"]),
       },
     );
@@ -113,6 +114,7 @@ describe("handleConversationMessage", () => {
         agent,
         conversation,
         store,
+        botName: "AtlasExplorer",
         authorizedActorIds: new Set([ACTOR_ID, "slack:U999"]),
       },
     );
@@ -143,7 +145,7 @@ describe("handleConversationMessage", () => {
         client: "slack",
         user,
       },
-      { agent, conversation, store },
+      { agent, conversation, store, botName: "AtlasExplorer" },
     );
 
     expect(agent.invokeInputs).toEqual([
@@ -173,6 +175,7 @@ describe("handleConversationMessage", () => {
         conversation,
         logger,
         store,
+        botName: "AtlasExplorer",
         authorizedActorIds: new Set(["slack:U123"]),
       },
     );
@@ -202,6 +205,7 @@ describe("handleConversationMessage", () => {
         agent,
         conversation,
         store,
+        botName: "AtlasExplorer",
         authorizedActorIds: new Set(["slack:B123"]),
       },
     );
@@ -228,6 +232,7 @@ describe("handleConversationMessage", () => {
         agent,
         conversation,
         store,
+        botName: "AtlasExplorer",
         authorizedActorIds: new Set([ACTOR_ID]),
       },
     );
@@ -249,7 +254,7 @@ describe("handleConversationMessage", () => {
         actorId: ACTOR_ID,
         text: "Insert an item",
       },
-      { agent, conversation, store },
+      { agent, conversation, store, botName: "AtlasExplorer" },
     );
 
     expect(await store.get(THREAD_ID)).toMatchObject({
@@ -277,7 +282,7 @@ describe("handleConversationMessage", () => {
         actorId: ACTOR_ID,
         text: "List projects",
       },
-      { agent, conversation, store },
+      { agent, conversation, store, botName: "AtlasExplorer" },
     );
     await vi.waitFor(() => expect(agent.invokeInputs).toHaveLength(1));
 
@@ -288,7 +293,7 @@ describe("handleConversationMessage", () => {
         actorId: ACTOR_ID,
         text: "Another request",
       },
-      { agent, conversation, store },
+      { agent, conversation, store, botName: "AtlasExplorer" },
     );
 
     expect(agent.invokeInputs).toHaveLength(1);
@@ -317,6 +322,7 @@ describe("handleConversationMessage", () => {
       agent,
       conversation,
       store,
+      botName: "AtlasExplorer",
       now: () => now,
     });
     conversation.deliveryError = undefined;
@@ -332,7 +338,7 @@ describe("handleConversationMessage", () => {
         eventId: "event-2",
         text: "Are you there?",
       },
-      { agent, conversation, store, now: () => now },
+      { agent, conversation, store, botName: "AtlasExplorer", now: () => now },
     );
 
     expect(conversation.agentResponses).toEqual([
@@ -364,6 +370,7 @@ describe("handleConversationMessage", () => {
       agent,
       conversation,
       store,
+      botName: "AtlasExplorer",
       now: () => now,
     });
     conversation.deliveryError = undefined;
@@ -373,6 +380,7 @@ describe("handleConversationMessage", () => {
       agent,
       conversation,
       store,
+      botName: "AtlasExplorer",
       now: () => now,
     });
 
@@ -401,6 +409,7 @@ describe("handleConversationMessage", () => {
         agent,
         conversation,
         store,
+        botName: "AtlasExplorer",
       }),
     ).resolves.toBe("uncertain");
 
@@ -426,7 +435,7 @@ describe("handleConversationMessage", () => {
           actorId: ACTOR_ID,
           text: "List projects",
         },
-        { agent, conversation, store },
+        { agent, conversation, store, botName: "AtlasExplorer" },
       );
 
       expect(conversation.statuses).toEqual([
@@ -451,7 +460,7 @@ describe("handleConversationMessage", () => {
         actorId: ACTOR_ID,
         text: "List projects",
       },
-      { agent, conversation, store },
+      { agent, conversation, store, botName: "AtlasExplorer" },
     );
 
     expect(conversation.statuses).toEqual([
@@ -476,7 +485,7 @@ describe("handleConversationMessage", () => {
         actorId: ACTOR_ID,
         text: "List the workspace files",
       },
-      { agent, conversation, store },
+      { agent, conversation, store, botName: "AtlasExplorer" },
     );
 
     expect(conversation.statuses).toEqual([

@@ -61,11 +61,13 @@ describe("handleReviewDecision", () => {
         agent,
         conversation,
         store,
+        botName: "AtlasExplorer",
       }),
       handleReviewDecision(decision, {
         agent,
         conversation,
         store,
+        botName: "AtlasExplorer",
       }),
     ]);
 
@@ -106,7 +108,7 @@ describe("handleReviewDecision", () => {
         client: "slack",
         user,
       },
-      { agent, conversation, store },
+      { agent, conversation, store, botName: "AtlasExplorer" },
     );
 
     expect(outcome).toBe("completed");
@@ -129,7 +131,7 @@ describe("handleReviewDecision", () => {
           actorId: "slack:U999",
           decision,
         },
-        { agent, conversation, store },
+        { agent, conversation, store, botName: "AtlasExplorer" },
       );
 
       expect(outcome).toBe("unauthorized");
@@ -156,6 +158,7 @@ describe("handleReviewDecision", () => {
           conversation,
           logger,
           store,
+          botName: "AtlasExplorer",
           authorizedActorIds: new Set([ACTOR_ID]),
         },
       );
@@ -187,6 +190,7 @@ describe("handleReviewDecision", () => {
         agent,
         conversation,
         store,
+        botName: "AtlasExplorer",
         authorizedActorIds: new Set([ACTOR_ID, "slack:U999"]),
       },
     );
@@ -210,6 +214,7 @@ describe("handleReviewDecision", () => {
         agent,
         conversation,
         store,
+        botName: "AtlasExplorer",
         authorizedActorIds: new Set([ACTOR_ID, "discord:U123"]),
       },
     );
@@ -241,6 +246,7 @@ describe("handleReviewDecision", () => {
         agent,
         conversation,
         store,
+        botName: "AtlasExplorer",
         authorizedActorIds: new Set([ACTOR_ID]),
       },
     );
@@ -268,6 +274,7 @@ describe("handleReviewDecision", () => {
         agent,
         conversation,
         store,
+        botName: "AtlasExplorer",
         authorizedActorIds: new Set([ACTOR_ID]),
       },
     );
@@ -283,6 +290,7 @@ describe("handleReviewDecision", () => {
         agent,
         conversation,
         store,
+        botName: "AtlasExplorer",
         authorizedActorIds: new Set([ACTOR_ID]),
       },
     );
@@ -306,6 +314,7 @@ describe("handleReviewDecision", () => {
         agent,
         conversation,
         store,
+        botName: "AtlasExplorer",
         authorizedActorIds: new Set([ACTOR_ID]),
       },
     );
@@ -324,7 +333,7 @@ describe("handleReviewDecision", () => {
         actorId: ACTOR_ID,
         decision: "reject",
       },
-      { agent, conversation, store },
+      { agent, conversation, store, botName: "AtlasExplorer" },
     );
 
     expect(outcome).toBe("missing");
@@ -352,7 +361,7 @@ describe("handleReviewDecision", () => {
         actorId: ACTOR_ID,
         decision: "approve",
       },
-      { agent, conversation, store },
+      { agent, conversation, store, botName: "AtlasExplorer" },
     );
 
     expect(outcome).toBe("uncertain");
@@ -377,7 +386,7 @@ describe("handleReviewDecision", () => {
         actorId: ACTOR_ID,
         decision: "approve",
       },
-      { agent, conversation, store },
+      { agent, conversation, store, botName: "AtlasExplorer" },
     );
 
     expect(conversation.statuses).toEqual([
@@ -405,7 +414,7 @@ describe("handleReviewDecision", () => {
         actorId: ACTOR_ID,
         decision: "approve",
       },
-      { agent, conversation, store },
+      { agent, conversation, store, botName: "AtlasExplorer" },
     );
 
     expect(outcome).toBe("failed");
@@ -413,7 +422,7 @@ describe("handleReviewDecision", () => {
       pendingReviewState: "pending",
     });
     expect(conversation.messages).toContain(
-      "Atlas Explorer could not apply that decision. The review is still pending; please try again.",
+      "AtlasExplorer could not apply that decision. The review is still pending; please try again.",
     );
   });
 
@@ -435,7 +444,7 @@ describe("handleReviewDecision", () => {
         actorId: ACTOR_ID,
         decision: "reject",
       },
-      { agent, conversation, store },
+      { agent, conversation, store, botName: "AtlasExplorer" },
     );
 
     expect(outcome).toBe("failed");

@@ -20,6 +20,7 @@ const MAX_ARGUMENT_TEXT = 1_800;
 export function buildReviewCard(
   actions: AgentActionRequest[],
   interruptId: string,
+  botName: string,
 ): PostableCard {
   const displayedActions = actions.slice(0, MAX_DISPLAYED_ACTIONS);
   const canApproveAll = displayedActions.length === actions.length;
@@ -61,7 +62,7 @@ export function buildReviewCard(
       ],
     }),
     fallbackText:
-      `${actions.map((action) => action.name).join(", ")} requires approval before Atlas Explorer can continue.`.slice(
+      `${actions.map((action) => action.name).join(", ")} requires approval before ${botName} can continue.`.slice(
         0,
         38_000,
       ),

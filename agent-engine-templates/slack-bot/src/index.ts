@@ -1,6 +1,6 @@
 import "dotenv/config";
 
-import { loadConfig } from "./config.js";
+import { loadConfig } from "./loadConfig.js";
 import { createRuntime } from "./runtime.js";
 import { closeSharedMongoConnection } from "./store/mongoConnection.js";
 

@@ -49,6 +49,7 @@ describe("registerChatHandlers", () => {
     store = new MemoryThreadStore();
     registerChatHandlers(bot, {
       agent,
+      botName: "AtlasExplorer",
       reviewInterruptIdForAdapter: (
         _adapter,
         value,
@@ -133,6 +134,7 @@ describe("registerChatHandlers", () => {
     registerChatHandlers(restrictedBot, {
       agent,
       authorizedActorIds: new Set(["slack:U999"]),
+      botName: "AtlasExplorer",
       store,
     });
     await restrictedBot.initialize();
@@ -242,6 +244,7 @@ describe("registerChatHandlers", () => {
     registerChatHandlers(restrictedBot, {
       agent,
       authorizedActorIds: new Set(["slack:U999"]),
+      botName: "AtlasExplorer",
       store,
     });
     await restrictedBot.initialize();
@@ -322,6 +325,7 @@ describe("registerChatHandlers", () => {
       registerChatHandlers(restrictedBot, {
         agent,
         authorizedActorIds: new Set(["slack:U123"]),
+        botName: "AtlasExplorer",
         store,
       });
       await restrictedBot.initialize();
@@ -415,6 +419,7 @@ describe("registerChatHandlers", () => {
     registerChatHandlers(restrictedBot, {
       agent,
       authorizedActorIds: new Set(["slack:U123"]),
+      botName: "AtlasExplorer",
       reviewInterruptIdForAdapter: () => null,
       store,
     });
@@ -534,6 +539,7 @@ describe("registerChatHandlers", () => {
     registerChatHandlers(restrictedBot, {
       agent,
       authorizedActorIds,
+      botName: "AtlasExplorer",
       store,
     });
     await restrictedBot.initialize();

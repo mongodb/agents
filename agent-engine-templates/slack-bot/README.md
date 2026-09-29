@@ -78,6 +78,19 @@ Both manifests request message/history access for DMs, public channels, and
 private channels. Add the corresponding app to each channel where users will
 mention it.
 
+## Bot name
+
+[`src/config.ts`](./src/config.ts) owns the checked-in display name. Leave
+`slackBotConfig.name` empty to keep **AtlasExplorer**. Set it to rename the
+bot in source. `SLACK_BOT_DISPLAY_NAME` overrides that value per deployment
+without changing the file.
+
+Keep the Slack app `display_name` in sync with the resolved name:
+[`manifest.json`](./manifest.json) uses the hosted name, and
+[`manifest.local.json`](./manifest.local.json) typically uses that name plus
+` Local`. Channel mention routing keys off the Slack user ID, so a local
+display name can differ from the hosted one.
+
 ## Run locally with Socket Mode
 
 The Slack bot can run entirely on localhost; Vercel and an inbound tunnel are
@@ -221,6 +234,7 @@ export VERCEL_URL=https://atlas-explorer-three.vercel.app
    - `MONGODB_URI`
    - `AGENTIC_BASE_URL` (optional; defaults to the platform gateway)
    - `THREAD_STORE_DB` (optional; defaults to `atlas_explorer_slack`)
+   - `SLACK_BOT_DISPLAY_NAME` (optional; overrides `slackBotConfig.name`)
 
    Enter raw values only, without surrounding shell quotes or a
    `VARIABLE_NAME=` prefix. `CHAT_ALLOWED_USER_IDS` requires qualified values

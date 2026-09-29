@@ -44,6 +44,7 @@ export interface HandlerLogger {
 export interface ChatHandlerDependencies {
   agent: AgentGateway;
   authorizedActorIds?: ReadonlySet<string>;
+  botName: string;
   conversation: ConversationSurface;
   logger?: HandlerLogger;
   now?: () => Date;

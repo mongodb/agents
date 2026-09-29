@@ -36,7 +36,7 @@ export async function handleReviewDecision(
       { actorId: input.actorId },
     );
     await dependencies.conversation.post(
-      "You are not authorized to use this Atlas Explorer bot.",
+      `You are not authorized to use this ${dependencies.botName} bot.`,
     );
     return "unauthorized";
   }
@@ -131,7 +131,7 @@ export async function handleReviewDecision(
     );
   } catch (error) {
     dependencies.logger?.error(
-      "Atlas Explorer review resume failed",
+      `${dependencies.botName} review resume failed`,
       error,
     );
     const outcomeWasConfirmedNotApplied =
@@ -159,12 +159,12 @@ export async function handleReviewDecision(
         .updateReviewStatus?.("uncertain")
         .catch(() => undefined);
       await dependencies.conversation.post(
-        "The decision was sent, but Atlas Explorer could not confirm whether it completed. Check Atlas before retrying, then start a new conversation.",
+        `The decision was sent, but ${dependencies.botName} could not confirm whether it completed. Check Atlas before retrying, then start a new conversation.`,
       );
       return "uncertain";
     }
     await dependencies.conversation.post(
-      "Atlas Explorer could not apply that decision. The review is still pending; please try again.",
+      `${dependencies.botName} could not apply that decision. The review is still pending; please try again.`,
     );
     return "failed";
   }

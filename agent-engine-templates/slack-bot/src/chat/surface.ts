@@ -18,13 +18,14 @@ export interface DeliveryBoundary {
 }
 
 interface ConversationSurfaceOptions {
+  botName: string;
   delivery?: DeliveryBoundary;
   reviewMessageId?: string;
 }
 
 export function createConversationSurface(
   thread: Thread<unknown>,
-  options: ConversationSurfaceOptions = {},
+  options: ConversationSurfaceOptions,
 ): ConversationSurface {
   return {
     async post(message): Promise<void> {
@@ -57,7 +58,7 @@ export function createConversationSurface(
             await thread.adapter.editMessage(
               thread.id,
               options.reviewMessageId!,
-              reviewStatusText(status),
+              reviewStatusText(status, options.botName),
             );
           },
         }
@@ -67,12 +68,13 @@ export function createConversationSurface(
 
 function reviewStatusText(
   status: "approved" | "rejected" | "uncertain",
+  botName: string,
 ): string {
   return {
     approved:
-      "Approved by the requester. Atlas Explorer is continuing.",
+      `Approved by the requester. ${botName} is continuing.`,
     rejected:
-      "Rejected by the requester. Atlas Explorer will not run this operation.",
+      `Rejected by the requester. ${botName} will not run this operation.`,
     uncertain:
       "Decision submitted, but its outcome could not be confirmed. Check Atlas before retrying.",
   }[status];

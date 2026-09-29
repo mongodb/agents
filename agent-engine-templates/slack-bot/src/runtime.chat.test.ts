@@ -14,7 +14,7 @@ import {
   seedPendingReview,
   slackAdaClientUser,
 } from "./chat/handlers.test-helpers.js";
-import type { SlackBotConfig } from "./config.js";
+import type { SlackBotConfig } from "./loadConfig.js";
 import { createRuntime } from "./runtime.js";
 import { MemoryThreadStore } from "./store/memoryThreadStore.js";
 
@@ -157,7 +157,7 @@ describe("Chat SDK runtime", () => {
     );
 
     expect(logger.error).toHaveBeenCalledWith(
-      "Atlas Explorer invocation failed",
+      "AtlasExplorer invocation failed",
       failure,
     );
     await runtime.bot.shutdown();

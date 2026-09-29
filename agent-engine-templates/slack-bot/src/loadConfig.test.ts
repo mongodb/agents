@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { loadConfig } from "./config.js";
+import { loadConfig } from "./loadConfig.js";
 
 const sharedEnv = {
   SLACK_BOT_TOKEN: "xoxb-test",
@@ -45,6 +45,32 @@ describe("loadConfig", () => {
         databaseName: "atlas_explorer_slack",
       },
     });
+  });
+
+  it("uses a trimmed SLACK_BOT_DISPLAY_NAME as the bot display name", () => {
+    const config = loadConfig(
+      {
+        ...sharedEnv,
+        SLACK_APP_TOKEN: "xapp-test",
+        SLACK_BOT_DISPLAY_NAME: " Cluster Scout ",
+      },
+      "socket",
+    );
+
+    expect(config.slack.botDisplayName).toBe("Cluster Scout");
+  });
+
+  it("falls through to AtlasExplorer when SLACK_BOT_DISPLAY_NAME is blank", () => {
+    const config = loadConfig(
+      {
+        ...sharedEnv,
+        SLACK_APP_TOKEN: "xapp-test",
+        SLACK_BOT_DISPLAY_NAME: "   ",
+      },
+      "socket",
+    );
+
+    expect(config.slack.botDisplayName).toBe("AtlasExplorer");
   });
 
   it("requires persistent storage and request signing in HTTP mode", () => {

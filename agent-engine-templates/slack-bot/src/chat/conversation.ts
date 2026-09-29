@@ -52,7 +52,7 @@ export async function handleConversationMessage(
       return;
     }
     await dependencies.conversation.post(
-      "You are not authorized to use this Atlas Explorer bot.",
+      `You are not authorized to use this ${dependencies.botName} bot.`,
     );
     return;
   }
@@ -78,7 +78,7 @@ export async function handleConversationMessage(
   }
   if (claim.status === "busy") {
     await dependencies.conversation.post(
-      "Atlas Explorer is already working on another message in this thread. After it responds, send your message again.",
+      `${dependencies.botName} is already working on another message in this thread. After it responds, send your message again.`,
     );
     return;
   }
@@ -96,11 +96,11 @@ export async function handleConversationMessage(
     if (deliveryOutcome !== "delivered") {
       if (deliveryOutcome === "busy") {
         await dependencies.conversation.post(
-          "Atlas Explorer is already finishing another response in this thread. Please wait for it to complete.",
+          `${dependencies.botName} is already finishing another response in this thread. Please wait for it to complete.`,
         );
       } else if (deliveryOutcome === "uncertain") {
         await dependencies.conversation.post(
-          "Atlas Explorer could not safely confirm whether its previous response was delivered. Please check the thread before retrying.",
+          `${dependencies.botName} could not safely confirm whether its previous response was delivered. Please check the thread before retrying.`,
         );
       }
       await releaseTurn(eventId, activeRecord, dependencies).catch(
@@ -118,7 +118,7 @@ export async function handleConversationMessage(
   }
 
   await dependencies.conversation
-    .setStatus("Initializing AtlasExplorer…")
+    .setStatus(`Initializing ${dependencies.botName}…`)
     .catch((error: unknown) => {
       dependencies.logger?.warn?.("Could not set conversation status", error);
     });
@@ -142,7 +142,10 @@ export async function handleConversationMessage(
       ),
     );
   } catch (error) {
-    dependencies.logger?.error("Atlas Explorer invocation failed", error);
+    dependencies.logger?.error(
+      `${dependencies.botName} invocation failed`,
+      error,
+    );
     const released = await releaseTurn(
       eventId,
       activeRecord,
@@ -156,7 +159,7 @@ export async function handleConversationMessage(
     });
     if (released) {
       await dependencies.conversation.post(
-        "Atlas Explorer could not complete that request. Please try again in a moment.",
+        `${dependencies.botName} could not complete that request. Please try again in a moment.`,
       );
     }
     return;
@@ -169,12 +172,12 @@ export async function handleConversationMessage(
     });
   } catch (error) {
     dependencies.logger?.error(
-      "Atlas Explorer result could not be published",
+      `${dependencies.botName} result could not be published`,
       error,
     );
     await dependencies.conversation
       .post(
-        "Atlas Explorer completed the request, but this chat could not display the result. Send a follow-up in this thread to continue.",
+        `${dependencies.botName} completed the request, but this chat could not display the result. Send a follow-up in this thread to continue.`,
       )
       .catch(() => undefined);
   }
@@ -299,7 +302,7 @@ export async function publishInvocationResult(
     return false;
   }
   await dependencies.conversation.post(
-    buildReviewCard(actionRequests, interrupt.id),
+    buildReviewCard(actionRequests, interrupt.id, dependencies.botName),
   );
   return true;
 }
@@ -344,19 +347,23 @@ async function handlePendingReview(
       );
       if (stored) {
         await dependencies.conversation.post(
-          "Atlas Explorer could not confirm whether the earlier mutation decision completed. Check Atlas before retrying, then start a new conversation.",
+          `${dependencies.botName} could not confirm whether the earlier mutation decision completed. Check Atlas before retrying, then start a new conversation.`,
         );
       }
       return;
     }
     await dependencies.conversation.post(
-      "The mutation decision is being processed. Wait for Atlas Explorer to finish before sending another message.",
+      `The mutation decision is being processed. Wait for ${dependencies.botName} to finish before sending another message.`,
     );
     return;
   }
   if (record.pendingActionRequests?.length && record.pendingInterruptId) {
     await dependencies.conversation.post(
-      buildReviewCard(record.pendingActionRequests, record.pendingInterruptId),
+      buildReviewCard(
+        record.pendingActionRequests,
+        record.pendingInterruptId,
+        dependencies.botName,
+      ),
     );
     return;
   }
