@@ -82,11 +82,17 @@ describe("shouldIgnoreUnstructuredSlackMention", () => {
 });
 
 describe("shouldIgnoreSlackMessageAddressedToSomeoneElse", () => {
-  it("ignores a text mention of another user", () => {
-    const message = createTestMessage("message-1", "<@U999> can you take this?", {
+  it.each([
+    ["at the start", "<@U999> can you take this?"],
+    ["in the middle", "thanks <@U999> for taking this"],
+    ["at the end", "can you take this <@U999>"],
+    ["with a display name", "thanks <@U999|ada> for taking this"],
+    ["with a bang prefix", "see <@!U999>"],
+  ])("ignores a text mention of another user %s", (_where, text) => {
+    const message = createTestMessage("message-1", text, {
       raw: {
         type: "message",
-        text: "<@U999> can you take this?",
+        text,
       },
     });
 
@@ -118,17 +124,17 @@ describe("shouldIgnoreSlackMessageAddressedToSomeoneElse", () => {
     ).toBe(true);
   });
 
-  it("keeps a message that mentions the bot and another user", () => {
-    const message = createTestMessage(
-      "message-1",
-      "<@B123> and <@U999> please look",
-      {
-        raw: {
-          type: "message",
-          text: "<@B123> and <@U999> please look",
-        },
+  it.each([
+    ["at the start", "<@B123> and <@U999> please look"],
+    ["in the middle", "please look <@B123> and <@U999>"],
+    ["at the end", "please look <@U999> and <@B123>"],
+  ])("keeps a message that mentions the bot %s", (_where, text) => {
+    const message = createTestMessage("message-1", text, {
+      raw: {
+        type: "message",
+        text,
       },
-    );
+    });
 
     expect(
       shouldIgnoreSlackMessageAddressedToSomeoneElse(slack, message),
