@@ -36,6 +36,7 @@ import { atlasExplorerConfig } from "./config.js";
 const harness = vi.hoisted(() => {
   const tools = [
     { name: "mongodb__find" },
+    { name: "search_knowledge" },
     { name: "mongodb__drop_collection" },
     { name: "mongodb__future_mutating_operation" },
     { name: "mongodb__atlas_create_db_user" },
@@ -54,6 +55,11 @@ const harness = vi.hoisted(() => {
     graph,
     hitlMiddleware,
     hitlConfig: undefined as unknown,
+    registeredTools: [] as Array<{
+      name?: string;
+      isLocal?: boolean;
+      network?: readonly string[];
+    }>,
     startupEvents: [] as string[],
     agentWorkdirAtAppConstruction: undefined as string | undefined,
     appName: undefined as string | undefined,
@@ -91,6 +97,15 @@ vi.mock("@mongodb-js/agent-engine-sdk-langgraph", () => ({
 
     get agentConfig(): { mcp: { servers: Record<string, unknown> } } {
       return { mcp: { servers: {} } };
+    }
+
+    tool(options: {
+      name?: string;
+      isLocal?: boolean;
+      network?: readonly string[];
+    } = {}) {
+      harness.registeredTools.push(options);
+      return (fn: unknown) => fn;
     }
 
     entrypoint(fn: () => unknown): () => unknown {
@@ -193,7 +208,7 @@ describe("Atlas Explorer graph assembly", () => {
     expect(harness.deepAgent).toHaveBeenCalledWith(
       harness.model,
       expect.objectContaining({
-        tools: [harness.tools[0]],
+        tools: [harness.tools[0], harness.tools[1]],
         systemPrompt: READ_ONLY_SYSTEM_PROMPT,
         skills: ["skills"],
         checkpointer: harness.checkpointer,
@@ -228,6 +243,17 @@ describe("Atlas Explorer graph assembly", () => {
     ).backend;
     expect(backend?.id).toBe("agent-engine-toolpod");
     expect(backend?.execute).toBeUndefined();
+    expect(
+      harness.registeredTools.map((tool) => tool.name).sort(),
+    ).toEqual(["list_knowledge_sources", "search_knowledge"]);
+    expect(
+      harness.registeredTools.every((tool) => tool.isLocal === false),
+    ).toBe(true);
+    expect(
+      harness.registeredTools.every((tool) =>
+        tool.network?.includes("knowledge.mongodb.com"),
+      ),
+    ).toBe(true);
 
     if (previousAgentWorkdir === undefined) {
       delete process.env.AGENTIC_AGENT_WORKDIR;
@@ -274,7 +300,7 @@ describe("Atlas Explorer graph assembly", () => {
     const builder = await loadBuilder();
     builder();
 
-    expect(assembledTools()).toEqual([harness.tools[0]]);
+    expect(assembledTools()).toEqual([harness.tools[0], harness.tools[1]]);
     expect(
       (harness.deepAgent.mock.calls[0]?.[1] as { systemPrompt?: string })
         .systemPrompt,
@@ -290,7 +316,7 @@ describe("Atlas Explorer graph assembly", () => {
     const builder = await loadBuilder();
     builder();
 
-    expect(assembledTools()).toEqual([harness.tools[0]]);
+    expect(assembledTools()).toEqual([harness.tools[0], harness.tools[1]]);
     expect(harness.hitlConfig).toEqual({
       interruptOn: {},
       descriptionPrefix: "MongoDB or Atlas operation pending approval",
@@ -305,6 +331,7 @@ describe("Atlas Explorer graph assembly", () => {
     const names = assembledTools().map((tool) => tool.name);
     expect(names).toEqual([
       "mongodb__find",
+      "search_knowledge",
       "mongodb__drop_collection",
       "mongodb__future_mutating_operation",
     ]);

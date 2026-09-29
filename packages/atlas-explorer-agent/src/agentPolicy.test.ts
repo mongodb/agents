@@ -64,6 +64,7 @@ describe("writeOperationsAllowed", () => {
 describe("Atlas tool policy", () => {
   it("allowlists current Managed MCP read, metadata, and connect tools", () => {
     expect([...READ_ONLY_MCP_TOOLS].sort()).toEqual([
+      "list_knowledge_sources",
       "mongodb__aggregate",
       "mongodb__aggregate_db",
       "mongodb__atlas_connect_cluster",
@@ -87,9 +88,8 @@ describe("Atlas tool policy", () => {
       "mongodb__find",
       "mongodb__list_collections",
       "mongodb__list_databases",
-      "mongodb__list_knowledge_sources",
       "mongodb__remote_atlas_connect",
-      "mongodb__search_knowledge",
+      "search_knowledge",
     ]);
   });
 

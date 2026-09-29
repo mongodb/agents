@@ -22,7 +22,8 @@ agents/atlas-explorer/
 └── src/agent_atlas_explorer/
     ├── main.ts                        # Agent Engine App entrypoint
     ├── index.ts                       # re-exports library helpers and main.ts
-    └── config.ts                      # non-secret LLM, agent name, and custom instructions
+    ├── config.ts                      # non-secret LLM, agent name, and custom instructions
+    └── knowledgeTools.ts              # search_knowledge and list_knowledge_sources
 ```
 
 Project memory settings live in the repository root
@@ -173,8 +174,8 @@ The application selects OpenAI `gpt-6-luna` in `config.ts`. To use another
 provider, model, or custom-compatible endpoint, update that file together with
 the provider-key entries under `required_secrets` and the Tool Pod destination
 under `network.egress`. The checked-in manifest permits the default OpenAI
-endpoint plus the Atlas OAuth and Managed MCP hosts needed by AER discovery and
-Tool Pod calls.
+endpoint, the Atlas OAuth and Managed MCP hosts needed by AER discovery and
+Tool Pod calls, and `knowledge.mongodb.com` for the local knowledge-base tools.
 
 `config.ts` also owns the system-prompt persona. Set
 `systemPrompt.name` to change how the agent introduces itself; leave it empty
@@ -267,8 +268,9 @@ can be reused with additional Chat SDK adapters.
 
 - Ask it to list databases or inspect a collection schema. Read-only MCP tools
   run without approval.
-- Ask it to diagnose a query or propose an index. The agent can load the
-  relevant MongoDB skill on demand.
+- Ask it to look up MongoDB docs or best practices. `search_knowledge` and
+  `list_knowledge_sources` call the public knowledge API without MCP
+  credentials.
 - Ask it to drop a collection. With the default read-only MCP identity and
   unset `ALLOW_WRITE_OPERATIONS`, the agent cannot execute that mutation. After
   both write opt-ins are set, the graph suspends before the MCP call and

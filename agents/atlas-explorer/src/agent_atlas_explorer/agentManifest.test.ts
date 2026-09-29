@@ -47,6 +47,9 @@ describe("agent.yaml MCP authentication", () => {
     expect(manifest).toMatch(
       /- fqdn: mcp\.mongodb\.com\n\s+ports: \[443\]\n\s+component: all/,
     );
+    expect(manifest).toMatch(
+      /- fqdn: knowledge\.mongodb\.com\n\s+ports: \[443\]\n\s+component: tool/,
+    );
     expect(manifest).not.toMatch(
       /api4\.ipify\.org|ifconfig\.me|icanhazip\.com/,
     );

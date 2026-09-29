@@ -38,6 +38,7 @@ import {
 } from "@repo/atlas-explorer-agent";
 
 import { atlasExplorerConfig } from "./config.js";
+import { registerKnowledgeTools } from "./knowledgeTools.js";
 
 function log(level: "INFO" | "WARN" | "ERROR", msg: string): void {
   const t = new Date().toISOString().slice(11, 19);
@@ -47,6 +48,7 @@ function log(level: "INFO" | "WARN" | "ERROR", msg: string): void {
 process.env.AGENTIC_AGENT_WORKDIR ||= process.cwd();
 
 export const app = new App({ appName: "atlas-explorer" });
+registerKnowledgeTools(app);
 const diagnostics = atlasExplorerConfig.diagnostics.logRuntimeLifecycle
   ? startRuntimeDiagnostics({
       mcpServers: app.agentConfig.mcp.servers,
@@ -77,7 +79,9 @@ export const buildAgent = app.entrypoint(() => {
   );
   const platformSaver = app.checkpointer();
   const saver =
-    platformSaver === null ? null : withRequesterMetadata(platformSaver);
+    platformSaver === null
+      ? null
+      : withRequesterMetadata(platformSaver as never);
   const mutativeToolReview = humanInTheLoopMiddleware({
     interruptOn: allowWriteOperations
       ? mutativeInterruptOn(availableAtlasTools)

@@ -27,13 +27,16 @@ export { writeOperationsAllowed };
  * This explicit allowlist is a shipping bridge until Agent Engine preserves MCP
  * tool annotations on `app.getTools()`.
  *
- * Names follow Atlas Managed MCP `read`, `metadata`, and `connect` tools.
- * Local-only tools such as `mongodb-logs` and `switch-connection` are
- * omitted. `aggregate` and `aggregate-db` stay here because MongoDB labels
- * them read-only. A pipeline that contains `$out` or `$merge` is a write and
- * is suspended by `approveAggregateWritesMiddleware` before it reaches Atlas.
+ * Names follow Atlas Managed MCP `read`, `metadata`, and `connect` tools,
+ * plus the local knowledge-base tools (`search_knowledge`,
+ * `list_knowledge_sources`). Local-only tools such as `mongodb-logs` and
+ * `switch-connection` are omitted. `aggregate` and `aggregate-db` stay here
+ * because MongoDB labels them read-only. A pipeline that contains `$out` or
+ * `$merge` is a write and is suspended by `approveAggregateWritesMiddleware`
+ * before it reaches Atlas.
  */
 export const READ_ONLY_MCP_TOOLS: ReadonlySet<string> = new Set([
+  "list_knowledge_sources",
   "mongodb__aggregate",
   "mongodb__aggregate_db",
   "mongodb__atlas_connect_cluster",
@@ -57,9 +60,8 @@ export const READ_ONLY_MCP_TOOLS: ReadonlySet<string> = new Set([
   "mongodb__find",
   "mongodb__list_collections",
   "mongodb__list_databases",
-  "mongodb__list_knowledge_sources",
   "mongodb__remote_atlas_connect",
-  "mongodb__search_knowledge",
+  "search_knowledge",
 ]);
 
 /**
