@@ -80,33 +80,30 @@ mention it.
 
 ## Bot name
 
-The running process and the Slack app each store a display name. Changing one
-does not change the other.
+The bot has two names, set in different places. Slack never reads the bot's
+config, so changing one name does not change the other.
 
-The process name is what status lines, review cards, and other bot copy use.
-[`src/config.ts`](./src/config.ts) holds the checked-in value in
-`slackBotConfig.name`. Leave it empty to keep **AtlasExplorer**. Set
-`SLACK_BOT_DISPLAY_NAME` to override that value for one deployment. A blank
-env var falls through to the config value, then to **AtlasExplorer**.
+| Name | Set in | Shown in |
+| --- | --- | --- |
+| Bot name | `slackBotConfig.name` in [`src/config.ts`](./src/config.ts), or the `SLACK_BOT_DISPLAY_NAME` env var | Text the bot writes, such as status lines and approval cards |
+| Slack app name | `display_name` in the Slack app's manifest | The Slack sidebar and the `@` mention menu |
 
-The Slack app name is what people see in the sidebar and the `@` mention
-menu. Slack stores it from `bot_user.display_name` when you paste a manifest
-in Slack app management. Slack does not read `config.ts` or the process
-environment, so an app that is already installed keeps its current name until
-you update it in Slack.
+The bot name defaults to **AtlasExplorer**. When `SLACK_BOT_DISPLAY_NAME` is
+set, it overrides `slackBotConfig.name`.
 
-When the process name changes, update the matching Slack app to the same
-string:
+To rename the bot, change both names:
 
-- Hosted app: set `display_name` in [`manifest.json`](./manifest.json), then
-  re-paste the manifest or edit **Bot user display name** on the existing app.
-- Local Socket Mode app: set `display_name` in
-  [`manifest.local.json`](./manifest.local.json). That value is usually the
-  hosted name plus ` Local`.
+1. Set `slackBotConfig.name`, or set `SLACK_BOT_DISPLAY_NAME` for a single
+   deployment.
+2. Give the Slack app the same name. For an existing app, edit
+   `display_name` under **App Manifest** in
+   [Slack app management](https://api.slack.com/apps). For a new app, edit
+   [`manifest.json`](./manifest.json) or
+   [`manifest.local.json`](./manifest.local.json) before you paste it.
 
-Mention routing uses the Slack user ID, so the local app's display name can
-differ from the hosted app's. Each still needs to match the process name of
-the bot that uses that app's token.
+The local app adds ` Local` to its Slack name, as in **AtlasExplorer Local**,
+so developers can tell it apart from the hosted app. That difference is only
+cosmetic: the bot recognizes its mentions by Slack user ID, not by name.
 
 ## Run locally with Socket Mode
 
