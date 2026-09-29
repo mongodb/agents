@@ -25,8 +25,5 @@ permissions:
 jobs:
   test:
     uses: ./.github/workflows/unit-tests.yml
-    secrets:
-      MAGENTA_GITHUB_TOKEN: ${{ secrets.MAGENTA_GITHUB_TOKEN }}
     with:
       working-directory: agent-engine-templates/agents/atlas-explorer
-      private-git-deps: true

@@ -16,19 +16,18 @@
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json --noEmit",
     "start": "node --enable-source-maps dist/agent_atlas_explorer/main.js",
-    "dev": "tsx watch src/agent_atlas_explorer/main.ts",
-    "postinstall": "node scripts/build-agent-engine-sdks.mjs"
+    "dev": "tsx watch src/agent_atlas_explorer/main.ts"
   },
   "dependencies": {
     "@langchain/anthropic": "^1.4.0",
     "@langchain/cerebras": "^1.0.4",
-    "@langchain/core": "^1.1.48",
+    "@langchain/core": "^1.2.11",
     "@langchain/google-genai": "^2.1.0",
     "@langchain/langgraph": "^1.3.0",
     "@langchain/openai": "^1.4.7",
-    "@mongodb-js/agent-engine-sdk-langgraph": "*",
-    "@mongodb-js/agent-engine-runner-shared": "*",
-    "@mongodb-js/agent-engine-sdk": "*",
+    "@mongodb-js/agent-engine-sdk-langgraph": "0.11.6",
+    "@mongodb-js/agent-engine-runner-shared": "0.11.6",
+    "@mongodb-js/agent-engine-sdk": "0.11.6",
     "dotenv": "^16.4.5",
     "langchain": "^1.5.10",
     "zod": "4.4.3"

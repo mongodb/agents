@@ -6,13 +6,6 @@ on:
       working-directory:
         required: true
         type: string
-      private-git-deps:
-        required: false
-        type: boolean
-        default: false
-    secrets:
-      MAGENTA_GITHUB_TOKEN:
-        required: false
 
 permissions:
   contents: read
@@ -29,17 +22,6 @@ jobs:
         working-directory: ${{ inputs.working-directory }}
     steps:
       - uses: actions/checkout@v7
-
-      - name: Allow git to fetch internal GitHub dependencies
-        if: inputs.private-git-deps
-        env:
-          TOKEN: ${{ secrets.MAGENTA_GITHUB_TOKEN }}
-        run: |
-          if [ -z "$TOKEN" ]; then
-            echo "::error::Set repository secret MAGENTA_GITHUB_TOKEN to a PAT with read access to 10gen/magenta-client-libraries. github.token cannot clone that repository because it lives in a different GitHub org."
-            exit 1
-          fi
-          git config --global url."https://x-access-token:${TOKEN}@github.com/10gen/".insteadOf "https://github.com/10gen/"
 
       - uses: actions/setup-node@v7
         with:
@@ -68,11 +50,6 @@ jobs:
             mongodb-memory-server-${{ runner.os }}-
 
       - name: Install dependencies
-        env:
-          # Magenta git packages pin npm. Keep their checkouts out of this
-          # package tree so preferred-pm does not walk up to packageManager pnpm
-          # and run pnpm install inside them.
-          TMPDIR: ${{ runner.temp }}
         run: pnpm install --frozen-lockfile
 
       - name: Run unit tests

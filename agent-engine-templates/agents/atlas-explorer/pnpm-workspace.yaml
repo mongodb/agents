@@ -1,24 +1,15 @@
 overrides:
   "zod": "4.4.3"
-  "@mongodb-js/agent-engine-sdk": "git+https://github.com/10gen/magenta-client-libraries.git#32656f78169d9ffebcde33b2762a35c64f28fdaa&path:packages/javascript/packages/agent-engine-sdk"
-  "@mongodb-js/agent-engine-sdk-memory": "git+https://github.com/10gen/magenta-client-libraries.git#32656f78169d9ffebcde33b2762a35c64f28fdaa&path:packages/javascript/packages/agent-engine-memory"
-  "@mongodb-js/agent-engine-runner-shared": "git+https://github.com/10gen/magenta-client-libraries.git#32656f78169d9ffebcde33b2762a35c64f28fdaa&path:packages/javascript/packages/agent-engine-runner-shared"
-  "@mongodb-js/agent-engine-sdk-langgraph": "git+https://github.com/10gen/magenta-client-libraries.git#32656f78169d9ffebcde33b2762a35c64f28fdaa&path:packages/javascript/packages/agent-engine-sdk-langgraph"
+  "@langchain/core": "1.2.12"
 
 allowBuilds:
-  # pnpm evaluates git dependencies under both authored and canonicalized URLs
-  # while preparing the selected package and its internal Magenta dependencies.
-  "@mongodb-js/agent-engine-sdk@git+https://github.com/10gen/magenta-client-libraries.git#32656f78169d9ffebcde33b2762a35c64f28fdaa&path:packages/javascript/packages/agent-engine-sdk": true
-  "@mongodb-js/agent-engine-sdk-memory@git+https://github.com/10gen/magenta-client-libraries.git#32656f78169d9ffebcde33b2762a35c64f28fdaa&path:packages/javascript/packages/agent-engine-memory": true
-  "@mongodb-js/agent-engine-runner-shared@git+https://github.com/10gen/magenta-client-libraries.git#32656f78169d9ffebcde33b2762a35c64f28fdaa&path:packages/javascript/packages/agent-engine-runner-shared": true
-  "@mongodb-js/agent-engine-sdk-langgraph@git+https://github.com/10gen/magenta-client-libraries.git#32656f78169d9ffebcde33b2762a35c64f28fdaa&path:packages/javascript/packages/agent-engine-sdk-langgraph": true
-  "@mongodb-js/agent-engine-sdk@git+https://git@github.com:10gen/magenta-client-libraries.git#32656f78169d9ffebcde33b2762a35c64f28fdaa&path:packages/javascript/packages/agent-engine-sdk": true
-  "@mongodb-js/agent-engine-sdk-memory@git+https://git@github.com:10gen/magenta-client-libraries.git#32656f78169d9ffebcde33b2762a35c64f28fdaa&path:packages/javascript/packages/agent-engine-memory": true
-  "@mongodb-js/agent-engine-runner-shared@git+https://git@github.com:10gen/magenta-client-libraries.git#32656f78169d9ffebcde33b2762a35c64f28fdaa&path:packages/javascript/packages/agent-engine-runner-shared": true
-  "@mongodb-js/agent-engine-sdk-langgraph@git+https://git@github.com:10gen/magenta-client-libraries.git#32656f78169d9ffebcde33b2762a35c64f28fdaa&path:packages/javascript/packages/agent-engine-sdk-langgraph": true
   esbuild: true
   # Transitive OpenTelemetry dependency. Its postinstall only warns about
   # versionScheme and is not required to load the package.
   protobufjs: false
 
-blockExoticSubdeps: false
+minimumReleaseAgeExclude:
+  - '@mongodb-js/agent-engine-runner-shared@0.11.6'
+  - '@mongodb-js/agent-engine-sdk-langgraph@0.11.6'
+  - '@mongodb-js/agent-engine-sdk-memory@0.11.6'
+  - '@mongodb-js/agent-engine-sdk@0.11.6'
