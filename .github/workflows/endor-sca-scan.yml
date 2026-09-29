@@ -8,6 +8,7 @@ on:
     paths:
       - "**/package.json"
       - "**/pnpm-lock.yaml"
+      - ".github/workflows/endor-sca-scan.yml"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
