@@ -80,16 +80,33 @@ mention it.
 
 ## Bot name
 
-[`src/config.ts`](./src/config.ts) owns the checked-in display name. Leave
-`slackBotConfig.name` empty to keep **AtlasExplorer**. Set it to rename the
-bot in source. `SLACK_BOT_DISPLAY_NAME` overrides that value per deployment
-without changing the file.
+The running process and the Slack app each store a display name. Changing one
+does not change the other.
 
-Keep the Slack app `display_name` in sync with the resolved name:
-[`manifest.json`](./manifest.json) uses the hosted name, and
-[`manifest.local.json`](./manifest.local.json) typically uses that name plus
-` Local`. Channel mention routing keys off the Slack user ID, so a local
-display name can differ from the hosted one.
+The process name is what status lines, review cards, and other bot copy use.
+[`src/config.ts`](./src/config.ts) holds the checked-in value in
+`slackBotConfig.name`. Leave it empty to keep **AtlasExplorer**. Set
+`SLACK_BOT_DISPLAY_NAME` to override that value for one deployment. A blank
+env var falls through to the config value, then to **AtlasExplorer**.
+
+The Slack app name is what people see in the sidebar and the `@` mention
+menu. Slack stores it from `bot_user.display_name` when you paste a manifest
+in Slack app management. Slack does not read `config.ts` or the process
+environment, so an app that is already installed keeps its current name until
+you update it in Slack.
+
+When the process name changes, update the matching Slack app to the same
+string:
+
+- Hosted app: set `display_name` in [`manifest.json`](./manifest.json), then
+  re-paste the manifest or edit **Bot user display name** on the existing app.
+- Local Socket Mode app: set `display_name` in
+  [`manifest.local.json`](./manifest.local.json). That value is usually the
+  hosted name plus ` Local`.
+
+Mention routing uses the Slack user ID, so the local app's display name can
+differ from the hosted app's. Each still needs to match the process name of
+the bot that uses that app's token.
 
 ## Run locally with Socket Mode
 
