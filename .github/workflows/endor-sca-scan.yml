@@ -30,16 +30,6 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Allow git to fetch internal GitHub dependencies
-        env:
-          TOKEN: ${{ secrets.MAGENTA_GITHUB_TOKEN }}
-        run: |
-          if [ -z "$TOKEN" ]; then
-            echo "::error::Set repository secret MAGENTA_GITHUB_TOKEN to a PAT with read access to 10gen/magenta-client-libraries. github.token cannot clone that repository because it lives in a different GitHub org."
-            exit 1
-          fi
-          git config --global url."https://x-access-token:${TOKEN}@github.com/10gen/".insteadOf "https://github.com/10gen/"
-
       - uses: actions/setup-node@v7
         with:
           node-version: 24
@@ -59,10 +49,10 @@ jobs:
       - name: Endor Labs Scan
         uses: endorlabs/github-action@f46ffb04c928a9c9c356f9627bd60b710ed0963e # v1.1.13
         env:
-          # The git-sourced @mongodb-js/agent-engine-* packages pin their own
-          # packageManager as npm. Without this, corepack's strict pnpm shim
-          # refuses to run inside those package directories during Endor's
-          # reachability analysis.
+          # @mongodb-js/agent-engine-* packages pin their own packageManager
+          # as npm. Without this, corepack's strict pnpm shim refuses to run
+          # inside those package directories during Endor's reachability
+          # analysis.
           COREPACK_ENABLE_STRICT: "0"
         with:
           namespace: "mongodb.mongodb"
@@ -79,16 +69,6 @@ jobs:
       COREPACK_ENABLE_DOWNLOAD_PROMPT: "0"
     steps:
       - uses: actions/checkout@v7
-
-      - name: Allow git to fetch internal GitHub dependencies
-        env:
-          TOKEN: ${{ secrets.MAGENTA_GITHUB_TOKEN }}
-        run: |
-          if [ -z "$TOKEN" ]; then
-            echo "::error::Set repository secret MAGENTA_GITHUB_TOKEN to a PAT with read access to 10gen/magenta-client-libraries. github.token cannot clone that repository because it lives in a different GitHub org."
-            exit 1
-          fi
-          git config --global url."https://x-access-token:${TOKEN}@github.com/10gen/".insteadOf "https://github.com/10gen/"
 
       - uses: actions/setup-node@v7
         with:
