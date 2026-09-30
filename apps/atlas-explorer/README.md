@@ -10,25 +10,23 @@ platform checkpoints · read-only by default · runtime approval for writes
 ## Layout
 
 ```
-agent-engine-templates/agents/atlas-explorer/
+apps/atlas-explorer/
 ├── agent.yaml                         # app, MCP, features, and required secret names
-├── package.json / tsconfig.json       # TypeScript build
-├── pnpm-workspace.yaml / pnpm-lock.yaml
+├── package.json / tsconfig.json       # TypeScript app and esbuild bundle
 ├── dev.yaml                           # local Agentic service ports
 ├── .env.example                       # copy to .env
 ├── mcp-config.example.json            # copy to ignored local MCP config
 ├── mcp-secret-metadata.json           # secret TTL used with Atlas CLI
 ├── skills/                            # vendored MongoDB Agent Skills
 └── src/agent_atlas_explorer/
-    ├── main.ts                        # Magenta deep agent
-    ├── config.ts                      # non-secret LLM, agent name, and custom instructions
-    ├── agentBackend.ts                # audited filesystem without model shell access
-    ├── agentPolicy.ts                 # tool filtering and destructive-tool policy
-    ├── modelResponse.ts               # removes repeated OpenAI tool metadata
-    ├── toolErrors.ts                  # recoverable MCP error handling
-    ├── systemMessage.ts               # Atlas Explorer instructions
-    └── llm.ts                         # provider selection
+    ├── main.ts                        # Magenta App entrypoint
+    └── config.ts                      # non-secret LLM, agent name, and custom instructions
 ```
+
+Policy, prompts, LLM selection, and middleware live in
+[`@repo/atlas-explorer-agent`](../../packages/atlas-explorer-agent).
+`pnpm build` bundles that library into `dist/agent_atlas_explorer/main.js`
+so Agent Engine runs one file plus this app's npm dependencies.
 
 ## Configure
 
@@ -171,7 +169,7 @@ Open the playground at http://localhost:3000. Stop the stack with
 
 ## Talk from chat platforms
 
-The sibling [`@AtlasExplorer` Chat SDK integration](../../slack-bot) invokes
+The sibling [`@AtlasExplorer` Chat SDK integration](../atlas-explorer-slack-bot) invokes
 this same Magenta workspace and preserves Agentic sessions per platform thread.
 Its current Slack adapter supports local Socket Mode, Vercel deployment, and
 Approve/Reject controls for this agent's mutation interrupts; shared handlers

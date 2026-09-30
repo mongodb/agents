@@ -1,7 +1,7 @@
 # AtlasExplorer Chat Bot
 
 `@AtlasExplorer` is a [Vercel Chat SDK](https://chat-sdk.dev) client for the
-existing [Magenta Atlas Explorer agent](../../agent-engine-templates/agents/atlas-explorer). Shared
+existing [Magenta Atlas Explorer agent](../atlas-explorer). Shared
 handlers contain the conversation, delivery, and human-review behavior; the
 official `@chat-adapter/slack` package contains Slack transport behavior. This
 keeps the core ready for another Chat SDK adapter without duplicating the
@@ -32,10 +32,10 @@ workspace; access is not scoped to each user's Atlas identity.
   MongoDB automatically.
 
 Configure and verify the Atlas Explorer agent first. Its
-[README](../agents/atlas-explorer/README.md) covers MCP and model secrets.
+[README](../atlas-explorer/README.md) covers MCP and model secrets.
 
 ```bash
-cd ../../agent-engine-templates/agents/atlas-explorer
+cd ../atlas-explorer
 agentengine build
 agentengine deploy
 agentengine service-account create atlas-explorer-slack-bot \
@@ -183,7 +183,7 @@ To run the Slack bot and Atlas Explorer agent without deploying either one,
 start Atlas Explorer in its own terminal:
 
 ```bash
-cd ../../agent-engine-templates/agents/atlas-explorer
+cd ../atlas-explorer
 agentengine dev up
 ```
 

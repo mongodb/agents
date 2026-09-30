@@ -9,6 +9,8 @@
   },
   "scripts": {
     "build:slack-bot": "pnpm --filter @repo/atlas-explorer-slack-bot... build",
-    "test:slack-bot": "pnpm --filter @repo/agent-engine-chat test && pnpm --filter @repo/atlas-explorer-slack-bot test"
+    "build:atlas-explorer": "pnpm --filter atlas-explorer... build",
+    "test:slack-bot": "pnpm --filter @repo/agent-engine-chat test && pnpm --filter @repo/atlas-explorer-slack-bot test",
+    "test:atlas-explorer": "pnpm --filter @repo/atlas-explorer-agent test && pnpm --filter atlas-explorer test"
   }
 }

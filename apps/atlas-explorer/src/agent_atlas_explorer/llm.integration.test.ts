@@ -2,8 +2,9 @@ import "dotenv/config";
 
 import { describe, expect, it } from "vitest";
 
+import { buildLLM } from "@repo/atlas-explorer-agent";
+
 import { atlasExplorerConfig } from "./config.js";
-import { buildLLM } from "./llm.js";
 
 const PROMPT = "Reply with the single word pong.";
 const TIMEOUT_MS = 120_000;

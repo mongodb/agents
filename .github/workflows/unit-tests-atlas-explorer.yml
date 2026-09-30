@@ -3,14 +3,22 @@ name: Atlas Explorer unit tests
 on:
   pull_request:
     paths:
-      - "agent-engine-templates/agents/atlas-explorer/**"
+      - "apps/atlas-explorer/**"
+      - "packages/atlas-explorer-agent/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
       - ".github/workflows/unit-tests.yml"
       - ".github/workflows/unit-tests-atlas-explorer.yml"
   push:
     branches:
       - main
     paths:
-      - "agent-engine-templates/agents/atlas-explorer/**"
+      - "apps/atlas-explorer/**"
+      - "packages/atlas-explorer-agent/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
       - ".github/workflows/unit-tests.yml"
       - ".github/workflows/unit-tests-atlas-explorer.yml"
 
@@ -26,4 +34,5 @@ jobs:
   test:
     uses: ./.github/workflows/unit-tests.yml
     with:
-      working-directory: agent-engine-templates/agents/atlas-explorer
+      working-directory: .
+      test-command: pnpm --filter @repo/atlas-explorer-agent test && pnpm --filter atlas-explorer test

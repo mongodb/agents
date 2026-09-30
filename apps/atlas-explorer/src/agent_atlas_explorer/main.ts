@@ -4,21 +4,22 @@ import "dotenv/config";
 
 import { humanInTheLoopMiddleware } from "langchain";
 
-import { withoutShellExecution } from "./agentBackend.js";
-import {
-  mutativeInterruptOn,
-  selectAtlasTools,
-  writeOperationsAllowed,
-} from "./agentPolicy.js";
-import { atlasExplorerConfig } from "./config.js";
-import { buildLLM } from "./llm.js";
-import { stripToolEchoMiddleware } from "./modelResponse.js";
-import { buildSystemPrompt } from "./systemMessage.js";
-import { recoverToolErrorsMiddleware } from "./toolErrors.js";
-import { withRequesterMetadata } from "./requesterMetadata.js";
-import { stampResumeClientUserMiddleware } from "./stampResume.js";
-import { prepareAtlasExplorerInput } from "./userRun.js";
 import { App, AgentEngineToolSandboxBackend } from "@mongodb-js/agent-engine-sdk-langgraph";
+import {
+  buildLLM,
+  buildSystemPrompt,
+  mutativeInterruptOn,
+  prepareAtlasExplorerInput,
+  recoverToolErrorsMiddleware,
+  selectAtlasTools,
+  stampResumeClientUserMiddleware,
+  stripToolEchoMiddleware,
+  withRequesterMetadata,
+  withoutShellExecution,
+  writeOperationsAllowed,
+} from "@repo/atlas-explorer-agent";
+
+import { atlasExplorerConfig } from "./config.js";
 
 function log(level: "INFO" | "WARN" | "ERROR", msg: string): void {
   const t = new Date().toISOString().slice(11, 19);

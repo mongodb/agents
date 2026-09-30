@@ -6,14 +6,15 @@ import {
 } from "@langchain/langgraph";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { stampClientUser } from "./clientUser.js";
-import { atlasExplorerConfig } from "./config.js";
 import {
+  prepareAtlasExplorerInput,
   READ_ONLY_SYSTEM_PROMPT,
+  stampClientUser,
+  stampResumeClientUserMiddleware,
   WRITE_ENABLED_SYSTEM_PROMPT,
-} from "./systemMessage.js";
-import { stampResumeClientUserMiddleware } from "./stampResume.js";
-import { prepareAtlasExplorerInput } from "./userRun.js";
+} from "@repo/atlas-explorer-agent";
+
+import { atlasExplorerConfig } from "./config.js";
 
 const harness = vi.hoisted(() => {
   const tools = [
@@ -101,9 +102,15 @@ vi.mock("@mongodb-js/agent-engine-sdk-langgraph", () => ({
   },
 }));
 
-vi.mock("./llm.js", () => ({
-  buildLLM: harness.buildLLM,
-}));
+vi.mock("@repo/atlas-explorer-agent", async (importOriginal) => {
+  const actual = await importOriginal<
+    typeof import("@repo/atlas-explorer-agent")
+  >();
+  return {
+    ...actual,
+    buildLLM: harness.buildLLM,
+  };
+});
 
 async function loadBuilder(): Promise<() => unknown> {
   if (harness.builder === undefined) {
