@@ -10,7 +10,7 @@ own setup and deployment instructions.
 
 - [Atlas Explorer](agent-engine-templates/agents/atlas-explorer) — An operations agent
   for exploring MongoDB data and managing Atlas resources.
-  - [Talk to Atlas Explorer from Slack](agent-engine-templates/slack-bot) — Run the
+  - [Talk to Atlas Explorer from Slack](apps/atlas-explorer-slack-bot) — Run the
     `@AtlasExplorer` Slack client locally with Socket Mode or deploy it to
     Vercel.
 

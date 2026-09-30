@@ -1,0 +1,48 @@
+{
+  "name": "@mongodb/agent-engine-chat",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Chat SDK client library for any Atlas Agent Engine agent",
+  "license": "Apache-2.0",
+  "type": "module",
+  "exports": {
+    "./chat": {
+      "types": "./dist/chat/index.d.ts",
+      "import": "./dist/chat/index.js"
+    },
+    "./magenta": {
+      "types": "./dist/magenta/index.d.ts",
+      "import": "./dist/magenta/index.js"
+    },
+    "./store": {
+      "types": "./dist/store/index.d.ts",
+      "import": "./dist/store/index.js"
+    },
+    "./testing": {
+      "types": "./dist/chat/handlers.test-helpers.d.ts",
+      "import": "./dist/chat/handlers.test-helpers.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json --noEmit"
+  },
+  "dependencies": {
+    "chat": "4.40.0",
+    "mongodb": "^7.6.0",
+    "zod": "^4.5.4"
+  },
+  "devDependencies": {
+    "@chat-adapter/slack": "4.40.0",
+    "@chat-adapter/tests": "4.40.0",
+    "@types/node": "^25.0.0",
+    "mongodb-memory-server-core": "11.2.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

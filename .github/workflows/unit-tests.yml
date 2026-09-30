@@ -6,6 +6,10 @@ on:
       working-directory:
         required: true
         type: string
+      test-command:
+        required: false
+        default: pnpm test
+        type: string
 
 permissions:
   contents: read
@@ -53,4 +57,4 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run unit tests
-        run: pnpm test
+        run: ${{ inputs.test-command }}
