@@ -1,0 +1,17 @@
+{
+  "mcpConfigName": "query-analysis-{environment}",
+  "roles": [
+    "GROUP_DATA_ACCESS_READ_ONLY"
+  ],
+  "ipAccessList": [
+    {
+      "ipAddress": "YOUR_LOCAL_PUBLIC_IP"
+    },
+    {
+      "ipAddress": "AGENT_ENGINE_IP_1"
+    },
+    {
+      "ipAddress": "AGENT_ENGINE_IP_2..."
+    }
+  ]
+}

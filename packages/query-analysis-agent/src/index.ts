@@ -27,6 +27,16 @@ export {
   type SystemPromptOptions,
 } from "./systemMessage.js";
 export {
+  buildLLM,
+  prepareAgentInput,
+  recoverToolErrorsMiddleware,
+  stampClientUser,
+  stampResumeClientUserMiddleware,
+  stripToolEchoMiddleware,
+  withRequesterMetadata,
+  withoutShellExecution,
+} from "@repo/agent-engine-core";
+export {
   describeScope,
   resolveScope,
   type QueryAnalysisScope,

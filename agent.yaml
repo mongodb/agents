@@ -4,3 +4,5 @@
 agents:
   - name: atlas-explorer
     path: agents/atlas-explorer
+  - name: query-analysis
+    path: agents/query-analysis

@@ -10,6 +10,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, scripts, and CI.
   Explorer agent, for exploring MongoDB data and managing Atlas resources.
 - [`apps/atlas-explorer-slack-bot`](apps/atlas-explorer-slack-bot/README.md):
   the `@AtlasExplorer` Slack client, for local Socket Mode or Vercel.
+- [`agents/query-analysis`](agents/query-analysis/README.md): a read-only
+  agent that explains slow queries from the Atlas Performance Advisor.
 
 ## Packages
 

@@ -1,0 +1,45 @@
+# Human-readable app slug used by Agentic Platform tooling.
+name: query-analysis
+# Node entry point. Format: <module path>:<export name>.
+entrypoint: agent_query_analysis.main:app
+framework: langgraph
+language: typescript
+features:
+    memory: false
+    deep_agent: true
+# Secret NAMES only. Values go in .env locally or `agentengine secret set`.
+# There is no write-operations secret. The MCP role is read-only.
+required_secrets:
+    aer:
+        - OPENAI_API_KEY
+        - ATLAS_MCP_CLIENT_ID
+        - ATLAS_MCP_CLIENT_SECRET
+    tools:
+        invoke_llm:
+            - OPENAI_API_KEY
+        "mongodb__*":
+            - ATLAS_MCP_CLIENT_ID
+            - ATLAS_MCP_CLIENT_SECRET
+network:
+    egress:
+        - fqdn: cloud.mongodb.com
+          ports: [443]
+          component: all
+        - fqdn: mcp.mongodb.com
+          ports: [443]
+          component: all
+        - fqdn: api.openai.com
+          ports: [443]
+          component: tool
+mcp:
+    servers:
+        mongodb:
+            transport: streamable_http
+            url: https://mcp.mongodb.com
+            auth:
+                type: client_credentials
+                token_url: https://cloud.mongodb.com/api/oauth/token
+                client_id_env: ATLAS_MCP_CLIENT_ID
+                client_secret_env: ATLAS_MCP_CLIENT_SECRET
+            timeout_seconds: 30
+version: 0.1.0
