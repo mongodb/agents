@@ -1,0 +1,22 @@
+{
+  // Shared compiler options for every workspace package.
+  // Keep path-based options (rootDir, outDir, include, exclude) in the
+  // package config. TypeScript resolves those paths from the file that
+  // declares them, so a root include of "src/**/*.ts" would not match
+  // each package's src directory.
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2022"],
+    "strict": true,
+    "noImplicitAny": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "declaration": true,
+    "sourceMap": true,
+    "forceConsistentCasingInFileNames": true,
+    "allowSyntheticDefaultImports": true
+  }
+}

@@ -1,0 +1,8 @@
+{
+  // Shared options for typechecking tests. Package tsconfig.test.json
+  // files extend their own tsconfig.json and this file, then replace
+  // exclude so test sources are included.
+  "compilerOptions": {
+    "noEmit": true
+  }
+}

@@ -1,8 +1,4 @@
 {
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
-    "noEmit": true
-  },
-  "include": ["src/**/*"],
+  "extends": ["./tsconfig.json", "../../tsconfig.test.base.json"],
   "exclude": ["node_modules", "dist"]
 }

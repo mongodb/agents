@@ -10,6 +10,9 @@ on:
       - "package.json"
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
+      - "tsconfig.base.json"
+      - "tsconfig.test.base.json"
+      - "vitest.shared.mts"
       - ".github/actions/unit-test/**"
       - ".github/workflows/unit-tests-agents.yml"
   push:
@@ -23,6 +26,9 @@ on:
       - "package.json"
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
+      - "tsconfig.base.json"
+      - "tsconfig.test.base.json"
+      - "vitest.shared.mts"
       - ".github/actions/unit-test/**"
       - ".github/workflows/unit-tests-agents.yml"
 

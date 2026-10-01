@@ -1,8 +1,4 @@
 import { defineConfig } from "vitest/config";
+import { definePackageVitestConfig } from "../../vitest.shared.mts";
 
-export default defineConfig({
-  test: {
-    environment: "node",
-    include: ["src/**/*.test.ts"],
-  },
-});
+export default defineConfig(definePackageVitestConfig());
