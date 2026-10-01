@@ -10,7 +10,7 @@ platform checkpoints · read-only by default · runtime approval for writes
 ## Layout
 
 ```
-apps/atlas-explorer/
+agents/atlas-explorer/
 ├── agent.yaml                         # app, MCP, features, and required secret names
 ├── package.json / tsconfig.json       # TypeScript app and esbuild bundle
 ├── dev.yaml                           # local Agentic service ports
@@ -22,6 +22,12 @@ apps/atlas-explorer/
     ├── main.ts                        # Magenta App entrypoint
     └── config.ts                      # non-secret LLM, agent name, and custom instructions
 ```
+
+Project memory settings live in the repository root
+[`project-config.yaml`](../../project-config.yaml). The root
+[`agent.yaml`](../../agent.yaml) registers this workspace as
+`atlas-explorer`. Run `agentengine` commands from this directory, or from
+the repository root with `--workspace atlas-explorer`.
 
 Policy, prompts, LLM selection, and middleware live in
 [`@repo/atlas-explorer-agent`](../../packages/atlas-explorer-agent).
@@ -169,7 +175,7 @@ Open the playground at http://localhost:3000. Stop the stack with
 
 ## Talk from chat platforms
 
-The sibling [`@AtlasExplorer` Chat SDK integration](../atlas-explorer-slack-bot) invokes
+The sibling [`@AtlasExplorer` Chat SDK integration](../../apps/atlas-explorer-slack-bot) invokes
 this same Magenta workspace and preserves Agentic sessions per platform thread.
 Its current Slack adapter supports local Socket Mode, Vercel deployment, and
 Approve/Reject controls for this agent's mutation interrupts; shared handlers

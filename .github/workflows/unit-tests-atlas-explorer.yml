@@ -3,7 +3,7 @@ name: Atlas Explorer unit tests
 on:
   pull_request:
     paths:
-      - "apps/atlas-explorer/**"
+      - "agents/atlas-explorer/**"
       - "packages/atlas-explorer-agent/**"
       - "package.json"
       - "pnpm-lock.yaml"
@@ -14,7 +14,7 @@ on:
     branches:
       - main
     paths:
-      - "apps/atlas-explorer/**"
+      - "agents/atlas-explorer/**"
       - "packages/atlas-explorer-agent/**"
       - "package.json"
       - "pnpm-lock.yaml"

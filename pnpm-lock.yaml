@@ -12,7 +12,7 @@ importers:
 
   .: {}
 
-  apps/atlas-explorer:
+  agents/atlas-explorer:
     dependencies:
       '@langchain/core':
         specifier: 1.2.12

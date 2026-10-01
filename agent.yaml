@@ -1,0 +1,6 @@
+# Agent Engine monorepo manifest. Each entry is a workspace under agents/.
+# Run agentengine from the repository root with --workspace <name>, or cd
+# into that workspace. Project memory settings live in project-config.yaml.
+agents:
+  - name: atlas-explorer
+    path: agents/atlas-explorer
