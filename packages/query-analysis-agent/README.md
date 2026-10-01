@@ -10,3 +10,7 @@ Shared LLM selection, checkpoints, and LangGraph middleware live in
 call. `ALLOW_WRITE_OPERATIONS` is ignored, and there is no
 human-in-the-loop path. `aggregate` stays available. Atlas rejects `$out`
 and `$merge` because the credential is read-only.
+
+`displayQueryStat` renders counts, bytes, durations, and ratios the way
+Query Insights does, including `N/A` for invalid values. The
+conformance vector is the same file the server formatter is pinned to.

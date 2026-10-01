@@ -1,4 +1,10 @@
 export {
+  NOT_AVAILABLE,
+  UNITS_LEGEND,
+  display as displayQueryStat,
+  displayedStats,
+} from "./queryStatsFormatter.js";
+export {
   describeScope,
   resolveScope,
   type QueryAnalysisScope,
