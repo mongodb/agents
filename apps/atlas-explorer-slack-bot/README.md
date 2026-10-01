@@ -1,23 +1,24 @@
 # AtlasExplorer Chat Bot
 
 `@AtlasExplorer` is a [Vercel Chat SDK](https://chat-sdk.dev) client for the
-existing [Magenta Atlas Explorer agent](../../agents/atlas-explorer). Shared
+existing [Atlas Explorer agent on Agent Engine](../../agents/atlas-explorer). Shared
 handlers contain the conversation, delivery, and human-review behavior; the
 official `@chat-adapter/slack` package contains Slack transport behavior. This
 keeps the core ready for another Chat SDK adapter without duplicating the
 Agentic workflow.
 
-Conversation handling, the Agent Engine client, and thread storage live in
+Conversation handling, Slack mention filtering (`slackMentions`), the Agent
+Engine client, and thread storage live in
 [`@repo/agent-engine-chat`](../../packages/agent-engine-chat). This app
 keeps Slack transport, Socket Mode, the Vercel webhook, and Atlas Explorer
 copy.
 
 The bot does not run LangGraph, MCP, or Atlas credentials. It sends normalized
-chat messages to the Agentic Platform invocation API, maps Chat SDK threads to
+chat messages to the Agent Engine invocation API, maps Chat SDK threads to
 Agentic sessions, and presents portable Approve/Reject cards when Atlas
 Explorer suspends for human review.
 
-The initial integration uses the Magenta workspace's shared Atlas MCP identity.
+The initial integration uses the Agent Engine workspace's shared Atlas MCP identity.
 Every allowlisted Slack user therefore has the same Atlas access as that
 workspace; access is not scoped to each user's Atlas identity.
 
@@ -116,7 +117,8 @@ The Slack bot can run entirely on localhost; Vercel and an inbound tunnel are
 not required. Socket Mode opens an outbound WebSocket to Slack.
 
 Use the **AtlasExplorer Local** app created from `manifest.local.json`. Put
-that app's bot token, signing secret, and app-level token in `.env`. Do not
+that app's bot token and app-level token in `.env`; Socket Mode does not need
+the signing secret. Do not
 point local Socket Mode at the hosted AtlasExplorer app; those credentials
 belong to the Vercel webhook.
 
@@ -126,6 +128,11 @@ pnpm test
 pnpm typecheck
 pnpm start
 ```
+
+`pnpm start` first builds `@repo/agent-engine-chat` through the app's
+`prestart` hook, then runs `tsx src/index.ts`. The `build`, `dev`, `test`, and
+`typecheck` scripts have the same kind of `pre*` hook, because the app imports
+the library's compiled `dist` output.
 
 `MONGODB_URI` is optional locally. Without it,
 `mongodb-memory-server-core` starts an ephemeral MongoDB process. Chat SDK
@@ -137,17 +144,17 @@ and its data disappears during graceful shutdown. You can then:
 - Mention `@AtlasExplorer Local` in a channel; the response starts a thread.
 - Send follow-ups in a thread already owned by the bot.
 
-Channel mention routing validates the Slack user ID in the raw event. A local
+Channel mention routing (`slackMentions` in `@repo/agent-engine-chat`) validates the Slack user ID in the raw event. A local
 app can therefore use a display name such as `AtlasExplorer Local` without a
 bot named `AtlasExplorer` treating that structured mention as its own.
 
-By default, the local bot invokes a deployed Magenta workspace. The Atlas MCP
-client credentials remain configured on Magenta and never enter the Slack bot
+By default, the local bot invokes a deployed Agent Engine workspace. The Atlas MCP
+client credentials remain configured on Agent Engine and never enter the Slack bot
 environment.
 
 `CHAT_ALLOWED_USER_IDS` is required in both Socket and HTTP modes. The bot
 refuses to start without an explicit allowlist because every permitted user
-acts through the Magenta workspace's shared Atlas identity.
+acts through the Agent Engine workspace's shared Atlas identity.
 
 ### Authorize scheduled Workflow Builder messages
 
@@ -200,7 +207,7 @@ AGENTIC_WORKSPACE_ID=
 
 Start the bot with `pnpm start`. The client calls the Playground's
 `/invoke/stream` proxy on port 3000, which injects the local workspace scope
-before forwarding to OE. Magenta tool progress updates the transient Slack
+before forwarding to OE. Agent Engine tool progress updates the transient Slack
 thread status; streamed model text is collected and posted once as the durable
 final response. Do not point the client directly at OE port 8000 because the
 client relies on the Playground proxy to inject that scope. Atlas MCP
@@ -240,8 +247,10 @@ export VERCEL_URL=https://atlas-explorer-three.vercel.app
      --scope "$VERCEL_SCOPE"
    ```
 
-   `vercel.json` owns the API-only framework, empty build command, Fluid
-   Compute, and `iad1` region settings; `package.json` pins Node.js 22.
+   `vercel.json` owns the API-only framework, Fluid Compute, and `iad1` region
+   settings, plus the build command `pnpm --filter @repo/agent-engine-chat
+   build`, which compiles the workspace library that the webhook imports.
+   `package.json` pins Node.js 22.
    Deployment Protection is a project-level setting and must not protect the
    stable webhook domain.
 2. Set these Production-scoped environment variables:
@@ -284,7 +293,7 @@ export VERCEL_URL=https://atlas-explorer-three.vercel.app
 
 The thin Vercel handler passes the untouched request to
 `bot.webhooks.slack` and supplies Vercel's `waitUntil`, so the official adapter
-can acknowledge Slack quickly while Magenta work continues. Its maximum
+can acknowledge Slack quickly while Agent Engine work continues. Its maximum
 duration is 300 seconds. Vercel requires `MONGODB_URI`; the embedded server can
 never start in production. One cached MongoDB client backs both Chat SDK state
 and Agentic workflow state across warm invocations.
@@ -300,7 +309,7 @@ Functions use dynamic egress addresses; this development deployment therefore
 requires `0.0.0.0/0` in the thread-store Atlas project's IP Access List unless
 Vercel Static IPs or Secure Compute is enabled. Database credentials still
 enforce access. Atlas MCP network allowlisting is separate: MCP runs from
-Magenta, so allow the Magenta runtime's egress addresses rather than Vercel's
+Agent Engine, so allow the Agent Engine runtime's egress addresses rather than Vercel's
 addresses.
 
 After cutover, test an allowlisted DM, a channel mention and thread follow-up,
@@ -373,8 +382,11 @@ automatically replayed; verify Atlas state before starting a new conversation.
 Register another Chat SDK adapter in `src/runtime.ts`, add its
 platform-qualified actors to `CHAT_ALLOWED_USER_IDS`, and provide a delivery
 boundary only for capabilities that are genuinely platform-specific. The
-handlers under `src/chat/` already cover mentions, direct messages, subscribed
-follow-ups, cards, approvals, session continuity, and delivery recovery.
+handlers in
+[`@repo/agent-engine-chat`](../../packages/agent-engine-chat)
+(`registerChatHandlers` in its `chat` export) already cover mentions, direct
+messages, subscribed follow-ups, cards, approvals, session continuity, and
+delivery recovery.
 
 Slack-specific behavior is limited to `src/platforms/slack.ts`: Agent View,
 suggested prompts, App Home, Socket Mode configuration, response-size handling,
@@ -385,9 +397,11 @@ delivery failed.
 ## Migration compatibility
 
 Existing records in the `slack_threads` collection are copied lazily into the
-platform-neutral `chat_threads` collection on first thread activity. Session
-IDs, pending reviews, requesters, recent events, and pending deliveries survive
-the cutover. Keep the old collection until every active thread has either been
+platform-neutral `chat_threads` collection on first thread activity. Pending
+reviews, requesters, recent events, and pending deliveries survive the cutover.
+Session IDs stored under the pre-rename session field (before it became
+`agentSessionId`) are not read, so a migrated thread starts a new Agent Engine
+session. Keep the old collection until every active thread has either been
 accessed or aged beyond its retention period.
 
 ## Development checks
@@ -399,5 +413,5 @@ pnpm build
 ```
 
 Tests mock external HTTP and Slack boundaries and start a test-scoped
-`MongoMemoryServer`; they do not require a Slack workspace, Magenta deployment,
+`MongoMemoryServer`; they do not require a Slack workspace, Agent Engine deployment,
 Docker, or separately managed MongoDB server.
