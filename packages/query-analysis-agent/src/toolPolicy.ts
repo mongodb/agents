@@ -1,13 +1,13 @@
 import { selectTools } from "@repo/agent-engine-core";
 
 /**
- * Read-only Atlas Managed MCP tools for Query Analysis.
+ * Subset of Atlas MCP tools available to the Query Analysis agent.
  *
  * Writes are never enabled. `$out` and `$merge` are not filtered here;
  * the MCP credential is read-only, so Atlas rejects those stages.
  * `aggregate` stays available as a read tool.
  */
-export const READ_ONLY_MCP_TOOLS: ReadonlySet<string> = new Set([
+export const QUERY_ANALYSIS_MCP_TOOLS: ReadonlySet<string> = new Set([
   "mongodb__aggregate",
   "mongodb__atlas_connect_cluster",
   "mongodb__atlas_get_performance_advisor",
@@ -34,5 +34,5 @@ export const READ_ONLY_MCP_TOOLS: ReadonlySet<string> = new Set([
 export function selectQueryAnalysisTools<T extends { name: string }>(
   tools: readonly T[],
 ): T[] {
-  return selectTools(tools, READ_ONLY_MCP_TOOLS, false);
+  return selectTools(tools, QUERY_ANALYSIS_MCP_TOOLS, false);
 }

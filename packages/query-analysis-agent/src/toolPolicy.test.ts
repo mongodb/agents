@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  READ_ONLY_MCP_TOOLS,
+  QUERY_ANALYSIS_MCP_TOOLS,
   selectQueryAnalysisTools,
 } from "./toolPolicy.js";
 
 describe("Query Analysis tool policy", () => {
   it("allowlists the read-only investigation tools", () => {
-    expect([...READ_ONLY_MCP_TOOLS].sort()).toEqual([
+    expect([...QUERY_ANALYSIS_MCP_TOOLS].sort()).toEqual([
       "mongodb__aggregate",
       "mongodb__atlas_connect_cluster",
       "mongodb__atlas_get_performance_advisor",
