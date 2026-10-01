@@ -1,7 +1,7 @@
 import { MessageSchema } from "@mongodb-js/agent-engine-sdk";
 import { describe, expect, it } from "vitest";
 
-describe("pinned Magenta runtime compatibility", () => {
+describe("pinned Agent Engine runtime compatibility", () => {
   it("parses content-block messages crossing the AER to Tool Pod boundary", () => {
     const message = MessageSchema.parse({
       role: "user",

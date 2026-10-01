@@ -1,4 +1,4 @@
-/** MongoDB Atlas Explorer for the Magenta Agentic Platform. */
+/** MongoDB Atlas Explorer agent for Agent Engine. */
 
 import "dotenv/config";
 

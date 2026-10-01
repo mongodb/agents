@@ -1,5 +1,5 @@
 /**
- * Keep deep-agent file operations on Magenta's audited Tool Pod path without
+ * Keep deep-agent file operations on Agent Engine's audited Tool Pod path without
  * advertising a general-purpose shell to the model. Tool Pod credentials and
  * OAuth cache files live outside the filesystem handler's readable roots, but
  * an unrestricted shell in the same container could otherwise reach them.

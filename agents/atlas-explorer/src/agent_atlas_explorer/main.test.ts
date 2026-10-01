@@ -149,7 +149,7 @@ describe("Atlas Explorer graph assembly", () => {
     }
   });
 
-  it("builds a single Magenta deep agent with MCP tools, skills, and platform checkpoints", async () => {
+  it("builds a single Agent Engine deep agent with MCP tools, skills, and platform checkpoints", async () => {
     delete process.env.AGENTIC_AGENT_WORKDIR;
 
     const { app } = await import("./main.js");

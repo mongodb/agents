@@ -29,7 +29,7 @@ describe("recoverToolCall", () => {
     );
   });
 
-  it("rethrows graph interrupts so Magenta can suspend the execution", async () => {
+  it("rethrows graph interrupts so Agent Engine can suspend the execution", async () => {
     const interrupt = new GraphInterrupt([]);
 
     await expect(

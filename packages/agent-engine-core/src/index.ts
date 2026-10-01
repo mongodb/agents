@@ -18,7 +18,7 @@ export {
   type Requester,
 } from "./requesterMetadata.js";
 export {
-  isMagentaResume,
+  isAgentEngineResume,
   stampResumeClientUserMiddleware,
   stampResumeMessages,
 } from "./stampResume.js";

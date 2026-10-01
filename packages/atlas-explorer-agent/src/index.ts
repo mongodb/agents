@@ -2,7 +2,7 @@ export {
   buildLLM,
   clientUserSchema,
   formatToolErrorForAgent,
-  isMagentaResume,
+  isAgentEngineResume,
   parseClientUserPayload,
   prepareAgentInput as prepareAtlasExplorerInput,
   recoverToolCall,

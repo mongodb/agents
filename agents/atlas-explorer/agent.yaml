@@ -1,6 +1,6 @@
-# Human-readable app slug used by Agentic Platform tooling.
+# Human-readable app slug used by Agent Engine tooling.
 name: atlas-explorer
-# Node entry point for the Magenta SDK App instance.
+# Node entry point for the Agent Engine SDK App instance.
 # Format: <module path>:<export name>. This template exposes `app` from
 # src/agent_atlas_explorer/main.ts (compiled to dist/agent_atlas_explorer/main.js).
 entrypoint: agent_atlas_explorer.main:app

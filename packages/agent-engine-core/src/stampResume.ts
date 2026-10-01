@@ -31,7 +31,7 @@ function requestContextFromRuntime(
   return ctx;
 }
 
-export function isMagentaResume(runtime: AgentRuntime | undefined): boolean {
+export function isAgentEngineResume(runtime: AgentRuntime | undefined): boolean {
   const ctx = requestContextFromRuntime(runtime);
   if (ctx === undefined) {
     return false;
@@ -69,7 +69,7 @@ export function stampResumeMessages(
 function resumeStampTarget(
   runtime: AgentRuntime | undefined,
 ): { extras: ClientUserExtras; ctx: object } | undefined {
-  if (!isMagentaResume(runtime)) {
+  if (!isAgentEngineResume(runtime)) {
     return undefined;
   }
   const ctx = requestContextFromRuntime(runtime);

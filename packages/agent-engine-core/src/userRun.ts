@@ -12,7 +12,7 @@ function payloadRecord(input: AgentInput): Record<string, unknown> {
 }
 
 /**
- * Magenta graph input for a fresh invoke: the default HumanMessage, plus
+ * Agent Engine graph input for a fresh invoke: the default HumanMessage, plus
  * client/user on that message when the payload includes them. Resume is
  * stamped separately in stampResume.ts.
  */

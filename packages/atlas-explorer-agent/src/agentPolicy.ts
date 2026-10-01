@@ -6,9 +6,9 @@ import {
 export { writeOperationsAllowed };
 
 /**
- * Magenta sanitizes MCP hyphens to underscores and prefixes the server name.
+ * Agent Engine sanitizes MCP hyphens to underscores and prefixes the server name.
  *
- * This explicit allowlist is a shipping bridge until Magenta preserves MCP
+ * This explicit allowlist is a shipping bridge until Agent Engine preserves MCP
  * tool annotations on `app.getTools()`.
  *
  * Names follow Atlas Managed MCP `read`, `metadata`, and `connect` tools.

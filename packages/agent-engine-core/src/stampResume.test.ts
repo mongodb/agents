@@ -3,7 +3,7 @@ import { Command } from "@langchain/langgraph";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
-  isMagentaResume,
+  isAgentEngineResume,
   stampResumeClientUserMiddleware,
   stampResumeMessages,
 } from "./stampResume.js";
@@ -122,12 +122,12 @@ describe("stampResumeMessages", () => {
   });
 });
 
-describe("isMagentaResume", () => {
-  it("reads Magenta request_context.resume", () => {
-    expect(isMagentaResume(resumeRuntime(true))).toBe(true);
-    expect(isMagentaResume(resumeRuntime(false))).toBe(false);
-    expect(isMagentaResume({ configurable: {} })).toBe(false);
-    expect(isMagentaResume(undefined)).toBe(false);
+describe("isAgentEngineResume", () => {
+  it("reads Agent Engine request_context.resume", () => {
+    expect(isAgentEngineResume(resumeRuntime(true))).toBe(true);
+    expect(isAgentEngineResume(resumeRuntime(false))).toBe(false);
+    expect(isAgentEngineResume({ configurable: {} })).toBe(false);
+    expect(isAgentEngineResume(undefined)).toBe(false);
   });
 });
 
@@ -136,7 +136,7 @@ describe("stampResumeClientUserMiddleware", () => {
     payloadMock.current = null;
   });
 
-  it("stamps afterModel on a Magenta resume with payload extras", () => {
+  it("stamps afterModel on an Agent Engine resume with payload extras", () => {
     payloadMock.current = { client: "slack", user: ben };
     const pending = new AIMessage({
       id: "ai-resume",
@@ -257,7 +257,7 @@ describe("stampResumeClientUserMiddleware", () => {
     });
   });
 
-  it("stamps a Magenta resume only once", async () => {
+  it("stamps an Agent Engine resume only once", async () => {
     payloadMock.current = { client: "slack", user: ben };
     const runtime = resumeRuntime();
     const pending = new AIMessage({

@@ -1,7 +1,7 @@
 /**
  * Non-secret Atlas Explorer settings.
  *
- * Magenta only injects secret env vars, so provider, model, and prompt
+ * Agent Engine only injects secret env vars, so provider, model, and prompt
  * persona live here. Changing `llm.provider` also requires the matching
  * key under `required_secrets` and the provider host under
  * `network.egress` in agent.yaml.

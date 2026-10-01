@@ -37,7 +37,7 @@ export const clientUserSchema = z
   .refine((user) => user.id !== undefined || user.actor_id !== undefined, {
     message: "user must include id or actor_id",
   })
-  .describe("Identity of the requester for a single Magenta invocation.");
+  .describe("Identity of the requester for a single Agent Engine invocation.");
 
 const payloadExtrasSchema = z.object({
   client: clientNameSchema,
