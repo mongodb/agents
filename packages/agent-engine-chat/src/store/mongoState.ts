@@ -8,7 +8,7 @@ import {
 } from "mongodb";
 
 const DEFAULT_COLLECTION_NAME = "chat_sdk_state";
-const DEFAULT_DATABASE_NAME = "agent_engine";
+const DEFAULT_DATABASE_NAME = "agent_engine_chat";
 const DEFAULT_KEY_PREFIX = "chat-sdk";
 const DEFAULT_LEGACY_THREAD_COLLECTION_NAME = "slack_threads";
 const LEGACY_EVENT_DEDUPE_TTL_MS = 24 * 60 * 60 * 1_000;
