@@ -11,6 +11,10 @@ call. `ALLOW_WRITE_OPERATIONS` is ignored, and there is no
 human-in-the-loop path. `aggregate` stays available. Atlas rejects `$out`
 and `$merge` because the credential is read-only.
 
+`displayQueryStat` renders counts, bytes, durations, and ratios the way
+Query Insights does, including `N/A` for invalid values. The
+conformance vector is the same file the server formatter is pinned to.
+
 `resolveScope` reads an optional `{ projectId, clusterName }` pin.
 `scopeGuardMiddleware` turns a tool call aimed at a different project or
 cluster into a recoverable tool error. `describeScope` is the sentence the
