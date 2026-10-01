@@ -59,6 +59,8 @@ jobs:
             command: pnpm --filter atlas-explorer test
           - name: query-analysis
             command: pnpm --filter @repo/query-analysis-agent test
+          - name: query-analysis-app
+            command: pnpm --filter query-analysis test
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/unit-test
