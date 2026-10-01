@@ -2,7 +2,7 @@
   "name": "@repo/query-analysis-agent",
   "version": "0.1.0",
   "private": true,
-  "description": "Query Analysis agent tool policy",
+  "description": "Query Analysis agent policies, prompts, and middleware",
   "license": "Apache-2.0",
   "type": "module",
   "exports": {
