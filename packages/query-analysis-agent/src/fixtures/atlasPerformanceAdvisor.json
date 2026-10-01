@@ -1,0 +1,57 @@
+{
+  "_comment": "Representative atlas_get_performance_advisor payload. Live capture was blocked because this environment's IP is not on the Atlas access list. The shape matches the MongoDB MCP structured content and the Atlas slow-query log line plus suggested-index documents.",
+  "projectId": "507f1f77bcf86cd799439011",
+  "clusterName": "Cluster-1",
+  "slowQueryLogs": [
+    {
+      "namespace": "highImpact.dbA",
+      "line": "{\"t\":{\"$date\":\"2026-05-06T10:23:45.447Z\"},\"s\":\"I\",\"c\":\"COMMAND\",\"id\":51803,\"msg\":\"Slow query\",\"attr\":{\"type\":\"command\",\"ns\":\"highImpact.dbA\",\"command\":{\"find\":\"dbA\",\"filter\":{\"status\":\"archived\"},\"$db\":\"highImpact\"},\"planSummary\":\"COLLSCAN\",\"keysExamined\":0,\"docsExamined\":2005,\"nreturned\":5,\"millis\":400,\"numYields\":2,\"queryHash\":\"AAA\"}}"
+    },
+    {
+      "namespace": "highImpact.dbA",
+      "line": "{\"t\":{\"$date\":\"2026-05-06T10:24:01.000Z\"},\"s\":\"I\",\"c\":\"COMMAND\",\"id\":51803,\"msg\":\"Slow query\",\"attr\":{\"type\":\"command\",\"ns\":\"highImpact.dbA\",\"command\":{\"find\":\"dbA\",\"filter\":{\"status\":\"archived\"},\"$db\":\"highImpact\",\"lsid\":{\"id\":\"session\"}},\"planSummary\":\"COLLSCAN\",\"keysExamined\":0,\"docsExamined\":2005,\"nreturned\":5,\"millis\":500,\"numYields\":4,\"queryHash\":\"AAA\"}}"
+    },
+    {
+      "namespace": "highImpact.dbB",
+      "line": "{\"t\":{\"$date\":\"2026-05-06T10:24:10.000Z\"},\"s\":\"I\",\"c\":\"COMMAND\",\"id\":51803,\"msg\":\"Slow query\",\"attr\":{\"type\":\"command\",\"ns\":\"highImpact.dbB\",\"command\":{\"find\":\"dbB\",\"filter\":{\"type\":\"premium\"},\"sort\":{\"createdAt\":-1},\"$db\":\"highImpact\"},\"planSummary\":\"IXSCAN { type: 1 }, SORT\",\"keysExamined\":100,\"docsExamined\":100,\"nreturned\":10,\"millis\":80,\"numYields\":1,\"queryHash\":\"BBB\"}}"
+    }
+  ],
+  "suggestedIndexes": [
+    {
+      "id": "bbbbbbbbbbbbbbbbbbbbbbbb",
+      "namespace": "highImpact.dbA",
+      "weight": 900000,
+      "index": [
+        {
+          "unusedField": 1
+        }
+      ]
+    },
+    {
+      "id": "aaaaaaaaaaaaaaaaaaaaaaaa",
+      "namespace": "highImpact.dbA",
+      "weight": 1000,
+      "index": [
+        {
+          "status": 1
+        }
+      ]
+    },
+    {
+      "id": "cccccccccccccccccccccccc",
+      "namespace": "highImpact.dbB",
+      "weight": 150000,
+      "index": [
+        {
+          "type": 1
+        },
+        {
+          "createdAt": -1
+        }
+      ],
+      "collation": {
+        "locale": "en"
+      }
+    }
+  ]
+}

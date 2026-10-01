@@ -11,6 +11,12 @@ call. `ALLOW_WRITE_OPERATIONS` is ignored, and there is no
 human-in-the-loop path. `aggregate` stays available. Atlas rejects `$out`
 and `$merge` because the credential is read-only.
 
+`annotatePerformanceAdvisorMiddleware` appends an evidence block to
+`mongodb__atlas_get_performance_advisor` results: slow logs grouped by
+namespace and query shape, formatted ratios, collection-scan and sort
+signals, and the matching suggested index. A result that cannot be
+parsed is returned unchanged.
+
 `displayQueryStat` renders counts, bytes, durations, and ratios the way
 Query Insights does, including `N/A` for invalid values. The
 conformance vector is the same file the server formatter is pinned to.
