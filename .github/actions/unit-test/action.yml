@@ -1,0 +1,48 @@
+name: Unit test
+description: Install workspace dependencies and run one test command
+
+inputs:
+  command:
+    description: Test command to run
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@v7
+
+    - uses: actions/setup-node@v7
+      with:
+        node-version: 24
+
+    - name: Enable pnpm
+      shell: bash
+      run: |
+        corepack enable
+        corepack install
+
+    - name: Get pnpm store directory
+      shell: bash
+      run: echo "PNPM_STORE_PATH=$(pnpm store path --silent)" >> "$GITHUB_ENV"
+
+    - uses: actions/cache@v6
+      with:
+        path: ${{ env.PNPM_STORE_PATH }}
+        key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+        restore-keys: |
+          pnpm-${{ runner.os }}-
+
+    - uses: actions/cache@v6
+      with:
+        path: ~/.cache/mongodb-binaries
+        key: mongodb-memory-server-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+        restore-keys: |
+          mongodb-memory-server-${{ runner.os }}-
+
+    - name: Install dependencies
+      shell: bash
+      run: pnpm install --frozen-lockfile
+
+    - name: Run unit tests
+      shell: bash
+      run: ${{ inputs.command }}
