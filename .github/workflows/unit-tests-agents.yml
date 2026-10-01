@@ -54,6 +54,7 @@ jobs:
           - name: query-analysis
             command: pnpm --filter @repo/query-analysis-agent test
     steps:
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/unit-test
         with:
           command: ${{ matrix.command }}

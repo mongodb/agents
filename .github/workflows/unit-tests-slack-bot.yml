@@ -46,6 +46,7 @@ jobs:
           - name: atlas-explorer-slack-bot
             command: pnpm --filter @repo/atlas-explorer-slack-bot test
     steps:
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/unit-test
         with:
           command: ${{ matrix.command }}
