@@ -1,7 +1,7 @@
 import { HumanMessage } from "@langchain/core/messages";
 import { describe, expect, it } from "vitest";
 
-import { prepareAtlasExplorerInput } from "./userRun.js";
+import { prepareAgentInput } from "./userRun.js";
 
 const ada = {
   id: "U123",
@@ -10,9 +10,9 @@ const ada = {
   actor_id: "slack:U123",
 };
 
-describe("prepareAtlasExplorerInput", () => {
+describe("prepareAgentInput", () => {
   it("stamps slack client user extras on the root human message", () => {
-    const input = prepareAtlasExplorerInput(
+    const input = prepareAgentInput(
       {
         payload: {
           message: "List projects",
@@ -35,7 +35,7 @@ describe("prepareAtlasExplorerInput", () => {
   });
 
   it("stamps a teams client the same way", () => {
-    const input = prepareAtlasExplorerInput(
+    const input = prepareAgentInput(
       {
         payload: {
           message: "List projects",
@@ -56,7 +56,7 @@ describe("prepareAtlasExplorerInput", () => {
   });
 
   it("keeps the default human message when extras are absent", () => {
-    const input = prepareAtlasExplorerInput(
+    const input = prepareAgentInput(
       { payload: { message: "hi" } },
       { userId: "playground-user" },
     );

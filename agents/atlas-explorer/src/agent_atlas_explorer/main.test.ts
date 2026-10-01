@@ -165,6 +165,7 @@ describe("Atlas Explorer graph assembly", () => {
     expect(harness.buildLLM).toHaveBeenCalledWith({
       provider: atlasExplorerConfig.llm.provider,
       model: atlasExplorerConfig.llm.model,
+      logPrefix: "atlas-explorer",
     });
     expect(harness.deepAgent).toHaveBeenCalledWith(
       harness.model,
@@ -177,7 +178,7 @@ describe("Atlas Explorer graph assembly", () => {
           stampResumeClientUserMiddleware,
           expect.objectContaining({ name: "stripOpenAIToolEcho" }),
           harness.hitlMiddleware,
-          expect.objectContaining({ name: "recoverAtlasToolErrors" }),
+          expect.objectContaining({ name: "recoverToolErrors" }),
         ],
       }),
     );

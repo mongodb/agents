@@ -1,3 +1,10 @@
+import {
+  selectTools,
+  writeOperationsAllowed,
+} from "@repo/agent-engine-core";
+
+export { writeOperationsAllowed };
+
 /**
  * Magenta sanitizes MCP hyphens to underscores and prefixes the server name.
  *
@@ -38,21 +45,11 @@ export const READ_ONLY_MCP_TOOLS: ReadonlySet<string> = new Set([
   "mongodb__search_knowledge",
 ]);
 
-export function writeOperationsAllowed(
-  env: NodeJS.ProcessEnv = process.env,
-): boolean {
-  const value = env.ALLOW_WRITE_OPERATIONS?.trim().toLowerCase();
-  return Boolean(value) && value !== "false";
-}
-
 export function selectAtlasTools<T extends { name: string }>(
   tools: readonly T[],
   allowWriteOperations: boolean = writeOperationsAllowed(),
 ): T[] {
-  return tools.filter(
-    (tool) =>
-      READ_ONLY_MCP_TOOLS.has(tool.name) || allowWriteOperations,
-  );
+  return selectTools(tools, READ_ONLY_MCP_TOOLS, allowWriteOperations);
 }
 
 export function mutativeInterruptOn<T extends { name: string }>(

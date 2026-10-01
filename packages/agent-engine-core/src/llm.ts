@@ -1,5 +1,5 @@
 /**
- * LLM provider selection for atlas-explorer.
+ * LLM provider selection.
  *
  * Supported providers: anthropic, cerebras, gemini, openai.
  */
@@ -10,14 +10,16 @@ import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { ChatOpenAI } from "@langchain/openai";
 import { ChatCerebras } from "@langchain/cerebras";
 
-function log(msg: string): void {
-  console.log(`[atlas-explorer] ${msg}`);
+function log(prefix: string, msg: string): void {
+  console.log(`[${prefix}] ${msg}`);
 }
 
 export interface BuildLLMOptions {
   provider?: string | null;
   model?: string | null;
   temperature?: number;
+  /** Log tag, for example "atlas-explorer". Defaults to "agent". */
+  logPrefix?: string;
 }
 
 export function resolveOpenAIResponsesApi(
@@ -44,6 +46,7 @@ export function buildLLM(opts: BuildLLMOptions = {}): BaseChatModel {
   const configuredProvider = (opts.provider ?? "").trim().toLowerCase();
   const model = opts.model ?? null;
   const temperature = opts.temperature;
+  const write = (msg: string) => log(opts.logPrefix?.trim() || "agent", msg);
 
   const geminiKey = process.env.GEMINI_API_KEY ?? "";
   const openaiKey = process.env.OPENAI_API_KEY ?? "";
@@ -54,7 +57,7 @@ export function buildLLM(opts: BuildLLMOptions = {}): BaseChatModel {
 
   const buildGemini = (): BaseChatModel => {
     const modelName = model ?? "gemini-2.5-flash";
-    log(`Using Gemini LLM: ${modelName}`);
+    write(`Using Gemini LLM: ${modelName}`);
     return new ChatGoogleGenerativeAI({
       apiKey: geminiKey,
       model: modelName,
@@ -65,7 +68,7 @@ export function buildLLM(opts: BuildLLMOptions = {}): BaseChatModel {
   const buildOpenAI = (): BaseChatModel => {
     const modelName = model ?? "gpt-4o-mini";
     const useResponsesApi = resolveOpenAIResponsesApi(modelName);
-    log(`Using OpenAI LLM: ${modelName}`);
+    write(`Using OpenAI LLM: ${modelName}`);
     const config: ConstructorParameters<typeof ChatOpenAI>[0] = {
       apiKey: openaiKey,
       model: modelName,
@@ -99,7 +102,7 @@ export function buildLLM(opts: BuildLLMOptions = {}): BaseChatModel {
 
   const buildAnthropic = (): BaseChatModel => {
     const modelName = model ?? "claude-sonnet-4-5";
-    log(`Using Anthropic LLM: ${modelName}`);
+    write(`Using Anthropic LLM: ${modelName}`);
     const config: ConstructorParameters<typeof ChatAnthropic>[0] = {
       apiKey: anthropicKey,
       model: modelName,
@@ -121,7 +124,7 @@ export function buildLLM(opts: BuildLLMOptions = {}): BaseChatModel {
 
   const buildCerebras = (): BaseChatModel => {
     const modelName = model ?? "qwen-3-235b-a22b-instruct-2507";
-    log(`Using Cerebras LLM: ${modelName}`);
+    write(`Using Cerebras LLM: ${modelName}`);
     return new ChatCerebras({
       apiKey: cerebrasKey,
       model: modelName,

@@ -120,7 +120,7 @@ importers:
         specifier: ^5.0.0
         version: 5.0.2(@opentelemetry/api@1.9.1)(@types/node@25.9.8)(vite@8.3.1(@types/node@25.9.8)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1))
 
-  packages/atlas-explorer-agent:
+  packages/agent-engine-core:
     dependencies:
       '@langchain/anthropic':
         specifier: ^1.4.0
@@ -165,6 +165,22 @@ importers:
       mongodb-memory-server-core:
         specifier: 11.2.0
         version: 11.2.0
+      typescript:
+        specifier: ^5.5.0
+        version: 5.9.3
+      vitest:
+        specifier: ^4.1.11
+        version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@25.9.8)(vite@8.3.1(@types/node@25.9.8)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1))
+
+  packages/atlas-explorer-agent:
+    dependencies:
+      '@repo/agent-engine-core':
+        specifier: workspace:*
+        version: link:../agent-engine-core
+    devDependencies:
+      '@types/node':
+        specifier: ^25.0.0
+        version: 25.9.8
       typescript:
         specifier: ^5.5.0
         version: 5.9.3

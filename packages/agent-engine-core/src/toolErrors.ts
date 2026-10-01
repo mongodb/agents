@@ -42,7 +42,7 @@ export async function recoverToolCall<T>(
 }
 
 export const recoverToolErrorsMiddleware = createMiddleware({
-  name: "recoverAtlasToolErrors",
+  name: "recoverToolErrors",
   wrapToolCall: async (request, handler) =>
     recoverToolCall(request, () => handler(request)),
 });

@@ -16,7 +16,7 @@ function payloadRecord(input: AgentInput): Record<string, unknown> {
  * client/user on that message when the payload includes them. Resume is
  * stamped separately in stampResume.ts.
  */
-export function prepareAtlasExplorerInput(
+export function prepareAgentInput(
   input: AgentInput,
   ctx: Pick<RequestContext, "userId" | "sessionId">,
 ): Record<string, unknown> {

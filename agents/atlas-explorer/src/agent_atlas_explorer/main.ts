@@ -61,6 +61,7 @@ export const buildAgent = app.entrypoint(() => {
     buildLLM({
       provider: atlasExplorerConfig.llm.provider,
       model: atlasExplorerConfig.llm.model,
+      logPrefix: "atlas-explorer",
     }),
     {
       tools: availableAtlasTools as never,

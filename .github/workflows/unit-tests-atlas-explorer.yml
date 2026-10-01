@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "agents/**"
+      - "packages/agent-engine-core/**"
       - "packages/atlas-explorer-agent/**"
       - "package.json"
       - "pnpm-lock.yaml"
@@ -15,6 +16,7 @@ on:
       - main
     paths:
       - "agents/**"
+      - "packages/agent-engine-core/**"
       - "packages/atlas-explorer-agent/**"
       - "package.json"
       - "pnpm-lock.yaml"
@@ -35,4 +37,4 @@ jobs:
     uses: ./.github/workflows/unit-tests.yml
     with:
       working-directory: .
-      test-command: pnpm --filter @repo/atlas-explorer-agent test && pnpm --filter atlas-explorer test
+      test-command: pnpm --filter @repo/agent-engine-core test && pnpm --filter @repo/atlas-explorer-agent test && pnpm --filter atlas-explorer test
