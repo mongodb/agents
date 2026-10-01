@@ -6,8 +6,12 @@ and middleware.
 Shared LLM selection, checkpoints, and LangGraph middleware live in
 [`@repo/agent-engine-core`](../agent-engine-core).
 
-The package currently holds `QUERY_ANALYSIS_MCP_TOOLS`, the subset of Atlas
-MCP tools this agent may call.
-`ALLOW_WRITE_OPERATIONS` is ignored, and there is no human-in-the-loop path.
-`aggregate` stays available. Atlas rejects `$out` and `$merge` because the
-credential is read-only.
+`QUERY_ANALYSIS_MCP_TOOLS` is the subset of Atlas MCP tools this agent may
+call. `ALLOW_WRITE_OPERATIONS` is ignored, and there is no
+human-in-the-loop path. `aggregate` stays available. Atlas rejects `$out`
+and `$merge` because the credential is read-only.
+
+`resolveScope` reads an optional `{ projectId, clusterName }` pin.
+`scopeGuardMiddleware` turns a tool call aimed at a different project or
+cluster into a recoverable tool error. `describeScope` is the sentence the
+system prompt quotes.
