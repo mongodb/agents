@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { slackBotConfig } from "./config.js";
-import type { AgenticClientConfig } from "@mongodb/agent-engine-chat/magenta";
+import type { AgenticClientConfig } from "@repo/agent-engine-chat/magenta";
 
 export type RuntimeMode = "socket" | "http";
 

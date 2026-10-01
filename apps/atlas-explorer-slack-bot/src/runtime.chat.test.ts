@@ -7,14 +7,14 @@ import type { SlackAdapter } from "@chat-adapter/slack";
 import type { Author } from "chat";
 import { describe, expect, it, vi } from "vitest";
 
-import { REVIEW_APPROVE_ACTION_ID } from "@mongodb/agent-engine-chat/chat";
-import { MemoryThreadStore } from "@mongodb/agent-engine-chat/store";
+import { REVIEW_APPROVE_ACTION_ID } from "@repo/agent-engine-chat/chat";
+import { MemoryThreadStore } from "@repo/agent-engine-chat/store";
 import {
   FakeAgentGateway,
   completed,
   seedPendingReview,
   slackAdaClientUser,
-} from "@mongodb/agent-engine-chat/testing";
+} from "@repo/agent-engine-chat/testing";
 import type { SlackBotConfig } from "./loadConfig.js";
 import { createRuntime } from "./runtime.js";
 

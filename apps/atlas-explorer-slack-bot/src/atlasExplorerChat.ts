@@ -1,4 +1,4 @@
-import type { AgentChatMessages } from "@mongodb/agent-engine-chat/chat";
+import type { AgentChatMessages } from "@repo/agent-engine-chat/chat";
 
 export const atlasExplorerChatMessages: Partial<AgentChatMessages> = {
   decisionUncertain: (botName) =>

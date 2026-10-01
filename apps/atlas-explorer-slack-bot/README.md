@@ -8,7 +8,7 @@ keeps the core ready for another Chat SDK adapter without duplicating the
 Agentic workflow.
 
 Conversation handling, the Agent Engine client, and thread storage live in
-[`@mongodb/agent-engine-chat`](../../packages/agent-engine-chat). This app
+[`@repo/agent-engine-chat`](../../packages/agent-engine-chat). This app
 keeps Slack transport, Socket Mode, the Vercel webhook, and Atlas Explorer
 copy.
 
@@ -230,7 +230,7 @@ export VERCEL_URL=https://atlas-explorer-three.vercel.app
 
 1. In the Vercel project, set the Root Directory to
    `apps/atlas-explorer-slack-bot`. Vercel installs this pnpm workspace from
-   the repository root so `@mongodb/agent-engine-chat` resolves. Then link
+   the repository root so `@repo/agent-engine-chat` resolves. Then link
    that app directory:
 
    ```bash

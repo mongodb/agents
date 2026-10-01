@@ -5,7 +5,7 @@ import {
 } from "@chat-adapter/slack";
 import type { Chat } from "chat";
 
-import type { DeliveryBoundary } from "@mongodb/agent-engine-chat/chat";
+import type { DeliveryBoundary } from "@repo/agent-engine-chat/chat";
 
 const RESPONSE_METADATA_EVENT = "atlas_explorer_responded";
 const MAX_SLACK_MARKDOWN_LENGTH = 12_000;

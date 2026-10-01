@@ -1,5 +1,5 @@
 {
-  "name": "@mongodb/agents",
+  "name": "@repo/agents",
   "private": true,
   "description": "MongoDB Agentic Platform agents and chat clients",
   "license": "Apache-2.0",
@@ -8,7 +8,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "build:slack-bot": "pnpm --filter @mongodb/atlas-explorer-slack-bot... build",
-    "test:slack-bot": "pnpm --filter @mongodb/agent-engine-chat test && pnpm --filter @mongodb/atlas-explorer-slack-bot test"
+    "build:slack-bot": "pnpm --filter @repo/atlas-explorer-slack-bot... build",
+    "test:slack-bot": "pnpm --filter @repo/agent-engine-chat test && pnpm --filter @repo/atlas-explorer-slack-bot test"
   }
 }

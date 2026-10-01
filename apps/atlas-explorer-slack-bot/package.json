@@ -1,5 +1,5 @@
 {
-  "name": "@mongodb/atlas-explorer-slack-bot",
+  "name": "@repo/atlas-explorer-slack-bot",
   "version": "0.1.0",
   "private": true,
   "description": "Cross-platform Chat SDK client for the Magenta Atlas Explorer agent",
@@ -10,23 +10,23 @@
     "node": "22.x"
   },
   "scripts": {
-    "prebuild": "pnpm --filter @mongodb/agent-engine-chat build",
+    "prebuild": "pnpm --filter @repo/agent-engine-chat build",
     "build": "tsc -p tsconfig.json",
-    "predev": "pnpm --filter @mongodb/agent-engine-chat build",
+    "predev": "pnpm --filter @repo/agent-engine-chat build",
     "dev": "tsx watch src/index.ts",
-    "prestart": "pnpm --filter @mongodb/agent-engine-chat build",
+    "prestart": "pnpm --filter @repo/agent-engine-chat build",
     "start": "tsx src/index.ts",
-    "pretest": "pnpm --filter @mongodb/agent-engine-chat build",
+    "pretest": "pnpm --filter @repo/agent-engine-chat build",
     "test": "vitest run",
     "test:watch": "vitest",
-    "pretypecheck": "pnpm --filter @mongodb/agent-engine-chat build",
+    "pretypecheck": "pnpm --filter @repo/agent-engine-chat build",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json --noEmit",
     "vercel": "pnpm dlx --allow-build=esbuild vercel",
     "deploy": "vercel deploy --prod --yes"
   },
   "dependencies": {
     "@chat-adapter/slack": "4.40.0",
-    "@mongodb/agent-engine-chat": "workspace:*",
+    "@repo/agent-engine-chat": "workspace:*",
     "@vercel/functions": "^3.9.5",
     "chat": "4.40.0",
     "dotenv": "^17.4.2",

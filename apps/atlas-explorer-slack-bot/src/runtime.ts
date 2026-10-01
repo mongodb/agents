@@ -6,15 +6,15 @@ import {
   registerChatHandlers,
   type AgentGateway,
   type HandlerLogger,
-} from "@mongodb/agent-engine-chat/chat";
-import { MagentaClient } from "@mongodb/agent-engine-chat/magenta";
+} from "@repo/agent-engine-chat/chat";
+import { MagentaClient } from "@repo/agent-engine-chat/magenta";
 import {
   getSharedMongoConnection,
   MongoStateAdapter,
   MongoThreadStore,
   type MongoConnection,
   type ThreadStore,
-} from "@mongodb/agent-engine-chat/store";
+} from "@repo/agent-engine-chat/store";
 
 import { atlasExplorerChatMessages } from "./atlasExplorerChat.js";
 import {

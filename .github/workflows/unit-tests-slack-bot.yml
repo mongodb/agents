@@ -35,4 +35,4 @@ jobs:
     uses: ./.github/workflows/unit-tests.yml
     with:
       working-directory: .
-      test-command: pnpm --filter @mongodb/agent-engine-chat test && pnpm --filter @mongodb/atlas-explorer-slack-bot test
+      test-command: pnpm --filter @repo/agent-engine-chat test && pnpm --filter @repo/atlas-explorer-slack-bot test

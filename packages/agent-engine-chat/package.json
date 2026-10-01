@@ -1,5 +1,5 @@
 {
-  "name": "@mongodb/agent-engine-chat",
+  "name": "@repo/agent-engine-chat",
   "version": "0.1.0",
   "private": true,
   "description": "Chat SDK client library for any Atlas Agent Engine agent",

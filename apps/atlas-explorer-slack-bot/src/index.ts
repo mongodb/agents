@@ -2,7 +2,7 @@ import "dotenv/config";
 
 import { loadConfig } from "./loadConfig.js";
 import { createRuntime } from "./runtime.js";
-import { closeSharedMongoConnection } from "@mongodb/agent-engine-chat/store";
+import { closeSharedMongoConnection } from "@repo/agent-engine-chat/store";
 
 const config = loadConfig(process.env, "socket");
 const { bot } = await createRuntime(config);

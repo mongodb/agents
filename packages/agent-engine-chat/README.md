@@ -1,4 +1,4 @@
-# @mongodb/agent-engine-chat
+# @repo/agent-engine-chat
 
 Private library that connects a [Chat SDK](https://chat-sdk.dev) app to any
 Atlas Agent Engine agent. It owns:
@@ -14,7 +14,7 @@ Review buttons use this package's action IDs,
 `agent_engine_chat_review_approve` and `agent_engine_chat_review_reject`.
 
 ```ts
-import { registerChatHandlers } from "@mongodb/agent-engine-chat/chat";
-import { MagentaClient } from "@mongodb/agent-engine-chat/magenta";
-import { MongoThreadStore } from "@mongodb/agent-engine-chat/store";
+import { registerChatHandlers } from "@repo/agent-engine-chat/chat";
+import { MagentaClient } from "@repo/agent-engine-chat/magenta";
+import { MongoThreadStore } from "@repo/agent-engine-chat/store";
 ```
