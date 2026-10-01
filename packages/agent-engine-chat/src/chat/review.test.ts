@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { AgenticApiError } from "../magenta/client.js";
+import { AgenticApiError } from "../agent-engine/client.js";
 import { MemoryThreadStore } from "../store/memoryThreadStore.js";
 import type { ThreadStore } from "../store/threadStore.js";
 import {

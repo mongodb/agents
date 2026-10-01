@@ -7,7 +7,7 @@ import {
   type PostableCard,
 } from "chat";
 
-import type { AgentActionRequest } from "../magenta/types.js";
+import type { AgentActionRequest } from "../agent-engine/types.js";
 
 export const REVIEW_APPROVE_ACTION_ID =
   "agent_engine_chat_review_approve";

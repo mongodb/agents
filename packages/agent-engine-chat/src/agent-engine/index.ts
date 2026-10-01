@@ -19,7 +19,7 @@ export {
   suspendedInvocationSchema,
   type AgentActionRequest,
   type AgentInterrupt,
-  type AgenticClientConfig,
+  type AgentEngineClient,
   type ClientUserMetadata,
   type CompletedInvocation,
   type InvocationProgress,

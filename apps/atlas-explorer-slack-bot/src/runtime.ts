@@ -7,7 +7,7 @@ import {
   type AgentGateway,
   type HandlerLogger,
 } from "@repo/agent-engine-chat/chat";
-import { MagentaClient } from "@repo/agent-engine-chat/magenta";
+import { MagentaClient } from "@repo/agent-engine-chat/agent-engine";
 import {
   getSharedMongoConnection,
   MongoStateAdapter,

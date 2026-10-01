@@ -10,9 +10,9 @@
       "types": "./dist/chat/index.d.ts",
       "import": "./dist/chat/index.js"
     },
-    "./magenta": {
-      "types": "./dist/magenta/index.d.ts",
-      "import": "./dist/magenta/index.js"
+    "./agent-engine": {
+      "types": "./dist/agent-engine/index.d.ts",
+      "import": "./dist/agent-engine/index.js"
     },
     "./store": {
       "types": "./dist/store/index.d.ts",

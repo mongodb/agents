@@ -1,5 +1,5 @@
-import { AgenticApiError } from "../magenta/client.js";
-import type { ClientUserMetadata } from "../magenta/types.js";
+import { AgenticApiError } from "../agent-engine/client.js";
+import type { ClientUserMetadata } from "../agent-engine/types.js";
 import {
   createProgressHandler,
   publishInvocationResult,

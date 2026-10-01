@@ -5,7 +5,7 @@ import type {
   InvocationProgress,
   InvocationProgressHandler,
   InvocationResult,
-} from "../magenta/types.js";
+} from "../agent-engine/types.js";
 import type { ThreadRecord, ThreadStore } from "../store/threadStore.js";
 import { buildReviewCard } from "./cards.js";
 import { defaultAgentChatMessages } from "./messages.js";

@@ -1,7 +1,7 @@
 import type {
   AgentActionRequest,
   AgentInterrupt,
-} from "../magenta/types.js";
+} from "../agent-engine/types.js";
 
 export interface ThreadRecord {
   threadId: string;

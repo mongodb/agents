@@ -4,7 +4,7 @@ interface AgenticClientBaseConfig {
   baseUrl: string;
 }
 
-export type AgenticClientConfig =
+export type AgentEngineClient =
   | (AgenticClientBaseConfig & {
       invokeTarget: "gateway";
       projectId: string;

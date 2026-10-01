@@ -6,7 +6,7 @@ import type {
   InvocationResult,
   InvokeInput,
   ResumeInput,
-} from "../magenta/types.js";
+} from "../agent-engine/types.js";
 import type { ThreadStore } from "../store/threadStore.js";
 import type {
   AgentGateway,

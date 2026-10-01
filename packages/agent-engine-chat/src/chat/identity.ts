@@ -1,4 +1,4 @@
-import type { ClientUserMetadata } from "../magenta/types.js";
+import type { ClientUserMetadata } from "../agent-engine/types.js";
 
 export const SLACK_CHAT_CLIENT = "slack";
 
