@@ -1,6 +1,6 @@
 # Managed MCP Troubleshooting
 
-Atlas Explorer receives Atlas Stream Processing tools through Magenta's native
+Atlas Explorer receives Atlas Stream Processing tools through Agent Engine's native
 MongoDB Managed MCP registration. Do not install or configure a separate MCP
 server, invoke the Atlas API outside the Tool Pod, or fall back to unaudited
 local commands.
@@ -26,7 +26,7 @@ commands or raw HTTP requests.
 
 - Missing `ATLAS_ORG_ID`, `ATLAS_PUBLIC_API_KEY`, or
   `ATLAS_PRIVATE_API_KEY`: identify only the missing secret names and ask the
-  operator to configure them in Magenta.
+  operator to configure them in Agent Engine.
 - Atlas Admin API authorization failure during startup: verify that the key
   belongs to the configured organization and can create organization MCP
   configurations.
@@ -45,4 +45,4 @@ commands or raw HTTP requests.
   Atlas response and required capability; do not bypass Tool Pod routing.
 
 The read-only discover tool is safe for diagnostics. The manage and teardown
-tools remain subject to Magenta's approval interrupt.
+tools remain subject to Agent Engine's approval interrupt.

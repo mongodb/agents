@@ -158,7 +158,7 @@ Before any write or destructive operation via MCP, I will: (1) summarize the exa
 | Operation Type | MCP Tools | Action |
 |---------------|-----------|--------|
 | **Read (Safe)** | `mongodb__find`, `mongodb__aggregate`, `mongodb__collection_schema`, `mongodb__db_stats`, `mongodb__count` | I may run automatically to verify |
-| **Mutative (Runtime Approval)** | `mongodb__insert_many`, `mongodb__create_index`, `mongodb__drop_index`, `mongodb__update_one`, `mongodb__update_many`, `mongodb__rename_collection`, `mongodb__create_collection`, `mongodb__delete_many`, `mongodb__drop_collection`, `mongodb__drop_database` | Magenta suspends the graph for an approve/edit/reject decision |
+| **Mutative (Runtime Approval)** | `mongodb__insert_many`, `mongodb__create_index`, `mongodb__drop_index`, `mongodb__update_one`, `mongodb__update_many`, `mongodb__rename_collection`, `mongodb__create_collection`, `mongodb__delete_many`, `mongodb__drop_collection`, `mongodb__drop_database` | Agent Engine suspends the graph for an approve/edit/reject decision |
 
 When I recommend schema changes or data modifications:
 1. I'll explain **what** I want to do and **why**

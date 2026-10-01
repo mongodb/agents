@@ -1,6 +1,6 @@
 ---
 name: mongodb-mcp-setup
-description: Diagnose MongoDB Managed MCP startup and authentication for Atlas Explorer on the Magenta Agentic Platform. Use when MongoDB tools are unavailable, Atlas authentication fails, or an operator asks how this agent obtains MCP access. Never request or expose credential values.
+description: Diagnose MongoDB Managed MCP startup and authentication for Atlas Explorer on Agent Engine. Use when MongoDB tools are unavailable, Atlas authentication fails, or an operator asks how this agent obtains MCP access. Never request or expose credential values.
 license: Apache-2.0
 metadata:
   version: "1.0.0"
@@ -10,12 +10,12 @@ metadata:
 
 Atlas Explorer owns its MongoDB MCP configuration. Do not guide users through
 configuring a separate desktop or shell MCP client, connection-string mode, or
-Atlas Local. Magenta discovers the remote tools and routes every call through
+Atlas Local. Agent Engine discovers the remote tools and routes every call through
 its Tool Pod.
 
 ## Runtime contract
 
-Operators provide these secrets through the Magenta secret store, or through
+Operators provide these secrets through the Agent Engine secret store, or through
 the agent's local `.env` file:
 
 - `ATLAS_ORG_ID`
@@ -29,7 +29,7 @@ Each AER and Tool Pod process then:
    organization MCP configuration with that IP allowlisted.
 3. Generates the configuration's one-time client secret.
 4. Keeps the generated client ID and secret only in process memory.
-5. Lets Magenta's native MCP client obtain short-lived OAuth tokens and expose
+5. Lets Agent Engine's native MCP client obtain short-lived OAuth tokens and expose
    tools with names such as `mongodb__atlas_list_projects`.
 
 Never ask the user to paste secret values into chat. Never print generated
@@ -67,7 +67,7 @@ distinct `atlas-explorer-*` identities and that MongoDB tools were registered.
 
 ## Recovery guidance
 
-- Missing Admin API secrets: add the named Magenta secrets, then restart.
+- Missing Admin API secrets: add the named Agent Engine secrets, then restart.
 - Atlas Digest authorization failure: verify organization, key permissions,
   and API access policy.
 - Public IPv4 discovery failure: restore outbound HTTPS access to one of the

@@ -13,7 +13,7 @@ Build, operate, and debug Atlas Stream Processing (ASP) pipelines using four MCP
 
 ## Prerequisites
 
-This skill requires the Magenta-discovered **MongoDB Managed MCP** tools.
+This skill requires the Agent Engine-discovered **MongoDB Managed MCP** tools.
 Atlas Explorer creates their client credentials at process startup from the
 operator-provided `ATLAS_ORG_ID`, `ATLAS_PUBLIC_API_KEY`, and
 `ATLAS_PRIVATE_API_KEY` secrets.
@@ -264,7 +264,7 @@ See [references/development-workflow.md](references/development-workflow.md) for
 
 ## Safety Rules
 
-- `mongodb__atlas_streams_teardown` and `mongodb__atlas_streams_manage` require user confirmation and are protected by Magenta's approval interrupt — do not bypass
+- `mongodb__atlas_streams_teardown` and `mongodb__atlas_streams_manage` require user confirmation and are protected by Agent Engine's approval interrupt — do not bypass
 - **BEFORE calling `mongodb__atlas_streams_teardown` for a workspace**, you MUST first inspect the workspace with `mongodb__atlas_streams_discover` to count connections and processors, then present this information to the user before requesting confirmation
 - **BEFORE creating any processor**, you MUST validate all connections per the "Pre-Deployment Validation" section in [references/development-workflow.md](references/development-workflow.md)
 - Deleting a workspace removes ALL connections and processors permanently
