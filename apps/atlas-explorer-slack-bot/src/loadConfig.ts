@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { slackBotConfig } from "./config.js";
-import type { AgentEngineClient } from "@repo/agent-engine-chat/agent-engine";
+import type { AgentEngineClientConfig } from "@repo/agent-engine-chat/agent-engine";
 
 export type RuntimeMode = "socket" | "http";
 
@@ -16,7 +16,7 @@ export interface SlackBotConfig {
     signingSecret?: string;
     botDisplayName: string;
   };
-  agentic: AgentEngineClient;
+  agentic: AgentEngineClientConfig;
   store: {
     mongoUri?: string;
     databaseName: string;
@@ -188,7 +188,7 @@ export function loadConfig(
 function buildAgenticConfig(
   values: z.infer<typeof environmentSchema>,
   invokeTarget: "gateway" | "local",
-): AgentEngineClient {
+): AgentEngineClientConfig {
   const baseUrl = (
     values.AGENTIC_BASE_URL ??
     (invokeTarget === "local"

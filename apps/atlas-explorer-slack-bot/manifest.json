@@ -1,7 +1,7 @@
 {
   "display_information": {
     "name": "AtlasExplorer",
-    "description": "Explore MongoDB Atlas data with the Magenta Atlas Explorer agent",
+    "description": "Explore MongoDB Atlas data with the Atlas Explorer agent on Agent Engine",
     "background_color": "#001E2B"
   },
   "features": {

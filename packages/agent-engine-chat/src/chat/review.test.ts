@@ -90,7 +90,7 @@ describe("handleReviewDecision", () => {
     expect(outcomes).toContain("missing");
   });
 
-  it("forwards client and user extras to Magenta", async () => {
+  it("forwards client and user extras to Agent Engine", async () => {
     await seedPendingReview(store);
     agent.resumeResult = completed;
     const user = {

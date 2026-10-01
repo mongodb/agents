@@ -2,7 +2,7 @@
   "name": "@repo/atlas-explorer-slack-bot",
   "version": "0.1.0",
   "private": true,
-  "description": "Cross-platform Chat SDK client for the Magenta Atlas Explorer agent",
+  "description": "Cross-platform Chat SDK client for the Atlas Explorer agent on Agent Engine",
   "license": "Apache-2.0",
   "type": "module",
   "packageManager": "pnpm@11.25.0",

@@ -21,7 +21,7 @@ function createStore(
 }
 
 describe("MemoryThreadStore", () => {
-  it("round-trips a chat-to-Magenta thread record", async () => {
+  it("round-trips a chat-to-Agent Engine thread record", async () => {
     await exercisesRoundTrip(createStore());
   });
 

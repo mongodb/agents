@@ -1,5 +1,5 @@
 import type {
-  AgentEngineClient,
+  AgentEngineClientConfig,
   ClientUserMetadata,
   InvocationProgressHandler,
   InvocationResult,
@@ -49,13 +49,13 @@ export class AgenticApiError extends Error {
   }
 }
 
-export class MagentaClient {
-  private readonly config: AgentEngineClient;
+export class AgentEngineClient {
+  private readonly config: AgentEngineClientConfig;
   private readonly fetchFn: typeof fetch;
   private readonly tokenProvider?: AccessTokenProvider;
   private readonly timeoutMs: number;
 
-  constructor(config: AgentEngineClient, options: ClientOptions = {}) {
+  constructor(config: AgentEngineClientConfig, options: ClientOptions = {}) {
     this.config = {
       ...config,
       baseUrl: config.baseUrl.replace(/\/+$/, ""),

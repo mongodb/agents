@@ -332,7 +332,7 @@ function buildSlackHomeView(displayName: string) {
         elements: [
           {
             type: "mrkdwn",
-            text: "This demo uses the Atlas credentials configured on its shared Magenta workspace. Atlas access is not scoped to your chat identity.",
+            text: "This demo uses the Atlas credentials configured on its shared Agent Engine workspace. Atlas access is not scoped to your chat identity.",
           },
         ],
       },

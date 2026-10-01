@@ -128,7 +128,7 @@ describe("handleConversationMessage", () => {
     ]);
   });
 
-  it("forwards client and user extras to Magenta", async () => {
+  it("forwards client and user extras to Agent Engine", async () => {
     agent.invokeResult = completed;
     const user = {
       id: "U123",

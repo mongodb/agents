@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import {
   AgenticApiError,
-  MagentaClient,
+  AgentEngineClient,
 } from "./client.js";
 
 const config = {
@@ -16,8 +16,8 @@ const config = {
   workspaceId: "workspace id",
 };
 
-function gatewayClient(fetchFn: typeof fetch): MagentaClient {
-  return new MagentaClient(config, {
+function gatewayClient(fetchFn: typeof fetch): AgentEngineClient {
+  return new AgentEngineClient(config, {
     fetchFn,
     tokenProvider: {
       getAccessToken: () => Promise.resolve("service-account-token"),
@@ -63,7 +63,7 @@ function unreadableResponse(status: number): Response {
   );
 }
 
-describe("MagentaClient", () => {
+describe("AgentEngineClient", () => {
   it("exchanges service-account credentials before invoking the gateway", async () => {
     const fetchFn = vi.fn<typeof fetch>(
       async (input, init) => {
@@ -96,7 +96,7 @@ describe("MagentaClient", () => {
         });
       },
     );
-    const client = new MagentaClient(config, { fetchFn });
+    const client = new AgentEngineClient(config, { fetchFn });
 
     await expect(
       client.invoke({
@@ -138,7 +138,7 @@ describe("MagentaClient", () => {
         .mockResolvedValueOnce("fresh-token"),
       invalidate: vi.fn(),
     };
-    const client = new MagentaClient(config, {
+    const client = new AgentEngineClient(config, {
       fetchFn,
       tokenProvider,
     });
@@ -189,7 +189,7 @@ describe("MagentaClient", () => {
             status: "completed",
           });
     });
-    const client = new MagentaClient(config, {
+    const client = new AgentEngineClient(config, {
       fetchFn,
       timeoutMs: 1_000,
       tokenProvider: {
@@ -214,7 +214,7 @@ describe("MagentaClient", () => {
   it("reports a token acquisition failure before dispatching the request", async () => {
     const authenticationError = new Error("token endpoint unavailable");
     const fetchFn = vi.fn<typeof fetch>();
-    const client = new MagentaClient(config, {
+    const client = new AgentEngineClient(config, {
       fetchFn,
       tokenProvider: {
         getAccessToken: () => Promise.reject(authenticationError),
@@ -239,7 +239,7 @@ describe("MagentaClient", () => {
   });
 
   it("preserves a rejected outcome when a blocking error body cannot be read", async () => {
-    const client = new MagentaClient(
+    const client = new AgentEngineClient(
       {
         baseUrl: "http://localhost:3000",
         invokeTarget: "local",
@@ -267,7 +267,7 @@ describe("MagentaClient", () => {
   });
 
   it("preserves a rejected outcome when a streaming error body cannot be read", async () => {
-    const client = new MagentaClient(
+    const client = new AgentEngineClient(
       {
         baseUrl: "http://localhost:3000",
         invokeTarget: "local",
@@ -466,7 +466,7 @@ describe("MagentaClient", () => {
         status: "completed",
       }),
     );
-    const client = new MagentaClient(
+    const client = new AgentEngineClient(
       {
         baseUrl: "http://localhost:3000",
         invokeTarget: "local",
@@ -528,7 +528,7 @@ describe("MagentaClient", () => {
         },
       ]),
     );
-    const client = new MagentaClient(
+    const client = new AgentEngineClient(
       {
         baseUrl: "http://localhost:3000",
         invokeTarget: "local",
@@ -686,7 +686,7 @@ describe("MagentaClient", () => {
         },
       ]),
     );
-    const client = new MagentaClient(
+    const client = new AgentEngineClient(
       {
         baseUrl: "http://localhost:3000",
         invokeTarget: "local",
@@ -727,7 +727,7 @@ describe("MagentaClient", () => {
         status: "completed",
       }),
     );
-    const client = new MagentaClient(
+    const client = new AgentEngineClient(
       {
         baseUrl: "http://localhost:3000",
         invokeTarget: "local",

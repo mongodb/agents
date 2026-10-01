@@ -7,7 +7,7 @@ import {
   type AgentGateway,
   type HandlerLogger,
 } from "@repo/agent-engine-chat/chat";
-import { MagentaClient } from "@repo/agent-engine-chat/agent-engine";
+import { AgentEngineClient } from "@repo/agent-engine-chat/agent-engine";
 import {
   getSharedMongoConnection,
   MongoStateAdapter,
@@ -114,7 +114,7 @@ export async function createRuntime(
   });
   const delivery = createSlackDeliveryBoundary(slackAdapter);
   registerChatHandlers(bot, {
-    agent: options.agent ?? new MagentaClient(config.agentic),
+    agent: options.agent ?? new AgentEngineClient(config.agentic),
     authorizedActorIds: normalizeAllowedActors(
       config.chat.allowedActorIds,
     ),

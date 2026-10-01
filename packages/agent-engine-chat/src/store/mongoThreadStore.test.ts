@@ -41,7 +41,7 @@ describe("MongoThreadStore", () => {
     await server.stop();
   });
 
-  it("round-trips a chat-to-Magenta record", async () => {
+  it("round-trips a chat-to-Agent Engine record", async () => {
     await exercisesRoundTrip(store);
   });
 

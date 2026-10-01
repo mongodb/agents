@@ -18,7 +18,7 @@ describe("chat identity normalization", () => {
     expect(platformFromThreadId("invalid")).toBeNull();
   });
 
-  it("builds Magenta client user extras from a Chat SDK author", () => {
+  it("builds Agent Engine client user extras from a Chat SDK author", () => {
     expect(SLACK_CHAT_CLIENT).toBe("slack");
     expect(
       clientUserFromAuthor("slack", {

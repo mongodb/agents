@@ -1,6 +1,6 @@
 export {
   AgenticApiError,
-  MagentaClient,
+  AgentEngineClient,
   type AgenticRequestOutcome,
 } from "./client.js";
 export {
@@ -19,7 +19,7 @@ export {
   suspendedInvocationSchema,
   type AgentActionRequest,
   type AgentInterrupt,
-  type AgentEngineClient,
+  type AgentEngineClientConfig,
   type ClientUserMetadata,
   type CompletedInvocation,
   type InvocationProgress,
