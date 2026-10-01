@@ -11,6 +11,11 @@ call. `ALLOW_WRITE_OPERATIONS` is ignored, and there is no
 human-in-the-loop path. `aggregate` stays available. Atlas rejects `$out`
 and `$merge` because the credential is read-only.
 
+`buildSystemPrompt` adapts the Query Insights assistant rules to an
+agent. It takes `{ name, customInstructions, scope, maxQueryShapes }`,
+points at the evidence block, and tells the agent which Performance
+Advisor branch to apply for each shape.
+
 `annotatePerformanceAdvisorMiddleware` appends an evidence block to
 `mongodb__atlas_get_performance_advisor` results: slow logs grouped by
 namespace and query shape, formatted ratios, collection-scan and sort
