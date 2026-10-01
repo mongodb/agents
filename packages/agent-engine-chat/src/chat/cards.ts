@@ -9,20 +9,16 @@ import {
 
 import type { AgentActionRequest } from "../magenta/types.js";
 
-export const DEFAULT_REVIEW_APPROVE_ACTION_ID =
-  "agent_engine_review_approve";
-export const DEFAULT_REVIEW_REJECT_ACTION_ID =
-  "agent_engine_review_reject";
-export const REVIEW_APPROVE_ACTION_ID = DEFAULT_REVIEW_APPROVE_ACTION_ID;
-export const REVIEW_REJECT_ACTION_ID = DEFAULT_REVIEW_REJECT_ACTION_ID;
+export const REVIEW_APPROVE_ACTION_ID =
+  "agent_engine_chat_review_approve";
+export const REVIEW_REJECT_ACTION_ID =
+  "agent_engine_chat_review_reject";
 
 const DEFAULT_REVIEW_CARD_TITLE = "Agent operation requires approval";
 const MAX_DISPLAYED_ACTIONS = 45;
 const MAX_ARGUMENT_TEXT = 1_800;
 
 export interface ReviewCardOptions {
-  approveActionId?: string;
-  rejectActionId?: string;
   title?: string;
 }
 
@@ -32,10 +28,6 @@ export function buildReviewCard(
   botName: string,
   options: ReviewCardOptions = {},
 ): PostableCard {
-  const approveActionId =
-    options.approveActionId ?? DEFAULT_REVIEW_APPROVE_ACTION_ID;
-  const rejectActionId =
-    options.rejectActionId ?? DEFAULT_REVIEW_REJECT_ACTION_ID;
   const displayedActions = actions.slice(0, MAX_DISPLAYED_ACTIONS);
   const canApproveAll = displayedActions.length === actions.length;
   const overflowCount = actions.length - displayedActions.length;
@@ -59,7 +51,7 @@ export function buildReviewCard(
           ...(canApproveAll
             ? [
                 Button({
-                  id: approveActionId,
+                  id: REVIEW_APPROVE_ACTION_ID,
                   label: "Approve",
                   style: "primary",
                   value: interruptId,
@@ -67,7 +59,7 @@ export function buildReviewCard(
               ]
             : []),
           Button({
-            id: rejectActionId,
+            id: REVIEW_REJECT_ACTION_ID,
             label: "Reject",
             style: "danger",
             value: interruptId,

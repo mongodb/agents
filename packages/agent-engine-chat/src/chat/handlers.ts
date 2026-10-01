@@ -6,8 +6,8 @@ import type {
 } from "chat";
 
 import {
-  DEFAULT_REVIEW_APPROVE_ACTION_ID,
-  DEFAULT_REVIEW_REJECT_ACTION_ID,
+  REVIEW_APPROVE_ACTION_ID,
+  REVIEW_REJECT_ACTION_ID,
 } from "./cards.js";
 import { handleConversationMessage } from "./conversation.js";
 import {
@@ -43,20 +43,16 @@ export interface ChatHandlerOptions {
   ) => DeliveryBoundary | undefined;
   logger?: HandlerLogger;
   messages?: Partial<AgentChatMessages>;
-  reviewApproveActionId?: string;
   reviewInterruptIdForAdapter?: (
     adapter: Adapter,
     value: string,
     threadId: string,
   ) => string | null;
-  reviewRejectActionId?: string;
   store: ThreadStore;
 }
 
 interface ResolvedChatHandlerOptions extends ChatHandlerOptions {
   messages: AgentChatMessages;
-  reviewApproveActionId: string;
-  reviewRejectActionId: string;
 }
 
 function resolveHandlerOptions(
@@ -65,10 +61,6 @@ function resolveHandlerOptions(
   return {
     ...options,
     messages: resolveAgentChatMessages(options.messages),
-    reviewApproveActionId:
-      options.reviewApproveActionId ?? DEFAULT_REVIEW_APPROVE_ACTION_ID,
-    reviewRejectActionId:
-      options.reviewRejectActionId ?? DEFAULT_REVIEW_REJECT_ACTION_ID,
   };
 }
 
@@ -128,7 +120,7 @@ export function registerChatHandlers(
   });
 
   chat.onAction(
-    [resolved.reviewApproveActionId, resolved.reviewRejectActionId],
+    [REVIEW_APPROVE_ACTION_ID, REVIEW_REJECT_ACTION_ID],
     async (event) => {
       if (!event.thread) {
         return;
@@ -165,7 +157,7 @@ export function registerChatHandlers(
           client: SLACK_CHAT_CLIENT,
           user: clientUserFromAuthor(event.adapter.name, event.user),
           decision:
-            event.actionId === resolved.reviewApproveActionId
+            event.actionId === REVIEW_APPROVE_ACTION_ID
               ? "approve"
               : "reject",
         },
@@ -174,8 +166,6 @@ export function registerChatHandlers(
           botName: resolved.botName,
           conversation,
           messages: resolved.messages,
-          reviewApproveActionId: resolved.reviewApproveActionId,
-          reviewRejectActionId: resolved.reviewRejectActionId,
           store: resolved.store,
           ...(resolved.authorizedActorIds
             ? { authorizedActorIds: resolved.authorizedActorIds }
@@ -211,8 +201,6 @@ async function dispatchMessage(
         reviewStatusUncertain: options.messages.reviewStatusUncertain,
       }),
       messages: options.messages,
-      reviewApproveActionId: options.reviewApproveActionId,
-      reviewRejectActionId: options.reviewRejectActionId,
       store: options.store,
       ...(options.authorizedActorIds
         ? { authorizedActorIds: options.authorizedActorIds }

@@ -50,7 +50,5 @@ export interface ChatHandlerDependencies {
   logger?: HandlerLogger;
   messages?: AgentChatMessages;
   now?: () => Date;
-  reviewApproveActionId?: string;
-  reviewRejectActionId?: string;
   store: ThreadStore;
 }

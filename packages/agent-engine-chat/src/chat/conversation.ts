@@ -20,12 +20,6 @@ const REVIEW_CLAIM_MAX_MS = 10 * 60 * 1_000;
 function reviewCardOptions(dependencies: ChatHandlerDependencies) {
   const messages = dependencies.messages ?? defaultAgentChatMessages;
   return {
-    ...(dependencies.reviewApproveActionId
-      ? { approveActionId: dependencies.reviewApproveActionId }
-      : {}),
-    ...(dependencies.reviewRejectActionId
-      ? { rejectActionId: dependencies.reviewRejectActionId }
-      : {}),
     title: messages.reviewCardTitle,
   };
 }

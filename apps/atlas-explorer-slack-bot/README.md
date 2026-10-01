@@ -10,8 +10,7 @@ Agentic workflow.
 Conversation handling, the Agent Engine client, and thread storage live in
 [`@mongodb/agent-engine-chat`](../../packages/agent-engine-chat). This app
 keeps Slack transport, Socket Mode, the Vercel webhook, and Atlas Explorer
-copy. Another chat app can depend on the same library and supply its own
-agent, review labels, and prompts.
+copy.
 
 The bot does not run LangGraph, MCP, or Atlas credentials. It sends normalized
 chat messages to the Agentic Platform invocation API, maps Chat SDK threads to

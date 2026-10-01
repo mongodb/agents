@@ -9,8 +9,9 @@ Atlas Agent Engine agent. It owns:
 
 Deployed Slack wiring for Atlas Explorer stays in
 [`apps/atlas-explorer-slack-bot`](../../apps/atlas-explorer-slack-bot). That
-app passes Atlas Explorer review action IDs, card copy, and database defaults
-into this library.
+app passes Atlas Explorer card copy and database defaults into this library.
+Review buttons use this package's action IDs,
+`agent_engine_chat_review_approve` and `agent_engine_chat_review_reject`.
 
 ```ts
 import { registerChatHandlers } from "@mongodb/agent-engine-chat/chat";

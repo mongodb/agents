@@ -16,11 +16,7 @@ import {
   type ThreadStore,
 } from "@mongodb/agent-engine-chat/store";
 
-import {
-  ATLAS_EXPLORER_REVIEW_APPROVE_ACTION_ID,
-  ATLAS_EXPLORER_REVIEW_REJECT_ACTION_ID,
-  atlasExplorerChatMessages,
-} from "./atlasExplorerChat.js";
+import { atlasExplorerChatMessages } from "./atlasExplorerChat.js";
 import {
   loadConfig,
   type SlackBotConfig,
@@ -125,8 +121,6 @@ export async function createRuntime(
     botName: config.slack.botDisplayName,
     logger: options.logger ?? console,
     messages: atlasExplorerChatMessages,
-    reviewApproveActionId: ATLAS_EXPLORER_REVIEW_APPROVE_ACTION_ID,
-    reviewRejectActionId: ATLAS_EXPLORER_REVIEW_REJECT_ACTION_ID,
     deliveryForAdapter: (adapter) =>
       adapter.name === slackAdapter.name ? delivery : undefined,
     reviewInterruptIdForAdapter: (

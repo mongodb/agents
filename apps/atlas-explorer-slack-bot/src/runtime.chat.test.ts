@@ -7,6 +7,7 @@ import type { SlackAdapter } from "@chat-adapter/slack";
 import type { Author } from "chat";
 import { describe, expect, it, vi } from "vitest";
 
+import { REVIEW_APPROVE_ACTION_ID } from "@mongodb/agent-engine-chat/chat";
 import { MemoryThreadStore } from "@mongodb/agent-engine-chat/store";
 import {
   FakeAgentGateway,
@@ -14,8 +15,6 @@ import {
   seedPendingReview,
   slackAdaClientUser,
 } from "@mongodb/agent-engine-chat/testing";
-
-import { ATLAS_EXPLORER_REVIEW_APPROVE_ACTION_ID } from "./atlasExplorerChat.js";
 import type { SlackBotConfig } from "./loadConfig.js";
 import { createRuntime } from "./runtime.js";
 
@@ -113,7 +112,7 @@ describe("Chat SDK runtime", () => {
 
     await runtime.bot.processAction(
       {
-        actionId: ATLAS_EXPLORER_REVIEW_APPROVE_ACTION_ID,
+        actionId: REVIEW_APPROVE_ACTION_ID,
         adapter,
         messageId: "review-message",
         raw: {},

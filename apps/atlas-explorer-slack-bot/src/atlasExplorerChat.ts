@@ -1,10 +1,5 @@
 import type { AgentChatMessages } from "@mongodb/agent-engine-chat/chat";
 
-export const ATLAS_EXPLORER_REVIEW_APPROVE_ACTION_ID =
-  "atlas_explorer_review_approve";
-export const ATLAS_EXPLORER_REVIEW_REJECT_ACTION_ID =
-  "atlas_explorer_review_reject";
-
 export const atlasExplorerChatMessages: Partial<AgentChatMessages> = {
   decisionUncertain: (botName) =>
     `The decision was sent, but ${botName} could not confirm whether it completed. Check Atlas before retrying, then start a new conversation.`,
