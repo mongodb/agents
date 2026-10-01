@@ -45,7 +45,7 @@ export async function handleReviewDecision(
   const record = await dependencies.store.get(input.threadId);
   if (
     !record?.pendingInterruptId ||
-    !record.magentaSessionId ||
+    !record.agentSessionId ||
     record.pendingInterruptId !== input.interruptId
   ) {
     await dependencies.conversation.post(
@@ -53,7 +53,7 @@ export async function handleReviewDecision(
     );
     return "missing";
   }
-  const sessionId = record.magentaSessionId;
+  const sessionId = record.agentSessionId;
 
   if (
     !record.pendingRequestedByActorId ||

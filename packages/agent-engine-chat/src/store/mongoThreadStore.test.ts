@@ -94,7 +94,7 @@ describe("MongoThreadStore", () => {
         _id: "C123:1720000000.000100",
         channelId: "C123",
         threadTs: "1720000000.000100",
-        magentaSessionId: "session-1",
+        agentSessionId: "session-1",
         pendingInterruptId: "interrupt-1",
         pendingInterrupts: [
           {
@@ -129,7 +129,7 @@ describe("MongoThreadStore", () => {
 
     expect(migrated).toMatchObject({
       threadId: "slack:C123:1720000000.000100",
-      magentaSessionId: "session-1",
+      agentSessionId: "session-1",
       pendingInterruptId: "interrupt-1",
       pendingRequestedByActorId: "slack:U123",
       pendingReviewState: "resuming",
@@ -149,7 +149,7 @@ describe("MongoThreadStore", () => {
         }),
     ).toMatchObject({
       threadId: "slack:C123:1720000000.000100",
-      magentaSessionId: "session-1",
+      agentSessionId: "session-1",
     });
     expect(
       await database

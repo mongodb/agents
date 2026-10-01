@@ -69,7 +69,7 @@ describe("handleConversationMessage", () => {
       },
     ]);
     expect(await store.get(THREAD_ID)).toMatchObject({
-      magentaSessionId: "session-1",
+      agentSessionId: "session-1",
     });
   });
 
@@ -473,7 +473,7 @@ describe("handleConversationMessage", () => {
   it("shows a leading directory listing in an existing session", async () => {
     await store.put({
       threadId: THREAD_ID,
-      magentaSessionId: "session-1",
+      agentSessionId: "session-1",
       updatedAt: new Date(),
     });
     agent.invokeResult = completed;

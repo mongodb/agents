@@ -136,8 +136,8 @@ export async function handleConversationMessage(
     result = await dependencies.agent.invokeStream(
       {
         message,
-        ...(activeRecord.magentaSessionId
-          ? { sessionId: activeRecord.magentaSessionId }
+        ...(activeRecord.agentSessionId
+          ? { sessionId: activeRecord.agentSessionId }
           : {}),
         actorId: input.actorId,
         ...(input.client !== undefined ? { client: input.client } : {}),
@@ -146,7 +146,7 @@ export async function handleConversationMessage(
       createProgressHandler(
         dependencies.conversation,
         dependencies.logger,
-        Boolean(activeRecord.magentaSessionId),
+        Boolean(activeRecord.agentSessionId),
       ),
     );
   } catch (error) {
@@ -249,7 +249,7 @@ export async function publishInvocationResult(
       claim.kind === "turn" ? claim.eventId : `review:${claim.interruptId}`;
     const record: ThreadRecord = {
       threadId: input.threadId,
-      magentaSessionId: result.sessionId,
+      agentSessionId: result.sessionId,
       pendingDelivery: {
         id: deliveryId,
         text: result.response,
@@ -288,7 +288,7 @@ export async function publishInvocationResult(
   );
   const record: ThreadRecord = {
     threadId: input.threadId,
-    magentaSessionId: result.sessionId,
+    agentSessionId: result.sessionId,
     pendingExecutionId: result.executionId,
     pendingInterruptId: interrupt.id,
     pendingInterrupts: result.interrupts,

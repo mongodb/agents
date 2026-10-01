@@ -30,7 +30,7 @@ describe("handleReviewDecision", () => {
   it("resumes every action and pending interrupt exactly once", async () => {
     await store.put({
       threadId: THREAD_ID,
-      magentaSessionId: "session-1",
+      agentSessionId: "session-1",
       pendingInterruptId: "interrupt-1",
       pendingInterrupts: [
         {
@@ -228,7 +228,7 @@ describe("handleReviewDecision", () => {
   it("refuses a pending review that has no recorded requester", async () => {
     await store.put({
       threadId: THREAD_ID,
-      magentaSessionId: "session-1",
+      agentSessionId: "session-1",
       pendingInterruptId: "interrupt-1",
       pendingActionRequests: [{ name: "mongodb__insert_many", args: {} }],
       pendingReviewState: "pending",

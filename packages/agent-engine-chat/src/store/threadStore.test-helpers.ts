@@ -4,7 +4,7 @@ import type { ThreadRecord, ThreadStore } from "./threadStore.js";
 
 export const baseRecord: Omit<ThreadRecord, "updatedAt"> = {
   threadId: "slack:C123:1720000000.000100",
-  magentaSessionId: "session-1",
+  agentSessionId: "session-1",
 };
 
 export async function exercisesRoundTrip(
@@ -131,19 +131,19 @@ export async function exercisesTurnClaim(
   expect(
     await store.replaceClaimedTurn("event-1", {
       ...finishedRecord,
-      magentaSessionId: "stale-session",
+      agentSessionId: "stale-session",
       updatedAt: new Date("2026-09-08T12:02:01.000Z"),
     }),
   ).toBe(false);
   expect(
     await store.replaceClaimedTurn("event-2", {
       ...finishedRecord,
-      magentaSessionId: "current-session",
+      agentSessionId: "current-session",
       updatedAt: new Date("2026-09-08T12:02:01.000Z"),
     }),
   ).toBe(true);
   await expect(store.get(baseRecord.threadId)).resolves.toMatchObject({
-    magentaSessionId: "current-session",
+    agentSessionId: "current-session",
   });
 }
 

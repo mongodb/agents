@@ -179,7 +179,7 @@ export async function seedPendingReview(
 ): Promise<void> {
   await store.put({
     threadId: "slack:C123:1720000000.000100",
-    magentaSessionId: "session-1",
+    agentSessionId: "session-1",
     pendingExecutionId: "execution-2",
     pendingInterruptId: "interrupt-1",
     pendingResumeSchema: { type: "object" },

@@ -5,7 +5,7 @@ import type {
 
 export interface ThreadRecord {
   threadId: string;
-  magentaSessionId?: string;
+  agentSessionId?: string;
   recentEventIds?: string[];
   inFlightEventId?: string;
   inFlightStartedAt?: Date;
