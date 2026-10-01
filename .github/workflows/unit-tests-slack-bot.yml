@@ -35,4 +35,8 @@ jobs:
     uses: ./.github/workflows/unit-tests.yml
     with:
       working-directory: .
-      test-command: pnpm --filter @repo/agent-engine-chat test && pnpm --filter @repo/atlas-explorer-slack-bot test
+      test-commands: >-
+        [
+          {"name":"agent-engine-chat","command":"pnpm --filter @repo/agent-engine-chat test"},
+          {"name":"atlas-explorer-slack-bot","command":"pnpm --filter @repo/atlas-explorer-slack-bot test"}
+        ]

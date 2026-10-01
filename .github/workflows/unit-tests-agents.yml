@@ -39,4 +39,10 @@ jobs:
     uses: ./.github/workflows/unit-tests.yml
     with:
       working-directory: .
-      test-command: pnpm test:atlas-explorer && pnpm test:query-analysis
+      test-commands: >-
+        [
+          {"name":"agent-engine-core","command":"pnpm --filter @repo/agent-engine-core test"},
+          {"name":"atlas-explorer-agent","command":"pnpm --filter @repo/atlas-explorer-agent test"},
+          {"name":"atlas-explorer","command":"pnpm --filter atlas-explorer test"},
+          {"name":"query-analysis","command":"pnpm --filter @repo/query-analysis-agent test"}
+        ]

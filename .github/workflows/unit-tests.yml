@@ -6,9 +6,9 @@ on:
       working-directory:
         required: true
         type: string
-      test-command:
-        required: false
-        default: pnpm test
+      # JSON array of {"name","command"}. Each entry is its own job.
+      test-commands:
+        required: true
         type: string
 
 permissions:
@@ -17,6 +17,11 @@ permissions:
 
 jobs:
   test:
+    name: ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(inputs.test-commands) }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
@@ -57,4 +62,4 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run unit tests
-        run: ${{ inputs.test-command }}
+        run: ${{ matrix.command }}
