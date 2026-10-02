@@ -43,7 +43,7 @@ Copy `.env.example` to `.env`, set `MONGODB_URI`, then run `./seed.sh` with no a
 
 ## What it creates
 
-The script recreates the `highImpact` database with four collections. The queries run 20 times each with no supporting index. The matching documents are inserted last, so each query scans its whole collection before it finds them.
+The script recreates the `highImpact` database with four collections. Each query runs 20 times with no supporting index, so it scans its whole collection.
 
 | Collection | Documents | Query |
 | --- | --- | --- |
@@ -51,5 +51,3 @@ The script recreates the `highImpact` database with four collections. The querie
 | `dbB` | 15,000 `type: "bulk"` plus 10 `"premium"`, about 9.5 KB each | `find({ type: "premium" })` |
 | `dbC` | 600 `priority: 1` plus 3 `priority: 10`, about 200 KB each | `find({ priority: 10 })` |
 | `dbD` | 3,000 `category: "standard"` plus 5 `"special"` | `find({ category: "special" })` |
-
-The script's own estimates of the data scanned per query are about 200 MB (`dbA`), 150 MB (`dbB`), 120 MB (`dbC`), and 30 MB (`dbD`). It sets profiling level 0 with a 100 ms slow-query threshold, logs every operation (`slowms` of -1) while the queries run, then restores 100 ms. On a serverless cluster those profiler calls fail and the script prints a message and carries on. Performance Advisor can take a while to surface suggestions after the run finishes.
