@@ -1,13 +1,7 @@
 /**
- * Renders query stats the way Query Insights renders them.
- *
- * Port of `QueryStatsFormatter.java`, which itself follows
- * `client/packages/handlebars-helpers/formatNumber.ts`. The two stay
- * aligned through `fixtures/queryStatsDisplay.conformance.json`.
- *
- * Two client behaviours are left out, and neither is reachable from query
- * stats: `toFixed` switches to exponential notation at 1e21 and drops
- * grouping, and a negative value rounding to zero renders as `-0`.
+ * `toFixed` switches to exponential notation at 1e21 and drops grouping,
+ * and a negative value rounding to zero renders as `-0`. Neither is
+ * reachable from query stats.
  */
 
 const SI_PREFIXES = ["", "k", "M", "G", "T", "P", "E", "Z", "Y"] as const;
@@ -100,8 +94,8 @@ function si(num: number): string {
   if (significand > 1000) {
     return sign + fixed(significand, 0) + prefix;
   }
-  // The trailing space matches the client: it appends the prefix after a
-  // space even when the prefix is empty. Callers that embed the string trim it.
+  // The prefix is appended after a space even when the prefix is empty.
+  // Callers that embed the string trim it.
   return `${sign}${threeSignificantFigures(significand)} ${prefix}`;
 }
 
@@ -140,7 +134,6 @@ function time(value: number, isMicros: boolean): string {
   return fixed(converted, useDecimal ? 2 : 0) + units;
 }
 
-/** Mirrors `Backgrid.NumberFormatter`: `toFixed`, then comma-grouped thousands. */
 function fixed(value: number, decimals: number): string {
   const rounded = toPlain(setScale(fromDouble(value), decimals));
   const point = rounded.indexOf(".");
@@ -149,7 +142,6 @@ function fixed(value: number, decimals: number): string {
   return group(whole) + fraction;
 }
 
-/** Mirrors `parseFloat(sig.toPrecision(3))`: round, then drop trailing zeros. */
 function threeSignificantFigures(value: number): string {
   return toPlain(stripTrailingZeros(roundPrecision(fromDouble(value), 3)));
 }
@@ -174,9 +166,9 @@ function isInvalid(value: number): boolean {
 }
 
 /**
- * Java `new BigDecimal(double)` uses the exact binary value, not
- * `Double.toString`. Later `setScale` and `MathContext` rounding follow
- * that decimal, which is why 1.005 renders as 1.00.
+ * Use the exact binary value, not the shortest decimal string. Later
+ * scale and precision rounding follow that decimal, which is why 1.005
+ * renders as 1.00.
  */
 function fromDouble(value: number): Decimal {
   if (!Number.isFinite(value)) {
