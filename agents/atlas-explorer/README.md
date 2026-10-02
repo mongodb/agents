@@ -179,10 +179,6 @@ agentengine dev up
 Open the playground at http://localhost:3000. Stop the stack with
 `agentengine dev stop`.
 
-`pnpm test:integration` calls the real OpenAI and Anthropic APIs, so it needs
-`OPENAI_API_KEY` and `ANTHROPIC_API_KEY` in `.env`. It is skipped when `CI` is
-set, and `pnpm test` never runs it.
-
 ## Talk from chat platforms
 
 The sibling [`@AtlasExplorer` Chat SDK integration](../../apps/atlas-explorer-slack-bot) invokes
