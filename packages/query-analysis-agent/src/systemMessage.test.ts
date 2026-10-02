@@ -43,6 +43,13 @@ describe("buildSystemPrompt", () => {
     }
   });
 
+  it("passes Performance Advisor operations and slow log filters as tool arguments", () => {
+    expect(prompt).toContain('operations: ["slowQueryLogs", "suggestedIndexes"]');
+    expect(prompt).toContain("`namespaces`");
+    expect(prompt).toContain("Omit `since` by default.");
+    expect(prompt).toContain('`"2026-09-28T00:00:00Z"`');
+  });
+
   it("injects the agent name, scope, shape limit, and custom instructions", () => {
     const scope = { projectId: "507f1f77bcf86cd799439011", clusterName: "Cluster-1" };
     const custom = buildSystemPrompt({
