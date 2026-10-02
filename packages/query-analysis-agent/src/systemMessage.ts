@@ -1,7 +1,7 @@
 import { describeScope, resolveScope, type ScopeInput } from "./scope.js";
 import { UNITS_LEGEND } from "./queryStatsFormatter.js";
 
-export const DEFAULT_AGENT_NAME = "Query Analysis";
+export const DEFAULT_AGENT_NAME = "Query Analyzer";
 export const DEFAULT_MAX_QUERY_SHAPES = 3;
 export const PA_SUGGESTION_CTA =
   "Review the index suggestion in the Performance Advisor.";
