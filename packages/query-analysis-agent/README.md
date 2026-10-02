@@ -12,6 +12,6 @@ human-in-the-loop path. `aggregate` stays available. Atlas rejects `$out`
 and `$merge` because the credential is read-only.
 
 `resolveScope` reads an optional `{ projectId, clusterName }` pin.
-`scopeGuardMiddleware` turns a tool call aimed at a different project or
-cluster into a recoverable tool error. `describeScope` is the sentence the
-system prompt quotes.
+`describeScope` is the sentence the system prompt quotes. The pin is
+prompt context only; restrict the Atlas credential or MCP server config
+to enforce access.

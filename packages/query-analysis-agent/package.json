@@ -22,9 +22,7 @@
     "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json --noEmit"
   },
   "dependencies": {
-    "@langchain/core": "^1.2.11",
-    "@repo/agent-engine-core": "workspace:*",
-    "langchain": "^1.5.10"
+    "@repo/agent-engine-core": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^25.0.0",

@@ -1,8 +1,6 @@
 export {
   describeScope,
-  enforceScope,
   resolveScope,
-  scopeGuardMiddleware,
   type QueryAnalysisScope,
   type ScopeInput,
 } from "./scope.js";
