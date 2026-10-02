@@ -3,7 +3,7 @@
  *
  * Port of `QueryStatsFormatter.java`, which itself follows
  * `client/packages/handlebars-helpers/formatNumber.ts`. The two stay
- * aligned through `queryStatsDisplay.conformance.json`.
+ * aligned through `fixtures/queryStatsDisplay.conformance.json`.
  *
  * Two client behaviours are left out, and neither is reachable from query
  * stats: `toFixed` switches to exponential notation at 1e21 and drops

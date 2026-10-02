@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import conformance from "./queryStatsDisplay.conformance.json" with { type: "json" };
+import conformance from "../fixtures/queryStatsDisplay.conformance.json" with { type: "json" };
 import {
   UNITS_LEGEND,
   display,

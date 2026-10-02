@@ -13,4 +13,5 @@ and `$merge` because the credential is read-only.
 
 `displayQueryStat` renders counts, bytes, durations, and ratios the way
 Query Insights does, including `N/A` for invalid values. The
-conformance vector is the same file the server formatter is pinned to.
+conformance vector in `fixtures/queryStatsDisplay.conformance.json` is the
+same file the server formatter is pinned to.
