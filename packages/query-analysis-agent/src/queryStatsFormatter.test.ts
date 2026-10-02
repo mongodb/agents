@@ -1,11 +1,22 @@
+import { readFileSync } from "node:fs";
+
 import { describe, expect, it } from "vitest";
 
-import conformance from "../fixtures/queryStatsDisplay.conformance.json" with { type: "json" };
 import {
   UNITS_LEGEND,
   display,
   displayedStats,
 } from "./queryStatsFormatter.js";
+
+const conformance = JSON.parse(
+  readFileSync(
+    new URL(
+      "../fixtures/queryStatsDisplay.conformance.json",
+      import.meta.url,
+    ),
+    "utf8",
+  ),
+) as { cases: Array<{ key: string; raw: number; expected: string }> };
 
 const TRAILING_UNIT = /[0-9]\s*([^\s0-9,.]+)$/;
 const LEGEND_UNIT = /`([^`]+)`/g;

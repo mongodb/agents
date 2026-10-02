@@ -1,8 +1,4 @@
 {
   "extends": ["./tsconfig.json", "../../tsconfig.test.base.json"],
-  // The conformance vector lives in fixtures/, outside src.
-  "compilerOptions": {
-    "rootDir": "."
-  },
   "exclude": ["node_modules", "dist"]
 }
