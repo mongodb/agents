@@ -12,45 +12,34 @@ platform checkpoints · read-only by default · runtime approval for writes
 ```
 agents/atlas-explorer/
 ├── agent.yaml                         # app, MCP, features, and required secret names
+├── package.json / tsconfig*.json      # TypeScript app, test config, and esbuild bundle
+├── vitest*.config.ts                  # unit and integration test configs
 ├── dev.yaml                           # local Agentic service ports
-├── package.json                       # scripts, dependencies, and the esbuild bundle
-├── tsconfig.json                      # build config
-├── tsconfig.test.json                 # adds the test files for typecheck
-├── vitest.config.ts                   # unit tests (`pnpm test`)
-├── vitest.integration.config.ts       # live LLM checks (`pnpm test:integration`)
 ├── .env.example                       # copy to .env
-├── .gitignore                         # keeps .env, mcp-config.json, and dist out of git
 ├── mcp-config.example.json            # copy to ignored local MCP config
 ├── mcp-secret-metadata.json           # secret TTL used with Atlas CLI
 ├── skills/                            # vendored MongoDB Agent Skills
 └── src/agent_atlas_explorer/
-    ├── main.ts                        # Agent Engine App entrypoint (the esbuild entry)
-    ├── index.ts                       # re-exports library helpers and main.ts; not bundled
-    ├── config.ts                      # non-secret LLM, agent name, and custom instructions
-    ├── main.test.ts                   # agent wiring
-    ├── agentManifest.test.ts          # agent.yaml checks
-    ├── agentEngineCompatibility.test.ts  # pinned SDK runtime checks
-    └── llm.integration.test.ts        # live API-key checks, excluded from `pnpm test`
+    ├── main.ts                        # Agent Engine App entrypoint
+    ├── index.ts                       # re-exports library helpers and main.ts
+    └── config.ts                      # non-secret LLM, agent name, and custom instructions
 ```
-
-The repository root holds the files shared with other agents:
-[`.agentengineignore`](../../.agentengineignore) lists what `agentengine build`
-leaves out of the uploaded source archive, and
-[`pnpm-workspace.yaml`](../../pnpm-workspace.yaml) holds the dependency policy
-described under [Dependency pins](#dependency-pins).
 
 Project memory settings live in the repository root
 [`project-config.yaml`](../../project-config.yaml). The root
 [`agent.yaml`](../../agent.yaml) registers this workspace as
-`atlas-explorer`. Run `agentengine` commands from this directory, or run the
-`agentengine dev` commands from the repository root with
-`--workspace atlas-explorer`.
+`atlas-explorer`. Run `agentengine` commands from this directory, or from
+the repository root with `--workspace atlas-explorer`. The root
+[`.agentengineignore`](../../.agentengineignore) lists what `agentengine build`
+leaves out of the uploaded source.
 
 Policy, prompts, LLM selection, and middleware live in
-[`@repo/atlas-explorer-agent`](../../packages/atlas-explorer-agent), which sits
-on top of [`@repo/agent-engine-core`](../../packages/agent-engine-core). See the
-[package README](../../packages/atlas-explorer-agent/README.md) for its exports,
-the LLM providers, and how this app bundles it.
+[`@repo/atlas-explorer-agent`](../../packages/atlas-explorer-agent).
+`pnpm build` bundles that library into `dist/agent_atlas_explorer/main.js`
+so Agent Engine runs one file plus this app's npm dependencies. The `build`,
+`test`, `typecheck`, and `dev` scripts first build that library (and
+`@repo/agent-engine-core` under it) through `pre*` hooks. See the
+[package README](../../packages/atlas-explorer-agent/README.md) for its exports.
 
 ## Configure
 
@@ -88,8 +77,8 @@ environment is intentionally write-capable.
 
 Copy `mcp-config.example.json` to ignored `mcp-config.json`. Replace
 `YOUR_LOCAL_PUBLIC_IP` with this machine's public IPv4 (`curl -4 ifconfig.me`).
-Replace the `AGENT_ENGINE_IP_*` placeholders with the egress addresses of your
-Agent Engine deployment so a deployed workspace can call Managed MCP.
+Replace the `AGENT_ENGINE_IP_*` placeholders with your Agent Engine deployment's
+egress addresses so a deployed workspace can call Managed MCP.
 
 Create a **separate MCP configuration and token per environment** (local
 development, staging, production, and so on). Do not share credentials across
@@ -128,10 +117,9 @@ atlas api remoteMcpConfigurations createGroupMcpSecret \
 ```
 
 The secret is returned once. Store `clientId` as `ATLAS_MCP_CLIENT_ID` and the
-secret as `ATLAS_MCP_CLIENT_SECRET`. After swapping credentials, restart the
-local stack (`agentengine dev stop`, then `agentengine dev up`) and start a new
-Playground thread so the runtime does not reuse a cached token or an old
-cluster connection.
+secret as `ATLAS_MCP_CLIENT_SECRET`. After swapping credentials, restart
+`agentengine dev` and start a new Playground thread so the runtime does not reuse a
+cached token or an old cluster connection.
 
 For a deployed workspace, store the same values in Agent Engine's secret store:
 
@@ -182,6 +170,7 @@ the agent, and then revoke the previous secret.
 
 ```bash
 pnpm test
+pnpm test:integration
 pnpm typecheck
 pnpm build
 agentengine dev up
@@ -190,46 +179,9 @@ agentengine dev up
 Open the playground at http://localhost:3000. Stop the stack with
 `agentengine dev stop`.
 
-### Scripts
-
-Run these from this directory, or from the repository root with
-`pnpm --filter atlas-explorer <script>`. The repository root also has
-`pnpm test:atlas-explorer` (tests for `@repo/agent-engine-core`,
-`@repo/atlas-explorer-agent`, and this app) and `pnpm build:atlas-explorer`.
-
-| Script | What it does |
-| --- | --- |
-| `build` | Bundles `src/agent_atlas_explorer/main.ts` into `dist/agent_atlas_explorer/main.js` with esbuild. |
-| `test` | Runs the unit tests with Vitest. |
-| `test:watch` | Runs Vitest in watch mode. |
-| `test:integration` | Runs the live LLM checks. See [Integration test prerequisites](#integration-test-prerequisites). |
-| `typecheck` | Type-checks the app and its tests. |
-| `dev` | Runs `main.ts` with `tsx watch`. |
-| `start` | Builds, then runs the bundle with `node`. For a local run, prefer `agentengine dev up`. |
-
-`build`, `test`, `typecheck`, `dev`, and `start` have `pre*` hooks that build
-the workspace library [`@repo/atlas-explorer-agent`](../../packages/atlas-explorer-agent)
-(and, through it, `@repo/agent-engine-core`) first, because the app imports
-their compiled `dist` output. `test:watch` and `test:integration` have no hook.
-Run `pnpm test`, `pnpm build`, or
-`pnpm --filter @repo/atlas-explorer-agent build` once before using them on a
-fresh checkout.
-
-### Integration test prerequisites
-
-`pnpm test:integration` sends one real request to each of two providers and
-expects the reply to contain "pong". It needs:
-
-- A built `@repo/atlas-explorer-agent`, as described above.
-- `OPENAI_API_KEY` and `ANTHROPIC_API_KEY` in `.env` in this directory, or in
-  the environment. Either key missing fails its test with a message naming
-  the key.
-- Network access to both providers. Each test allows up to 120 seconds and
-  uses the model from `config.ts` for OpenAI and `claude-sonnet-4-5` for
-  Anthropic.
-- `CI` unset. When `CI` has any value, the whole suite is skipped.
-
-`pnpm test` never runs these tests.
+`pnpm test:integration` calls the real OpenAI and Anthropic APIs, so it needs
+`OPENAI_API_KEY` and `ANTHROPIC_API_KEY` in `.env`. It is skipped when `CI` is
+set, and `pnpm test` never runs it.
 
 ## Talk from chat platforms
 
@@ -256,8 +208,8 @@ can be reused with additional Chat SDK adapters.
   `GROUP_DATA_ACCESS_READ_ONLY`, and `ALLOW_WRITE_OPERATIONS` should stay
   unset or `"false"`. The application also hides non-read MongoDB MCP tools
   unless that secret is enabled; remaining tools then require HITL
-  approval. This application allowlist (`READ_ONLY_MCP_TOOLS`) is a bridge
-  until Agent Engine preserves MCP tool annotations.
+  approval. This application allowlist is a bridge until Agent Engine preserves
+  MCP tool annotations.
 - When both write opt-ins are present, persistent mutations are protected by
   LangChain HITL middleware using Agent Engine's persistent checkpointer and
   suspend/resume adapter. This includes database writes; Atlas cluster
@@ -276,20 +228,10 @@ can be reused with additional Chat SDK adapters.
 - OpenAI Responses tool definitions echoed in `response_metadata` are removed
   from prior messages before model calls and from new responses before
   checkpointing, keeping durable sessions compact.
+- The Agent Engine SDK packages are pinned to the exact npm version `0.11.6` in
+  `package.json`. The root `pnpm-workspace.yaml` lists them under
+  `minimumReleaseAgeExclude` so pnpm installs that release despite its minimum
+  release age. Bump both together.
+- Zod is pinned to `4.4.3`; newer `4.5.x` releases currently break Agent Engine's
+  content-block discriminator while messages cross the AER/Tool Pod boundary.
 - Do not edit `.agentengine/`; it is generated by the agentengine CLI.
-
-## Dependency pins
-
-- The Agent Engine SDK packages (`@mongodb-js/agent-engine-sdk` and
-  `@mongodb-js/agent-engine-sdk-langgraph`) are pinned to the exact npm version
-  `0.11.6` in this app's `package.json`. `@repo/agent-engine-core` pins the
-  same version for `@mongodb-js/agent-engine-sdk` and
-  `@mongodb-js/agent-engine-runner-shared`.
-- The root [`pnpm-workspace.yaml`](../../pnpm-workspace.yaml) lists those
-  `0.11.6` packages (plus `@mongodb-js/agent-engine-sdk-memory`) under
-  `minimumReleaseAgeExclude`. That exempts them from pnpm's minimum release
-  age check, which otherwise delays installing recently published versions.
-  When you bump the SDK version, update both files.
-- Zod is pinned to `4.4.3` by the root `overrides`; newer `4.5.x` releases
-  currently break Agent Engine's content-block discriminator while messages
-  cross the AER/Tool Pod boundary.
