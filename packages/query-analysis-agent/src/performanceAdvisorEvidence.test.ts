@@ -25,7 +25,7 @@ describe("buildPerformanceAdvisorEvidence", () => {
   it("groups a namespace and redacts literals before formatting ratios", () => {
     expect(evidence).not.toBeNull();
     const text = evidence ?? "";
-    expect(text).toContain("sample of at most 50 recent log lines");
+    expect(text).toContain("sample of at most 50 recent log lines per cluster node");
     expect(text).toContain("not a `$queryStats` aggregate");
     expect(text).toContain("3 log line(s) and 2 query shape(s)");
     expect(text).not.toContain("archived");
@@ -90,6 +90,15 @@ describe("buildPerformanceAdvisorEvidence", () => {
     expect(text).toContain("No PA Suggestion at this time.");
   });
 
+  it("does not attach a suggestion that shares no field with the shape", () => {
+    const text = buildPerformanceAdvisorEvidence({
+      slowQueryLogs: [{ namespace: "mydb.orders", line: LEGACY_LINE }],
+      suggestedIndexes: [{ namespace: "mydb.orders", weight: 10, index: [{ sku: 1 }] }],
+    });
+    expect(text).toContain("No PA Suggestion at this time.");
+    expect(text).not.toContain("sku");
+  });
+
   it("says when the sample has no shapes", () => {
     expect(
       buildPerformanceAdvisorEvidence({ slowQueryLogs: [], suggestedIndexes: [] }),
@@ -119,8 +128,72 @@ describe("annotatePerformanceAdvisorCall", () => {
     );
 
     expect(result).toBeInstanceOf(ToolMessage);
-    expect((result as ToolMessage).content).toContain("# Query analysis evidence");
-    expect((result as ToolMessage).content).toContain("highImpact.dbA");
+    const content = (result as ToolMessage).content as string;
+    expect(content).toContain("# Query analysis evidence");
+    expect(content).toContain("highImpact.dbA");
+    expect(content).toContain("Raw slow query log lines omitted.");
+    expect(content).not.toContain("archived");
+    expect(content).not.toContain("docsExamined");
+    expect(content).toContain('"suggestedIndexes"');
+  });
+
+  it("replaces only the raw slow query logs in markdown results", async () => {
+    const markdown = [
+      "## Suggested Indexes",
+      JSON.stringify(sample.suggestedIndexes),
+      "",
+      "## Slow Query Logs",
+      "Please notify the user that the MCP server tool limits slow query logs.",
+      JSON.stringify(sample.slowQueryLogs),
+      "",
+      "## Schema Suggestions",
+      "No schema suggestions found.",
+    ].join("\n");
+    const result = await annotatePerformanceAdvisorCall(
+      { toolCall: { name: PERFORMANCE_ADVISOR_TOOL } },
+      async () =>
+        new ToolMessage({
+          content: [{ type: "text", text: markdown }],
+          tool_call_id: "call-5",
+          name: PERFORMANCE_ADVISOR_TOOL,
+        }),
+    );
+
+    const blocks = (result as ToolMessage).content as Array<{ type: string; text: string }>;
+    const original = blocks[0]?.text ?? "";
+    expect(original).toContain(JSON.stringify(sample.suggestedIndexes));
+    expect(original).toContain("Please notify the user");
+    expect(original).toContain("Raw slow query log lines omitted.");
+    expect(original).toContain("## Schema Suggestions");
+    expect(original).not.toContain("archived");
+    expect(blocks.at(-1)?.text).toContain("# Query analysis evidence");
+  });
+
+  it("keeps later sections when the slow query log section is empty", async () => {
+    const markdown = [
+      "## Suggested Indexes",
+      "No suggested indexes found.",
+      "",
+      "## Slow Query Logs",
+      "No slow query logs found.",
+      "",
+      "## Schema Suggestions",
+      '[{"recommendation":"keep"}]',
+    ].join("\n");
+    const result = await annotatePerformanceAdvisorCall(
+      { toolCall: { name: PERFORMANCE_ADVISOR_TOOL } },
+      async () =>
+        new ToolMessage({
+          content: markdown,
+          tool_call_id: "call-6",
+          name: PERFORMANCE_ADVISOR_TOOL,
+        }),
+    );
+
+    const content = (result as ToolMessage).content as string;
+    expect(content).toContain('[{"recommendation":"keep"}]');
+    expect(content).not.toContain("Raw slow query log lines omitted.");
+    expect(content).toContain("No slow query shapes were found in this sample.");
   });
 
   it("leaves other tools and error results unchanged", async () => {

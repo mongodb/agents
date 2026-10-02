@@ -110,7 +110,7 @@ export async function annotatePerformanceAdvisorCall<T>(
     const evidence = buildPerformanceAdvisorEvidence(result.content);
     if (evidence === null) return result;
     return new ToolMessage({
-      content: appendContent(result.content, evidence),
+      content: appendContent(withoutRawSlowLogs(result.content), evidence),
       tool_call_id: result.tool_call_id,
       name: result.name,
       status: result.status,
@@ -197,6 +197,11 @@ function jsonAfterHeading(text: string, heading: string): unknown {
 }
 
 function parseJsonValue(text: string): unknown {
+  const end = jsonValueEnd(text);
+  return end === undefined ? undefined : parseJson(text.slice(0, end));
+}
+
+function jsonValueEnd(text: string): number | undefined {
   const opener = text[0];
   const closer = opener === "[" ? "]" : "}";
   let depth = 0;
@@ -214,10 +219,59 @@ function parseJsonValue(text: string): unknown {
     else if (char === opener) depth++;
     else if (char === closer) {
       depth--;
-      if (depth === 0) return parseJson(text.slice(0, i + 1));
+      if (depth === 0) return i + 1;
     }
   }
   return undefined;
+}
+
+const RAW_LOGS_OMITTED =
+  "Raw slow query log lines omitted. They are summarized in the query analysis evidence below.";
+
+/**
+ * Drops the raw slow query log lines once the evidence block summarizes
+ * them, so the agent cannot cite per-line numbers or literal query values.
+ */
+function withoutRawSlowLogs(content: MessageContent): MessageContent {
+  if (typeof content === "string") return textWithoutRawSlowLogs(content);
+  return content.map((block) => {
+    if (block && typeof block === "object" && "text" in block && typeof block.text === "string") {
+      return { ...block, text: textWithoutRawSlowLogs(block.text) };
+    }
+    return block;
+  }) as MessageContent;
+}
+
+function textWithoutRawSlowLogs(text: string): string {
+  const parsed = parseJson(text);
+  if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+    return JSON.stringify(recordWithoutRawSlowLogs(parsed as Record<string, unknown>));
+  }
+
+  const heading = "## Slow Query Logs";
+  const start = text.indexOf(heading);
+  if (start < 0) return text;
+  const arrayAt = text.indexOf("[", start + heading.length);
+  if (arrayAt < 0) return text;
+  const nextHeading = text.indexOf("\n## ", start + heading.length);
+  if (nextHeading >= 0 && nextHeading < arrayAt) return text;
+  const end = jsonValueEnd(text.slice(arrayAt));
+  if (end === undefined) return text;
+  return `${text.slice(0, arrayAt)}${RAW_LOGS_OMITTED}${text.slice(arrayAt + end)}`;
+}
+
+function recordWithoutRawSlowLogs(record: Record<string, unknown>): Record<string, unknown> {
+  const copy: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(record)) {
+    if (key === "slowQueryLogs" || key === "slowQueries") {
+      copy[key] = RAW_LOGS_OMITTED;
+    } else if (key === "structuredContent" && value && typeof value === "object" && !Array.isArray(value)) {
+      copy[key] = recordWithoutRawSlowLogs(value as Record<string, unknown>);
+    } else {
+      copy[key] = value;
+    }
+  }
+  return copy;
 }
 
 function parseJson(text: string): unknown {
@@ -441,7 +495,7 @@ function renderEvidence(
     "",
     "These blocks are computed from the Performance Advisor tool result. Cite only these formatted numbers. Do not recompute ratios or totals.",
     "",
-    `The slow query logs are a sample of at most ${SLOW_QUERY_SAMPLE_LIMIT} recent log lines from this tool, not a \`$queryStats\` aggregate over each query shape's lifetime. This result contained ${logCount} log line(s) and ${groups.length} query shape(s).`,
+    `The slow query logs are a sample of at most ${SLOW_QUERY_SAMPLE_LIMIT} recent log lines per cluster node from this tool, not a \`$queryStats\` aggregate over each query shape's lifetime. This result contained ${logCount} log line(s) and ${groups.length} query shape(s).`,
   ];
 
   if (groups.length === 0) {
@@ -561,8 +615,7 @@ function matchSuggestion(group: ShapeGroup, suggestions: SuggestedIndex[]): Sugg
   scored.sort((left, right) => right.overlap - left.overlap || right.weight - left.weight);
   const best = scored[0];
   if (!best) return undefined;
-  if (best.overlap > 0 || candidates.length === 1) return best.suggestion;
-  return undefined;
+  return best.overlap > 0 ? best.suggestion : undefined;
 }
 
 function indexFields(suggestion: SuggestedIndex): string[] {
