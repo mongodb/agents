@@ -25,11 +25,8 @@ repository: each agent is a workspace you build, test, and deploy from here.
 `tsconfig.base.json`, `tsconfig.test.base.json`, and `vitest.shared.mts` hold
 the TypeScript and Vitest settings that every package extends.
 
-The agent packages sit in a chain. The Atlas Explorer app imports
-`@repo/atlas-explorer-agent`, which re-exports `@repo/agent-engine-core`. The
-Slack bot imports `@repo/agent-engine-chat`. The libraries are consumed from
-their compiled `dist` folders, so each consumer's `pre*` script builds them
-first.
+The libraries are consumed from their compiled `dist` folders, so each
+consumer's `pre*` scripts build them first.
 
 ## Prerequisites
 
