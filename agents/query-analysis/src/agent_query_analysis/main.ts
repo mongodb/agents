@@ -9,8 +9,6 @@ import {
   buildSystemPrompt,
   prepareAgentInput,
   recoverToolErrorsMiddleware,
-  resolveScope,
-  scopeGuardMiddleware,
   selectQueryAnalysisTools,
   stampResumeClientUserMiddleware,
   stripToolEchoMiddleware,
@@ -26,8 +24,6 @@ function log(level: "INFO" | "WARN" | "ERROR", msg: string): void {
 }
 
 process.env.AGENTIC_AGENT_WORKDIR ||= process.cwd();
-
-const scope = resolveScope(queryAnalysisConfig.scope);
 
 export const app = new App({ appName: "query-analysis" });
 app.prepareAgentInput(prepareAgentInput);
@@ -61,7 +57,6 @@ export const buildAgent = app.entrypoint(() => {
       middleware: [
         stampResumeClientUserMiddleware,
         stripToolEchoMiddleware,
-        scopeGuardMiddleware(scope),
         annotatePerformanceAdvisorMiddleware(),
         recoverToolErrorsMiddleware,
       ] as never,

@@ -149,7 +149,6 @@ describe("Query Analysis graph assembly", () => {
     expect(options.middleware?.map((middleware) => middleware.name)).toEqual([
       stampResumeClientUserMiddleware.name,
       "stripOpenAIToolEcho",
-      "scopeGuard",
       "annotatePerformanceAdvisor",
       "recoverToolErrors",
     ]);

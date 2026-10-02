@@ -55,7 +55,7 @@ Set these local secrets in `.env`:
 - `systemPrompt.name` (empty keeps **Query Analysis**)
 - `systemPrompt.customInstructions` (empty skips extra prompt text)
 - `scope.projectId` and `scope.clusterName` (empty lets the agent resolve
-  the target; a set value is enforced on tool arguments)
+  the target; a set value goes into the system prompt)
 - `maxQueryShapes` (how many shapes the report covers; default 3)
 
 Create a **project-level** MongoDB MCP configuration before starting the
@@ -151,6 +151,6 @@ are a sample of at most 50 lines, not a lifetime `$queryStats` aggregate.
 - The MCP configuration uses `GROUP_DATA_ACCESS_READ_ONLY`.
 - The tool allowlist never enables writes, and there is no
   human-in-the-loop path.
-- When `scope` is set, tool calls aimed at another project or cluster
-  come back as a recoverable error.
+- The MCP configuration belongs to one project, so the agent cannot reach
+  another. `scope` only steers the prompt; it does not block tool calls.
 - The agent can recommend an index. It cannot create one.
