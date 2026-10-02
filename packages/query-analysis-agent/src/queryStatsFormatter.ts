@@ -1,9 +1,3 @@
-/**
- * `toFixed` switches to exponential notation at 1e21 and drops grouping,
- * and a negative value rounding to zero renders as `-0`. Neither is
- * reachable from query stats.
- */
-
 const SI_PREFIXES = ["", "k", "M", "G", "T", "P", "E", "Z", "Y"] as const;
 const MICROS_IN_MILLI = 1000;
 const MILLIS_IN_SECOND = 1000;
@@ -17,12 +11,6 @@ export const UNITS_LEGEND = `- Durations: \`μs\` microseconds, \`ms\` milliseco
 - Bytes: \`B\` bytes, \`kB\` kilobytes, \`MB\` megabytes, \`GB\` gigabytes, \`TB\` terabytes.
 - Ratios carry no unit and are given to two decimal places.
 - Values beyond these limits continue with the remaining SI prefixes in order.`;
-
-interface Decimal {
-  sign: 1 | -1;
-  digits: bigint;
-  scale: number;
-}
 
 const FORMATTERS: Record<string, (value: number) => string> = {
   execCount: count,
@@ -135,7 +123,7 @@ function time(value: number, isMicros: boolean): string {
 }
 
 function fixed(value: number, decimals: number): string {
-  const rounded = toPlain(setScale(fromDouble(value), decimals));
+  const rounded = value.toFixed(decimals);
   const point = rounded.indexOf(".");
   const whole = point < 0 ? rounded : rounded.slice(0, point);
   const fraction = point < 0 ? "" : rounded.slice(point);
@@ -143,7 +131,7 @@ function fixed(value: number, decimals: number): string {
 }
 
 function threeSignificantFigures(value: number): string {
-  return toPlain(stripTrailingZeros(roundPrecision(fromDouble(value), 3)));
+  return String(Number(value.toPrecision(3)));
 }
 
 function group(whole: string): string {
@@ -163,93 +151,4 @@ function isMathematicalInteger(value: number): boolean {
 
 function isInvalid(value: number): boolean {
   return Number.isNaN(value) || !Number.isFinite(value);
-}
-
-/**
- * Use the exact binary value, not the shortest decimal string. Later
- * scale and precision rounding follow that decimal, which is why 1.005
- * renders as 1.00.
- */
-function fromDouble(value: number): Decimal {
-  if (!Number.isFinite(value)) {
-    throw new Error("Cannot format a non-finite number as a decimal");
-  }
-  if (value === 0) return { sign: 1, digits: 0n, scale: 0 };
-
-  const bits = doubleToBits(value);
-  const sign: 1 | -1 = (bits >> 63n) === 0n ? 1 : -1;
-  let exponent = Number((bits >> 52n) & 0x7ffn);
-  let significand =
-    exponent === 0
-      ? (bits & ((1n << 52n) - 1n)) << 1n
-      : (bits & ((1n << 52n) - 1n)) | (1n << 52n);
-  exponent -= 1075;
-  while ((significand & 1n) === 0n) {
-    significand >>= 1n;
-    exponent++;
-  }
-  if (exponent < 0) {
-    const pow = -exponent;
-    return { sign, digits: significand * 5n ** BigInt(pow), scale: pow };
-  }
-  return { sign, digits: significand << BigInt(exponent), scale: 0 };
-}
-
-function doubleToBits(value: number): bigint {
-  const buf = new ArrayBuffer(8);
-  new Float64Array(buf)[0] = value;
-  return new BigUint64Array(buf)[0] ?? 0n;
-}
-
-function setScale(dec: Decimal, newScale: number): Decimal {
-  if (dec.digits === 0n) return { sign: 1, digits: 0n, scale: newScale };
-  const delta = dec.scale - newScale;
-  if (delta === 0) return { ...dec, scale: newScale };
-  if (delta < 0) {
-    return {
-      sign: dec.sign,
-      digits: dec.digits * 10n ** BigInt(-delta),
-      scale: newScale,
-    };
-  }
-  const divisor = 10n ** BigInt(delta);
-  let quotient = dec.digits / divisor;
-  const remainder = dec.digits % divisor;
-  if (remainder * 2n >= divisor) quotient += 1n;
-  return { sign: dec.sign, digits: quotient, scale: newScale };
-}
-
-function roundPrecision(dec: Decimal, precision: number): Decimal {
-  if (dec.digits === 0n) return { sign: 1, digits: 0n, scale: 0 };
-  const length = dec.digits.toString().length;
-  if (length <= precision) return dec;
-  return setScale(dec, dec.scale - (length - precision));
-}
-
-function stripTrailingZeros(dec: Decimal): Decimal {
-  if (dec.digits === 0n) return { sign: 1, digits: 0n, scale: 0 };
-  let digits = dec.digits;
-  let scale = dec.scale;
-  while (digits % 10n === 0n) {
-    digits /= 10n;
-    scale -= 1;
-  }
-  return { sign: dec.sign, digits, scale };
-}
-
-function toPlain(dec: Decimal): string {
-  if (dec.digits === 0n) {
-    return dec.scale > 0 ? `0.${"0".repeat(dec.scale)}` : "0";
-  }
-  const digits = dec.digits.toString();
-  let rendered: string;
-  if (dec.scale <= 0) {
-    rendered = digits + "0".repeat(-dec.scale);
-  } else if (digits.length <= dec.scale) {
-    rendered = `0.${"0".repeat(dec.scale - digits.length)}${digits}`;
-  } else {
-    const point = digits.length - dec.scale;
-    rendered = `${digits.slice(0, point)}.${digits.slice(point)}`;
-  }
-  return dec.sign < 0 ? `-${rendered}` : rendered;
 }

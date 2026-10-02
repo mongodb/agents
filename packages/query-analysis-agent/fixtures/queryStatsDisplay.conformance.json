@@ -1,13 +1,7 @@
 {
   "_comment": [
-    "Expected output of getFormattedValue for every query stat the Query Insights",
-    "Assistant sends to the model, shared by queryStatsDisplay.conformance.test.ts",
-    "and the server's QueryStatsFormatterUnitTests so the two cannot drift apart.",
-    "Java and JavaScript do not agree on rounding by default, so these are exact",
-    "pairs rather than properties: rounding ties in both directions, unit",
-    "boundaries, and significant-figure edges that a naive port gets wrong.",
-    "Every expectation was read off the client formatter, not derived by hand.",
-    "A formatter's interesting values appear once, on one representative stat."
+    "Display strings for the query stats the model sees: units, SI prefixes, and two-decimal ratios.",
+    "Each interesting value appears once, on one representative stat."
   ],
   "cases": [
     { "key": "keysExaminedRatio", "raw": 0, "expected": "0" },
