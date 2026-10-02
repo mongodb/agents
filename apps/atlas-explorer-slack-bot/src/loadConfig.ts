@@ -16,7 +16,7 @@ export interface SlackBotConfig {
     signingSecret?: string;
     botDisplayName: string;
   };
-  agentic: AgentEngineClientConfig;
+  agentEngine: AgentEngineClientConfig;
   store: {
     mongoUri?: string;
     databaseName: string;
@@ -177,7 +177,7 @@ export function loadConfig(
         values.SLACK_BOT_DISPLAY_NAME ??
         (slackBotConfig.name.trim() || DEFAULT_SLACK_BOT_NAME),
     },
-    agentic: buildAgenticConfig(values, invokeTarget),
+    agentEngine: buildAgenticConfig(values, invokeTarget),
     store: {
       ...(values.MONGODB_URI ? { mongoUri: values.MONGODB_URI } : {}),
       databaseName: values.THREAD_STORE_DB ?? "atlas_explorer_slack",

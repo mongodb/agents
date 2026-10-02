@@ -177,7 +177,7 @@ function config(): SlackBotConfig {
       botDisplayName: BOT_NAME,
       botToken: "xoxb-test",
     },
-    agentic: {
+    agentEngine: {
       baseUrl: "http://localhost:3000",
       invokeTarget: "local",
     },

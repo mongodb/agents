@@ -42,7 +42,7 @@ describe("loadConfig", () => {
         botDisplayName: DEFAULT_BOT_NAME,
         botToken: "xoxb-test",
       },
-      agentic: {
+      agentEngine: {
         baseUrl: "https://agentic-platform.mongodb.com",
         invokeTarget: "gateway",
         projectId: "project-1",
@@ -166,7 +166,7 @@ describe("loadConfig", () => {
       "socket",
     );
 
-    expect(config.agentic.baseUrl).toBe("https://agentic.example.test");
+    expect(config.agentEngine.baseUrl).toBe("https://agentic.example.test");
   });
 
   it("selects the local Playground invoke contract explicitly", () => {
@@ -187,7 +187,7 @@ describe("loadConfig", () => {
       "socket",
     );
 
-    expect(config.agentic).toEqual({
+    expect(config.agentEngine).toEqual({
       baseUrl: "http://localhost:3000",
       invokeTarget: "local",
     });

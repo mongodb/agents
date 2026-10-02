@@ -114,7 +114,7 @@ export async function createRuntime(
   });
   const delivery = createSlackDeliveryBoundary(slackAdapter);
   registerChatHandlers(bot, {
-    agent: options.agent ?? new AgentEngineClient(config.agentic),
+    agent: options.agent ?? new AgentEngineClient(config.agentEngine),
     authorizedActorIds: normalizeAllowedActors(
       config.chat.allowedActorIds,
     ),
