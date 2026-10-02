@@ -63,23 +63,3 @@ export const POST = (request: Request) => bot.webhooks.slack(request);
 
 The Slack bot's [`runtime.ts`](../../apps/atlas-explorer-slack-bot/src/runtime.ts)
 shows the full version, with an allowlist and custom messages.
-
-## Build before consuming
-
-The `exports` map points at `dist`, so build the package before importing it:
-
-```bash
-pnpm install
-pnpm --filter @repo/agent-engine-chat build
-```
-
-The Slack bot's `pre*` scripts and its `vercel.json` build command do this for
-you. This package's own tests run against `src` and need no build.
-
-## Thread store
-
-`MongoThreadStore` keeps one record per chat thread in the `chat_threads`
-collection, including the Agent Engine session in `agentSessionId`. The first
-time a Slack thread is used, its record from the legacy `slack_threads`
-collection, if there is one, is copied across. Records that still use the old session field name
-are not read, so those threads start a new session.
