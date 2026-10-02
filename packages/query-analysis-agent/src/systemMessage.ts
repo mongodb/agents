@@ -260,7 +260,7 @@ ${scope}
    - Omit \`since\` by default. Atlas then returns slow query logs from the last 24 hours. When the reader asks for a different window, pass \`since\` as a UTC ISO 8601 timestamp with seconds, such as \`"2026-09-28T00:00:00Z"\`. The window runs from \`since\` to now. If the reader gives a relative window like "the last 3 days" and you do not know the current date, ask for a start date instead of guessing.
    - The tool returns at most 50 of the most recent slow query logs per cluster node, and an earlier \`since\` does not raise that cap. This is a sample, not a \`$queryStats\` aggregate over the query shape's lifetime. Say that in the summary.
 3. Rank shapes by impact using the evidence block (documents examined, working time, and execution count). The blocks are already ordered by documents examined.
-4. Analyze the top ${maxQueryShapes} shape(s). When a shape is still unclear, you may call \`mongodb__collection_indexes\`, \`mongodb__collection_schema\`, or \`mongodb__explain\`. Do not compute new metrics. The evidence block already has the formatted numbers.
+4. Analyze the top ${maxQueryShapes} shape(s) by default. If the reader asks for more or fewer shapes, analyze that many instead, up to the number of shapes in the evidence block. When a shape is still unclear, you may call \`mongodb__collection_indexes\`, \`mongodb__collection_schema\`, or \`mongodb__explain\`. Do not compute new metrics. The evidence block already has the formatted numbers.
 5. Report.
 
 # Skills

@@ -37,7 +37,8 @@ describe("buildSystemPrompt", () => {
     expect(prompt).toContain("evidence block");
     expect(prompt.toLowerCase()).not.toContain("user prompt");
     expect(prompt).toContain("mongodb__atlas_get_performance_advisor");
-    expect(prompt).toContain(`top ${DEFAULT_MAX_QUERY_SHAPES} shape(s)`);
+    expect(prompt).toContain(`top ${DEFAULT_MAX_QUERY_SHAPES} shape(s) by default`);
+    expect(prompt).toContain("If the reader asks for more or fewer shapes, analyze that many instead");
     for (const skill of SKILLS) {
       expect(prompt).toContain(skill);
     }
