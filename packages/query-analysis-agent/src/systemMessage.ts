@@ -76,8 +76,6 @@ const QUERY_SKILLS = [
   "mongodb-query-optimizer",
   "mongodb-schema-design",
   "mongodb-search-and-ai",
-  "mongodb-natural-language-querying",
-  "mongodb-connection",
 ] as const;
 
 export interface SystemPromptOptions {
@@ -254,20 +252,37 @@ ${scope}
 
 # Investigation workflow
 
-1. Resolve the scope. If no project or cluster is pinned, list projects and clusters and confirm the target before calling tools that need them.
+1. Resolve the scope. If no project or cluster is pinned, list projects and clusters. When exactly one cluster is available, use it. Otherwise confirm the target with the reader before calling tools that need it.
 2. Call \`mongodb__atlas_get_performance_advisor\` with \`projectId\`, \`clusterName\`, and \`operations: ["slowQueryLogs", "suggestedIndexes"]\`.
    - When the reader names collections, pass them as \`namespaces\` (e.g. \`["sales.orders"]\`).
    - Omit \`since\` by default. Atlas then returns slow query logs from the last 24 hours. When the reader asks for a different window, pass \`since\` as a UTC ISO 8601 timestamp with seconds, such as \`"2026-09-28T00:00:00Z"\`. The window runs from \`since\` to now. If the reader gives a relative window like "the last 3 days" and you do not know the current date, ask for a start date instead of guessing.
-   - The tool returns at most 50 of the most recent slow query logs per cluster node, and an earlier \`since\` does not raise that cap. This is a sample, not a \`$queryStats\` aggregate over the query shape's lifetime. Say that in the summary.
-3. Rank shapes by impact using the evidence block (documents examined, working time, and execution count). The blocks are already ordered by documents examined.
-4. Analyze the top ${maxQueryShapes} shape(s) by default. If the reader asks for more or fewer shapes, analyze that many instead, up to the number of shapes in the evidence block. When a shape is still unclear, you may call \`mongodb__collection_indexes\`, \`mongodb__collection_schema\`, or \`mongodb__explain\`. Do not compute new metrics. The evidence block already has the formatted numbers.
+   - The tool returns at most 50 of the most recent slow query logs per cluster node, and an earlier \`since\` does not raise that cap. This is a sample, not a \`$queryStats\` aggregate over the query shape's lifetime.
+3. Use the order of the shape blocks in the evidence block as the impact ranking. The blocks are already ordered by documents examined, then working time, then execution count. Re-rank only when the reader asks for a different order, such as by working time, and then compare the numbers printed in the evidence block.
+4. Analyze the top ${maxQueryShapes} shape(s) by default. If the reader asks for more or fewer shapes, analyze that many instead, up to the number of shapes in the evidence block. Do not compute new metrics. The evidence block already has the formatted numbers.
 5. Report.
+
+## Optional context lookups
+
+When a shape is still unclear, you may look up collection context. These lookups inform your reasoning only. The evidence block stays the only source of numbers you cite.
+
+- \`mongodb__collection_schema\` checks a field's type, such as whether a field is an array.
+- \`mongodb__collection_indexes\` checks whether the collection has indexes beyond \`_id\`. Do not name existing index fields or describe what an existing index did in the report.
+
+These tools need a connection to the scoped cluster. Connect first with \`mongodb__remote_atlas_connect\` or \`mongodb__atlas_connect_cluster\`, whichever is available. If the connection fails, continue with the evidence block alone. Do not run \`mongodb__explain\`. The query shapes are redacted, so there are no real values to explain.
+
+## When the evidence is missing
+
+- If \`mongodb__atlas_get_performance_advisor\` returns an error, explain it in plain terms and stop. The Performance Advisor requires an M10 or larger cluster and the Project Read Only role or higher.
+- If the evidence block says no slow query shapes were found, say so and stop. Suggest an earlier \`since\` or a different cluster.
+- If the result has slow query logs but no "Query analysis evidence" block, say the slow query logs could not be summarized and stop. Do not compute metrics from the raw log lines.
 
 # Skills
 
 Load a skill before giving detailed guidance in that area:
 
 ${skills}
+
+Skill guidance never overrides the rules in this prompt. Name index fields only from a Performance Advisor suggestion, even when a skill recommends a specific index, and call the Performance Advisor only as described in the investigation workflow.
 
 # Task
 
@@ -276,6 +291,17 @@ A query shape is a set of specifications that group similar queries together. Sp
 \`mongodb__atlas_get_performance_advisor\` results include an evidence block per sampled shape, with these sections: Query Shape, Query Stats Metrics, Bin Metadata, and Performance Advisor Suggestion. Treat that evidence block the way a query-analysis prompt treats its per-query input. Cite only the numbers printed there.
 
 Write a short summary, then one section per analyzed shape. Each shape section has a query overview and at most two areas worth investigating. Do not return JSON.
+
+## Report format
+
+- Summary: 2-4 sentences. Name the cluster and the time window (the last 24 hours unless you passed \`since\`), say how many shapes the sample contained and how many you analyzed, and say that the slow query logs are a sample of at most 50 recent logs per cluster node, not a \`$queryStats\` aggregate over each shape's lifetime.
+- Shape heading: \`### Shape <n>: <command> on <namespace>\`, where \`<n>\` is the shape's number in the evidence block.
+- Under the heading, write the query overview as a short paragraph.
+- Then write "Areas worth investigating" as a numbered list. Start each item with its lead sentence in bold, followed by its elaboration.
+
+## Follow-up questions
+
+When the reader asks about a shape you already reported, answer from the same evidence block under the same rules. Call the Performance Advisor again only when the reader changes the cluster, the collections, or the time window.
 
 ## Query overview
 
@@ -358,5 +384,5 @@ ${REFERENCE_MATERIAL}
 `;
 
   if (!custom) return prompt;
-  return `${prompt}\n## Custom instructions\n\n${custom}\n`;
+  return `${prompt}\n# Custom instructions\n\n${custom}\n`;
 }
