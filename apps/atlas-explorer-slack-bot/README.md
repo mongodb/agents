@@ -129,10 +129,8 @@ pnpm typecheck
 pnpm start
 ```
 
-`pnpm start` first builds `@repo/agent-engine-chat` through the app's
-`prestart` hook, then runs `tsx src/index.ts`. The `build`, `dev`, `test`, and
-`typecheck` scripts have the same kind of `pre*` hook, because the app imports
-the library's compiled `dist` output.
+`pnpm start` first builds `@repo/agent-engine-chat` through a `prestart` hook;
+the app's other scripts have similar `pre*` hooks.
 
 `MONGODB_URI` is optional locally. Without it,
 `mongodb-memory-server-core` starts an ephemeral MongoDB process. Chat SDK
@@ -144,8 +142,8 @@ and its data disappears during graceful shutdown. You can then:
 - Mention `@AtlasExplorer Local` in a channel; the response starts a thread.
 - Send follow-ups in a thread already owned by the bot.
 
-Channel mention routing (`slackMentions` in `@repo/agent-engine-chat`) validates the Slack user ID in the raw event. A local
-app can therefore use a display name such as `AtlasExplorer Local` without a
+Channel mention routing (`slackMentions` in `@repo/agent-engine-chat`)
+validates the Slack user ID in the raw event. A local app can therefore use a display name such as `AtlasExplorer Local` without a
 bot named `AtlasExplorer` treating that structured mention as its own.
 
 By default, the local bot invokes a deployed Agent Engine workspace. The Atlas MCP
@@ -382,11 +380,9 @@ automatically replayed; verify Atlas state before starting a new conversation.
 Register another Chat SDK adapter in `src/runtime.ts`, add its
 platform-qualified actors to `CHAT_ALLOWED_USER_IDS`, and provide a delivery
 boundary only for capabilities that are genuinely platform-specific. The
-handlers in
-[`@repo/agent-engine-chat`](../../packages/agent-engine-chat)
-(`registerChatHandlers` in its `chat` export) already cover mentions, direct
-messages, subscribed follow-ups, cards, approvals, session continuity, and
-delivery recovery.
+handlers in [`@repo/agent-engine-chat`](../../packages/agent-engine-chat)
+already cover mentions, direct messages, subscribed follow-ups, cards,
+approvals, session continuity, and delivery recovery.
 
 Slack-specific behavior is limited to `src/platforms/slack.ts`: Agent View,
 suggested prompts, App Home, Socket Mode configuration, response-size handling,
