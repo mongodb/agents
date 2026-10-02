@@ -10,9 +10,3 @@ Shared LLM selection, checkpoints, and LangGraph middleware live in
 call. `ALLOW_WRITE_OPERATIONS` is ignored, and there is no
 human-in-the-loop path. `aggregate` stays available. Atlas rejects `$out`
 and `$merge` because the credential is read-only.
-
-`annotatePerformanceAdvisorMiddleware` appends an evidence block to
-`mongodb__atlas_get_performance_advisor` results: slow logs grouped by
-namespace and query shape, formatted ratios, collection-scan and sort
-signals, and the matching suggested index. A result that cannot be
-parsed is returned unchanged.
