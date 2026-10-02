@@ -1,13 +1,21 @@
+import { readFileSync } from "node:fs";
+
 import { ToolMessage } from "@langchain/core/messages";
 import { describe, expect, it } from "vitest";
 
-import sample from "./fixtures/atlasPerformanceAdvisor.json" with { type: "json" };
 import {
   PERFORMANCE_ADVISOR_TOOL,
   annotatePerformanceAdvisorCall,
   annotatePerformanceAdvisorMiddleware,
   buildPerformanceAdvisorEvidence,
 } from "./performanceAdvisorEvidence.js";
+
+const sample = JSON.parse(
+  readFileSync(
+    new URL("../fixtures/atlasPerformanceAdvisor.json", import.meta.url),
+    "utf8",
+  ),
+) as { slowQueryLogs: unknown; suggestedIndexes: unknown };
 
 const LEGACY_LINE =
   '2026-05-06T10:23:45.447+0000 I COMMAND [conn10614] command mydb.orders appName: "MongoDB Shell" command: find { find: "orders", filter: { status: "pending", customerId: 12345 }, sort: { createdAt: -1 } } planSummary: COLLSCAN keysExamined:0 docsExamined:50000 nreturned:100 executionTimeMillis:1247';
