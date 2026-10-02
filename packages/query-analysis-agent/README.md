@@ -19,8 +19,10 @@ Advisor branch to apply for each shape.
 `annotatePerformanceAdvisorMiddleware` appends an evidence block to
 `mongodb__atlas_get_performance_advisor` results: slow logs grouped by
 namespace and query shape, formatted ratios, collection-scan and sort
-signals, and the matching suggested index. A result that cannot be
-parsed is returned unchanged.
+signals, and the suggested index that shares a field with the shape. Once
+the evidence block is built, the raw slow log lines are replaced with a
+note, so the agent cannot cite per-line numbers or literal values. A
+result that cannot be parsed is returned unchanged.
 
 `displayQueryStat` renders counts, bytes, durations, and ratios the way
 Query Insights does, including `N/A` for invalid values. The
