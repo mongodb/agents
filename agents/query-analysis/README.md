@@ -30,7 +30,7 @@ Project memory settings live in the repository root
 `query-analysis`. Run `agentengine` from this directory, or from the
 repository root with `--workspace query-analysis`.
 
-Policies, the system prompt, the stats formatter, and middleware live in
+Policy, prompts, and middleware live in
 [`@repo/query-analysis-agent`](../../packages/query-analysis-agent).
 
 ## Configure
@@ -49,14 +49,9 @@ Set these local secrets in `.env`:
 - `ATLAS_MCP_CLIENT_SECRET`
 - `OPENAI_API_KEY`
 
-`config.ts` holds the non-secret settings:
-
-- `llm.provider` and `llm.model` (OpenAI `gpt-6-luna` by default)
-- `systemPrompt.name` (empty keeps **Query Analysis**)
-- `systemPrompt.customInstructions` (empty skips extra prompt text)
-- `scope.projectId` and `scope.clusterName` (empty lets the agent resolve
-  the target; a set value goes into the system prompt)
-- `maxQueryShapes` (how many shapes the report covers; default 3)
+Non-secret settings live in `config.ts`: the model, how the agent
+introduces itself, optional custom instructions, and an optional project
+and cluster.
 
 Create a **project-level** MongoDB MCP configuration before starting the
 agent. Atlas Admin API still calls a project a group, so this uses
@@ -64,9 +59,7 @@ agent. Atlas Admin API still calls a project a group, so this uses
 cluster to analyze.
 
 The example config grants `GROUP_DATA_ACCESS_READ_ONLY` only. Do not add
-a read-write role. `$out` and `$merge` stay off the agent because Atlas
-rejects those stages for this credential. `aggregate` remains available
-as a read tool.
+a read-write role.
 
 Copy `mcp-config.example.json` to ignored `mcp-config.json`. Replace
 `YOUR_LOCAL_PUBLIC_IP` with this machine's public IPv4. Keep the Agentic
@@ -140,11 +133,8 @@ agentengine dev up
 Open the playground at http://localhost:3000. Stop the stack with
 `agentengine dev stop`.
 
-Ask which slow queries matter on the pinned cluster. The agent should
-call `mongodb__atlas_get_performance_advisor` for slow query logs and
-suggested indexes, then report the top shapes. The tool result includes
-an evidence block with formatted ratios. The summary should say the logs
-are a sample of at most 50 lines, not a lifetime `$queryStats` aggregate.
+Ask which slow queries matter on the cluster. The agent should explain
+the highest-impact shapes.
 
 ## Safety
 
@@ -152,5 +142,5 @@ are a sample of at most 50 lines, not a lifetime `$queryStats` aggregate.
 - The tool allowlist never enables writes, and there is no
   human-in-the-loop path.
 - The MCP configuration belongs to one project, so the agent cannot reach
-  another. `scope` only steers the prompt; it does not block tool calls.
+  another.
 - The agent can recommend an index. It cannot create one.
