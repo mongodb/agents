@@ -10,8 +10,3 @@ Shared LLM selection, checkpoints, and LangGraph middleware live in
 call. `ALLOW_WRITE_OPERATIONS` is ignored, and there is no
 human-in-the-loop path. `aggregate` stays available. Atlas rejects `$out`
 and `$merge` because the credential is read-only.
-
-`resolveScope` reads an optional `{ projectId, clusterName }` pin.
-`describeScope` is the sentence the system prompt quotes. The pin is
-prompt context only; restrict the Atlas credential or MCP server config
-to enforce access.
