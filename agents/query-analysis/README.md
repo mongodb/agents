@@ -130,6 +130,10 @@ pnpm build
 agentengine dev up
 ```
 
+The dev container can't see the monorepo packages, so it runs the bundle
+from `pnpm build` instead of rebuilding. After source changes, run
+`pnpm build`, then `agentengine dev restart`.
+
 Open the playground at http://localhost:3000. Stop the stack with
 `agentengine dev stop`.
 
