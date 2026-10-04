@@ -8,6 +8,7 @@ overrides:
   zod: 4.4.3
   '@langchain/core': 1.2.12
   '@repo/query-analysis-agent': workspace:*
+  '@repo/atlas-explorer-agent': workspace:*
 
 importers:
 
@@ -27,9 +28,6 @@ importers:
       '@mongodb-js/agent-engine-sdk-langgraph':
         specifier: 0.11.6
         version: 0.11.6(@langchain/langgraph-checkpoint@1.1.5(@langchain/core@1.2.12(@opentelemetry/api@1.9.1)(@opentelemetry/sdk-trace-base@2.11.0(@opentelemetry/api@1.9.1))(openai@7.25.0(undici@6.29.0)(ws@8.22.0)(zod@4.4.3))(ws@8.22.0)))(@langchain/langgraph-sdk@1.12.0(@langchain/core@1.2.12(@opentelemetry/api@1.9.1)(@opentelemetry/sdk-trace-base@2.11.0(@opentelemetry/api@1.9.1))(openai@7.25.0(undici@6.29.0)(ws@8.22.0)(zod@4.4.3))(ws@8.22.0)))(@opentelemetry/api@1.9.1)(@opentelemetry/sdk-trace-base@2.11.0(@opentelemetry/api@1.9.1))(langsmith@0.9.0(@opentelemetry/api@1.9.1)(@opentelemetry/sdk-trace-base@2.11.0(@opentelemetry/api@1.9.1))(openai@7.25.0(undici@6.29.0)(ws@8.22.0)(zod@4.4.3))(ws@8.22.0))(openai@7.25.0(undici@6.29.0)(ws@8.22.0)(zod@4.4.3))(undici@6.29.0)(ws@8.22.0)
-      '@repo/atlas-explorer-agent':
-        specifier: workspace:*
-        version: link:../../packages/atlas-explorer-agent
       dotenv:
         specifier: ^16.4.5
         version: 16.6.1
@@ -52,6 +50,10 @@ importers:
       vitest:
         specifier: ^4.1.11
         version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@25.9.8)(vite@8.3.1(@types/node@25.9.8)(esbuild@0.25.12)(tsx@4.23.15)(yaml@2.9.1))
+    optionalDependencies:
+      '@repo/atlas-explorer-agent':
+        specifier: workspace:*
+        version: link:../../packages/atlas-explorer-agent
 
   agents/query-analysis:
     dependencies:

@@ -176,6 +176,11 @@ pnpm build
 agentengine dev up
 ```
 
+The dev container and the platform image install with npm and cannot see a
+pnpm workspace install. `pnpm build` writes a bundle the npm build copies
+into `dist`. After source changes, run `pnpm build`, then
+`agentengine dev restart`.
+
 Open the playground at http://localhost:3000. Stop the stack with
 `agentengine dev stop`.
 

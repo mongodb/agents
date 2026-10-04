@@ -6,9 +6,10 @@ packages:
 overrides:
   "zod": "4.4.3"
   "@langchain/core": "1.2.12"
-  # agents/query-analysis declares this as file: so the npm install inside
-  # `agentengine dev up` can parse its package.json; pnpm links the workspace copy.
+  # These agents declare file: dependencies so the npm install inside
+  # `agentengine dev up` can parse package.json; pnpm links the workspace copies.
   "@repo/query-analysis-agent": "workspace:*"
+  "@repo/atlas-explorer-agent": "workspace:*"
 
 allowBuilds:
   esbuild: true
