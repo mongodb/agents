@@ -20,7 +20,11 @@ import "dotenv/config";
 
 import { humanInTheLoopMiddleware } from "langchain";
 
-import { App, AgentEngineToolSandboxBackend } from "@mongodb-js/agent-engine-sdk-langgraph";
+import {
+  App,
+  AgentEngineToolSandboxBackend,
+  type DeepAgentOptions,
+} from "@mongodb-js/agent-engine-sdk-langgraph";
 import {
   approveAggregateWritesMiddleware,
   buildLLM,
@@ -61,7 +65,7 @@ app.prepareAgentInput((input, ctx) => {
 });
 log("INFO", "App created; Atlas MCP tools will be discovered from agent.yaml");
 
-export const buildAgent = app.entrypoint(() => {
+export const buildAgent = app.entrypoint((): unknown => {
   log("INFO", "Building atlas-explorer deep agent");
   diagnostics?.recordGraphBuild();
 
@@ -72,7 +76,7 @@ export const buildAgent = app.entrypoint(() => {
       ? "Write operations enabled; non-read MCP tools require HITL approval"
       : "Read-only tool policy; write MCP tools are hidden",
   );
-  const discoveredTools = app.getTools() as readonly { name: string }[];
+  const discoveredTools = app.getTools();
   const availableAtlasTools = selectAtlasTools(
     discoveredTools,
     allowWriteOperations,
@@ -81,7 +85,7 @@ export const buildAgent = app.entrypoint(() => {
   const saver =
     platformSaver === null
       ? null
-      : withRequesterMetadata(platformSaver as never);
+      : withRequesterMetadata(platformSaver);
   const mutativeToolReview = humanInTheLoopMiddleware({
     interruptOn: allowWriteOperations
       ? mutativeInterruptOn(availableAtlasTools)
@@ -96,23 +100,25 @@ export const buildAgent = app.entrypoint(() => {
       logPrefix: "atlas-explorer",
     }),
     {
-      tools: availableAtlasTools as never,
+      tools: availableAtlasTools,
       systemPrompt: buildSystemPrompt(
         allowWriteOperations,
         atlasExplorerConfig.systemPrompt,
       ),
       skills: ["skills"],
-      backend: withoutShellExecution(new AgentEngineToolSandboxBackend()) as never,
-      checkpointer: (saver ?? false) as never,
+      backend: withoutShellExecution(new AgentEngineToolSandboxBackend()),
+      // PlatformCheckpointer versions checkpoints as string | number. deepAgent
+      // types the saver as BaseCheckpointSaver<number>.
+      checkpointer: (saver ?? false) as DeepAgentOptions["checkpointer"],
       middleware: [
         stampResumeClientUserMiddleware,
         stripToolEchoMiddleware,
         mutativeToolReview,
         approveAggregateWritesMiddleware,
         recoverToolErrorsMiddleware,
-      ] as never,
+      ],
     },
-  ) as unknown;
+  );
 });
 
 export function main(): void {
