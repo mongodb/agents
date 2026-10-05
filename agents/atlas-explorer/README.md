@@ -213,18 +213,10 @@ agentengine dev stop
 `pnpm test:integration` also pings OpenAI and Anthropic when `CI` is unset.
 Those LLM key checks skip in GitHub Actions.
 
-GitHub Actions starts the same two-phase stack for this agent, and a
-read-only stack for Atlas Query Insights. Store these repository secrets:
-
-- `OPENAI_API_KEY`
-- `ATLAS_MCP_CLIENT_ID_CI`
-- `ATLAS_MCP_CLIENT_SECRET_CI`
-
-Provision a dedicated read-only MCP configuration named `atlas-explorer-ci`
-on a throwaway Atlas project, with `GROUP_DATA_ACCESS_READ_ONLY` and
-`0.0.0.0/0` on the IP access list so GitHub-hosted runners can reach it.
-Query Insights can use that same read-only credential. Do not reuse local
-or production MCP credentials.
+GitHub Actions does not run these suites yet. It writes dummy MCP and
+OpenAI values and only checks that `agentengine dev up --headless` brings
+the Orchestration Engine up on port 8000. Run the suites locally with real
+credentials.
 
 ## Talk from chat platforms
 

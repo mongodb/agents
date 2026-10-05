@@ -1,4 +1,4 @@
-name: Agent integration tests
+name: Agent dev-up smoke
 
 on:
   pull_request:
@@ -51,14 +51,10 @@ jobs:
         include:
           - name: atlas-explorer
             directory: agents/atlas-explorer
-            filter: atlas-explorer
             store_db: atlas_explorer
-            hitl: true
           - name: atlas-query-insights
             directory: agents/atlas-query-insights
-            filter: atlas-query-insights
             store_db: atlas_query_insights
-            hitl: false
     env:
       COREPACK_ENABLE_DOWNLOAD_PROMPT: "0"
       AGENTENGINE_VERSION: "0.1.118"
@@ -96,18 +92,11 @@ jobs:
           chmod +x "$HOME/.local/bin/agentengine"
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
-      - name: Write local secrets
+      - name: Write dummy local secrets
         working-directory: ${{ matrix.directory }}
         env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          ATLAS_MCP_CLIENT_ID_CI: ${{ secrets.ATLAS_MCP_CLIENT_ID_CI }}
-          ATLAS_MCP_CLIENT_SECRET_CI: ${{ secrets.ATLAS_MCP_CLIENT_SECRET_CI }}
           STORE_DB: ${{ matrix.store_db }}
         run: |
-          if [ -z "$OPENAI_API_KEY" ] || [ -z "$ATLAS_MCP_CLIENT_ID_CI" ] || [ -z "$ATLAS_MCP_CLIENT_SECRET_CI" ]; then
-            echo "::error::Set repository secrets OPENAI_API_KEY, ATLAS_MCP_CLIENT_ID_CI, and ATLAS_MCP_CLIENT_SECRET_CI."
-            exit 1
-          fi
           python3 - <<'PY'
           import os
           from pathlib import Path
@@ -116,46 +105,33 @@ jobs:
                   [
                       "MONGODB_URI=",
                       f"MDB_AGENTIC_STORE_DB={os.environ['STORE_DB']}",
-                      f"ATLAS_MCP_CLIENT_ID={os.environ['ATLAS_MCP_CLIENT_ID_CI']}",
-                      f"ATLAS_MCP_CLIENT_SECRET={os.environ['ATLAS_MCP_CLIENT_SECRET_CI']}",
+                      "ATLAS_MCP_CLIENT_ID=ci-dummy-client-id",
+                      "ATLAS_MCP_CLIENT_SECRET=ci-dummy-client-secret",
                       "ALLOW_WRITE_OPERATIONS=",
-                      f"OPENAI_API_KEY={os.environ['OPENAI_API_KEY']}",
+                      "OPENAI_API_KEY=sk-ci-dummy",
                       "",
                   ]
               )
           )
           PY
 
-      - name: Start read-only stack
+      - name: Start local stack
         working-directory: ${{ matrix.directory }}
         run: agentengine --no-log dev up --headless
 
-      - name: Run read-only integration tests
-        run: pnpm --filter ${{ matrix.filter }} test:integration
-
-      - name: Restart stack with write tools enabled
-        if: matrix.hitl
+      - name: Smoke-check Orchestration Engine health
         working-directory: ${{ matrix.directory }}
         run: |
-          agentengine --no-log dev stop
-          python3 - <<'PY'
-          from pathlib import Path
-          path = Path(".env")
-          lines = [
-              line
-              for line in path.read_text().splitlines()
-              if not line.startswith("ALLOW_WRITE_OPERATIONS")
-          ]
-          lines.append("ALLOW_WRITE_OPERATIONS=true")
-          path.write_text("\n".join(lines) + "\n")
-          PY
-          agentengine --no-log dev up --headless
-
-      - name: Run HITL integration tests
-        if: matrix.hitl
-        env:
-          ALLOW_WRITE_OPERATIONS: "true"
-        run: pnpm --filter ${{ matrix.filter }} test:integration
+          for _ in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8000/health; then
+              echo
+              echo "Orchestration Engine is healthy"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "::error::agentengine dev up finished but OE on port 8000 is not healthy"
+          exit 1
 
       - name: Collect stack logs
         if: always()

@@ -158,10 +158,10 @@ agentengine dev stop
 The suite covers a trivial invoke, `list_databases`, session continuity, a
 drop request that must not call a write tool, and requester metadata.
 
-GitHub Actions runs this read-only stack with the same repository secrets as
-Atlas Explorer: `OPENAI_API_KEY`, `ATLAS_MCP_CLIENT_ID_CI`, and
-`ATLAS_MCP_CLIENT_SECRET_CI`. Use a project MCP configuration with
-`GROUP_DATA_ACCESS_READ_ONLY`.
+GitHub Actions does not run this suite yet. It writes dummy MCP and OpenAI
+values and only checks that `agentengine dev up --headless` brings the
+Orchestration Engine up on port 8000. Run the suite locally with a project
+MCP configuration that uses `GROUP_DATA_ACCESS_READ_ONLY`.
 
 Ask which slow queries matter on the cluster. The agent should explain
 the highest-impact shapes.
