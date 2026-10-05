@@ -29,14 +29,23 @@ You need:
 - pnpm. Run `corepack enable` to get the version pinned in `package.json`.
 - The [`agentengine` CLI](https://www.mongodb.com/docs/agentengine/build/install-authenticate/)
   and Docker, to run or deploy an agent
+- Go, for [`addlicense`](https://github.com/google/addlicense). The pre-commit
+  hook uses it to add the Apache header to source files.
 
 Then install and run the tests:
 
 ```bash
 corepack enable
 pnpm install
+go install github.com/google/addlicense@v1.2.0
 pnpm test:atlas-explorer
 ```
+
+`pnpm install` runs Husky and points Git at [`.husky/`](.husky). On commit,
+that hook runs `addlicense` on staged `.ts`, `.tsx`, `.js`, `.mjs`, `.cjs`,
+and `.sh` files and stages the header it adds. Put `$(go env GOPATH)/bin` on
+your `PATH` so the hook can find `addlicense`. Cloud Agent machines install
+the binary from [`.cursor/install.sh`](.cursor/install.sh).
 
 Each agent has `pnpm test:<agent>` and `pnpm build:<agent>` scripts at the
 repository root, such as `pnpm test:atlas-query-insights`. Each package also has its

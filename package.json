@@ -8,11 +8,15 @@
     "node": ">=22"
   },
   "scripts": {
+    "prepare": "husky",
     "build:slack-bot": "pnpm --filter @repo/atlas-explorer-slack-bot... build",
     "build:atlas-explorer": "pnpm --filter atlas-explorer... build",
     "build:atlas-query-insights": "pnpm --filter atlas-query-insights... build",
     "test:slack-bot": "pnpm --filter @repo/agent-engine-chat test && pnpm --filter @repo/atlas-explorer-slack-bot test",
     "test:atlas-explorer": "pnpm --filter @repo/agent-engine-core test && pnpm --filter @repo/atlas-explorer-agent test && pnpm --filter atlas-explorer test",
     "test:atlas-query-insights": "pnpm --filter @repo/atlas-query-insights-agent test && pnpm --filter atlas-query-insights test"
+  },
+  "devDependencies": {
+    "husky": "9.1.7"
   }
 }

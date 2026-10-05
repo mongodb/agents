@@ -58,6 +58,24 @@ fi
 sudo ln -sfn "${bin}" /usr/local/bin/agentengine
 agentengine --version
 
+# Apache headers are applied by the Husky pre-commit hook. install.sh is
+# snapshotted with the environment, so new images get the binary here.
+install_addlicense() {
+  if command -v addlicense >/dev/null 2>&1; then
+    return 0
+  fi
+  go install github.com/google/addlicense@v1.2.0
+  local license_bin
+  license_bin="$(go env GOPATH)/bin/addlicense"
+  if [[ ! -x "${license_bin}" ]]; then
+    echo "addlicense install did not produce ${license_bin}" >&2
+    exit 1
+  fi
+  sudo ln -sfn "${license_bin}" /usr/local/bin/addlicense
+}
+
+install_addlicense
+
 # GH_TOKEN, when set, is a personal classic PAT. gh prefers it over the
 # sandbox GitHub App login. setup-git makes git use that same token.
 if [[ -n "${GH_TOKEN:-}" ]]; then

@@ -1,0 +1,17 @@
+#!/usr/bin/env sh
+# Add an Apache header to staged source files that do not have one, then
+# stage the result so the header is part of this commit. .mts is not an
+# extension addlicense knows, so those files are skipped.
+
+files=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '\.(ts|tsx|js|mjs|cjs|sh)$' || true)
+if [ -z "$files" ]; then
+  exit 0
+fi
+
+if ! command -v addlicense >/dev/null 2>&1; then
+  echo "addlicense is not installed. Run: go install github.com/google/addlicense@v1.2.0" >&2
+  exit 1
+fi
+
+printf '%s\n' "$files" | xargs addlicense -c "MongoDB, Inc." -l apache
+printf '%s\n' "$files" | xargs git add
