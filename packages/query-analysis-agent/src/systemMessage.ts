@@ -3,7 +3,7 @@ import { UNITS_LEGEND } from "./queryStatsFormatter.js";
 
 export const DEFAULT_AGENT_NAME = "Query Analysis";
 export const DEFAULT_MAX_QUERY_SHAPES = 3;
-export const PA_SUGGESTION_CTA =
+export const PA_INDEX_SUGGESTION_CTA =
   "Show the suggested index definition and the mongosh command that would create it.";
 
 export const OVERVIEW_RULE_IDS = ["OVERVIEW_USES_QUERY_SHAPE_ONLY"] as const;
@@ -25,7 +25,7 @@ export const PA_PRESENT_RULE_IDS = [
   "PA_FIRST_ITEM_RESERVED",
   "PA_LEAD_SENTENCE_FIELD_ORDER",
   "CLARIFY_INDEX_USAGE",
-  "PA_SUGGESTION_CTA",
+  "PA_INDEX_SUGGESTION_CTA",
 ] as const;
 
 export const PA_NO_SUGGESTION_RULE_IDS = [
@@ -183,7 +183,7 @@ const PA_PRESENT_RULES = `[AT_MOST_TWO_AREAS_WITH_PA] Areas worth investigating 
 
 [CLARIFY_INDEX_USAGE] The elaboration must clarify whether the query used an index or not. Use the "Uses index" value from the "Bin Metadata" section of the evidence block to determine this.
 
-[PA_SUGGESTION_CTA] ${PA_SUGGESTION_CTA} End the elaboration with a fenced \`javascript\` block, then one sentence that the command has not been run. Build the block from the namespace and the suggestion JSON:
+[PA_INDEX_SUGGESTION_CTA] ${PA_INDEX_SUGGESTION_CTA} End the elaboration with a fenced \`javascript\` block, then one sentence that the command has not been run. Build the block from the namespace and the suggestion JSON:
 
 \`\`\`javascript
 use <database>
