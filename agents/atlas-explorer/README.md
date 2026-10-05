@@ -170,7 +170,6 @@ the agent, and then revoke the previous secret.
 
 ```bash
 pnpm test
-pnpm test:integration
 pnpm typecheck
 pnpm build
 agentengine dev up
@@ -183,6 +182,49 @@ into `dist`. After source changes, run `pnpm build`, then
 
 Open the playground at http://localhost:3000. Stop the stack with
 `agentengine dev stop`.
+
+### Full-stack integration tests
+
+These tests call the local Orchestration Engine (port 8000) against a running
+`agentengine dev` stack. They assert on execution status, MCP tool calls in
+checkpoints, and requester metadata — not on the model's wording. The OE
+client lives in `@repo/agent-engine-core/testing` and is shared with Atlas
+Query Insights.
+
+Use `--headless` if you do not need the playground UI. The tests skip the
+read-only suite when `ALLOW_WRITE_OPERATIONS` is enabled, and skip the HITL
+suite when it is not, so run them in two phases:
+
+```bash
+# Read-only stack: boot, list_databases, session continuity, hidden writes,
+# requester metadata. Leave ALLOW_WRITE_OPERATIONS unset or empty in .env.
+agentengine dev up --headless
+pnpm test:integration
+agentengine dev stop
+
+# HITL stack: the same read-only Atlas MCP credential, with write tools
+# exposed so drop_collection suspends. Approve still fails at Atlas.
+# Set ALLOW_WRITE_OPERATIONS=true in .env so the running agent sees it.
+agentengine dev up --headless
+ALLOW_WRITE_OPERATIONS=true pnpm test:integration
+agentengine dev stop
+```
+
+`pnpm test:integration` also pings OpenAI and Anthropic when `CI` is unset.
+Those LLM key checks skip in GitHub Actions.
+
+GitHub Actions starts the same two-phase stack for this agent, and a
+read-only stack for Atlas Query Insights. Store these repository secrets:
+
+- `OPENAI_API_KEY`
+- `ATLAS_MCP_CLIENT_ID_CI`
+- `ATLAS_MCP_CLIENT_SECRET_CI`
+
+Provision a dedicated read-only MCP configuration named `atlas-explorer-ci`
+on a throwaway Atlas project, with `GROUP_DATA_ACCESS_READ_ONLY` and
+`0.0.0.0/0` on the IP access list so GitHub-hosted runners can reach it.
+Query Insights can use that same read-only credential. Do not reuse local
+or production MCP credentials.
 
 ## Talk from chat platforms
 

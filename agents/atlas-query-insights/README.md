@@ -137,6 +137,32 @@ from `pnpm build` instead of rebuilding. After source changes, run
 Open the playground at http://localhost:3000. Stop the stack with
 `agentengine dev stop`.
 
+### Full-stack integration tests
+
+These tests call the local Orchestration Engine (port 8000) against a running
+`agentengine dev` stack. They assert on execution status, MCP tool calls in
+checkpoints, and requester metadata — not on the model's wording. The OE
+client is `@repo/agent-engine-core/testing`, the same helper Atlas Explorer
+uses.
+
+This agent has no write-tools switch and no HITL path, so there is one phase.
+Stop Atlas Explorer first if it is using ports 3000 or 8000.
+
+```bash
+# Copy .env.example to .env and fill the read-only MCP and OpenAI secrets.
+agentengine dev up --headless
+pnpm test:integration
+agentengine dev stop
+```
+
+The suite covers a trivial invoke, `list_databases`, session continuity, a
+drop request that must not call a write tool, and requester metadata.
+
+GitHub Actions runs this read-only stack with the same repository secrets as
+Atlas Explorer: `OPENAI_API_KEY`, `ATLAS_MCP_CLIENT_ID_CI`, and
+`ATLAS_MCP_CLIENT_SECRET_CI`. Use a project MCP configuration with
+`GROUP_DATA_ACCESS_READ_ONLY`.
+
 Ask which slow queries matter on the cluster. The agent should explain
 the highest-impact shapes.
 
