@@ -132,13 +132,41 @@ describe("buildPerformanceAdvisorEvidence", () => {
     expect(section(text ?? "", "## Performance Advisor Suggestion")).toContain(
       "No PA Suggestion at this time.",
     );
-    expect(text).not.toContain('{"type":1}');
+    const other = section(text ?? "", "## Other Performance Advisor Suggestions");
+    expect(other).toContain("namespace: highImpact.dbB");
+    expect(other).toContain('{"type":1}');
+  });
+
+  it("lists unmatched suggestions after the shapes and leaves out matched ones", () => {
+    const text = evidence ?? "";
+    const other = section(text, "## Other Performance Advisor Suggestions");
+    expect(text.indexOf("## Other Performance Advisor Suggestions")).toBeGreaterThan(
+      text.indexOf("Shape 2 of 2"),
+    );
+    expect(other).toContain("namespace: highImpact.dbA");
+    expect(other).toContain('{"unusedField":1}');
+    expect(other).not.toContain('{"status":1}');
+    expect(other).not.toContain('"createdAt":-1');
+  });
+
+  it("orders unmatched suggestions by weight and lists them when no shapes were sampled", () => {
+    const text = buildPerformanceAdvisorEvidence({
+      slowQueryLogs: [],
+      suggestedIndexes: [
+        { namespace: "shop.orders", weight: 10, index: [{ status: 1 }] },
+        { namespace: "shop.users", weight: 500, index: [{ email: 1 }] },
+      ],
+    });
+    expect(text).toContain("No slow query shapes were found in this sample.");
+    const other = section(text ?? "", "## Other Performance Advisor Suggestions");
+    expect(other.indexOf("shop.users")).toBeGreaterThanOrEqual(0);
+    expect(other.indexOf("shop.users")).toBeLessThan(other.indexOf("shop.orders"));
   });
 
   it("says when the sample has no shapes", () => {
-    expect(
-      buildPerformanceAdvisorEvidence({ slowQueryLogs: [], suggestedIndexes: [] }),
-    ).toContain("No slow query shapes were found in this sample.");
+    const text = buildPerformanceAdvisorEvidence({ slowQueryLogs: [], suggestedIndexes: [] });
+    expect(text).toContain("No slow query shapes were found in this sample.");
+    expect(text).not.toContain("## Other Performance Advisor Suggestions");
   });
 
   it("returns null when the result is not Performance Advisor output", () => {

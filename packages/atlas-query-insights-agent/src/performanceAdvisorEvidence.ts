@@ -7,6 +7,7 @@ export const PERFORMANCE_ADVISOR_TOOL = "mongodb__atlas_get_performance_advisor"
 export const SLOW_QUERY_SAMPLE_LIMIT = 50;
 
 const NO_SUGGESTION = "No PA Suggestion at this time.";
+const OTHER_SUGGESTIONS_HEADING = "## Other Performance Advisor Suggestions";
 
 const DROPPED_COMMAND_KEYS = new Set([
   "lsid",
@@ -446,10 +447,14 @@ function renderEvidence(
 
   if (groups.length === 0) {
     lines.push("", "No slow query shapes were found in this sample.");
+    lines.push(...otherSuggestionLines(suggestions));
     return lines.join("\n");
   }
 
+  const matched = new Set<SuggestedIndex>();
   groups.forEach((group, index) => {
+    const suggestion = matchSuggestion(group, suggestions);
+    if (suggestion) matched.add(suggestion);
     lines.push(
       "",
       "---",
@@ -467,10 +472,31 @@ function renderEvidence(
       ...binLines(group),
       "",
       "## Performance Advisor Suggestion",
-      renderSuggestion(matchSuggestion(group, suggestions)),
+      renderSuggestion(suggestion),
     );
   });
+  lines.push(...otherSuggestionLines(suggestions.filter((suggestion) => !matched.has(suggestion))));
   return lines.join("\n");
+}
+
+function otherSuggestionLines(suggestions: SuggestedIndex[]): string[] {
+  const listed = suggestions
+    .filter((suggestion) => indexFields(suggestion).length > 0)
+    .sort((left, right) => suggestionWeight(right) - suggestionWeight(left));
+  if (listed.length === 0) return [];
+  const lines = [
+    "",
+    "---",
+    "",
+    OTHER_SUGGESTIONS_HEADING,
+    "",
+    "These index suggestions share no field with any query shape in this sample. Performance Advisor bases its suggestions on more queries than this sample contains. They are ordered by Performance Advisor's estimated impact, highest first.",
+  ];
+  for (const suggestion of listed) {
+    const namespace = typeof suggestion.namespace === "string" ? suggestion.namespace : "unknown";
+    lines.push("", `namespace: ${namespace}`, renderSuggestion(suggestion));
+  }
+  return lines;
 }
 
 function statsLines(group: ShapeGroup): string[] {
@@ -556,13 +582,17 @@ function matchSuggestion(group: ShapeGroup, suggestions: SuggestedIndex[]): Sugg
   const scored = candidates.map((suggestion) => ({
     suggestion,
     overlap: indexFields(suggestion).filter((field) => group.fields.has(field)).length,
-    weight: typeof suggestion.weight === "number" ? suggestion.weight : 0,
+    weight: suggestionWeight(suggestion),
   }));
   scored.sort((left, right) => right.overlap - left.overlap || right.weight - left.weight);
   const best = scored[0];
   if (!best) return undefined;
   if (best.overlap > 0) return best.suggestion;
   return undefined;
+}
+
+function suggestionWeight(suggestion: SuggestedIndex): number {
+  return typeof suggestion.weight === "number" ? suggestion.weight : 0;
 }
 
 function indexFields(suggestion: SuggestedIndex): string[] {

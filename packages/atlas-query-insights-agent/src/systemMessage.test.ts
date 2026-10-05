@@ -33,6 +33,12 @@ describe("buildSystemPrompt", () => {
     expect(prompt).toContain("No PA Suggestion at this time.");
   });
 
+  it("reports unmatched suggestions in their own section", () => {
+    expect(prompt).toContain('"Other Performance Advisor Suggestions" section');
+    expect(prompt).toContain("### Other index suggestions");
+    expect(prompt).toContain("List at most 3 suggestions");
+  });
+
   it("points at the evidence block and the five skills", () => {
     expect(prompt).toContain("evidence block");
     expect(prompt.toLowerCase()).not.toContain("user prompt");

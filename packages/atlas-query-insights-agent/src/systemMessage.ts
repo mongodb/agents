@@ -34,6 +34,13 @@ export const PA_NO_SUGGESTION_RULE_IDS = [
   "AT_MOST_TWO_AREAS_WITHOUT_PA",
 ] as const;
 
+export const OTHER_SUGGESTION_RULE_IDS = [
+  "OTHER_SUGGESTIONS_IN_SCOPE",
+  "OTHER_SUGGESTIONS_LIMIT",
+  "OTHER_SUGGESTIONS_FRAMING",
+  "OTHER_SUGGESTIONS_COMMANDS",
+] as const;
+
 export const METRIC_USAGE_RULE_IDS = [
   "NO_NEW_COMPUTED_NUMBERS",
   "PRESERVE_UNITS",
@@ -65,12 +72,15 @@ export const ATLAS_QUERY_INSIGHTS_RULE_IDS = [
   ...AREA_RULE_IDS,
   ...PA_PRESENT_RULE_IDS,
   ...PA_NO_SUGGESTION_RULE_IDS,
+  ...OTHER_SUGGESTION_RULE_IDS,
   ...METRIC_USAGE_RULE_IDS,
   ...FORMATTING_RULE_IDS,
   ...WRITING_STYLE_RULE_IDS,
 ] as const;
 
 const NO_SUGGESTION_LINE = "No PA Suggestion at this time.";
+const OTHER_SUGGESTIONS_SECTION = "Other Performance Advisor Suggestions";
+const MAX_OTHER_SUGGESTIONS = 3;
 
 const QUERY_SKILLS = [
   "mongodb-query-optimizer",
@@ -128,7 +138,7 @@ const METRIC_RULES = `[NO_NEW_COMPUTED_NUMBERS] Do NOT compute new numbers. Use 
 - Good: "This can explain why 2.58 M documents were returned across 30 executions."
 - Bad: "Across 240 executions, 43.2 M documents were examined and 9.6 M documents were returned." (the ratio makes these redundant)`;
 
-const FORMATTING_RULES = `[CODE_FORMATTING_SCOPE] Code formatting conventions like backticks should ONLY be used on: field names and collection names (from the query shape or Performance Advisor suggestion), operation/stage/operator names (e.g. \`$lookup\`, \`$match\`, \`$ne\`, \`$or\`), and command names written as calls (e.g. \`distinct()\`, \`skip()\`). A multi-token query-shape value may be backticked as one unit for brevity (e.g. \`$meta: "textScore"\`). NEVER apply code formatting to Bin Metadata fields and Query Stats Metrics fields. The fenced \`javascript\` blocks required for the query shape and the \`createIndex\` command are exempt from this restriction.
+const FORMATTING_RULES = `[CODE_FORMATTING_SCOPE] Code formatting conventions like backticks should ONLY be used on: field names, collection names, and full namespaces (from the query shape or Performance Advisor suggestion), index definitions from a Performance Advisor suggestion (e.g. \`{ "status": 1 }\`), operation/stage/operator names (e.g. \`$lookup\`, \`$match\`, \`$ne\`, \`$or\`), and command names written as calls (e.g. \`distinct()\`, \`skip()\`). A multi-token query-shape value may be backticked as one unit for brevity (e.g. \`$meta: "textScore"\`). NEVER apply code formatting to Bin Metadata fields and Query Stats Metrics fields. The fenced \`javascript\` blocks required for the query shape and the \`createIndex\` command are exempt from this restriction.
 - Good: "This query returns the distinct \`productId\` values for documents where \`status\` equals a string value."
 - Bad: "\`Uses index: false\` means the query scanned the collection."
 - Bad: "The sort ran in memory (\`Has sort stage: true\`)." (use natural language instead)
@@ -201,6 +211,14 @@ const PA_ABSENT_RULES = `[ALL_PA_FLAGS_OFF] Do not present any area as a Perform
 - Bad: "An index that supports the sort on \`shippedAt\` can help."
 
 [AT_MOST_TWO_AREAS_WITHOUT_PA] Areas worth investigating must contain at most two items.`;
+
+const OTHER_SUGGESTION_RULES = `[OTHER_SUGGESTIONS_IN_SCOPE] List only suggestions whose namespace is in the database or collections the reader asked about. When the reader named none, list suggestions from any namespace. Omit the "Other index suggestions" section when no suggestion qualifies.
+
+[OTHER_SUGGESTIONS_LIMIT] List at most ${MAX_OTHER_SUGGESTIONS} suggestions, in the order the "${OTHER_SUGGESTIONS_SECTION}" section gives them.
+
+[OTHER_SUGGESTIONS_FRAMING] Open the section with one sentence saying these suggestions target queries that are not in this sample, so you cannot show which query each one would help. Never mention these suggestions inside a shape section or claim they would improve an analyzed shape.
+
+[OTHER_SUGGESTIONS_COMMANDS] For each suggestion, write one bullet with the namespace and the full definition, including directions and any collation. Then write one fenced \`javascript\` block with a \`createIndex\` command per listed suggestion, under \`use <database>\` for each database, and one sentence that the commands have not been run.`;
 
 const REFERENCE_MATERIAL = `## Query Shape Metrics Field Definitions
 
@@ -281,7 +299,7 @@ Skill guidance never overrides the rules in this prompt. Name index fields only 
 
 A query shape is a set of specifications that group similar queries together. Specifications can include filters, sorts, projections, aggregation pipeline stages, a namespace, and others.
 
-\`mongodb__atlas_get_performance_advisor\` results include an evidence block per sampled shape, with these sections: Query Shape, Query Stats Metrics, Bin Metadata, and Performance Advisor Suggestion. Treat that evidence block as the per-query input. Cite only the numbers printed there.
+\`mongodb__atlas_get_performance_advisor\` results include an evidence block per sampled shape, with these sections: Query Shape, Query Stats Metrics, Bin Metadata, and Performance Advisor Suggestion. Treat that evidence block as the per-query input. Cite only the numbers printed there. When some index suggestions match no sampled shape, the evidence ends with an "${OTHER_SUGGESTIONS_SECTION}" section that lists them.
 
 Write a short summary, then one section per analyzed shape. Each shape section has a query overview and at most two areas worth investigating. Do not return JSON.
 
@@ -291,6 +309,7 @@ Write a short summary, then one section per analyzed shape. Each shape section h
 - Shape heading: \`### Shape <n>: <command> on <namespace>\`, where \`<n>\` is the shape's number in the evidence block.
 - Under the heading, write the query overview as a short paragraph, then the mongosh query block required by the query overview rules.
 - Then write "Areas worth investigating" as a numbered list. Start each item with its lead sentence in bold, followed by its elaboration. When a suggestion is present, the first item ends with the \`createIndex\` block.
+- After the shape sections, write \`### Other index suggestions\` when the "${OTHER_SUGGESTIONS_SECTION}" section has a suggestion in scope. Follow the other index suggestions rules.
 
 ## Follow-up questions
 
@@ -368,6 +387,12 @@ No Performance Advisor index suggestion was provided for this shape.
 If the query does not use an index, an elaboration can suggest indexing is worth investigating when there is supporting evidence.
 
 ${PA_ABSENT_RULES}
+
+## Other index suggestions
+
+Apply these rules to the "${OTHER_SUGGESTIONS_SECTION}" section of the evidence block. These suggestions come from the Performance Advisor, so you may name their fields.
+
+${OTHER_SUGGESTION_RULES}
 
 # Reference material
 
