@@ -60,6 +60,7 @@ agent's README.
 
 - Fill in the [pull request template](.github/pull_request_template.md).
 - Keep each pull request focused on one change.
-- CI runs unit tests only. Run `typecheck` and `build` locally before you open
-  a pull request.
+- CI runs unit tests and checks Apache headers on `.ts`, `.tsx`, `.js`,
+  `.mjs`, `.cjs`, and `.sh` files. Run `typecheck` and `build` locally before
+  you open a pull request.
 - Don't edit `.agentengine/`. The `agentengine` CLI generates it.
