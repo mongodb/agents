@@ -1,7 +1,7 @@
 /**
  * Non-secret Query Analysis settings.
  *
- * Leave `systemPrompt.name` empty to keep "Query Analysis".
+ * Leave `systemPrompt.name` empty to keep "Atlas Query Insights".
  * Leave `systemPrompt.customInstructions` empty to skip extra prompt text.
  * Leave `scope.projectId` and `scope.clusterName` empty to let the agent
  * resolve the target. A set field must be a 24-hex project id or an Atlas
