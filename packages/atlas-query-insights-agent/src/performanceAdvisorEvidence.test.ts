@@ -98,6 +98,43 @@ describe("buildPerformanceAdvisorEvidence", () => {
     expect(text).toContain("No PA Suggestion at this time.");
   });
 
+  it("does not attach a suggestion that shares no field with the shape", () => {
+    const countLine = JSON.stringify({
+      t: { $date: "2026-10-05T17:33:28.913Z" },
+      msg: "Slow query",
+      attr: {
+        ns: "highImpact.dbB",
+        command: {
+          aggregate: "dbB",
+          pipeline: [{ $match: {} }, { $group: { _id: 1, n: { $sum: 1 } } }],
+          cursor: {},
+          $db: "highImpact",
+        },
+        planSummary: "COLLSCAN",
+        keysExamined: 0,
+        docsExamined: 15010,
+        nreturned: 1,
+        millis: 611,
+      },
+    });
+    const text = buildPerformanceAdvisorEvidence({
+      slowQueryLogs: [{ namespace: "highImpact.dbB", line: countLine }],
+      suggestedIndexes: [
+        {
+          id: "dddddddddddddddddddddddd",
+          namespace: "highImpact.dbB",
+          weight: 1,
+          index: [{ type: 1 }],
+        },
+      ],
+    });
+    expect(text).toContain("namespace: highImpact.dbB");
+    expect(section(text ?? "", "## Performance Advisor Suggestion")).toContain(
+      "No PA Suggestion at this time.",
+    );
+    expect(text).not.toContain('{"type":1}');
+  });
+
   it("says when the sample has no shapes", () => {
     expect(
       buildPerformanceAdvisorEvidence({ slowQueryLogs: [], suggestedIndexes: [] }),

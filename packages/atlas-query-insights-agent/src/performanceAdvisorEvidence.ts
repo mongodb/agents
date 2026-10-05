@@ -561,7 +561,7 @@ function matchSuggestion(group: ShapeGroup, suggestions: SuggestedIndex[]): Sugg
   scored.sort((left, right) => right.overlap - left.overlap || right.weight - left.weight);
   const best = scored[0];
   if (!best) return undefined;
-  if (best.overlap > 0 || candidates.length === 1) return best.suggestion;
+  if (best.overlap > 0) return best.suggestion;
   return undefined;
 }
 
