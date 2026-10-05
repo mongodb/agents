@@ -9,6 +9,7 @@ overrides:
   '@langchain/core': 1.2.12
   '@repo/atlas-query-insights-agent': workspace:*
   '@repo/atlas-explorer-agent': workspace:*
+  '@repo/agent-engine-core': workspace:*
 
 importers:
 
