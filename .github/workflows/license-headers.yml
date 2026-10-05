@@ -1,0 +1,33 @@
+name: License headers
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  addlicense:
+    name: addlicense
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+      - name: Install addlicense
+        run: go install github.com/google/addlicense@v1.2.0
+      - name: Check license headers
+        run: |
+          mapfile -t files < <(find . -type f \
+            \( -name '*.ts' -o -name '*.tsx' -o -name '*.js' -o -name '*.mjs' -o -name '*.cjs' -o -name '*.sh' \) \
+            -not -path './.git/*' -not -path '*/node_modules/*' -not -path './.husky/*')
+          addlicense -c "MongoDB, Inc." -l apache -check "${files[@]}"
