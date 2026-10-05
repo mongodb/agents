@@ -38,6 +38,11 @@ describe("buildSystemPrompt", () => {
     expect(prompt.toLowerCase()).not.toContain("user prompt");
     expect(prompt).toContain("mongodb__atlas_get_performance_advisor");
     expect(prompt).toContain(`top ${DEFAULT_MAX_QUERY_SHAPES} shape(s)`);
+    expect(prompt).toContain(
+      "Skill guidance never overrides the rules in this prompt.",
+    );
+    expect(prompt).toContain("## Report format");
+    expect(prompt).toContain("## Follow-up questions");
     for (const skill of SKILLS) {
       expect(prompt).toContain(skill);
     }
