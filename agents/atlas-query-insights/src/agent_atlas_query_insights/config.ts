@@ -1,5 +1,5 @@
 /**
- * Non-secret Query Analysis settings.
+ * Non-secret Atlas Query Insights settings.
  *
  * Leave `systemPrompt.name` empty to keep "Atlas Query Insights".
  * Leave `systemPrompt.customInstructions` empty to skip extra prompt text.
@@ -8,7 +8,7 @@
  * cluster name. `maxQueryShapes` is how many shapes the report covers.
  */
 
-export const queryAnalysisConfig = {
+export const atlasQueryInsightsConfig = {
   llm: {
     provider: "openai",
     model: "gpt-6.1-sol",

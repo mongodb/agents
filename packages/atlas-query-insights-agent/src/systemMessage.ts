@@ -60,7 +60,7 @@ export const WRITING_STYLE_RULE_IDS = [
   "CONCEPT_TEACHING_ASIDE",
 ] as const;
 
-export const QUERY_ANALYSIS_RULE_IDS = [
+export const ATLAS_QUERY_INSIGHTS_RULE_IDS = [
   ...OVERVIEW_RULE_IDS,
   ...AREA_RULE_IDS,
   ...PA_PRESENT_RULE_IDS,
@@ -270,7 +270,7 @@ ${skills}
 
 A query shape is a set of specifications that group similar queries together. Specifications can include filters, sorts, projections, aggregation pipeline stages, a namespace, and others.
 
-\`mongodb__atlas_get_performance_advisor\` results include an evidence block per sampled shape, with these sections: Query Shape, Query Stats Metrics, Bin Metadata, and Performance Advisor Suggestion. Treat that evidence block the way a query-analysis prompt treats its per-query input. Cite only the numbers printed there.
+\`mongodb__atlas_get_performance_advisor\` results include an evidence block per sampled shape, with these sections: Query Shape, Query Stats Metrics, Bin Metadata, and Performance Advisor Suggestion. Treat that evidence block as the per-query input. Cite only the numbers printed there.
 
 Write a short summary, then one section per analyzed shape. Each shape section has a query overview and at most two areas worth investigating. Do not return JSON.
 

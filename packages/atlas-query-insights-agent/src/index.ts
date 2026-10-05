@@ -21,7 +21,7 @@ export {
   PA_NO_SUGGESTION_RULE_IDS,
   PA_PRESENT_RULE_IDS,
   PA_SUGGESTION_CTA,
-  QUERY_ANALYSIS_RULE_IDS,
+  ATLAS_QUERY_INSIGHTS_RULE_IDS,
   WRITING_STYLE_RULE_IDS,
   buildSystemPrompt,
   type SystemPromptOptions,
@@ -39,10 +39,10 @@ export {
 export {
   describeScope,
   resolveScope,
-  type QueryAnalysisScope,
+  type AtlasQueryInsightsScope,
   type ScopeInput,
 } from "./scope.js";
 export {
-  QUERY_ANALYSIS_MCP_TOOLS,
-  selectQueryAnalysisTools,
+  ATLAS_QUERY_INSIGHTS_MCP_TOOLS,
+  selectAtlasQueryInsightsTools,
 } from "./toolPolicy.js";

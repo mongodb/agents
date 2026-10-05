@@ -1,4 +1,4 @@
-/** Read-only Query Analysis agent for the Agentic Platform. */
+/** Read-only Atlas Query Insights agent for the Agentic Platform. */
 
 import "dotenv/config";
 
@@ -9,14 +9,14 @@ import {
   buildSystemPrompt,
   prepareAgentInput,
   recoverToolErrorsMiddleware,
-  selectQueryAnalysisTools,
+  selectAtlasQueryInsightsTools,
   stampResumeClientUserMiddleware,
   stripToolEchoMiddleware,
   withRequesterMetadata,
   withoutShellExecution,
-} from "@repo/query-analysis-agent";
+} from "@repo/atlas-query-insights-agent";
 
-import { queryAnalysisConfig } from "./config.js";
+import { atlasQueryInsightsConfig } from "./config.js";
 
 function log(level: "INFO" | "WARN" | "ERROR", msg: string): void {
   const t = new Date().toISOString().slice(11, 19);
@@ -25,31 +25,31 @@ function log(level: "INFO" | "WARN" | "ERROR", msg: string): void {
 
 process.env.AGENTIC_AGENT_WORKDIR ||= process.cwd();
 
-export const app = new App({ appName: "query-analysis" });
+export const app = new App({ appName: "atlas-query-insights" });
 app.prepareAgentInput(prepareAgentInput);
 log("INFO", "App created; Atlas MCP tools will be discovered from agent.yaml");
 
 export const buildAgent = app.entrypoint(() => {
-  log("INFO", "Building query-analysis deep agent");
+  log("INFO", "Building atlas-query-insights deep agent");
   const discoveredTools = app.getTools() as readonly { name: string }[];
-  const availableTools = selectQueryAnalysisTools(discoveredTools);
+  const availableTools = selectAtlasQueryInsightsTools(discoveredTools);
   const platformSaver = app.checkpointer();
   const saver =
     platformSaver === null ? null : withRequesterMetadata(platformSaver);
 
   return app.deepAgent(
     buildLLM({
-      provider: queryAnalysisConfig.llm.provider,
-      model: queryAnalysisConfig.llm.model,
-      logPrefix: "query-analysis",
+      provider: atlasQueryInsightsConfig.llm.provider,
+      model: atlasQueryInsightsConfig.llm.model,
+      logPrefix: "atlas-query-insights",
     }),
     {
       tools: availableTools as never,
       systemPrompt: buildSystemPrompt({
-        name: queryAnalysisConfig.systemPrompt.name,
-        customInstructions: queryAnalysisConfig.systemPrompt.customInstructions,
-        scope: queryAnalysisConfig.scope,
-        maxQueryShapes: queryAnalysisConfig.maxQueryShapes,
+        name: atlasQueryInsightsConfig.systemPrompt.name,
+        customInstructions: atlasQueryInsightsConfig.systemPrompt.customInstructions,
+        scope: atlasQueryInsightsConfig.scope,
+        maxQueryShapes: atlasQueryInsightsConfig.maxQueryShapes,
       }),
       skills: ["skills"],
       backend: withoutShellExecution(new AgentEngineToolSandboxBackend()) as never,

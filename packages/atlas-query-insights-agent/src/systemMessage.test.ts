@@ -5,7 +5,7 @@ import {
   DEFAULT_AGENT_NAME,
   DEFAULT_MAX_QUERY_SHAPES,
   PA_SUGGESTION_CTA,
-  QUERY_ANALYSIS_RULE_IDS,
+  ATLAS_QUERY_INSIGHTS_RULE_IDS,
   buildSystemPrompt,
 } from "./systemMessage.js";
 
@@ -21,7 +21,7 @@ describe("buildSystemPrompt", () => {
   const prompt = buildSystemPrompt();
 
   it("includes every rule id", () => {
-    for (const id of QUERY_ANALYSIS_RULE_IDS) {
+    for (const id of ATLAS_QUERY_INSIGHTS_RULE_IDS) {
       expect(prompt, id).toContain(`[${id}]`);
     }
   });

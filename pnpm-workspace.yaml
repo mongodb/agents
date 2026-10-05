@@ -8,7 +8,7 @@ overrides:
   "@langchain/core": "1.2.12"
   # These agents declare file: dependencies so the npm install inside
   # `agentengine dev up` can parse package.json; pnpm links the workspace copies.
-  "@repo/query-analysis-agent": "workspace:*"
+  "@repo/atlas-query-insights-agent": "workspace:*"
   "@repo/atlas-explorer-agent": "workspace:*"
 
 allowBuilds:

@@ -1,6 +1,6 @@
-# Query Analysis
+# Atlas Query Insights
 
-Query Analysis is a read-only agent that finds slow queries through the
+Atlas Query Insights is a read-only agent that finds slow queries through the
 Atlas Performance Advisor tool and explains the highest-impact shapes.
 It runs on the Agentic Platform with Atlas Managed MCP and five MongoDB
 skills.
@@ -11,7 +11,7 @@ project and cluster scope · read-only MCP · MongoDB skills
 ## Layout
 
 ```
-agents/query-analysis/
+agents/atlas-query-insights/
 ├── agent.yaml                         # app, MCP, and required secret names
 ├── package.json / tsconfig.json       # TypeScript app and esbuild bundle
 ├── dev.yaml                           # local Agentic service ports
@@ -19,7 +19,7 @@ agents/query-analysis/
 ├── mcp-config.example.json            # copy to ignored local MCP config
 ├── mcp-secret-metadata.json           # secret TTL used with Atlas CLI
 ├── skills/                            # query optimizer, schema, search, querying, connection
-└── src/agent_query_analysis/
+└── src/agent_atlas_query_insights/
     ├── main.ts                        # Agent Engine entrypoint
     └── config.ts                      # LLM, prompt persona, scope, and shape limit
 ```
@@ -27,11 +27,11 @@ agents/query-analysis/
 Project memory settings live in the repository root
 [`project-config.yaml`](../../project-config.yaml). The root
 [`agent.yaml`](../../agent.yaml) registers this workspace as
-`query-analysis`. Run `agentengine` from this directory, or from the
-repository root with `--workspace query-analysis`.
+`atlas-query-insights`. Run `agentengine` from this directory, or from the
+repository root with `--workspace atlas-query-insights`.
 
 Policy, prompts, and middleware live in
-[`@repo/query-analysis-agent`](../../packages/query-analysis-agent).
+[`@repo/atlas-query-insights-agent`](../../packages/atlas-query-insights-agent).
 
 ## Configure
 
@@ -66,7 +66,7 @@ Copy `mcp-config.example.json` to ignored `mcp-config.json`. Replace
 Platform egress addresses so a deployed workspace can call Managed MCP.
 
 Use a separate MCP configuration per environment, named
-`query-analysis-{environment}`. Requires Atlas CLI 1.58 or later.
+`atlas-query-insights-{environment}`. Requires Atlas CLI 1.58 or later.
 
 ```bash
 atlas auth login -P mcp

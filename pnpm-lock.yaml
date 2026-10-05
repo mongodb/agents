@@ -7,7 +7,7 @@ settings:
 overrides:
   zod: 4.4.3
   '@langchain/core': 1.2.12
-  '@repo/query-analysis-agent': workspace:*
+  '@repo/atlas-query-insights-agent': workspace:*
   '@repo/atlas-explorer-agent': workspace:*
 
 importers:
@@ -55,7 +55,7 @@ importers:
         specifier: workspace:*
         version: link:../../packages/atlas-explorer-agent
 
-  agents/query-analysis:
+  agents/atlas-query-insights:
     dependencies:
       '@langchain/core':
         specifier: 1.2.12
@@ -92,9 +92,9 @@ importers:
         specifier: ^4.1.11
         version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@25.9.8)(vite@8.3.1(@types/node@25.9.8)(esbuild@0.25.12)(tsx@4.23.15)(yaml@2.9.1))
     optionalDependencies:
-      '@repo/query-analysis-agent':
+      '@repo/atlas-query-insights-agent':
         specifier: workspace:*
-        version: link:../../packages/query-analysis-agent
+        version: link:../../packages/atlas-query-insights-agent
 
   apps/atlas-explorer-slack-bot:
     dependencies:
@@ -232,7 +232,7 @@ importers:
         specifier: ^4.1.11
         version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@25.9.8)(vite@8.3.1(@types/node@25.9.8)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1))
 
-  packages/query-analysis-agent:
+  packages/atlas-query-insights-agent:
     dependencies:
       '@langchain/core':
         specifier: 1.2.12

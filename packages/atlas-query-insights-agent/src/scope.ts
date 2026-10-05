@@ -1,7 +1,7 @@
 const PROJECT_ID = /^[a-f0-9]{24}$/i;
 const CLUSTER_NAME = /^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$/;
 
-export interface QueryAnalysisScope {
+export interface AtlasQueryInsightsScope {
   projectId?: string;
   clusterName?: string;
 }
@@ -21,7 +21,7 @@ function blankToUndefined(value: string | undefined): string | undefined {
  * Blank fields are unset. A present field must be a 24-hex project id
  * or an Atlas cluster name.
  */
-export function resolveScope(input: ScopeInput = {}): QueryAnalysisScope | undefined {
+export function resolveScope(input: ScopeInput = {}): AtlasQueryInsightsScope | undefined {
   const projectId = blankToUndefined(input.projectId);
   const clusterName = blankToUndefined(input.clusterName);
 
@@ -42,7 +42,7 @@ export function resolveScope(input: ScopeInput = {}): QueryAnalysisScope | undef
   };
 }
 
-export function describeScope(scope: QueryAnalysisScope | undefined): string {
+export function describeScope(scope: AtlasQueryInsightsScope | undefined): string {
   if (!scope) {
     return "No project or cluster is pinned. Resolve the project and cluster before analyzing slow queries.";
   }

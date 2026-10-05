@@ -27,9 +27,9 @@ model API key, choose what the agent can access, and deploy it.
 ## Get started
 
 These steps deploy Atlas Explorer. Atlas Query Insights follows the same steps
-from `agents/query-analysis`. Each agent's README covers every step in detail:
+from `agents/atlas-query-insights`. Each agent's README covers every step in detail:
 [Atlas Explorer](agents/atlas-explorer),
-[Atlas Query Insights](agents/query-analysis).
+[Atlas Query Insights](agents/atlas-query-insights).
 
 <details>
 <summary><strong>Prerequisites</strong></summary>
