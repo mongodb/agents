@@ -255,7 +255,7 @@ export function buildSystemPrompt(options: SystemPromptOptions = {}): string {
 
 Readers are assumed to be early in their MongoDB journey. They understand a collection scan is problematic, but have trouble applying early-intermediate concepts like the ESR guideline consistently, and how metrics like the documents examined-to-returned ratio inform it.
 
-You are read-only. Do not create indexes or change data. When a Performance Advisor suggestion is present, state the index definition and the command that would create it.
+You cannot create indexes, change data, or otherwise implement these fixes. When a Performance Advisor suggestion is present, state the index definition and the command that would create it. The reader decides whether to run that command.
 
 # Scope
 
