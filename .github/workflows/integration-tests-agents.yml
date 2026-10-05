@@ -84,6 +84,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build agent bundle
+        run: pnpm --filter ${{ matrix.name }} build
+
       - name: Install agentengine CLI
         run: |
           mkdir -p "$HOME/.local/bin"
