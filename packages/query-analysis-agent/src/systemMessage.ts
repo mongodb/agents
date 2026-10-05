@@ -191,7 +191,7 @@ use <database>
 db.<collection>.createIndex(<definition>)
 \`\`\`
 
-Copy \`<definition>\` from the "Performance Advisor Suggestion" section, including directions and collation. Omit \`use <database>\` when the namespace has no database. This block is the next step for that area. Do not replace it with a sentence that tells the reader to review the suggestion in the Performance Advisor, and do not link to that UI.`;
+Copy \`<definition>\` from the "Performance Advisor Suggestion" section, including directions and collation. Omit \`use <database>\` when the namespace has no database. This block is the next step for that area.`;
 
 const PA_ABSENT_RULES = `[ALL_PA_FLAGS_OFF] Do not present any area as a Performance Advisor suggestion.
 
