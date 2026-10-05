@@ -11,9 +11,9 @@ import {
   prepareAgentInput,
   stampClientUser,
   stampResumeClientUserMiddleware,
-} from "@repo/query-analysis-agent";
+} from "@repo/atlas-query-insights-agent";
 
-import { queryAnalysisConfig } from "./config.js";
+import { atlasQueryInsightsConfig } from "./config.js";
 
 const harness = vi.hoisted(() => {
   const tools = [
@@ -22,7 +22,7 @@ const harness = vi.hoisted(() => {
     { name: "mongodb__drop_collection" },
   ];
   const model = { id: "orchestrator-model" };
-  const graph = { id: "query-analysis-graph" };
+  const graph = { id: "atlas-query-insights-graph" };
 
   return {
     tools,
@@ -81,9 +81,9 @@ vi.mock("@mongodb-js/agent-engine-sdk-langgraph", () => ({
   },
 }));
 
-vi.mock("@repo/query-analysis-agent", async (importOriginal) => {
+vi.mock("@repo/atlas-query-insights-agent", async (importOriginal) => {
   const actual = await importOriginal<
-    typeof import("@repo/query-analysis-agent")
+    typeof import("@repo/atlas-query-insights-agent")
   >();
   return {
     ...actual,
@@ -102,7 +102,7 @@ function assembled(): {
   return harness.deepAgent.mock.calls[0]?.[1] as never;
 }
 
-describe("Query Analysis graph assembly", () => {
+describe("Atlas Query Insights graph assembly", () => {
   const previousAgentWorkdir = process.env.AGENTIC_AGENT_WORKDIR;
 
   beforeEach(() => {
@@ -124,25 +124,25 @@ describe("Query Analysis graph assembly", () => {
     const { app } = await import("./main.js");
 
     expect(app).toBeDefined();
-    expect(harness.appName).toBe("query-analysis");
+    expect(harness.appName).toBe("atlas-query-insights");
     expect(harness.agentWorkdirAtAppConstruction).toBe(process.cwd());
     expect(harness.builder).toBeTypeOf("function");
 
     harness.builder!();
 
     expect(harness.buildLLM).toHaveBeenCalledWith({
-      provider: queryAnalysisConfig.llm.provider,
-      model: queryAnalysisConfig.llm.model,
-      logPrefix: "query-analysis",
+      provider: atlasQueryInsightsConfig.llm.provider,
+      model: atlasQueryInsightsConfig.llm.model,
+      logPrefix: "atlas-query-insights",
     });
     const options = assembled();
     expect(options.tools).toEqual([harness.tools[0], harness.tools[1]]);
     expect(options.systemPrompt).toBe(
       buildSystemPrompt({
-        name: queryAnalysisConfig.systemPrompt.name,
-        customInstructions: queryAnalysisConfig.systemPrompt.customInstructions,
-        scope: queryAnalysisConfig.scope,
-        maxQueryShapes: queryAnalysisConfig.maxQueryShapes,
+        name: atlasQueryInsightsConfig.systemPrompt.name,
+        customInstructions: atlasQueryInsightsConfig.systemPrompt.customInstructions,
+        scope: atlasQueryInsightsConfig.scope,
+        maxQueryShapes: atlasQueryInsightsConfig.maxQueryShapes,
       }),
     );
     expect(options.skills).toEqual(["skills"]);

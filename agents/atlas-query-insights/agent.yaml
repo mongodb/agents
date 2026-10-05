@@ -1,7 +1,7 @@
 # Human-readable app slug used by Agentic Platform tooling.
-name: query-analysis
+name: atlas-query-insights
 # Node entry point. Format: <module path>:<export name>.
-entrypoint: agent_query_analysis.main:app
+entrypoint: agent_atlas_query_insights.main:app
 framework: langgraph
 language: typescript
 features:

@@ -11,7 +11,7 @@ To report a bug or suggest an agent,
 
 | Path | What it is |
 | --- | --- |
-| [`agents/`](agents) | Deployable agents, one workspace each, such as `atlas-explorer` and `query-analysis` (Atlas Query Insights). |
+| [`agents/`](agents) | Deployable agents, one workspace each, such as `atlas-explorer` and `atlas-query-insights`. |
 | [`apps/`](apps) | Chat clients, such as the example Slack bot. |
 | [`packages/`](packages) | Shared libraries. Each agent's prompts, tool policy, and middleware live in its own package, built on `@repo/agent-engine-core`. |
 | [`scripts/`](scripts) | Helper scripts, such as a seeder that creates slow queries for Performance Advisor. |
@@ -39,7 +39,7 @@ pnpm test:atlas-explorer
 ```
 
 Each agent has `pnpm test:<agent>` and `pnpm build:<agent>` scripts at the
-repository root, such as `pnpm test:query-analysis`. Each package also has its
+repository root, such as `pnpm test:atlas-query-insights`. Each package also has its
 own `test` and `typecheck` scripts. Run them with
 `pnpm --filter <package> <script>`.
 

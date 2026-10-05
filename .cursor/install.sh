@@ -20,7 +20,9 @@ install_docker() {
   echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu ${VERSION_CODENAME} stable" \
     | sudo tee /etc/apt/sources.list.d/docker.list >/dev/null
   sudo apt-get update
-  sudo apt-get install -y --no-install-recommends \
+  sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    -o Dpkg::Options::="--force-confdef" \
+    -o Dpkg::Options::="--force-confold" \
     docker-ce=5:28.5.2-1~ubuntu.24.04~noble \
     docker-ce-cli=5:28.5.2-1~ubuntu.24.04~noble \
     containerd.io \

@@ -11,8 +11,8 @@ mcp-secret.json
 
 node_modules/
 dist/
-src/agent_query_analysis/main.bundle.js
-src/agent_query_analysis/main.bundle.js.map
+src/agent_atlas_query_insights/main.bundle.js
+src/agent_atlas_query_insights/main.bundle.js.map
 *.tsbuildinfo
 npm-debug.log*
 yarn-error.log*

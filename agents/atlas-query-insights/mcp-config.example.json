@@ -1,5 +1,5 @@
 {
-  "mcpConfigName": "query-analysis-{environment}",
+  "mcpConfigName": "atlas-query-insights-{environment}",
   "roles": [
     "GROUP_DATA_ACCESS_READ_ONLY"
   ],

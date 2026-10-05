@@ -3,10 +3,10 @@ export {
   buildSystemPrompt,
   prepareAgentInput,
   recoverToolErrorsMiddleware,
-  selectQueryAnalysisTools,
+  selectAtlasQueryInsightsTools,
   stampResumeClientUserMiddleware,
   stripToolEchoMiddleware,
   withRequesterMetadata,
   withoutShellExecution,
-} from "@repo/query-analysis-agent";
+} from "@repo/atlas-query-insights-agent";
 export * from "./main.js";

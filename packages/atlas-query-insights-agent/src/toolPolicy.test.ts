@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  QUERY_ANALYSIS_MCP_TOOLS,
-  selectQueryAnalysisTools,
+  ATLAS_QUERY_INSIGHTS_MCP_TOOLS,
+  selectAtlasQueryInsightsTools,
 } from "./toolPolicy.js";
 
-describe("Query Analysis tool policy", () => {
+describe("Atlas Query Insights tool policy", () => {
   it("allowlists the read-only investigation tools", () => {
-    expect([...QUERY_ANALYSIS_MCP_TOOLS].sort()).toEqual([
+    expect([...ATLAS_QUERY_INSIGHTS_MCP_TOOLS].sort()).toEqual([
       "mongodb__aggregate",
       "mongodb__atlas_connect_cluster",
       "mongodb__atlas_get_performance_advisor",
@@ -46,7 +46,7 @@ describe("Query Analysis tool policy", () => {
       { name: "mongodb__drop_collection" },
     ];
 
-    expect(selectQueryAnalysisTools(discovered)).toEqual([
+    expect(selectAtlasQueryInsightsTools(discovered)).toEqual([
       { name: "mongodb__find" },
       { name: "mongodb__aggregate" },
     ]);
