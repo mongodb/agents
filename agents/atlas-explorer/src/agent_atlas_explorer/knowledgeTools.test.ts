@@ -1,4 +1,7 @@
-import { AssistantToolBase } from "@mongodb-js/mcp-tools-assistant";
+import {
+  ListKnowledgeSourcesTool,
+  SearchKnowledgeTool,
+} from "@mongodb-js/mcp-tools-assistant";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -41,6 +44,17 @@ function createFakeApp(): {
   };
 }
 
+function spyExecute(
+  tool: typeof SearchKnowledgeTool | typeof ListKnowledgeSourcesTool,
+) {
+  return vi.spyOn(
+    tool.prototype as unknown as {
+      execute: (args: Record<string, unknown>) => Promise<unknown>;
+    },
+    "execute",
+  );
+}
+
 function knowledgeTool(name: string) {
   const tool = createKnowledgeTools().find((entry) => entry.name === name);
   if (!tool) {
@@ -70,6 +84,11 @@ describe("knowledge tool wrapper", () => {
           entry.options.description?.includes("MongoDB Assistant knowledge base"),
       ),
     ).toBe(true);
+    expect(
+      registered.find(
+        (entry) => entry.options.name === LIST_KNOWLEDGE_SOURCES_TOOL_NAME,
+      )?.options.description,
+    ).toContain(SEARCH_KNOWLEDGE_TOOL_NAME);
   });
 
   it("keeps the package search schema", () => {
@@ -104,7 +123,7 @@ describe("knowledge tool wrapper", () => {
   });
 
   it("joins MCP text content from the packaged tool", async () => {
-    vi.spyOn(AssistantToolBase.prototype, "invoke").mockResolvedValue({
+    spyExecute(SearchKnowledgeTool).mockResolvedValue({
       content: [
         {
           type: "text",
@@ -128,7 +147,7 @@ describe("knowledge tool wrapper", () => {
   });
 
   it("throws when the packaged tool reports an error", async () => {
-    vi.spyOn(AssistantToolBase.prototype, "invoke").mockResolvedValue({
+    spyExecute(SearchKnowledgeTool).mockResolvedValue({
       content: [
         {
           type: "text",
@@ -144,7 +163,7 @@ describe("knowledge tool wrapper", () => {
   });
 
   it("throws when the packaged tool throws", async () => {
-    vi.spyOn(AssistantToolBase.prototype, "invoke").mockRejectedValue(
+    spyExecute(ListKnowledgeSourcesTool).mockRejectedValue(
       new Error("Connection timeout"),
     );
 

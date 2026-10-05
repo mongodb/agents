@@ -1,13 +1,8 @@
 import type { App } from "@mongodb-js/agent-engine-sdk-langgraph";
 import {
-  CompositeLogger,
-  Keychain,
-  NoopMetrics,
-  NoopTelemetry,
-} from "@mongodb-js/mcp-core";
-import {
-  AssistantTools,
+  ListKnowledgeSourcesTool,
   ListKnowledgeSourcesToolName,
+  SearchKnowledgeTool,
   SearchKnowledgeToolName,
   type AssistantToolServer,
 } from "@mongodb-js/mcp-tools-assistant";
@@ -22,39 +17,36 @@ const LANGGRAPH_TOOL_NAMES: Record<string, string> = {
   [ListKnowledgeSourcesToolName]: LIST_KNOWLEDGE_SOURCES_TOOL_NAME,
 };
 
-const toolExecutionContext = {
-  request: { signal: new AbortController().signal },
+const packagedTools = [SearchKnowledgeTool, ListKnowledgeSourcesTool] as const;
+
+type PackagedKnowledgeTool = InstanceType<(typeof packagedTools)[number]>;
+
+/**
+ * `execute` is the knowledge-base call. The public `invoke` method is the MCP
+ * server lifecycle and needs telemetry, metrics, and elicitation.
+ */
+type KnowledgeToolExecute = {
+  execute(args: Record<string, unknown>): Promise<unknown>;
 };
 
-function createAssistantServer(): AssistantToolServer {
+function knowledgeToolServer(): AssistantToolServer {
   return {
-    config: {
-      transport: "stdio",
-      httpResponseType: "json",
-      readOnly: true,
-      disabledTools: [],
-      confirmationRequiredTools: [],
-      previewFeatures: [],
-    },
-    logger: new CompositeLogger(),
-    keychain: new Keychain(),
-    telemetry: new NoopTelemetry(),
-    elicitation: {
-      supportsElicitation: () => false,
-      confirmationRequired: () => {
-        throw new Error("knowledge tools do not elicit confirmation");
-      },
-      readConfirmation: () => undefined,
-      inputRequired: () => {
-        throw new Error("knowledge tools do not elicit input");
-      },
-      readInput: () => undefined,
-    },
-    metrics: new NoopMetrics(),
-    mcpServer: { registerTool() {} } as AssistantToolServer["mcpServer"],
-    tools: [],
-    isToolCategoryAvailable: (name: string) => name === "assistant",
-  };
+    config: {},
+    logger: { debug() {} },
+  } as AssistantToolServer;
+}
+
+function langGraphName(packageName: string): string {
+  return LANGGRAPH_TOOL_NAMES[packageName] ?? packageName.replaceAll("-", "_");
+}
+
+function langGraphDescription(description: string): string {
+  return description
+    .replaceAll(SearchKnowledgeToolName, SEARCH_KNOWLEDGE_TOOL_NAME)
+    .replaceAll(
+      ListKnowledgeSourcesToolName,
+      LIST_KNOWLEDGE_SOURCES_TOOL_NAME,
+    );
 }
 
 function contentToText(result: unknown): string {
@@ -92,17 +84,17 @@ export type WrappedKnowledgeTool = {
 };
 
 export function createKnowledgeTools(): WrappedKnowledgeTool[] {
-  const server = createAssistantServer();
-  return AssistantTools.map((Tool) => {
-    const tool = new Tool({ server });
+  const server = knowledgeToolServer();
+  return packagedTools.map((Tool) => {
+    const tool: PackagedKnowledgeTool = new Tool({ server });
     const schema = z.object(tool.argsShape()).strict();
     return {
-      name: LANGGRAPH_TOOL_NAMES[tool.name] ?? tool.name.replaceAll("-", "_"),
-      description: tool.description,
+      name: langGraphName(tool.name),
+      description: langGraphDescription(tool.description),
       schema,
       invoke: (args?: unknown) =>
-        tool
-          .invoke(schema.parse(args ?? {}), toolExecutionContext as never)
+        (tool as unknown as KnowledgeToolExecute)
+          .execute(schema.parse(args ?? {}))
           .then(contentToText),
     };
   });
