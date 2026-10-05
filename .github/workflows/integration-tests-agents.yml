@@ -118,6 +118,31 @@ jobs:
           )
           PY
 
+      # Dummy Atlas credentials fail tools/list and AER exits before the app
+      # is ready. Empty servers is valid config and skips discovery.
+      - name: Clear MCP servers for smoke
+        working-directory: ${{ matrix.directory }}
+        run: |
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          path = Path("agent.yaml")
+          text = path.read_text()
+          updated, count = re.subn(
+              r"^mcp:\n(?:[ \t].*\n)*",
+              "mcp:\n    servers: {}\n",
+              text,
+              count=1,
+              flags=re.M,
+          )
+          if count != 1:
+              raise SystemExit("expected an mcp: block in agent.yaml")
+          path.write_text(updated)
+          if "servers: {}" not in path.read_text():
+              raise SystemExit("mcp.servers was not cleared")
+          print("cleared mcp.servers in", path)
+          PY
+
       - name: Start local stack
         working-directory: ${{ matrix.directory }}
         run: agentengine --no-log dev up --headless

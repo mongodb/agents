@@ -213,10 +213,11 @@ agentengine dev stop
 `pnpm test:integration` also pings OpenAI and Anthropic when `CI` is unset.
 Those LLM key checks skip in GitHub Actions.
 
-GitHub Actions does not run these suites yet. It writes dummy MCP and
-OpenAI values and only checks that `agentengine dev up --headless` brings
-the Orchestration Engine up on port 8000. Run the suites locally with real
-credentials.
+GitHub Actions does not run these suites yet. The smoke job writes dummy
+OpenAI and store settings, clears `mcp.servers` in the runner checkout so
+startup does not call Atlas, and only checks that
+`agentengine dev up --headless` brings the Orchestration Engine up on port
+8000. Run the suites locally with real credentials.
 
 ## Talk from chat platforms
 
