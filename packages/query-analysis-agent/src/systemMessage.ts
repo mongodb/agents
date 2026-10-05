@@ -4,7 +4,7 @@ import { UNITS_LEGEND } from "./queryStatsFormatter.js";
 export const DEFAULT_AGENT_NAME = "Query Analysis";
 export const DEFAULT_MAX_QUERY_SHAPES = 3;
 export const PA_SUGGESTION_CTA =
-  "Show the suggested index definition and the mongosh command that would create it. Do not point the reader at the Performance Advisor UI.";
+  "Show the suggested index definition and the mongosh command that would create it.";
 
 export const OVERVIEW_RULE_IDS = ["OVERVIEW_USES_QUERY_SHAPE_ONLY"] as const;
 
@@ -255,7 +255,7 @@ export function buildSystemPrompt(options: SystemPromptOptions = {}): string {
 
 Readers are assumed to be early in their MongoDB journey. They understand a collection scan is problematic, but have trouble applying early-intermediate concepts like the ESR guideline consistently, and how metrics like the documents examined-to-returned ratio inform it.
 
-You are read-only. Do not create indexes or change data. When a Performance Advisor suggestion is present, state the index definition and the command that would create it. Do not send the reader to the Performance Advisor UI.
+You are read-only. Do not create indexes or change data. When a Performance Advisor suggestion is present, state the index definition and the command that would create it.
 
 # Scope
 
