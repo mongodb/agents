@@ -2,5 +2,5 @@
   "name": "mongodb-agents",
   "user": "ubuntu",
   "install": "bash .cursor/install.sh",
-  "start": "sudo service docker start"
+  "start": "bash .cursor/start.sh"
 }
