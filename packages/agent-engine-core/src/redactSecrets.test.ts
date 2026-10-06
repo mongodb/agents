@@ -21,7 +21,7 @@ import { redactSecretText, redactSecretsMiddleware } from "./redactSecrets.js";
 
 const OPENAI_KEY = "sk-proj-abcdefghijklmnopqrstuvwxyz012345";
 const ANTHROPIC_KEY = "sk-ant-api03-abcdefghijklmnopqrstuvwxyz0123456789";
-const ATLAS_SECRET = "mdb_sa_sk_4f8c2a91b7e64d0c9a11";
+const ATLAS_SECRET = "mdb_sa_sk_fake-not-a-real-secret";
 const MONGO_URI =
   "mongodb+srv://ada.lovelace:s3cr3t-pass@cluster0.example.mongodb.net/admin";
 const PEM = [
@@ -68,7 +68,7 @@ describe("redactSecretText", () => {
 
     expect(result.kinds).toEqual(["atlas-service-account"]);
     expect(result.text).toBe("secret mdb_sa_sk_[redacted-api-key] end");
-    expect(result.text).not.toContain("4f8c2a91b7e64d0c9a11");
+    expect(result.text).not.toContain("not-a-real-secret");
   });
 
   it("redacts PEM private key blocks", () => {
