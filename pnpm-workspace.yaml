@@ -11,6 +11,7 @@ overrides:
   "@repo/atlas-query-insights-agent": "workspace:*"
   "@repo/atlas-explorer-agent": "workspace:*"
   "@repo/agent-engine-core": "workspace:*"
+  "@repo/agent-engine-chat": "workspace:*"
 
 allowBuilds:
   esbuild: true

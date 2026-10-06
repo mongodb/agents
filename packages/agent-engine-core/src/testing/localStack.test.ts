@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 
 import {
-  buildResumeMap,
   humanContentsFromMessages,
+  invoke,
   isWriteMcpTool,
   mongodbUriFromStatus,
-  parseInvokeResponse,
+  resume,
   toolCallsFromMessages,
   toolResultsFromMessages,
   waitForHealthy,
@@ -45,80 +45,80 @@ describe("mongodbUriFromStatus", () => {
   });
 });
 
-describe("parseInvokeResponse", () => {
-  it("returns a completed invocation", () => {
-    expect(
-      parseInvokeResponse(
-        {
-          success: true,
-          status: "completed",
-          response: "pong",
-          session_id: "session-1",
-          execution_id: "exec-1",
-        },
-        200,
-        null,
+describe("invoke", () => {
+  it("posts to the local OE through AgentEngineClient", async () => {
+    const fetchFn = vi.fn<typeof fetch>().mockResolvedValue(
+      jsonResponse({
+        success: true,
+        status: "completed",
+        response: "pong",
+        session_id: "session-1",
+        execution_id: "exec-1",
+      }),
+    );
+
+    await expect(
+      invoke(
+        { message: "ping", sessionId: "session-1" },
+        { fetchFn, baseUrl: "http://127.0.0.1:8000" },
       ),
-    ).toEqual({
+    ).resolves.toEqual({
       kind: "completed",
       response: "pong",
       sessionId: "session-1",
       executionId: "exec-1",
     });
-  });
 
-  it("returns a suspended invocation with interrupt details", () => {
-    expect(
-      parseInvokeResponse(
-        {
-          status: "suspended",
-          session_id: "session-1",
-          execution_id: "exec-1",
-          suspend_context: {
-            interrupts: [
-              {
-                id: "interrupt-1",
-                value: {
-                  actionRequests: [
-                    {
-                      name: "mongodb__drop_collection",
-                      args: { database: "eai_it_nonexistent" },
-                    },
-                  ],
-                },
-              },
-            ],
-          },
-        },
-        200,
-        "header-session",
-      ),
-    ).toEqual({
-      kind: "suspended",
-      sessionId: "session-1",
-      executionId: "exec-1",
-      interrupts: [
-        {
-          id: "interrupt-1",
-          actionRequests: [
-            {
-              name: "mongodb__drop_collection",
-              args: { database: "eai_it_nonexistent" },
-            },
-          ],
-        },
-      ],
+    expect(fetchFn).toHaveBeenCalledWith(
+      "http://127.0.0.1:8000/invoke",
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.objectContaining({ "X-Session-ID": "session-1" }),
+      }),
+    );
+    expect(requestBody(fetchFn)).toMatchObject({
+      message: "ping",
+      wait: true,
+      session_id: "session-1",
+      user_id: "stack-test:ci",
     });
   });
+});
 
-  it("uses the session header when the body omits session_id", () => {
-    expect(
-      parseInvokeResponse(
-        { status: "completed", result: { content: "ok" } },
-        200,
-        "header-session",
-      ),
-    ).toMatchObject({ kind: "completed", sessionId: "header-session" });
+describe("resume", () => {
+  it("sends the OE resume map through AgentEngineClient", async () => {
+    const fetchFn = vi.fn<typeof fetch>().mockResolvedValue(
+      jsonResponse({
+        status: "completed",
+        response: "done",
+        session_id: "session-1",
+      }),
+    );
+
+    await resume(
+      {
+        sessionId: "session-1",
+        interruptId: "interrupt-1",
+        decision: { type: "approve" },
+        additionalInterrupts: [
+          {
+            interruptId: "interrupt-2",
+            decision: { type: "reject", message: "no" },
+          },
+        ],
+      },
+      { fetchFn, baseUrl: "http://127.0.0.1:8000" },
+    );
+
+    expect(requestBody(fetchFn)).toMatchObject({
+      wait: true,
+      session_id: "session-1",
+      user_id: "stack-test:ci",
+      resume_map: {
+        "interrupt-1": { decisions: [{ type: "approve" }] },
+        "interrupt-2": { decisions: [{ type: "reject", message: "no" }] },
+      },
+    });
   });
 });
 
@@ -164,27 +164,6 @@ describe("checkpoint message helpers", () => {
   });
 });
 
-describe("buildResumeMap", () => {
-  it("wraps approve and reject decisions the way OE expects", () => {
-    expect(
-      buildResumeMap({
-        sessionId: "session-1",
-        interruptId: "interrupt-1",
-        decision: { type: "approve" },
-        additionalInterrupts: [
-          {
-            interruptId: "interrupt-2",
-            decision: { type: "reject", message: "no" },
-          },
-        ],
-      }),
-    ).toEqual({
-      "interrupt-1": { decisions: [{ type: "approve" }] },
-      "interrupt-2": { decisions: [{ type: "reject", message: "no" }] },
-    });
-  });
-});
-
 describe("waitForHealthy", () => {
   it("returns once OE reports healthy", async () => {
     const fetchFn = vi.fn<typeof fetch>().mockResolvedValue(
@@ -216,3 +195,15 @@ describe("waitForHealthy", () => {
     ).rejects.toThrow(/agentengine dev up --headless/);
   });
 });
+
+function jsonResponse(body: unknown): Response {
+  return new Response(JSON.stringify(body), {
+    status: 200,
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
+function requestBody(fetchFn: ReturnType<typeof vi.fn<typeof fetch>>): unknown {
+  const init = fetchFn.mock.calls[0]?.[1];
+  return JSON.parse(String(init?.body));
+}

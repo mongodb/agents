@@ -1,5 +1,6 @@
 /**
- * Client for lite full-stack tests against a local `agentengine dev` stack.
+ * Helpers for lite full-stack tests against a local `agentengine dev` stack.
+ * Invoke and resume go through `AgentEngineClient` (`invokeTarget: "local"`).
  * Atlas Explorer and Atlas Query Insights import this from the testing export.
  */
 
@@ -8,6 +9,13 @@ import { promisify } from "node:util";
 
 import { MongoDBSaver } from "@langchain/langgraph-checkpoint-mongodb";
 import { MongoClient } from "mongodb";
+import {
+  AgentEngineClient,
+  type AgentInterrupt,
+  type ClientUserMetadata,
+  type InvocationResult,
+  type ReviewDecision,
+} from "@repo/agent-engine-chat/agent-engine";
 
 const execFileAsync = promisify(execFile);
 
@@ -19,41 +27,10 @@ export const DROP_COLLECTION_TOOL = "mongodb__drop_collection";
 
 const HEALTH_TIMEOUT_MS = 120_000;
 const HEALTH_INTERVAL_MS = 2_000;
-const INVOKE_TIMEOUT_MS = 280_000;
+const DEFAULT_ACTOR_ID = "stack-test:ci";
 
-export type ReviewDecision =
-  | { type: "approve" }
-  | { type: "reject"; message?: string };
-
-export interface ClientUser {
-  id?: string;
-  username?: string;
-  full_name?: string;
-  actor_id?: string;
-}
-
-export interface AgentInterrupt {
-  id: string;
-  actionRequests: Array<{
-    name: string;
-    args: Record<string, unknown>;
-    description?: string;
-  }>;
-}
-
-export type InvocationResult =
-  | {
-      kind: "completed";
-      response: string;
-      sessionId: string;
-      executionId?: string;
-    }
-  | {
-      kind: "suspended";
-      sessionId: string;
-      executionId: string;
-      interrupts: AgentInterrupt[];
-    };
+export type { AgentInterrupt, InvocationResult, ReviewDecision };
+export type ClientUser = ClientUserMetadata;
 
 export interface InvokeInput {
   message: string;
@@ -159,52 +136,52 @@ export async function waitForHealthy(options?: {
 
 export async function invoke(
   input: InvokeInput,
-  options?: { fetchFn?: typeof fetch; baseUrl?: string; timeoutMs?: number },
+  options?: StackClientOptions,
 ): Promise<InvocationResult> {
-  const message = input.message.trim();
-  if (!message) {
-    throw new LocalStackError("Agent message cannot be empty", 0, "INVALID_INPUT");
-  }
-  return postOe(
-    {
-      message,
-      wait: true,
-      ...(input.sessionId ? { session_id: input.sessionId } : {}),
-      user_id: input.actorId ?? "stack-test:ci",
-      ...clientUserBody(input),
-    },
-    input.sessionId,
-    options,
-  );
+  return stackClient(options).invoke({
+    message: input.message,
+    actorId: input.actorId ?? DEFAULT_ACTOR_ID,
+    ...(input.sessionId ? { sessionId: input.sessionId } : {}),
+    ...(input.client !== undefined ? { client: input.client } : {}),
+    ...(input.user !== undefined ? { user: input.user } : {}),
+  });
 }
 
 export async function resume(
   input: ResumeInput,
-  options?: { fetchFn?: typeof fetch; baseUrl?: string; timeoutMs?: number },
+  options?: StackClientOptions,
 ): Promise<InvocationResult> {
-  return postOe(
-    {
-      session_id: input.sessionId,
-      user_id: input.actorId ?? "stack-test:ci",
-      wait: true,
-      resume_map: buildResumeMap(input),
-      ...clientUserBody(input),
-    },
-    input.sessionId,
-    options,
-  );
+  return stackClient(options).resume({
+    sessionId: input.sessionId,
+    interruptId: input.interruptId,
+    decision: input.decision,
+    actorId: input.actorId ?? DEFAULT_ACTOR_ID,
+    ...(input.additionalInterrupts
+      ? { additionalInterrupts: input.additionalInterrupts }
+      : {}),
+    ...(input.client !== undefined ? { client: input.client } : {}),
+    ...(input.user !== undefined ? { user: input.user } : {}),
+  });
 }
 
-export function buildResumeMap(input: ResumeInput): Record<string, unknown> {
-  const entries = [
-    { interruptId: input.interruptId, decision: input.decision },
-    ...(input.additionalInterrupts ?? []),
-  ];
-  return Object.fromEntries(
-    entries.map(({ interruptId, decision }) => [
-      interruptId,
-      { decisions: [decision] },
-    ]),
+interface StackClientOptions {
+  fetchFn?: typeof fetch;
+  baseUrl?: string;
+  timeoutMs?: number;
+}
+
+function stackClient(options?: StackClientOptions): AgentEngineClient {
+  return new AgentEngineClient(
+    {
+      invokeTarget: "local",
+      baseUrl: options?.baseUrl ?? oeUrl(),
+    },
+    {
+      ...(options?.fetchFn ? { fetchFn: options.fetchFn } : {}),
+      ...(options?.timeoutMs !== undefined
+        ? { timeoutMs: options.timeoutMs }
+        : {}),
+    },
   );
 }
 
@@ -288,91 +265,6 @@ export function mongodbUriFromStatus(status: unknown): string | undefined {
   return undefined;
 }
 
-export function parseInvokeResponse(
-  raw: unknown,
-  httpStatus: number,
-  headerSessionId: string | null,
-): InvocationResult {
-  if (raw === null || typeof raw !== "object" || Array.isArray(raw)) {
-    throw new LocalStackError(
-      `Agentic API returned an invalid response (HTTP ${httpStatus})`,
-      httpStatus,
-      "INVALID_RESPONSE",
-    );
-  }
-  const data = raw as Record<string, unknown>;
-  if (httpStatus >= 400 || data.success === false) {
-    throw new LocalStackError(
-      stringField(data.error) ??
-        `Agentic API request failed (HTTP ${httpStatus})`,
-      httpStatus,
-      stringField(data.code),
-    );
-  }
-  const sessionId =
-    stringField(data.session_id) ?? headerSessionId ?? undefined;
-  if (!sessionId) {
-    throw new LocalStackError(
-      "Agentic API returned an invalid response without a session ID",
-      httpStatus,
-      "INVALID_RESPONSE",
-    );
-  }
-  const status = stringField(data.status);
-  if (status === "error" || status === "cancelled") {
-    throw new LocalStackError(
-      stringField(data.error) ?? `Agentic execution ${status}`,
-      httpStatus,
-      status === "error" ? "EXECUTION_ERROR" : "EXECUTION_CANCELLED",
-    );
-  }
-  const completedOutput =
-    data.response !== undefined
-      ? formatAgentResult(data.response)
-      : formatAgentResult(data.result);
-  if (status === "completed" || (status === undefined && completedOutput !== undefined)) {
-    if (completedOutput === undefined) {
-      throw new LocalStackError(
-        "Agentic API returned an invalid response without agent output",
-        httpStatus,
-        "INVALID_RESPONSE",
-      );
-    }
-    return {
-      kind: "completed",
-      response: completedOutput,
-      sessionId,
-      ...(stringField(data.execution_id)
-        ? { executionId: stringField(data.execution_id) }
-        : {}),
-    };
-  }
-  if (status === "suspended") {
-    const executionId = stringField(data.execution_id);
-    const interrupts = parseInterrupts(data.suspend_context);
-    if (!executionId) {
-      throw new LocalStackError(
-        "Agentic API returned a suspended execution without an execution ID",
-        httpStatus,
-        "INVALID_RESPONSE",
-      );
-    }
-    if (!interrupts.length) {
-      throw new LocalStackError(
-        "Agentic API returned a suspended execution without interrupt details",
-        httpStatus,
-        "INVALID_RESPONSE",
-      );
-    }
-    return { kind: "suspended", sessionId, executionId, interrupts };
-  }
-  throw new LocalStackError(
-    `Agentic API returned unsupported execution status: ${status ?? "missing"}`,
-    httpStatus,
-    "INVALID_RESPONSE",
-  );
-}
-
 export function messagesFromCheckpoint(checkpoint: {
   channel_values?: unknown;
 }): unknown[] {
@@ -418,107 +310,6 @@ export function toolResultsFromMessages(messages: unknown[]): ToolResultRecord[]
     });
   }
   return results;
-}
-
-async function postOe(
-  body: Record<string, unknown>,
-  sessionId: string | undefined,
-  options?: { fetchFn?: typeof fetch; baseUrl?: string; timeoutMs?: number },
-): Promise<InvocationResult> {
-  const base = options?.baseUrl ?? oeUrl();
-  const fetchFn = options?.fetchFn ?? fetch;
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-  };
-  if (sessionId) {
-    headers["X-Session-ID"] = sessionId;
-  }
-  let response: Response;
-  try {
-    response = await fetchFn(`${base}/invoke`, {
-      method: "POST",
-      headers,
-      body: JSON.stringify(body),
-      signal: AbortSignal.timeout(options?.timeoutMs ?? INVOKE_TIMEOUT_MS),
-    });
-  } catch (error) {
-    throw new LocalStackError(
-      error instanceof Error ? error.message : "Agentic request failed",
-      0,
-      "REQUEST_FAILED",
-    );
-  }
-  const rawBody = await response.text();
-  let raw: unknown = {};
-  if (rawBody) {
-    try {
-      raw = JSON.parse(rawBody);
-    } catch {
-      throw new LocalStackError(
-        `Agentic API returned non-JSON content (HTTP ${response.status})`,
-        response.status,
-        "INVALID_RESPONSE",
-      );
-    }
-  }
-  return parseInvokeResponse(
-    raw,
-    response.status,
-    response.headers.get("X-Session-ID"),
-  );
-}
-
-function clientUserBody(input: {
-  client?: string;
-  user?: ClientUser;
-}): Record<string, unknown> {
-  return {
-    ...(input.client !== undefined ? { client: input.client } : {}),
-    ...(input.user !== undefined ? { user: input.user } : {}),
-  };
-}
-
-function parseInterrupts(suspendContext: unknown): AgentInterrupt[] {
-  const context = asRecord(suspendContext);
-  const interrupts = context ? asArray(context.interrupts) : [];
-  const parsed: AgentInterrupt[] = [];
-  for (const interrupt of interrupts) {
-    const record = asRecord(interrupt);
-    const id = stringField(record?.id);
-    const value = asRecord(record?.value) ?? record;
-    const actionRequests = asArray(value?.actionRequests)
-      .map((request) => asRecord(request))
-      .filter((request): request is Record<string, unknown> => request !== undefined)
-      .map((request) => ({
-        name: stringField(request.name) ?? "",
-        args: asRecord(request.args) ?? {},
-        ...(stringField(request.description)
-          ? { description: stringField(request.description) }
-          : {}),
-      }))
-      .filter((request) => request.name.length > 0);
-    if (id && actionRequests.length > 0) {
-      parsed.push({ id, actionRequests });
-    }
-  }
-  return parsed;
-}
-
-function formatAgentResult(result: unknown): string | undefined {
-  if (result === undefined) {
-    return undefined;
-  }
-  if (typeof result === "string") {
-    return result;
-  }
-  const record = asRecord(result);
-  if (typeof record?.content === "string") {
-    return record.content;
-  }
-  if (typeof record?.response === "string") {
-    return record.response;
-  }
-  return JSON.stringify(result);
 }
 
 async function latestCheckpoint(
