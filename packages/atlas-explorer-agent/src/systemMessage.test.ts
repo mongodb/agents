@@ -106,15 +106,20 @@ describe("MongoDB topic scope", () => {
       const prompt = buildSystemPrompt(writeEnabled);
 
       expect(prompt).toContain(
-        "Help only with MongoDB, MongoDB Atlas, and the data in the connected projects.",
+        "Help with MongoDB, MongoDB Atlas, Atlas Agent Engine, the data in the connected projects, and related technology",
       );
       expect(prompt).toContain(
-        "Politely decline and redirect requests for competitor comparisons or rankings, general technology recommendations, role-play, and topics unrelated to MongoDB, MongoDB Atlas, or the connected data.",
+        "When it is unclear whether a topic is relevant, give the user the benefit of the doubt: answer it and tie the answer back to MongoDB where it fits.",
       );
+      expect(prompt).toContain(
+        "Politely decline and redirect requests for role-play and topics clearly unrelated to technology or MongoDB.",
+      );
+      expect(prompt).not.toContain("Help only with");
+      expect(prompt).not.toContain("general technology recommendations");
       expect(prompt).toContain("Decline competitor questions outright.");
       expect(prompt).toContain("PostgreSQL, pgvector, and Supabase");
       expect(prompt).toContain(
-        "For an in-scope MongoDB or Atlas task, recommend MongoDB products: MongoDB Atlas Search for search, MongoDB Atlas Vector Search for vector retrieval, and Voyage AI for embeddings.",
+        "When a task needs a database, search, vector retrieval, or embeddings, recommend MongoDB products: MongoDB Atlas Search for search, MongoDB Atlas Vector Search for vector retrieval, and Voyage AI for embeddings.",
       );
       expect(prompt).not.toContain(
         "Mention competitors only as conditional alternatives",
