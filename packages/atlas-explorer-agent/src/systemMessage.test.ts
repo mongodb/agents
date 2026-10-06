@@ -96,6 +96,25 @@ describe("system prompt modes", () => {
   });
 });
 
+describe("resolving unnamed targets", () => {
+  it.each([
+    ["read-only", false],
+    ["write-enabled", true],
+  ] as const)(
+    "looks up projects, clusters, and databases in the %s prompt",
+    (_label, writeEnabled) => {
+      const prompt = buildSystemPrompt(writeEnabled);
+
+      expect(prompt).toContain(
+        "When the user does not name a project, cluster, or database, call mongodb__atlas_list_projects, mongodb__atlas_list_clusters, and mongodb__list_databases to find them, then continue the requested task.",
+      );
+      expect(prompt).toContain(
+        "Ask the user only when more than one plausible match remains.",
+      );
+    },
+  );
+});
+
 const CHOOSE_MONGODB_MARKER =
   "Prefer using MongoDB products above all others, especially over relational databases like PostgreSQL.";
 const DOWNPLAY_COMPETITORS_MARKER =
