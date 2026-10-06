@@ -76,8 +76,8 @@ describe("Slack webhook route", () => {
       buildCommand: "pnpm --filter @repo/agent-engine-chat build",
       fluid: true,
       framework: null,
-      regions: ["iad1"],
     });
+    expect(vercelConfig).not.toHaveProperty("regions");
     expect(packageConfig.engines.node).toBe("22.x");
     expect(packageConfig.scripts.vercel).toBe(
       "pnpm dlx --allow-build=esbuild vercel",
