@@ -153,10 +153,10 @@ enough to prevent ordinary write-tool use:
 When writes are enabled, every MCP tool that isn't on the read-only allowlist
 is exposed, and each one pauses for approval before it runs. That includes
 tools the allowlist doesn't recognize, such as tools added to Atlas MCP
-later, and `export`. Database-user creation and access-list changes are the
-exception: `HIGH_RISK_MCP_TOOLS` removes them in both modes, so a generated
-password never lands on an approval card and the agent cannot open network
-access to the cluster. You can approve, edit, or reject each remaining call.
+later. Database-user creation and access-list changes are the exception:
+`HIGH_RISK_MCP_TOOLS` removes them in both modes, so a generated password
+never lands on an approval card and the agent cannot open network access to
+the cluster. You can approve, edit, or reject each remaining call.
 The [Slack bot](../../apps/atlas-explorer-slack-bot) offers only Approve and
 Reject.
 
