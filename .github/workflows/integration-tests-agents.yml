@@ -143,9 +143,32 @@ jobs:
           print("cleared mcp.servers in", path)
           PY
 
+      # The SDK install floats @langchain/* . A tarball published moments
+      # earlier can 404. Retry only that case; other failures stay fatal.
       - name: Start local stack
         working-directory: ${{ matrix.directory }}
-        run: agentengine --no-log dev up --headless
+        run: |
+          set +e
+          for attempt in 1 2 3; do
+            agentengine --no-log dev up --headless
+            status=$?
+            if [ "$status" -eq 0 ]; then
+              exit 0
+            fi
+            agentengine --no-log dev logs --no-follow --tail 400 \
+              > "$RUNNER_TEMP/dev-up-retry.log" 2>&1
+            if ! grep -q 'npm error code E404' "$RUNNER_TEMP/dev-up-retry.log"; then
+              exit "$status"
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              echo "::error::npm registry still returned 404 after 3 attempts"
+              exit "$status"
+            fi
+            echo "npm registry returned 404; cleaning and retrying ($attempt/3)"
+            agentengine --no-log dev clean || true
+            sleep 45
+          done
+          exit 1
 
       - name: Smoke-check Orchestration Engine health
         working-directory: ${{ matrix.directory }}
