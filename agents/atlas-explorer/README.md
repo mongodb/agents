@@ -157,11 +157,14 @@ later, and `export`. You can approve, edit, or reject each call. The
 [Slack bot](../../apps/atlas-explorer-slack-bot) offers only Approve and
 Reject.
 
-Approval is per tool, not per argument, so `aggregate` and `aggregate_db`
-stay unapproved reads. The system prompt tells the agent never to use the
-`$out` or `$merge` stages, which write data. Only a read-only credential
-guarantees that, so keep the credential read-only unless the environment
-needs writes.
+`aggregate` and `aggregate_db` stay on the read allowlist, so a normal
+pipeline runs without approval. A pipeline that contains `$out` or `$merge`
+writes data. `approveAggregateWritesMiddleware` inspects that pipeline and
+suspends the call for the same approve, edit, or reject decision before it
+reaches Atlas. The check runs in read-only mode as well as write mode, so a
+prompt cannot skip it. A read-only Atlas credential still rejects the write
+if someone approves it. Keep that credential read-only unless the
+environment needs writes.
 
 ## Model and persona
 
@@ -245,10 +248,10 @@ can be reused with additional Chat SDK adapters.
   creation, upgrades, and pause/resume; sample dataset loads; project,
   database-user, and access-list creation; and Atlas Streams build,
   management, and teardown operations.
-- `aggregate` remains available for read-only exploration; the agent is
-  explicitly forbidden from using `$out` or `$merge` write stages because HITL
-  is applied at tool granularity. A read-only Atlas credential is the hard
-  boundary for those argument-dependent writes.
+- `aggregate` remains available for read-only exploration. A pipeline that
+  contains `$out` or `$merge` is suspended for approval before it reaches
+  Atlas, in both read-only and write modes. A read-only Atlas credential
+  still rejects the write if someone approves it.
 - Deep-agent file operations stay on Agent Engine's audited Tool Pod backend, but
   the model is not given general-purpose shell execution that could read
   process credential files outside the filesystem sandbox.

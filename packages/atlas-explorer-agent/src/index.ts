@@ -15,6 +15,7 @@
  */
 
 export {
+  approveAggregateWritesMiddleware,
   buildLLM,
   clientUserSchema,
   formatToolErrorForAgent,

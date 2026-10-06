@@ -29,6 +29,7 @@ describe("system prompt modes", () => {
     expect(prompt).toBe(READ_ONLY_SYSTEM_PROMPT);
     expect(prompt).toContain("You are Atlas Explorer, an AI agent");
     expect(prompt).toContain("You cannot execute write operations.");
+    expect(prompt).toContain("Never use $out or $merge.");
     expect(prompt).toContain(
       "provide the exact commands, configuration, or Atlas UI steps",
     );
@@ -43,6 +44,7 @@ describe("system prompt modes", () => {
     expect(prompt).toContain("You are Atlas Explorer, an AI agent");
     expect(prompt).toContain("Protected mutations must go through runtime approval.");
     expect(prompt).toContain("emit the corresponding tool call immediately");
+    expect(prompt).toContain("emit the aggregate call immediately");
     expect(prompt).toContain("mongodb__aggregate_db");
     expect(prompt).toContain("mongodb__export");
     expect(prompt).toContain("$out or $merge");

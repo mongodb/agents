@@ -175,11 +175,13 @@ Things to know:
 ## Safety
 
 - The MCP configuration uses `GROUP_DATA_ACCESS_READ_ONLY`.
-- The tool allowlist never enables writes, and there is no
-  human-in-the-loop path.
-- `aggregate` stays available, and the agent isn't told to avoid `$out` or
-  `$merge`. A read-only credential is what stops those stages from writing,
-  so don't give the MCP configuration a read-write role.
+- The tool allowlist never enables writes. Other MCP tools do not pause
+  for approval.
+- `aggregate` stays available for read pipelines. A pipeline that contains
+  `$out` or `$merge` is suspended for approval before it reaches Atlas.
+  A read-only credential still rejects that write if someone approves it,
+  so don't give the MCP configuration a read-write role unless approved
+  aggregate writes should succeed.
 - The MCP configuration belongs to one project, so the agent cannot reach
   another.
 - The agent can recommend an index. It cannot create one.

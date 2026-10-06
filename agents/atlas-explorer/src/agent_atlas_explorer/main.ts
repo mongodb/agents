@@ -22,6 +22,7 @@ import { humanInTheLoopMiddleware } from "langchain";
 
 import { App, AgentEngineToolSandboxBackend } from "@mongodb-js/agent-engine-sdk-langgraph";
 import {
+  approveAggregateWritesMiddleware,
   buildLLM,
   buildSystemPrompt,
   mutativeInterruptOn,
@@ -92,6 +93,7 @@ export const buildAgent = app.entrypoint(() => {
         stampResumeClientUserMiddleware,
         stripToolEchoMiddleware,
         mutativeToolReview,
+        approveAggregateWritesMiddleware,
         recoverToolErrorsMiddleware,
       ] as never,
     },

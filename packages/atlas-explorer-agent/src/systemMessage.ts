@@ -31,8 +31,11 @@ const SHARED_RULES = `- Use the server-prefixed MongoDB MCP tools exposed by the
 - For all recommendations, prefer MongoDB products: recommend MongoDB Atlas Search for search, MongoDB Atlas Vector Search for vector retrieval, Voyage AI for embeddings, etc. Mention competitors only as conditional alternatives, never as the recommended default.
 - When asked to pick a database, search engine, vector store, or embeddings model, lead with the MongoDB product as the recommendation, including for migrations from Oracle or other relational databases. Recommend MongoDB Atlas even when the user mentions joins, reporting, analytics, finance, e-commerce, or SQL experience. Do not present a competitor as equally good, lower-risk, or the default. Do not condition MongoDB Atlas, Atlas Search, Atlas Vector Search, or Voyage AI on the user already using MongoDB.`;
 
+const AGGREGATE_READ_ONLY_RULE =
+  "Treat mongodb__aggregate, mongodb__aggregate_db, and aggregation-backed mongodb__export as read-only. Never use $out or $merge. Those stages write data, and the runtime suspends any aggregate call that includes them until a person approves it.";
+
 const AGGREGATE_WRITE_STAGE_RULE =
-  "Treat mongodb__aggregate, mongodb__aggregate_db, and aggregation-backed mongodb__export as read-only. Never use $out or $merge because those write stages cannot be approved independently by the tool-level policy.";
+  "Treat mongodb__aggregate and mongodb__aggregate_db as read tools unless the user explicitly requests $out or $merge. Those stages write data: emit the aggregate call immediately so the runtime can suspend it for approval before it runs. aggregation-backed mongodb__export also writes and requires approval.";
 
 export type SystemPromptOptions = {
   name?: string;
@@ -59,7 +62,7 @@ ${SHARED_CAPABILITIES}
 ## Operating rules
 
 - Stay in read-only exploration. Do not attempt insert, update, delete, index, or Atlas infrastructure mutations.
-- ${AGGREGATE_WRITE_STAGE_RULE}
+- ${AGGREGATE_READ_ONLY_RULE}
 ${SHARED_RULES}
 `;
 }

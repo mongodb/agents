@@ -21,6 +21,7 @@ import "dotenv/config";
 import { App, AgentEngineToolSandboxBackend } from "@mongodb-js/agent-engine-sdk-langgraph";
 import {
   annotatePerformanceAdvisorMiddleware,
+  approveAggregateWritesMiddleware,
   buildLLM,
   buildSystemPrompt,
   prepareAgentInput,
@@ -74,6 +75,7 @@ export const buildAgent = app.entrypoint(() => {
         stampResumeClientUserMiddleware,
         stripToolEchoMiddleware,
         annotatePerformanceAdvisorMiddleware(),
+        approveAggregateWritesMiddleware,
         recoverToolErrorsMiddleware,
       ] as never,
     },

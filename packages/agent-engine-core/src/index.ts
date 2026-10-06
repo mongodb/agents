@@ -14,6 +14,13 @@
  * limitations under the License.
  */
 
+export {
+  AGGREGATE_WRITE_TOOLS,
+  aggregateCallNeedsApproval,
+  aggregatePipelineWrites,
+  approveAggregateWritesMiddleware,
+  guardAggregateWrite,
+} from "./aggregateWriteApproval.js";
 export { withoutShellExecution } from "./agentBackend.js";
 export {
   parseClientUserPayload,
