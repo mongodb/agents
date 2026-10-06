@@ -183,42 +183,6 @@ into `dist`. After source changes, run `pnpm build`, then
 Open the playground at http://localhost:3000. Stop the stack with
 `agentengine dev stop`.
 
-### Full-stack integration tests
-
-These tests call the local Orchestration Engine (port 8000) against a running
-`agentengine dev` stack. They assert on execution status, MCP tool calls in
-checkpoints, and requester metadata — not on the model's wording. The OE
-client lives in `@repo/agent-engine-core/testing` and is shared with Atlas
-Query Insights.
-
-Use `--headless` if you do not need the playground UI. The tests skip the
-read-only suite when `ALLOW_WRITE_OPERATIONS` is enabled, and skip the HITL
-suite when it is not, so run them in two phases:
-
-```bash
-# Read-only stack: boot, list_databases, session continuity, hidden writes,
-# requester metadata. Leave ALLOW_WRITE_OPERATIONS unset or empty in .env.
-agentengine dev up --headless
-pnpm test:integration
-agentengine dev stop
-
-# HITL stack: the same read-only Atlas MCP credential, with write tools
-# exposed so drop_collection suspends. Approve still fails at Atlas.
-# Set ALLOW_WRITE_OPERATIONS=true in .env so the running agent sees it.
-agentengine dev up --headless
-ALLOW_WRITE_OPERATIONS=true pnpm test:integration
-agentengine dev stop
-```
-
-`pnpm test:integration` also pings OpenAI and Anthropic when `CI` is unset.
-Those LLM key checks skip in GitHub Actions.
-
-GitHub Actions does not run these suites yet. The smoke job writes dummy
-OpenAI and store settings, clears `mcp.servers` in the runner checkout so
-startup does not call Atlas, and only checks that
-`agentengine dev up --headless` brings the Orchestration Engine up on port
-8000. Run the suites locally with real credentials.
-
 ## Talk from chat platforms
 
 The sibling [`@AtlasExplorer` Chat SDK integration](../../apps/atlas-explorer-slack-bot) invokes
