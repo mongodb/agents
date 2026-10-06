@@ -193,6 +193,7 @@ describe("Atlas Explorer graph assembly", () => {
         middleware: [
           stampResumeClientUserMiddleware,
           expect.objectContaining({ name: "stripOpenAIToolEcho" }),
+          expect.objectContaining({ name: "redactSecrets" }),
           harness.hitlMiddleware,
           expect.objectContaining({ name: "recoverToolErrors" }),
         ],

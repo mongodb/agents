@@ -23,6 +23,7 @@ export {
   prepareAgentInput as prepareAtlasExplorerInput,
   recoverToolCall,
   recoverToolErrorsMiddleware,
+  redactSecretsMiddleware,
   requesterFromCheckpoint,
   resolveOpenAIResponsesApi,
   stampClientUser,
