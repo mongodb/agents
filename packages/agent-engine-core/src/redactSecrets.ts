@@ -23,35 +23,30 @@ import { createMiddleware } from "langchain";
 
 interface SecretRule {
   kind: string;
-  source: string;
-  flags: string;
+  pattern: RegExp;
   replace: string;
 }
 
 const SECRET_RULES: readonly SecretRule[] = [
   {
     kind: "private-key",
-    source:
-      "-----BEGIN (?:(?:RSA|EC|OPENSSH|ENCRYPTED|DSA) )?PRIVATE KEY-----[\\s\\S]*?-----END (?:(?:RSA|EC|OPENSSH|ENCRYPTED|DSA) )?PRIVATE KEY-----",
-    flags: "g",
+    pattern:
+      /-----BEGIN (?:(?:RSA|EC|OPENSSH|ENCRYPTED|DSA) )?PRIVATE KEY-----[\s\S]*?-----END (?:(?:RSA|EC|OPENSSH|ENCRYPTED|DSA) )?PRIVATE KEY-----/g,
     replace: "[redacted-private-key]",
   },
   {
     kind: "mongodb-uri",
-    source: "mongodb(\\+srv)?:\\/\\/([^:\\s/@]+):([^@\\s]+)@",
-    flags: "gi",
+    pattern: /mongodb(\+srv)?:\/\/([^:\s/@]+):([^@\s]+)@/gi,
     replace: "mongodb$1://[redacted-username]:[redacted-password]@",
   },
   {
     kind: "atlas-service-account",
-    source: "mdb_sa_sk_[A-Za-z0-9_-]+",
-    flags: "g",
+    pattern: /mdb_sa_sk_[A-Za-z0-9_-]+/g,
     replace: "mdb_sa_sk_[redacted-api-key]",
   },
   {
     kind: "api-key",
-    source: "\\bsk-[A-Za-z0-9_-]{20,}\\b",
-    flags: "g",
+    pattern: /\bsk-[A-Za-z0-9_-]{20,}\b/g,
     replace: "sk-[redacted-api-key]",
   },
 ];
@@ -63,7 +58,7 @@ export function redactSecretText(input: string): {
   const kinds: string[] = [];
   let text = input;
   for (const rule of SECRET_RULES) {
-    const next = text.replace(new RegExp(rule.source, rule.flags), rule.replace);
+    const next = text.replace(rule.pattern, rule.replace);
     if (next !== text) {
       kinds.push(rule.kind);
       text = next;
