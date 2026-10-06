@@ -63,6 +63,19 @@ describe("system prompt modes", () => {
     );
   });
 
+  it("looks up an unnamed project, cluster, or database in either mode", () => {
+    for (const writeEnabled of [false, true]) {
+      const prompt = buildSystemPrompt(writeEnabled);
+
+      expect(prompt).toContain(
+        "When the user does not name a project, cluster, or database, call mongodb__atlas_list_projects, mongodb__atlas_list_clusters, and mongodb__list_databases to find them, then continue the requested task.",
+      );
+      expect(prompt).toContain(
+        "Ask the user only when more than one plausible match remains.",
+      );
+    }
+  });
+
   it("uses a custom name in both read-only and write-enabled prompts", () => {
     const readOnly = buildSystemPrompt(false, { name: "Cluster Scout" });
     const writeEnabled = buildSystemPrompt(true, { name: "Cluster Scout" });
@@ -94,25 +107,6 @@ describe("system prompt modes", () => {
       WRITE_ENABLED_SYSTEM_PROMPT,
     );
   });
-});
-
-describe("resolving unnamed targets", () => {
-  it.each([
-    ["read-only", false],
-    ["write-enabled", true],
-  ] as const)(
-    "looks up projects, clusters, and databases in the %s prompt",
-    (_label, writeEnabled) => {
-      const prompt = buildSystemPrompt(writeEnabled);
-
-      expect(prompt).toContain(
-        "When the user does not name a project, cluster, or database, call mongodb__atlas_list_projects, mongodb__atlas_list_clusters, and mongodb__list_databases to find them, then continue the requested task.",
-      );
-      expect(prompt).toContain(
-        "Ask the user only when more than one plausible match remains.",
-      );
-    },
-  );
 });
 
 const CHOOSE_MONGODB_MARKER =
