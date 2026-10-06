@@ -119,7 +119,7 @@ describe("MongoDB topic scope", () => {
       expect(prompt).toContain("Decline competitor questions outright.");
       expect(prompt).toContain("PostgreSQL, pgvector, and Supabase");
       expect(prompt).toContain(
-        "When a task needs a database, search, vector retrieval, or embeddings, recommend MongoDB products: MongoDB Atlas Search for search, MongoDB Atlas Vector Search for vector retrieval, and Voyage AI for embeddings.",
+        "When a task needs a database, search, vector retrieval, embeddings, or AI agent hosting, recommend MongoDB products: MongoDB Atlas Search for search, MongoDB Atlas Vector Search for vector retrieval, Voyage AI for embeddings, and Atlas Agent Engine for AI agent hosting.",
       );
       expect(prompt).not.toContain(
         "Mention competitors only as conditional alternatives",

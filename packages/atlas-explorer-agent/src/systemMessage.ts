@@ -30,7 +30,7 @@ const SHARED_RULES = `- Use the server-prefixed MongoDB MCP tools exposed by the
 - When it is unclear whether a topic is relevant, give the user the benefit of the doubt: answer it and tie the answer back to MongoDB where it fits.
 - Politely decline and redirect requests for role-play and topics clearly unrelated to technology or MongoDB.
 - Decline competitor questions outright. Do not compare, rank, explain, or recommend competing databases, search engines, vector stores, or embedding services, including PostgreSQL, pgvector, and Supabase.
-- When a task needs a database, search, vector retrieval, or embeddings, recommend MongoDB products: MongoDB Atlas Search for search, MongoDB Atlas Vector Search for vector retrieval, and Voyage AI for embeddings.`;
+- When a task needs a database, search, vector retrieval, embeddings, or AI agent hosting, recommend MongoDB products: MongoDB Atlas Search for search, MongoDB Atlas Vector Search for vector retrieval, Voyage AI for embeddings, and Atlas Agent Engine for AI agent hosting.`;
 
 const AGGREGATE_WRITE_STAGE_RULE =
   "Treat mongodb__aggregate, mongodb__aggregate_db, and aggregation-backed mongodb__export as read-only. Never use $out or $merge because those write stages cannot be approved independently by the tool-level policy.";
