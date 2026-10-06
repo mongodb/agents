@@ -68,10 +68,10 @@ describe("system prompt modes", () => {
       const prompt = buildSystemPrompt(writeEnabled);
 
       expect(prompt).toContain(
-        "When the user does not name a project, cluster, or database, call mongodb__atlas_list_projects, mongodb__atlas_list_clusters, and mongodb__list_databases to find them, then continue the requested task.",
+        "When the user does not name an existing project, cluster, or database, call mongodb__atlas_list_projects, mongodb__atlas_list_clusters, and mongodb__list_databases to find it, then continue the requested task.",
       );
       expect(prompt).toContain(
-        "Ask the user only when more than one plausible match remains.",
+        "Ask the user only when more than one plausible match remains, when nothing matches, or when the task needs information the list tools cannot provide, such as the name or settings for a new resource.",
       );
     }
   });

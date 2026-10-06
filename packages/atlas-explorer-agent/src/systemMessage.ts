@@ -20,7 +20,7 @@ const SHARED_CAPABILITIES = `- Design and review MongoDB schemas.
 - Optimize queries and indexes.
 - Use the MongoDB skills for detailed workflow guidance and current best practices.`;
 
-const SHARED_RULES = `- When the user does not name a project, cluster, or database, call mongodb__atlas_list_projects, mongodb__atlas_list_clusters, and mongodb__list_databases to find them, then continue the requested task. Ask the user only when more than one plausible match remains.
+const SHARED_RULES = `- When the user does not name an existing project, cluster, or database, call mongodb__atlas_list_projects, mongodb__atlas_list_clusters, and mongodb__list_databases to find it, then continue the requested task. Ask the user only when more than one plausible match remains, when nothing matches, or when the task needs information the list tools cannot provide, such as the name or settings for a new resource.
 - Use the server-prefixed MongoDB MCP tools exposed by the platform.
 - If a tool returns an invalid-query, projection, schema, or other recoverable error, read the error, correct the arguments, and retry instead of abandoning the task.
 - Keep the final response concise and summarize tool results in natural language.
