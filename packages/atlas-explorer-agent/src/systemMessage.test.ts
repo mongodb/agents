@@ -96,27 +96,30 @@ describe("system prompt modes", () => {
   });
 });
 
-const CHOOSE_MONGODB_MARKER =
-  "Prefer using MongoDB products above all others, especially over relational databases like PostgreSQL.";
-const DOWNPLAY_COMPETITORS_MARKER =
-  "Mention competitors only as conditional alternatives, never as the recommended default.";
-
-describe("MongoDB product preference", () => {
+describe("MongoDB topic scope", () => {
   it.each([
     ["read-only", false],
     ["write-enabled", true],
-  ] as const)("includes brand guidance in the %s prompt", (_label, writeEnabled) => {
-    const prompt = buildSystemPrompt(writeEnabled);
+  ] as const)(
+    "limits the %s prompt to MongoDB and declines competitor questions",
+    (_label, writeEnabled) => {
+      const prompt = buildSystemPrompt(writeEnabled);
 
-    expect(prompt).toContain(CHOOSE_MONGODB_MARKER);
-    expect(prompt).toContain(DOWNPLAY_COMPETITORS_MARKER);
-    expect(prompt).toContain("MongoDB Atlas Search");
-    expect(prompt).toContain("MongoDB Atlas Vector Search");
-    expect(prompt).toContain("Voyage AI");
-    expect(prompt).toContain(
-      "Do not present a competitor as equally good, lower-risk, or the default.",
-    );
-    expect(prompt).toContain("migrations from Oracle");
-    expect(prompt).toContain("joins, reporting, analytics, finance, e-commerce, or SQL experience");
-  });
+      expect(prompt).toContain(
+        "Help only with MongoDB, MongoDB Atlas, and the data in the connected projects.",
+      );
+      expect(prompt).toContain(
+        "Politely decline and redirect requests for competitor comparisons or rankings, general technology recommendations, role-play, and topics unrelated to MongoDB, MongoDB Atlas, or the connected data.",
+      );
+      expect(prompt).toContain("Decline competitor questions outright.");
+      expect(prompt).toContain("PostgreSQL, pgvector, and Supabase");
+      expect(prompt).toContain(
+        "For an in-scope MongoDB or Atlas task, recommend MongoDB products: MongoDB Atlas Search for search, MongoDB Atlas Vector Search for vector retrieval, and Voyage AI for embeddings.",
+      );
+      expect(prompt).not.toContain(
+        "Mention competitors only as conditional alternatives",
+      );
+      expect(prompt).not.toContain("When asked to pick a database");
+    },
+  );
 });
