@@ -83,12 +83,7 @@ export function mutativeInterruptOn<T extends { name: string }>(
 ): Record<string, true> {
   const interruptOn: Record<string, true> = {};
   for (const tool of tools) {
-    if (
-      READ_ONLY_MCP_TOOLS.has(tool.name) ||
-      HIGH_RISK_MCP_TOOLS.has(tool.name)
-    ) {
-      continue;
-    }
+    if (READ_ONLY_MCP_TOOLS.has(tool.name)) continue;
     interruptOn[tool.name] = true;
   }
   return interruptOn;

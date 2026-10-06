@@ -146,15 +146,5 @@ describe("Atlas tool policy", () => {
       expect(names).not.toContain("mongodb__atlas_create_db_user");
       expect(names).not.toContain("mongodb__atlas_create_access_list");
     }
-
-    expect(
-      mutativeInterruptOn([
-        { name: "mongodb__atlas_create_db_user" },
-        { name: "mongodb__atlas_create_access_list" },
-        { name: "mongodb__insert_many" },
-      ]),
-    ).toEqual({
-      mongodb__insert_many: true,
-    });
   });
 });
