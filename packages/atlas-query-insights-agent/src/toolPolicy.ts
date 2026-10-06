@@ -20,8 +20,7 @@ import { selectTools } from "@repo/agent-engine-core";
  * Subset of Atlas MCP tools available to the Atlas Query Insights agent.
  *
  * Writes are never enabled. `aggregate` stays available as a read tool.
- * A pipeline that contains `$out` or `$merge` is suspended by
- * `approveAggregateWritesMiddleware` before it reaches Atlas.
+ * A pipeline that contains `$out` or `$merge` is rejected.
  */
 export const ATLAS_QUERY_INSIGHTS_MCP_TOOLS: ReadonlySet<string> = new Set([
   "mongodb__aggregate",

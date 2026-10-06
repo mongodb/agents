@@ -127,6 +127,41 @@ export const approveAggregateWritesMiddleware = createMiddleware({
     guardAggregateWrite(request, (next) => handler(next)),
 });
 
+const READ_ONLY_REJECTION =
+  "This agent is read-only. $out and $merge write data and cannot be run.";
+
+export async function rejectAggregateWrite<
+  TRequest extends AggregateToolRequest,
+  TResult,
+>(
+  request: TRequest,
+  handler: (request: TRequest) => TResult | Promise<TResult>,
+): Promise<TResult | ToolMessage> {
+  if (!aggregateCallNeedsApproval(request)) {
+    return handler(request);
+  }
+
+  const toolCall = request.toolCall;
+  if (!toolCall?.id) {
+    throw new Error(
+      `Cannot reject "${toolCall?.name ?? "aggregate"}" without a tool call id.`,
+    );
+  }
+
+  return new ToolMessage({
+    content: `Tool "${toolCall.name}" was rejected. ${READ_ONLY_REJECTION}`,
+    name: toolCall.name,
+    tool_call_id: toolCall.id,
+    status: "error",
+  });
+}
+
+export const rejectAggregateWritesMiddleware = createMiddleware({
+  name: "rejectAggregateWrites",
+  wrapToolCall: async (request, handler) =>
+    rejectAggregateWrite(request, (next) => handler(next)),
+});
+
 function describeWriteAggregate(name: string, args: unknown): string {
   return (
     `${DESCRIPTION_PREFIX}\n\n` +

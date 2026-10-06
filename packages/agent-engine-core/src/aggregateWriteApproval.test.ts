@@ -20,6 +20,8 @@ import {
   aggregatePipelineWrites,
   approveAggregateWritesMiddleware,
   guardAggregateWrite,
+  rejectAggregateWrite,
+  rejectAggregateWritesMiddleware,
 } from "./aggregateWriteApproval.js";
 
 const interrupt = vi.hoisted(() => vi.fn());
@@ -223,6 +225,43 @@ describe("guardAggregateWrite", () => {
   });
 });
 
+describe("rejectAggregateWrite", () => {
+  beforeEach(() => {
+    interrupt.mockReset();
+  });
+
+  it("runs a read pipeline without interrupting", async () => {
+    const request = aggregateRequest("mongodb__aggregate", readPipeline);
+    const handler = vi.fn(async () => "rows");
+
+    await expect(rejectAggregateWrite(request, handler)).resolves.toBe("rows");
+
+    expect(handler).toHaveBeenCalledOnce();
+    expect(interrupt).not.toHaveBeenCalled();
+  });
+
+  it.each(["mongodb__aggregate", "mongodb__aggregate_db"] as const)(
+    "rejects a %s write pipeline without calling the tool",
+    async (name) => {
+      const pipeline = name.endsWith("_db") ? mergePipeline : outPipeline;
+      const request = aggregateRequest(name, pipeline);
+      const handler = vi.fn(async () => "wrote");
+
+      const result = await rejectAggregateWrite(request, handler);
+
+      expect(handler).not.toHaveBeenCalled();
+      expect(interrupt).not.toHaveBeenCalled();
+      expect(result).toMatchObject({
+        type: "tool",
+        status: "error",
+        name,
+        tool_call_id: "call-1",
+        content: expect.stringContaining("read-only"),
+      });
+    },
+  );
+});
+
 describe("approveAggregateWritesMiddleware", () => {
   beforeEach(() => {
     interrupt.mockReset();
@@ -243,5 +282,29 @@ describe("approveAggregateWritesMiddleware", () => {
     expect(approveAggregateWritesMiddleware.name).toBe("approveAggregateWrites");
     expect(handler).not.toHaveBeenCalled();
     expect(result).toMatchObject({ status: "error", content: "no" });
+  });
+});
+
+describe("rejectAggregateWritesMiddleware", () => {
+  beforeEach(() => {
+    interrupt.mockReset();
+  });
+
+  it("rejects wrapped write calls without approval", async () => {
+    const request = aggregateRequest("mongodb__aggregate", outPipeline);
+    const handler = vi.fn(async () => "wrote");
+
+    const result = await rejectAggregateWritesMiddleware.wrapToolCall?.(
+      request as never,
+      handler as never,
+    );
+
+    expect(rejectAggregateWritesMiddleware.name).toBe("rejectAggregateWrites");
+    expect(handler).not.toHaveBeenCalled();
+    expect(interrupt).not.toHaveBeenCalled();
+    expect(result).toMatchObject({
+      status: "error",
+      content: expect.stringContaining("$out and $merge"),
+    });
   });
 });

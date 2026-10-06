@@ -43,7 +43,7 @@ export {
   type SystemPromptOptions,
 } from "./systemMessage.js";
 export {
-  approveAggregateWritesMiddleware,
+  rejectAggregateWritesMiddleware,
   buildLLM,
   prepareAgentInput,
   recoverToolErrorsMiddleware,

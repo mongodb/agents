@@ -20,6 +20,8 @@ export {
   aggregatePipelineWrites,
   approveAggregateWritesMiddleware,
   guardAggregateWrite,
+  rejectAggregateWrite,
+  rejectAggregateWritesMiddleware,
 } from "./aggregateWriteApproval.js";
 export { withoutShellExecution } from "./agentBackend.js";
 export {
