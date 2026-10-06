@@ -223,7 +223,7 @@ The current hosted development deployment is:
 - Stable domain: `https://atlas-explorer-three.vercel.app`
 - Slack webhook:
   `https://atlas-explorer-three.vercel.app/api/webhooks/slack`
-- Function: `/api/webhooks/slack` in Vercel's default region (`iad1`), with a 300-second maximum
+- Function: `/api/webhooks/slack` with a 300-second maximum
 
 Set the deployment coordinates once before running the commands below:
 
@@ -248,8 +248,6 @@ export VERCEL_URL=https://atlas-explorer-three.vercel.app
    `vercel.json` owns the API-only framework and Fluid Compute
    settings, plus the build command `pnpm --filter @repo/agent-engine-chat
    build`, which compiles the workspace library that the webhook imports.
-   The function region is left unset, so the project uses Vercel's default
-   (`iad1`).
    `package.json` pins Node.js 22.
    Deployment Protection is a project-level setting and must not protect the
    stable webhook domain.
