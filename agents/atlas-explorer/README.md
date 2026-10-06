@@ -153,11 +153,13 @@ enough to prevent ordinary write-tool use:
 When writes are enabled, every MCP tool that isn't on the read-only allowlist
 is exposed, and each one pauses for approval before it runs. That includes
 tools the allowlist doesn't recognize, such as tools added to Atlas MCP
-later. Database-user creation and access-list changes are the exception:
-`HIGH_RISK_MCP_TOOLS` removes them in both modes, so a generated password
-never lands on an approval card and the agent cannot open network access to
-the cluster. You can approve, edit, or reject each remaining call.
-The [Slack bot](../../apps/atlas-explorer-slack-bot) offers only Approve and
+later. These tools are not included in either mode:
+
+- `mongodb__atlas_create_db_user`
+- `mongodb__atlas_create_access_list`
+
+You can approve, edit, or reject each remaining call. The
+[Slack bot](../../apps/atlas-explorer-slack-bot) offers only Approve and
 Reject.
 
 Approval is per tool, not per argument, so `aggregate` and `aggregate_db`
@@ -247,7 +249,8 @@ can be reused with additional Chat SDK adapters.
   suspend/resume adapter. This includes database writes; Atlas cluster
   creation, upgrades, and pause/resume; sample dataset loads; project
   creation; and Atlas Streams build, management, and teardown operations.
-  Database-user creation and access-list changes stay unavailable even then.
+  `mongodb__atlas_create_db_user` and `mongodb__atlas_create_access_list`
+  stay unavailable even then.
 - `aggregate` remains available for read-only exploration; the agent is
   explicitly forbidden from using `$out` or `$merge` write stages because HITL
   is applied at tool granularity. A read-only Atlas credential is the hard
