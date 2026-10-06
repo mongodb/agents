@@ -27,7 +27,6 @@ const discoveredCatalog = [
   { name: "mongodb__find" },
   { name: "mongodb__aggregate" },
   { name: "mongodb__aggregate_db" },
-  { name: "mongodb__export" },
   { name: "mongodb__drop_collection" },
   { name: "mongodb__insert_many" },
   { name: "mongodb__atlas_create_cluster" },
@@ -106,7 +105,6 @@ describe("Atlas tool policy", () => {
       { name: "mongodb__find" },
       { name: "mongodb__aggregate" },
       { name: "mongodb__aggregate_db" },
-      { name: "mongodb__export" },
       { name: "mongodb__drop_collection" },
       { name: "mongodb__insert_many" },
       { name: "mongodb__atlas_create_cluster" },
@@ -115,7 +113,6 @@ describe("Atlas tool policy", () => {
       { name: "custom_unclassified_tool" },
     ]);
     expect(mutativeInterruptOn(selected)).toEqual({
-      mongodb__export: true,
       mongodb__drop_collection: true,
       mongodb__insert_many: true,
       mongodb__atlas_create_cluster: true,

@@ -153,7 +153,7 @@ enough to prevent ordinary write-tool use:
 When writes are enabled, every MCP tool that isn't on the read-only allowlist
 is exposed, and each one pauses for approval before it runs. That includes
 tools the allowlist doesn't recognize, such as tools added to Atlas MCP
-later, and `export`. You can approve, edit, or reject each call. The
+later. You can approve, edit, or reject each call. The
 [Slack bot](../../apps/atlas-explorer-slack-bot) offers only Approve and
 Reject.
 
