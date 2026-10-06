@@ -33,6 +33,7 @@ describe("system prompt modes", () => {
       "provide the exact commands, configuration, or Atlas UI steps",
     );
     expect(prompt).not.toContain("Protected mutations must go through runtime approval.");
+    expect(prompt).not.toContain("alongside the approval request");
     expect(prompt).not.toContain("## Custom instructions");
   });
 
@@ -43,6 +44,18 @@ describe("system prompt modes", () => {
     expect(prompt).toContain("You are Atlas Explorer, an AI agent");
     expect(prompt).toContain("Protected mutations must go through runtime approval.");
     expect(prompt).toContain("emit the corresponding tool call immediately");
+    expect(prompt).toContain(
+      "except for the bulk and destructive operations below",
+    );
+    expect(prompt).toContain(
+      "call mongodb__count with the same filter and state the number of affected documents in the reply alongside the approval request",
+    );
+    expect(prompt).toContain(
+      "Never use an empty filter unless the user explicitly asked for every document.",
+    );
+    expect(prompt).toContain(
+      "Drop a collection or database only when the user named it.",
+    );
     expect(prompt).toContain("You cannot create Atlas database users");
     expect(prompt).toContain(
       "direct them to other Atlas interfaces like the UI, CLI, or API",
