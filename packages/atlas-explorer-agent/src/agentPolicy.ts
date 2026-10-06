@@ -61,11 +61,30 @@ export const READ_ONLY_MCP_TOOLS: ReadonlySet<string> = new Set([
   "mongodb__search_knowledge",
 ]);
 
+/**
+ * Tools withheld even when `ALLOW_WRITE_OPERATIONS` is set.
+ *
+ * Write mode still exposes every other discovered MCP tool, including tools
+ * the Atlas MCP server adds later. These stay off that path: creating a
+ * database user puts the password on the approval card, and creating an
+ * access-list entry opens network access to the cluster. The current Atlas
+ * MCP server exposes those mutations only as `atlas-create-db-user` and
+ * `atlas-create-access-list` (Agent Engine prefixes `mongodb__` and turns
+ * hyphens into underscores). An opt-in for these tools, or an explicit write
+ * allowlist, is not implemented here.
+ */
+export const HIGH_RISK_MCP_TOOLS: ReadonlySet<string> = new Set([
+  "mongodb__atlas_create_access_list",
+  "mongodb__atlas_create_db_user",
+]);
+
 export function selectAtlasTools<T extends { name: string }>(
   tools: readonly T[],
   allowWriteOperations: boolean = writeOperationsAllowed(),
 ): T[] {
-  return selectTools(tools, READ_ONLY_MCP_TOOLS, allowWriteOperations);
+  return selectTools(tools, READ_ONLY_MCP_TOOLS, allowWriteOperations).filter(
+    (tool) => !HIGH_RISK_MCP_TOOLS.has(tool.name),
+  );
 }
 
 export function mutativeInterruptOn<T extends { name: string }>(
@@ -73,7 +92,12 @@ export function mutativeInterruptOn<T extends { name: string }>(
 ): Record<string, true> {
   const interruptOn: Record<string, true> = {};
   for (const tool of tools) {
-    if (READ_ONLY_MCP_TOOLS.has(tool.name)) continue;
+    if (
+      READ_ONLY_MCP_TOOLS.has(tool.name) ||
+      HIGH_RISK_MCP_TOOLS.has(tool.name)
+    ) {
+      continue;
+    }
     interruptOn[tool.name] = true;
   }
   return interruptOn;

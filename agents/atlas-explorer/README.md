@@ -153,8 +153,11 @@ enough to prevent ordinary write-tool use:
 When writes are enabled, every MCP tool that isn't on the read-only allowlist
 is exposed, and each one pauses for approval before it runs. That includes
 tools the allowlist doesn't recognize, such as tools added to Atlas MCP
-later, and `export`. You can approve, edit, or reject each call. The
-[Slack bot](../../apps/atlas-explorer-slack-bot) offers only Approve and
+later, and `export`. Database-user creation and access-list changes are the
+exception: `HIGH_RISK_MCP_TOOLS` removes them in both modes, so a generated
+password never lands on an approval card and the agent cannot open network
+access to the cluster. You can approve, edit, or reject each remaining call.
+The [Slack bot](../../apps/atlas-explorer-slack-bot) offers only Approve and
 Reject.
 
 Approval is per tool, not per argument, so `aggregate` and `aggregate_db`
@@ -242,9 +245,9 @@ can be reused with additional Chat SDK adapters.
 - When both write opt-ins are present, persistent mutations are protected by
   LangChain HITL middleware using Agent Engine's persistent checkpointer and
   suspend/resume adapter. This includes database writes; Atlas cluster
-  creation, upgrades, and pause/resume; sample dataset loads; project,
-  database-user, and access-list creation; and Atlas Streams build,
-  management, and teardown operations.
+  creation, upgrades, and pause/resume; sample dataset loads; project
+  creation; and Atlas Streams build, management, and teardown operations.
+  Database-user creation and access-list changes stay unavailable even then.
 - `aggregate` remains available for read-only exploration; the agent is
   explicitly forbidden from using `$out` or `$merge` write stages because HITL
   is applied at tool granularity. A read-only Atlas credential is the hard

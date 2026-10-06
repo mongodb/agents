@@ -37,6 +37,7 @@ export {
   type Requester,
 } from "@repo/agent-engine-core";
 export {
+  HIGH_RISK_MCP_TOOLS,
   mutativeInterruptOn,
   READ_ONLY_MCP_TOOLS,
   selectAtlasTools,

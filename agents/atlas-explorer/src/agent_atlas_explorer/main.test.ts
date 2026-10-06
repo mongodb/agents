@@ -37,6 +37,8 @@ const harness = vi.hoisted(() => {
     { name: "mongodb__find" },
     { name: "mongodb__drop_collection" },
     { name: "mongodb__future_mutating_operation" },
+    { name: "mongodb__atlas_create_db_user" },
+    { name: "mongodb__atlas_create_access_list" },
   ];
   const model = { id: "orchestrator-model" };
   const graph = { id: "atlas-graph" };
@@ -287,11 +289,14 @@ describe("Atlas Explorer graph assembly", () => {
     const builder = await loadBuilder();
     builder();
 
-    expect(assembledTools()).toEqual([
-      harness.tools[0],
-      harness.tools[1],
-      harness.tools[2],
+    const names = assembledTools().map((tool) => tool.name);
+    expect(names).toEqual([
+      "mongodb__find",
+      "mongodb__drop_collection",
+      "mongodb__future_mutating_operation",
     ]);
+    expect(names).not.toContain("mongodb__atlas_create_db_user");
+    expect(names).not.toContain("mongodb__atlas_create_access_list");
     expect(
       (harness.deepAgent.mock.calls[0]?.[1] as { systemPrompt?: string })
         .systemPrompt,
