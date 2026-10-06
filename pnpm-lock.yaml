@@ -9,6 +9,8 @@ overrides:
   '@langchain/core': 1.2.12
   '@repo/atlas-query-insights-agent': workspace:*
   '@repo/atlas-explorer-agent': workspace:*
+  '@repo/agent-engine-core': workspace:*
+  '@repo/agent-engine-chat': workspace:*
 
 importers:
 
@@ -39,6 +41,9 @@ importers:
         specifier: ^1.5.10
         version: 1.5.14(@langchain/core@1.2.12(@opentelemetry/api@1.9.1)(@opentelemetry/sdk-trace-base@2.11.0(@opentelemetry/api@1.9.1))(openai@7.25.0(undici@6.29.0)(ws@8.22.0)(zod@4.4.3))(ws@8.22.0))(@opentelemetry/api@1.9.1)(@opentelemetry/sdk-trace-base@2.11.0(@opentelemetry/api@1.9.1))(openai@7.25.0(undici@6.29.0)(ws@8.22.0)(zod@4.4.3))(ws@8.22.0)
     devDependencies:
+      '@repo/agent-engine-core':
+        specifier: workspace:*
+        version: link:../../packages/agent-engine-core
       '@types/node':
         specifier: ^25.0.0
         version: 25.9.8
@@ -80,6 +85,9 @@ importers:
         specifier: ^1.5.10
         version: 1.5.14(@langchain/core@1.2.12(@opentelemetry/api@1.9.1)(@opentelemetry/sdk-trace-base@2.11.0(@opentelemetry/api@1.9.1))(openai@7.25.0(undici@6.29.0)(ws@8.22.0)(zod@4.4.3))(ws@8.22.0))(@opentelemetry/api@1.9.1)(@opentelemetry/sdk-trace-base@2.11.0(@opentelemetry/api@1.9.1))(openai@7.25.0(undici@6.29.0)(ws@8.22.0)(zod@4.4.3))(ws@8.22.0)
     devDependencies:
+      '@repo/agent-engine-core':
+        specifier: workspace:*
+        version: link:../../packages/agent-engine-core
       '@types/node':
         specifier: ^25.0.0
         version: 25.9.8
@@ -194,6 +202,9 @@ importers:
       '@mongodb-js/agent-engine-sdk':
         specifier: 0.11.6
         version: 0.11.6
+      '@repo/agent-engine-chat':
+        specifier: workspace:*
+        version: link:../agent-engine-chat
       langchain:
         specifier: ^1.5.10
         version: 1.5.14(@langchain/core@1.2.12(@opentelemetry/api@1.9.1)(@opentelemetry/sdk-trace-base@2.11.0(@opentelemetry/api@1.9.1))(openai@7.25.0(undici@6.29.0)(ws@8.22.0)(zod@4.4.3))(ws@8.22.0))(@opentelemetry/api@1.9.1)(@opentelemetry/sdk-trace-base@2.11.0(@opentelemetry/api@1.9.1))(openai@7.25.0(undici@6.29.0)(ws@8.22.0)(zod@4.4.3))(ws@8.22.0)

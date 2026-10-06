@@ -46,6 +46,10 @@ describe("system prompt modes", () => {
     expect(prompt).toContain("Protected mutations must go through runtime approval.");
     expect(prompt).toContain("emit the corresponding tool call immediately");
     expect(prompt).toContain("emit the aggregate call immediately");
+    expect(prompt).toContain("You cannot create Atlas database users");
+    expect(prompt).toContain(
+      "direct them to other Atlas interfaces like the UI, CLI, or API",
+    );
     expect(prompt).toContain("mongodb__aggregate_db");
     expect(prompt).not.toContain("mongodb__export");
     expect(prompt).toContain("$out or $merge");

@@ -62,11 +62,21 @@ export const READ_ONLY_MCP_TOOLS: ReadonlySet<string> = new Set([
   "mongodb__search_knowledge",
 ]);
 
+/**
+ * Always excluded. There is no way to opt into these tools.
+ */
+export const HIGH_RISK_MCP_TOOLS: ReadonlySet<string> = new Set([
+  "mongodb__atlas_create_access_list",
+  "mongodb__atlas_create_db_user",
+]);
+
 export function selectAtlasTools<T extends { name: string }>(
   tools: readonly T[],
   allowWriteOperations: boolean = writeOperationsAllowed(),
 ): T[] {
-  return selectTools(tools, READ_ONLY_MCP_TOOLS, allowWriteOperations);
+  return selectTools(tools, READ_ONLY_MCP_TOOLS, allowWriteOperations).filter(
+    (tool) => !HIGH_RISK_MCP_TOOLS.has(tool.name),
+  );
 }
 
 export function mutativeInterruptOn<T extends { name: string }>(

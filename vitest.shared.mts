@@ -27,6 +27,9 @@ export type PackageVitestOverrides = {
   include?: string[];
   exclude?: string[];
   testTimeout?: number;
+  hookTimeout?: number;
+  fileParallelism?: boolean;
+  sequence?: { concurrent: boolean };
 };
 
 const sharedTest = {

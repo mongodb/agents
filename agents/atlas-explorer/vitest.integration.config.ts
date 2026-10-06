@@ -20,6 +20,9 @@ import { definePackageVitestConfig } from "../../vitest.shared.mts";
 export default defineConfig(
   definePackageVitestConfig({
     include: ["src/**/*.integration.test.ts"],
-    testTimeout: 120_000,
+    testTimeout: 300_000,
+    hookTimeout: 120_000,
+    fileParallelism: false,
+    sequence: { concurrent: false },
   }),
 );

@@ -15,6 +15,7 @@
     "pretest": "pnpm --filter @repo/atlas-explorer-agent build",
     "test": "vitest run",
     "test:watch": "vitest",
+    "pretest:integration": "pnpm --filter @repo/atlas-explorer-agent build",
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "pretypecheck": "pnpm --filter @repo/atlas-explorer-agent build",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json --noEmit",
@@ -35,6 +36,7 @@
     "@repo/atlas-explorer-agent": "file:../../packages/atlas-explorer-agent"
   },
   "devDependencies": {
+    "@repo/agent-engine-core": "file:../../packages/agent-engine-core",
     "@types/node": "^25.0.0",
     "esbuild": "^0.25.0",
     "tsx": "^4.16.0",

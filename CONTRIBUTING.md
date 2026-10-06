@@ -56,6 +56,62 @@ To run an agent locally, run `agentengine dev up` from its directory, or from
 the repository root with `--workspace <name>`. For configuration, see the
 agent's README.
 
+## Full-stack integration tests
+
+Atlas Explorer and Atlas Query Insights each have an opt-in suite,
+`pnpm test:integration`, run from the agent directory. The tests call the
+local Orchestration Engine on port 8000 and check execution status, MCP tool
+calls recorded in checkpoints, and requester metadata. They do not grade the
+model's wording. The client is `@repo/agent-engine-core/testing`.
+
+Run them against `agentengine dev up --headless` with real Atlas MCP and
+OpenAI credentials. When `CI` is unset, the suite also pings OpenAI and
+Anthropic. The two agents share ports 3000 and 8000, so stop one before
+starting the other.
+
+### Atlas Explorer
+
+From `agents/atlas-explorer`. The read-only suite skips when
+`ALLOW_WRITE_OPERATIONS` is set. The HITL suite skips when it is unset, so
+run the two phases separately.
+
+```bash
+# Read-only: boot, list_databases, session continuity, hidden writes,
+# requester metadata. Leave ALLOW_WRITE_OPERATIONS unset or empty in .env.
+agentengine dev up --headless
+pnpm test:integration
+agentengine dev stop
+
+# HITL: the same read-only Atlas MCP credential, with write tools exposed so
+# drop_collection suspends. Approve still fails at Atlas.
+# Set ALLOW_WRITE_OPERATIONS=true in .env so the running agent sees it.
+agentengine dev up --headless
+ALLOW_WRITE_OPERATIONS=true pnpm test:integration
+agentengine dev stop
+```
+
+### Atlas Query Insights
+
+From `agents/atlas-query-insights`. This agent has no write-tools switch and
+no HITL path. Use a project MCP configuration with
+`GROUP_DATA_ACCESS_READ_ONLY`.
+
+```bash
+agentengine dev up --headless
+pnpm test:integration
+agentengine dev stop
+```
+
+The suite covers a trivial invoke, `list_databases`, session continuity, a
+drop request that must not call a write tool, and requester metadata.
+
+### GitHub Actions
+
+CI does not run these suites. The dev-up smoke job writes dummy OpenAI and
+store settings, clears `mcp.servers` in the runner checkout so startup does
+not call Atlas, and checks that `agentengine dev up --headless` brings the
+Orchestration Engine up on port 8000.
+
 ## Pull requests
 
 - Fill in the [pull request template](.github/pull_request_template.md).

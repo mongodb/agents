@@ -9,12 +9,19 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./testing": {
+      "types": "./dist/testing/localStack.d.ts",
+      "import": "./dist/testing/localStack.js"
     }
   },
   "scripts": {
+    "prebuild": "pnpm --filter @repo/agent-engine-chat build",
     "build": "tsc -p tsconfig.json",
+    "pretest": "pnpm --filter @repo/agent-engine-chat build",
     "test": "vitest run",
     "test:watch": "vitest",
+    "pretypecheck": "pnpm --filter @repo/agent-engine-chat build",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json --noEmit"
   },
   "dependencies": {
@@ -26,6 +33,7 @@
     "@langchain/openai": "^1.4.7",
     "@mongodb-js/agent-engine-runner-shared": "0.11.6",
     "@mongodb-js/agent-engine-sdk": "0.11.6",
+    "@repo/agent-engine-chat": "file:../agent-engine-chat",
     "langchain": "^1.5.10",
     "zod": "4.4.3"
   },

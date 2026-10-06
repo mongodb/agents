@@ -8,6 +8,9 @@ in [`agents/atlas-explorer`](../../agents/atlas-explorer).
 - **Tool policy.** The read-only Atlas MCP allowlist, which tools are exposed,
   and which tools need approval. Writes stay off unless
   `ALLOW_WRITE_OPERATIONS` is set to something other than empty or `false`.
+  Database-user creation and access-list changes stay hidden in both modes
+  (`HIGH_RISK_MCP_TOOLS`). Other tools the Atlas MCP server adds later are
+  still exposed when writes are on.
 - **System prompts.** Read-only and write-enabled prompts, with an optional
   agent name and custom instructions.
 - **Shared runtime.** Re-exports from
