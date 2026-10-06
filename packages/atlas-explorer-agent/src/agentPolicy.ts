@@ -62,16 +62,7 @@ export const READ_ONLY_MCP_TOOLS: ReadonlySet<string> = new Set([
 ]);
 
 /**
- * Tools withheld even when `ALLOW_WRITE_OPERATIONS` is set.
- *
- * Write mode still exposes every other discovered MCP tool, including tools
- * the Atlas MCP server adds later. These stay off that path: creating a
- * database user puts the password on the approval card, and creating an
- * access-list entry opens network access to the cluster. The current Atlas
- * MCP server exposes those mutations only as `atlas-create-db-user` and
- * `atlas-create-access-list` (Agent Engine prefixes `mongodb__` and turns
- * hyphens into underscores). An opt-in for these tools, or an explicit write
- * allowlist, is not implemented here.
+ * Always excluded. There is no way to opt into these tools.
  */
 export const HIGH_RISK_MCP_TOOLS: ReadonlySet<string> = new Set([
   "mongodb__atlas_create_access_list",
