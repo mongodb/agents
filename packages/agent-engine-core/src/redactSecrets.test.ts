@@ -63,6 +63,14 @@ describe("redactSecretText", () => {
     expect(result.text).not.toContain(ANTHROPIC_KEY);
   });
 
+  it("consumes a trailing hyphen instead of leaving it after the placeholder", () => {
+    const key = `${OPENAI_KEY}-`;
+    const result = redactSecretText(`token ${key} next`);
+
+    expect(result.text).toBe("token sk-[redacted-api-key] next");
+    expect(result.text).not.toContain("abcdefghijklmnopqrstuvwxyz");
+  });
+
   it("redacts Atlas service-account secrets", () => {
     const result = redactSecretText(`secret ${ATLAS_SECRET} end`);
 

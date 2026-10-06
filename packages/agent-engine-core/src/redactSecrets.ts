@@ -46,7 +46,7 @@ const SECRET_RULES: readonly SecretRule[] = [
   },
   {
     kind: "api-key",
-    pattern: /\bsk-[A-Za-z0-9_-]{20,}\b/g,
+    pattern: /\bsk-[A-Za-z0-9_-]{20,}(?![A-Za-z0-9_-])/g,
     replace: "sk-[redacted-api-key]",
   },
 ];
