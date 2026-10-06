@@ -159,12 +159,7 @@ Reject.
 
 `aggregate` and `aggregate_db` stay on the read allowlist, so a normal
 pipeline runs without approval. A pipeline that contains `$out` or `$merge`
-writes data. `approveAggregateWritesMiddleware` inspects that pipeline and
-suspends the call for the same approve, edit, or reject decision before it
-reaches Atlas. The check runs in read-only mode as well as write mode, so a
-prompt cannot skip it. A read-only Atlas credential still rejects the write
-if someone approves it. Keep that credential read-only unless the
-environment needs writes.
+writes data. These require HITL approval.
 
 ## Model and persona
 
@@ -249,9 +244,7 @@ can be reused with additional Chat SDK adapters.
   database-user, and access-list creation; and Atlas Streams build,
   management, and teardown operations.
 - `aggregate` remains available for read-only exploration. A pipeline that
-  contains `$out` or `$merge` is suspended for approval before it reaches
-  Atlas, in both read-only and write modes. A read-only Atlas credential
-  still rejects the write if someone approves it.
+  contains `$out` or `$merge` requires HITL approval.
 - Deep-agent file operations stay on Agent Engine's audited Tool Pod backend, but
   the model is not given general-purpose shell execution that could read
   process credential files outside the filesystem sandbox.
