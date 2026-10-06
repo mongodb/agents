@@ -43,8 +43,10 @@ describe("system prompt modes", () => {
     expect(prompt).toContain("You are Atlas Explorer, an AI agent");
     expect(prompt).toContain("Protected mutations must go through runtime approval.");
     expect(prompt).toContain("emit the corresponding tool call immediately");
-    expect(prompt).toContain("Do not create Atlas database users");
-    expect(prompt).toContain("change a project IP access list");
+    expect(prompt).toContain("You cannot create Atlas database users");
+    expect(prompt).toContain(
+      "direct them to other Atlas interfaces like the UI, CLI, or API",
+    );
     expect(prompt).toContain("mongodb__aggregate_db");
     expect(prompt).toContain("mongodb__export");
     expect(prompt).toContain("$out or $merge");
