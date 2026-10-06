@@ -45,17 +45,21 @@ describe("system prompt modes", () => {
     expect(prompt).toContain("Protected mutations must go through runtime approval.");
     expect(prompt).toContain("emit the corresponding tool call immediately");
     expect(prompt).toContain(
-      "except for the bulk and destructive operations below",
+      "except for the filtered and drop operations below",
     );
     expect(prompt).toContain(
-      "call mongodb__count with the same filter and state the number of affected documents in the reply alongside the approval request",
+      "Before delete_many or update_many, call mongodb__count with the same filter and state the number of matching documents in the reply alongside the approval request.",
     );
     expect(prompt).toContain(
-      "Never use an empty filter unless the user explicitly asked for every document.",
+      "Never pass an empty filter to delete_many or update_many unless the user explicitly asked to change every document.",
     );
     expect(prompt).toContain(
       "Drop a collection or database only when the user named it.",
     );
+    expect(prompt).toContain(
+      "Before drop_collection, call mongodb__count on that collection; before drop_database, call mongodb__list_collections on that database.",
+    );
+    expect(prompt).not.toContain("drop_*");
     expect(prompt).toContain("You cannot create Atlas database users");
     expect(prompt).toContain(
       "direct them to other Atlas interfaces like the UI, CLI, or API",
