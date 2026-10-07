@@ -11,7 +11,7 @@ Run `agentengine` commands from the agent directory, or from the repo root with 
 
 ## Ground rules
 
-- **Keep secrets out of your context.** Never run a command that prints a secret, and never read `.env`, `.env.`*, or any file the user saved a secret to. Steps marked **User runs** are run by the user in their own terminal, not with the `!` prefix and not by you, because anything they print lands in the conversation. Every `agentengine secret set` is a user-run step.
+- **Keep secrets out of your context.** Never run a command that prints a secret, and never read `.env`, `.env.*`, or any file the user saved a secret to. Steps marked **User runs** are run by the user in their own terminal, not with the `!` prefix and not by you, because anything they print lands in the conversation. Every `agentengine secret set` is a user-run step.
 - **Confirm before granting access.** Creating an MCP configuration and enabling writes both grant access. Before each, show the user exactly what will be created or changed and wait for an explicit yes. Don't batch these into one approval.
 - **Never run commands that don't exit or need a person.** Don't use `-f` or any follow flag (`deploy logs -f`, `deploy get -f`, `logs -f`); they never exit and will hang you. `agentengine auth login`, `atlas auth login`, and `agentengine init` are interactive or state-changing, so stop and ask the user to run them.
 - **Don't pass `--yes` or `--auto` to `agentengine deploy`.** `--yes` accepts billed Flex cluster defaults and IP access-list changes. `--auto` builds and then tails the deployment. Plain `agentengine deploy` run non-interactively never prompts, never runs `init`, and never starts a build; it prints any missing setup instead, which you then hand to the user.
@@ -46,8 +46,8 @@ Skip this if the environment already has a configuration and stored credentials.
 grep -nE 'YOUR_LOCAL_PUBLIC_IP|\{environment\}|AGENT_ENGINE_IP' mcp-config.json
 ```
 
-1. **Confirmation gate.** Show the user the final `mcp-config.json` and say in one line what it grants: the Atlas project (`GROUP_ID`), the roles, and every IP in `ipAccessList`. Wait for a yes. Don't run the next command without it.
-2. Create the configuration and keep its ID. The user must already be logged in (`atlas auth login -P mcp` is interactive, so they run it). Don't run it yourself. The response includes `mcpConfigId` (the configuration's UUID) and `clientId` (the `mdb_sa_id_...` OAuth client ID). The response also has an `egressClientId`, which is managed by Atlas and is not the one to use. Neither value you need is a secret, so you can run this:
+5. **Confirmation gate.** Show the user the final `mcp-config.json` and say in one line what it grants: the Atlas project (`GROUP_ID`), the roles, and every IP in `ipAccessList`. Wait for a yes. Don't run the next command without it.
+6. Create the configuration and keep its ID. The user must already be logged in (`atlas auth login -P mcp` is interactive, so they run it). Don't run it yourself. The response includes `mcpConfigId` (the configuration's UUID) and `clientId` (the `mdb_sa_id_...` OAuth client ID). The response also has an `egressClientId`, which is managed by Atlas and is not the one to use. Neither value you need is a secret, so you can run this:
 
 ```bash
 export GROUP_ID="<atlas-project-id>"
@@ -63,7 +63,7 @@ test -n "$MCP_CONFIG_ID" -a -n "$CLIENT_ID" || echo "create failed or response m
 
 This uses the Atlas CLI's own output template, so `jq` isn't needed. Run it once. Creating the configuration again makes a duplicate.
 
-1. **User runs:** mint the client secret. The command prints the secret, so the user runs it in their own terminal and sends the output to a private file outside the repo. Give them this, with `<atlas-project-id>` and `<mcpConfigId>` filled in. Your shell variables don't carry over to their terminal. Pass `mcpConfigId`, not `clientId`:
+7. **User runs:** mint the client secret. The command prints the secret, so the user runs it in their own terminal and sends the output to a private file outside the repo. Give them this, with `<atlas-project-id>` and `<mcpConfigId>` filled in. Your shell variables don't carry over to their terminal. Pass `mcpConfigId`, not `clientId`:
 
 ```bash
 umask 077
