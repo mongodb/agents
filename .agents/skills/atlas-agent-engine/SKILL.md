@@ -1,5 +1,5 @@
 ---
-name: agent-engine-atlas-agent-engine
+name: atlas-agent-engine
 description: Guide for extending Atlas Agent Engine templates and generated apps. Use this before editing templates/hello-world-agent, templates/insurance-agent, templates/chatbot-client, or any generated project with agent.yaml, agent_engine_sdk_langgraph, agent_engine_runner_shared, @app.tool, memory, guardrails, human review, or Atlas Agent Engine API streaming. Covers project layouts, template-specific files, tools, graph flow, memory, HITL, guardrails, testing, and deployment.
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: agent-engine-atlas-agent-engine-docs
+name: atlas-agent-engine-docs
 description: Answer Atlas Agent Engine platform questions from current documentation. Use for questions about the agentengine CLI, project creation, local development, deployment, Atlas setup, memory, remote MCP, agent-to-agent communication, governance, monitoring, or network egress. Consult the documentation source before answering rather than relying on prior knowledge.
 ---
 
