@@ -113,10 +113,12 @@ so every run of every workspace that uses the configuration shares that
 limit.
 
 Agent Engine exchanges the client ID and secret for a new access token each
-time it starts an AER or Tool Pod process, and it starts several processes
-for each new run. In testing, a workspace used 3 to 4 tokens per new run and
-stopped accepting new runs after about 25 in one hour. Your numbers can vary
-with traffic and platform scaling.
+time it starts an AER or Tool Pod process. A typical session starts one of
+each, and sometimes more, so it uses about 2 to 4 tokens. A follow-up message
+in the same session usually starts fresh processes too, so it costs about as
+much as a new session. Resuming after an approval reuses the session's
+processes and doesn't use new tokens. Your numbers can vary with traffic and
+platform scaling.
 
 When the limit is reached:
 
