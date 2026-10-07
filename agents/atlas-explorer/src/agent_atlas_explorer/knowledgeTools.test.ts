@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-import {
-  ListKnowledgeSourcesTool,
-  SearchKnowledgeTool,
-} from "@mongodb-js/mcp-tools-assistant";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+import { setKnowledgeFetch } from "./knowledgeFetchStub.js";
 
 import {
   KNOWLEDGE_NETWORK_HOST,
@@ -60,17 +58,6 @@ function createFakeApp(): {
   };
 }
 
-function spyExecute(
-  tool: typeof SearchKnowledgeTool | typeof ListKnowledgeSourcesTool,
-) {
-  return vi.spyOn(
-    tool.prototype as unknown as {
-      execute: (args: Record<string, unknown>) => Promise<unknown>;
-    },
-    "execute",
-  );
-}
-
 function knowledgeTool(name: string) {
   const tool = createKnowledgeTools().find((entry) => entry.name === name);
   if (!tool) {
@@ -79,9 +66,30 @@ function knowledgeTool(name: string) {
   return tool;
 }
 
+const fetchMock = vi.fn();
+
+function jsonResponse(
+  body: unknown,
+  init: { ok?: boolean; statusText?: string } = {},
+): {
+  ok: boolean;
+  statusText: string;
+  json: () => Promise<unknown>;
+} {
+  return {
+    ok: init.ok ?? true,
+    statusText: init.statusText ?? "OK",
+    json: async () => body,
+  };
+}
+
 describe("knowledge tool wrapper", () => {
+  beforeEach(() => {
+    setKnowledgeFetch(fetchMock);
+  });
+
   afterEach(() => {
-    vi.restoreAllMocks();
+    fetchMock.mockReset();
   });
 
   it("registers both assistant tools as remote Tool Pod calls", () => {
@@ -138,50 +146,85 @@ describe("knowledge tool wrapper", () => {
     ).toBe(false);
   });
 
-  it("joins MCP text content from the packaged tool", async () => {
-    spyExecute(SearchKnowledgeTool).mockResolvedValue({
-      content: [
-        {
-          type: "text",
-          text: "Found 2 results in the MongoDB Assistant knowledge base.",
-        },
-        {
-          type: "text",
-          text: "<untrusted-user-data-abc>\ntitle: Aggregation\n</untrusted-user-data-abc>",
-        },
-      ],
-    });
+  it("posts the search query through the packaged tool", async () => {
+    fetchMock.mockResolvedValue(
+      jsonResponse({
+        results: [
+          {
+            url: "https://www.mongodb.com/docs/aggregation",
+            title: "Aggregation",
+            text: "pipeline",
+            metadata: { tags: [] },
+          },
+        ],
+      }),
+    );
 
     const text = await knowledgeTool(SEARCH_KNOWLEDGE_TOOL_NAME).invoke({
       query: "aggregation pipeline",
     });
 
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url, request] = fetchMock.mock.calls[0] as [
+      URL,
+      { method?: string; headers?: Headers; body?: string },
+    ];
+    expect(String(url)).toBe(
+      "https://knowledge.mongodb.com/api/v1/content/search",
+    );
+    expect(request.method).toBe("POST");
+    expect(request.headers?.get("content-type")).toBe("application/json");
+    expect(JSON.parse(request.body ?? "")).toEqual({
+      query: "aggregation pipeline",
+      limit: 5,
+    });
     expect(text).toContain(
-      "Found 2 results in the MongoDB Assistant knowledge base.",
+      "Found 1 results in the MongoDB Assistant knowledge base.",
     );
     expect(text).toContain("title: Aggregation");
   });
 
-  it("throws when the packaged tool reports an error", async () => {
-    spyExecute(SearchKnowledgeTool).mockResolvedValue({
-      content: [
-        {
-          type: "text",
-          text: "Failed to search knowledge base: Not Found",
-        },
-      ],
-      isError: true,
-    });
+  it("lists knowledge sources through the packaged tool", async () => {
+    fetchMock.mockResolvedValue(
+      jsonResponse({
+        dataSources: [
+          {
+            id: "docs",
+            type: "docs",
+            versions: [{ label: "8.0", isCurrent: true }],
+          },
+        ],
+      }),
+    );
+
+    const text = await knowledgeTool(LIST_KNOWLEDGE_SOURCES_TOOL_NAME).invoke();
+
+    const [url, request] = fetchMock.mock.calls[0] as [
+      URL,
+      { method?: string },
+    ];
+    expect(String(url)).toBe(
+      "https://knowledge.mongodb.com/api/v1/content/sources",
+    );
+    expect(request.method).toBe("GET");
+    expect(text).toContain(
+      "Found 1 data sources in the MongoDB Assistant knowledge base.",
+    );
+    expect(text).toContain('currentVersion: "8.0"');
+  });
+
+  it("throws when the knowledge API returns an error", async () => {
+    fetchMock.mockResolvedValue(
+      jsonResponse({}, { ok: false, statusText: "Not Found" }),
+    );
 
     await expect(
       knowledgeTool(SEARCH_KNOWLEDGE_TOOL_NAME).invoke({ query: "test query" }),
     ).rejects.toThrow("Failed to search knowledge base: Not Found");
   });
 
-  it("throws when the packaged tool throws", async () => {
-    spyExecute(ListKnowledgeSourcesTool).mockRejectedValue(
-      new Error("Connection timeout"),
-    );
+  it("throws when the knowledge API request fails", async () => {
+    fetchMock.mockRejectedValue(new Error("Connection timeout"));
 
     await expect(
       knowledgeTool(LIST_KNOWLEDGE_SOURCES_TOOL_NAME).invoke(),

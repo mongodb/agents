@@ -35,6 +35,8 @@ const harness = vi.hoisted(() => {
   const tools = [
     { name: "mongodb__find" },
     { name: "mongodb__aggregate" },
+    { name: "mongodb__search_knowledge" },
+    { name: "mongodb__list_knowledge_sources" },
     { name: "mongodb__drop_collection" },
   ];
   const model = { id: "orchestrator-model" };
@@ -152,7 +154,12 @@ describe("Atlas Query Insights graph assembly", () => {
       logPrefix: "atlas-query-insights",
     });
     const options = assembled();
-    expect(options.tools).toEqual([harness.tools[0], harness.tools[1]]);
+    expect(options.tools.map((tool) => tool.name)).toEqual([
+      "mongodb__find",
+      "mongodb__aggregate",
+      "mongodb__search_knowledge",
+      "mongodb__list_knowledge_sources",
+    ]);
     expect(options.systemPrompt).toBe(
       buildSystemPrompt({
         name: atlasQueryInsightsConfig.systemPrompt.name,

@@ -36,7 +36,6 @@ import { atlasExplorerConfig } from "./config.js";
 const harness = vi.hoisted(() => {
   const tools = [
     { name: "mongodb__find" },
-    { name: "search_knowledge" },
     { name: "mongodb__drop_collection" },
     { name: "mongodb__future_mutating_operation" },
     { name: "mongodb__atlas_create_db_user" },
@@ -119,7 +118,10 @@ vi.mock("@mongodb-js/agent-engine-sdk-langgraph", () => ({
     }
 
     getTools(): readonly { name: string }[] {
-      return harness.tools;
+      const registered = harness.registeredTools.flatMap((tool) =>
+        tool.name === undefined ? [] : [{ name: tool.name }],
+      );
+      return [...harness.tools, ...registered];
     }
 
     checkpointer(): unknown {
@@ -208,7 +210,11 @@ describe("Atlas Explorer graph assembly", () => {
     expect(harness.deepAgent).toHaveBeenCalledWith(
       harness.model,
       expect.objectContaining({
-        tools: [harness.tools[0], harness.tools[1]],
+        tools: [
+          harness.tools[0],
+          { name: "search_knowledge" },
+          { name: "list_knowledge_sources" },
+        ],
         systemPrompt: READ_ONLY_SYSTEM_PROMPT,
         skills: ["skills"],
         checkpointer: harness.checkpointer,
@@ -300,7 +306,11 @@ describe("Atlas Explorer graph assembly", () => {
     const builder = await loadBuilder();
     builder();
 
-    expect(assembledTools()).toEqual([harness.tools[0], harness.tools[1]]);
+    expect(assembledTools().map((tool) => tool.name)).toEqual([
+      "mongodb__find",
+      "search_knowledge",
+      "list_knowledge_sources",
+    ]);
     expect(
       (harness.deepAgent.mock.calls[0]?.[1] as { systemPrompt?: string })
         .systemPrompt,
@@ -316,7 +326,11 @@ describe("Atlas Explorer graph assembly", () => {
     const builder = await loadBuilder();
     builder();
 
-    expect(assembledTools()).toEqual([harness.tools[0], harness.tools[1]]);
+    expect(assembledTools().map((tool) => tool.name)).toEqual([
+      "mongodb__find",
+      "search_knowledge",
+      "list_knowledge_sources",
+    ]);
     expect(harness.hitlConfig).toEqual({
       interruptOn: {},
       descriptionPrefix: "MongoDB or Atlas operation pending approval",
@@ -331,9 +345,10 @@ describe("Atlas Explorer graph assembly", () => {
     const names = assembledTools().map((tool) => tool.name);
     expect(names).toEqual([
       "mongodb__find",
-      "search_knowledge",
       "mongodb__drop_collection",
       "mongodb__future_mutating_operation",
+      "search_knowledge",
+      "list_knowledge_sources",
     ]);
     expect(names).not.toContain("mongodb__atlas_create_db_user");
     expect(names).not.toContain("mongodb__atlas_create_access_list");
