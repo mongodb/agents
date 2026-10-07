@@ -422,8 +422,9 @@ MongoDB server.
 
 ### Local integration test
 
-`pnpm test:integration` starts the bot's HTTP server on localhost, points it
-at the Atlas Explorer Playground (`AGENTIC_INVOKE_TARGET=local`), and answers
+`pnpm test:integration` listens on localhost and calls the same
+`POST` handler Vercel deploys (`api/webhooks/slack.ts`). That handler points
+at the Atlas Explorer Playground (`AGENTIC_INVOKE_TARGET=local`) and answers
 Slack Web API calls from a local stand-in. It does not call slack.com.
 
 Start Atlas Explorer first, from `agents/atlas-explorer`. The default

@@ -22,8 +22,8 @@ import {
 
 import { closeSharedMongoConnection } from "@repo/agent-engine-chat/store";
 
-import { loadConfig } from "./loadConfig.js";
-import { createRuntime, type BotRuntime } from "./runtime.js";
+import { POST } from "../api/webhooks/slack.js";
+import { getHttpRuntime, resetHttpRuntime } from "./runtime.js";
 
 const WEBHOOK_PATH = "/api/webhooks/slack";
 
@@ -33,21 +33,19 @@ export interface LocalWebhookServer {
 }
 
 /**
- * HTTP Slack webhook server for local runs and CI.
- * Point `AGENTIC_INVOKE_TARGET=local` at a local Playground and
+ * Serves the deployed Vercel webhook on localhost.
+ * `POST` in `api/webhooks/slack.ts` is the same function Vercel calls.
+ * Point `AGENTIC_INVOKE_TARGET=local` at a local Agent Engine and
  * `SLACK_API_URL` at a stand-in so the process never calls Slack.
  */
 export async function startLocalWebhookServer(
   environment: Record<string, string | undefined>,
   options: { host?: string; port?: number } = {},
 ): Promise<LocalWebhookServer> {
+  applyEnvironment(environment);
   const host = options.host ?? "127.0.0.1";
-  const runtime = await createRuntime(loadConfig(environment, "http"));
-  await runtime.bot.initialize();
-
-  const background = new Set<Promise<unknown>>();
   const server = createServer((request, response) => {
-    void handleWebhookRequest(request, response, runtime, background);
+    void handleWebhookRequest(request, response);
   });
 
   await new Promise<void>((resolve, reject) => {
@@ -59,7 +57,6 @@ export async function startLocalWebhookServer(
 
   const address = server.address();
   if (!address || typeof address === "string") {
-    await shutdown(runtime);
     throw new Error("Local webhook server did not bind a TCP port");
   }
 
@@ -75,24 +72,31 @@ export async function startLocalWebhookServer(
           resolve();
         });
       });
-      await Promise.allSettled(background);
-      await shutdown(runtime);
+      const { bot } = await getHttpRuntime();
+      await Promise.allSettled([
+        bot.shutdown(),
+        closeSharedMongoConnection(),
+      ]);
+      resetHttpRuntime();
     },
   };
 }
 
-async function shutdown(runtime: BotRuntime): Promise<void> {
-  await Promise.allSettled([
-    runtime.bot.shutdown(),
-    closeSharedMongoConnection(),
-  ]);
+function applyEnvironment(
+  environment: Record<string, string | undefined>,
+): void {
+  for (const [key, value] of Object.entries(environment)) {
+    if (value === undefined) {
+      delete process.env[key];
+    } else {
+      process.env[key] = value;
+    }
+  }
 }
 
 async function handleWebhookRequest(
   request: IncomingMessage,
   response: ServerResponse,
-  runtime: BotRuntime,
-  background: Set<Promise<unknown>>,
 ): Promise<void> {
   const path = request.url?.split("?")[0] ?? "/";
   if (request.method === "GET" && path === "/health") {
@@ -110,7 +114,6 @@ async function handleWebhookRequest(
   for await (const chunk of request) {
     chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
   }
-  const body = Buffer.concat(chunks);
   const headers = new Headers();
   for (const [key, value] of Object.entries(request.headers)) {
     if (value === undefined) {
@@ -119,20 +122,12 @@ async function handleWebhookRequest(
     headers.set(key, Array.isArray(value) ? value.join(", ") : value);
   }
 
-  const webhookResponse = await runtime.bot.webhooks.slack(
+  const webhookResponse = await POST(
     new Request(`http://127.0.0.1${WEBHOOK_PATH}`, {
       method: "POST",
       headers,
-      body,
+      body: Buffer.concat(chunks),
     }),
-    {
-      waitUntil(task) {
-        const tracked = Promise.resolve(task).finally(() => {
-          background.delete(tracked);
-        });
-        background.add(tracked);
-      },
-    },
   );
 
   const responseBody = Buffer.from(await webhookResponse.arrayBuffer());
