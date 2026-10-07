@@ -31,6 +31,9 @@ network:
         - fqdn: api.openai.com
           ports: [443]
           component: tool
+        - fqdn: knowledge.mongodb.com
+          ports: [443]
+          component: tool
 mcp:
     servers:
         mongodb:

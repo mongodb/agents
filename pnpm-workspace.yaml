@@ -18,6 +18,12 @@ allowBuilds:
   # Transitive OpenTelemetry dependency. Its postinstall only warns about
   # versionScheme and is not required to load the package.
   protobufjs: false
+  # Native optional deps of @mongodb-js/mcp-fetch / devtools-proxy-support.
+  # Direct HTTPS to knowledge.mongodb.com does not need them.
+  "@modelcontextprotocol/ext-apps": false
+  cpu-features: false
+  macos-export-certificate-and-key: false
+  ssh2: false
 
 minimumReleaseAgeExclude:
   - '@mongodb-js/agent-engine-runner-shared@0.11.6'

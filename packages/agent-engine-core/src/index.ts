@@ -37,6 +37,7 @@ export {
   type BuildLLMOptions,
 } from "./llm.js";
 export { stripToolEchoMiddleware } from "./modelResponse.js";
+export { redactSecretsMiddleware } from "./redactSecrets.js";
 export {
   requesterFromCheckpoint,
   withRequesterMetadata,
@@ -59,4 +60,13 @@ export {
   recoverToolErrorsMiddleware,
 } from "./toolErrors.js";
 export { selectTools, writeOperationsAllowed } from "./toolPolicy.js";
+export {
+  KNOWLEDGE_NETWORK_HOST,
+  LIST_KNOWLEDGE_SOURCES_TOOL_NAME,
+  SEARCH_KNOWLEDGE_TOOL_NAME,
+  createKnowledgeTools,
+  registerKnowledgeTools,
+  type KnowledgeToolHost,
+  type WrappedKnowledgeTool,
+} from "./knowledgeTools.js";
 export { prepareAgentInput } from "./userRun.js";

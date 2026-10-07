@@ -14,10 +14,15 @@
  * limitations under the License.
  */
 
-import { selectTools } from "@repo/agent-engine-core";
+import {
+  LIST_KNOWLEDGE_SOURCES_TOOL_NAME,
+  SEARCH_KNOWLEDGE_TOOL_NAME,
+  selectTools,
+} from "@repo/agent-engine-core";
 
 /**
- * Subset of Atlas MCP tools available to the Atlas Query Insights agent.
+ * Subset of Atlas MCP tools available to the Atlas Query Insights agent,
+ * plus the shared knowledge tools from `@repo/agent-engine-core`.
  *
  * Writes are never enabled. `aggregate` stays available as a read tool.
  * A pipeline that contains `$out` or `$merge` is rejected.
@@ -41,9 +46,9 @@ export const ATLAS_QUERY_INSIGHTS_MCP_TOOLS: ReadonlySet<string> = new Set([
   "mongodb__find",
   "mongodb__list_collections",
   "mongodb__list_databases",
-  "mongodb__list_knowledge_sources",
   "mongodb__remote_atlas_connect",
-  "mongodb__search_knowledge",
+  LIST_KNOWLEDGE_SOURCES_TOOL_NAME,
+  SEARCH_KNOWLEDGE_TOOL_NAME,
 ]);
 
 export function selectAtlasQueryInsightsTools<T extends { name: string }>(

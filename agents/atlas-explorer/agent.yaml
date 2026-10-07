@@ -42,6 +42,9 @@ network:
         - fqdn: api.openai.com
           ports: [443]
           component: tool
+        - fqdn: knowledge.mongodb.com
+          ports: [443]
+          component: tool
 # Operators provision these MCP credentials and store them as runtime secrets.
 mcp:
     servers:

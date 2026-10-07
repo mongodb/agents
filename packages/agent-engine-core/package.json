@@ -21,6 +21,7 @@
     "pretest": "pnpm --filter @repo/agent-engine-chat build",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:knowledge": "vitest run --config vitest.integration.config.ts src/knowledgeTools.integration.test.ts",
     "pretypecheck": "pnpm --filter @repo/agent-engine-chat build",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json --noEmit"
   },
@@ -33,6 +34,7 @@
     "@langchain/openai": "^1.4.7",
     "@mongodb-js/agent-engine-runner-shared": "0.11.6",
     "@mongodb-js/agent-engine-sdk": "0.11.6",
+    "@mongodb-js/mcp-tools-assistant": "3.0.5",
     "@repo/agent-engine-chat": "file:../agent-engine-chat",
     "langchain": "^1.5.10",
     "zod": "4.4.3"

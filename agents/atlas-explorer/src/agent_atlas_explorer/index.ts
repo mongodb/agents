@@ -24,6 +24,7 @@ export {
   buildSystemPrompt,
   mutativeInterruptOn,
   recoverToolErrorsMiddleware,
+  redactSecretsMiddleware,
   selectAtlasTools,
   stripToolEchoMiddleware,
   withRequesterMetadata,

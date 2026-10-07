@@ -24,6 +24,7 @@ import {
 describe("Atlas Query Insights tool policy", () => {
   it("allowlists the read-only investigation tools", () => {
     expect([...ATLAS_QUERY_INSIGHTS_MCP_TOOLS].sort()).toEqual([
+      "list_knowledge_sources",
       "mongodb__aggregate",
       "mongodb__atlas_connect_cluster",
       "mongodb__atlas_get_performance_advisor",
@@ -42,9 +43,8 @@ describe("Atlas Query Insights tool policy", () => {
       "mongodb__find",
       "mongodb__list_collections",
       "mongodb__list_databases",
-      "mongodb__list_knowledge_sources",
       "mongodb__remote_atlas_connect",
-      "mongodb__search_knowledge",
+      "search_knowledge",
     ]);
   });
 

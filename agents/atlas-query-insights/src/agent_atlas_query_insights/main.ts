@@ -19,6 +19,7 @@
 import "dotenv/config";
 
 import { App, AgentEngineToolSandboxBackend } from "@mongodb-js/agent-engine-sdk-langgraph";
+import { registerKnowledgeTools } from "@repo/agent-engine-core";
 import {
   annotatePerformanceAdvisorMiddleware,
   rejectAggregateWritesMiddleware,
@@ -26,6 +27,7 @@ import {
   buildSystemPrompt,
   prepareAgentInput,
   recoverToolErrorsMiddleware,
+  redactSecretsMiddleware,
   selectAtlasQueryInsightsTools,
   stampResumeClientUserMiddleware,
   stripToolEchoMiddleware,
@@ -43,6 +45,7 @@ function log(level: "INFO" | "WARN" | "ERROR", msg: string): void {
 process.env.AGENTIC_AGENT_WORKDIR ||= process.cwd();
 
 export const app = new App({ appName: "atlas-query-insights" });
+registerKnowledgeTools(app);
 app.prepareAgentInput(prepareAgentInput);
 log("INFO", "App created; Atlas MCP tools will be discovered from agent.yaml");
 
@@ -74,6 +77,7 @@ export const buildAgent = app.entrypoint(() => {
       middleware: [
         stampResumeClientUserMiddleware,
         stripToolEchoMiddleware,
+        redactSecretsMiddleware,
         annotatePerformanceAdvisorMiddleware(),
         rejectAggregateWritesMiddleware,
         recoverToolErrorsMiddleware,

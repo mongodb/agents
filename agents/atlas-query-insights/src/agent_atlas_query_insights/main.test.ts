@@ -35,6 +35,8 @@ const harness = vi.hoisted(() => {
   const tools = [
     { name: "mongodb__find" },
     { name: "mongodb__aggregate" },
+    { name: "mongodb__search_knowledge" },
+    { name: "mongodb__list_knowledge_sources" },
     { name: "mongodb__drop_collection" },
   ];
   const model = { id: "orchestrator-model" };
@@ -45,6 +47,11 @@ const harness = vi.hoisted(() => {
     model,
     checkpointer: undefined as unknown,
     graph,
+    registeredTools: [] as Array<{
+      name?: string;
+      isLocal?: boolean;
+      network?: readonly string[];
+    }>,
     startupEvents: [] as string[],
     agentWorkdirAtAppConstruction: undefined as string | undefined,
     appName: undefined as string | undefined,
@@ -79,8 +86,20 @@ vi.mock("@mongodb-js/agent-engine-sdk-langgraph", () => ({
       return fn;
     }
 
+    tool(options: {
+      name?: string;
+      isLocal?: boolean;
+      network?: readonly string[];
+    } = {}) {
+      harness.registeredTools.push(options);
+      return (fn: unknown) => fn;
+    }
+
     getTools(): readonly { name: string }[] {
-      return harness.tools;
+      const registered = harness.registeredTools.flatMap((tool) =>
+        tool.name === undefined ? [] : [{ name: tool.name }],
+      );
+      return [...harness.tools, ...registered];
     }
 
     checkpointer(): unknown {
@@ -152,7 +171,23 @@ describe("Atlas Query Insights graph assembly", () => {
       logPrefix: "atlas-query-insights",
     });
     const options = assembled();
-    expect(options.tools).toEqual([harness.tools[0], harness.tools[1]]);
+    expect(options.tools.map((tool) => tool.name)).toEqual([
+      "mongodb__find",
+      "mongodb__aggregate",
+      "search_knowledge",
+      "list_knowledge_sources",
+    ]);
+    expect(harness.registeredTools.map((tool) => tool.name)).toEqual([
+      "search_knowledge",
+      "list_knowledge_sources",
+    ]);
+    expect(
+      harness.registeredTools.every(
+        (tool) =>
+          tool.isLocal === false &&
+          tool.network?.includes("knowledge.mongodb.com"),
+      ),
+    ).toBe(true);
     expect(options.systemPrompt).toBe(
       buildSystemPrompt({
         name: atlasQueryInsightsConfig.systemPrompt.name,
@@ -165,6 +200,7 @@ describe("Atlas Query Insights graph assembly", () => {
     expect(options.middleware?.map((middleware) => middleware.name)).toEqual([
       stampResumeClientUserMiddleware.name,
       "stripOpenAIToolEcho",
+      "redactSecrets",
       "annotatePerformanceAdvisor",
       "rejectAggregateWrites",
       "recoverToolErrors",

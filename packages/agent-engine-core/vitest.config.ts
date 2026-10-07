@@ -14,7 +14,41 @@
  * limitations under the License.
  */
 
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
 import { defineConfig } from "vitest/config";
 import { definePackageVitestConfig } from "../../vitest.shared.mts";
 
-export default defineConfig(definePackageVitestConfig());
+const packageRoot = path.dirname(fileURLToPath(import.meta.url));
+const packageConfig = definePackageVitestConfig({
+  exclude: [
+    "**/node_modules/**",
+    "**/.git/**",
+    "src/**/*.integration.test.ts",
+    // Support module aliased over @mongodb-js/mcp-fetch. The .test.ts suffix
+    // marks it as test-only; it is not a suite.
+    "src/knowledgeFetchStub.test.ts",
+  ],
+});
+
+export default defineConfig({
+  resolve: {
+    alias: {
+      "@mongodb-js/mcp-fetch": path.join(
+        packageRoot,
+        "src/knowledgeFetchStub.test.ts",
+      ),
+    },
+  },
+  ...packageConfig,
+  test: {
+    ...packageConfig.test,
+    // Transform the assistant package so the alias replaces its fetch import.
+    server: {
+      deps: {
+        inline: ["@mongodb-js/mcp-tools-assistant"],
+      },
+    },
+  },
+});
