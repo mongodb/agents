@@ -78,8 +78,9 @@ this environment is intentionally write-capable.
 
 Copy `mcp-config.example.json` to ignored `mcp-config.json`. Replace
 `YOUR_LOCAL_PUBLIC_IP` with this machine's public IPv4 (`curl -4 ifconfig.me`).
-Replace the `AGENT_ENGINE_IP_*` placeholders with your Agent Engine deployment's
-egress addresses so a deployed workspace can call Managed MCP.
+The example already lists the two
+[Agent Engine egress IP addresses](https://www.mongodb.com/docs/agentengine/network-egress/),
+which a deployed workspace needs to call Managed MCP.
 
 Create a **separate MCP configuration and token per environment** (local
 development, staging, production, and so on). Do not share credentials across
