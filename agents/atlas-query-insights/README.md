@@ -114,7 +114,7 @@ shares that limit.
 
 Agent Engine exchanges the client ID and secret for a new access token when it
 starts an AER or Tool Pod process that doesn't already have a valid one. Each
-pod keeps its own token cache, so a fresh process usually needs a new token. A
+pod keeps its own token cache, so a fresh process always needs a new token. A
 run starts at least one AER and one Tool Pod process, and follow-up messages
 in the same session often start new ones. Resuming after an approval reuses
 the session's processes. Your numbers can vary with traffic and platform

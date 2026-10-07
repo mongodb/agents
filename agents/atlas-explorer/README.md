@@ -207,7 +207,7 @@ the Playground, the CLI, the Slack bot, and any evaluation runs.
 
 Agent Engine mints a new token when it starts an AER or Tool Pod process that
 doesn't already have a valid one (step 2 above). Each pod keeps its own token
-cache, so a fresh process usually needs a new token. A session starts at least
+cache, so a fresh process always needs a new token. A session starts at least
 one AER and one Tool Pod process, and follow-up messages often start new ones.
 Resuming after an approval reuses the session's processes. Your numbers can
 vary with traffic and platform scaling.
