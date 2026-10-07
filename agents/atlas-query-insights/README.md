@@ -107,10 +107,10 @@ key under `required_secrets` and the provider host under `network.egress`.
 
 ### Access token limit
 
-Atlas allows each service account at most 100 active access tokens, and each
-token lasts 1 hour. The MCP configuration's client ID is a service account,
-so every run of every workspace that uses the configuration shares that
-limit.
+The Atlas MCP server allows each service account at most 100 active access
+tokens, and each token lasts 1 hour. The MCP configuration's client ID is a
+service account, so every run of every workspace that uses the configuration
+shares that limit.
 
 Agent Engine exchanges the client ID and secret for a new access token when it
 starts an AER or Tool Pod process that doesn't already have a valid one. Each

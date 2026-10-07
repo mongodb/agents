@@ -200,10 +200,10 @@ the agent, and then revoke the previous secret.
 
 ### Access token limit
 
-Atlas allows each service account at most 100 active access tokens, and each
-token lasts 1 hour. The MCP configuration's client ID is a service account,
-so everything that uses the configuration shares that limit: the
-Playground, the CLI, the Slack bot, and any evaluation runs.
+The Atlas MCP server allows each service account at most 100 active access
+tokens, and each token lasts 1 hour. The MCP configuration's client ID is a
+service account, so everything that uses the configuration shares that limit:
+the Playground, the CLI, the Slack bot, and any evaluation runs.
 
 Agent Engine mints a new token when it starts an AER or Tool Pod process that
 doesn't already have a valid one (step 2 above). Each pod keeps its own token
