@@ -112,13 +112,13 @@ token lasts 1 hour. The MCP configuration's client ID is a service account,
 so every run of every workspace that uses the configuration shares that
 limit.
 
-Agent Engine exchanges the client ID and secret for a new access token each
-time it starts an AER or Tool Pod process. A typical session starts one of
-each, and sometimes more, so it uses about 2 to 4 tokens. A follow-up message
-in the same session usually starts fresh processes too, so it costs about as
-much as a new session. Resuming after an approval reuses the session's
-processes and doesn't use new tokens. Your numbers can vary with traffic and
-platform scaling.
+Agent Engine exchanges the client ID and secret for a new access token when it
+starts an AER or Tool Pod process that doesn't already have a valid one. Each
+pod keeps its own token cache, so a fresh process usually needs a new token. A
+run starts at least one AER and one Tool Pod process, and follow-up messages
+in the same session often start new ones. Resuming after an approval reuses
+the session's processes. Your numbers can vary with traffic and platform
+scaling.
 
 When the limit is reached:
 
@@ -130,15 +130,15 @@ When the limit is reached:
   ```
 
 - The workspace recovers on its own as the oldest tokens expire, within an
-  hour of the burst. Redeploying doesn't help, because each new process
-  needs its own token.
+  hour of the burst. Redeploying doesn't help, because the redeployed
+  processes need new tokens too.
 
 To stay under the limit:
 
 - Use a separate MCP configuration for each environment, as described in
   [Configure](#configure).
-- Plan for about 25 new runs per hour on each MCP configuration. Spread
-  scheduled reports and evaluation runs over time.
+- Spread scheduled reports and evaluation runs over time. Every run can
+  start new processes, so a burst of runs uses tokens quickly.
 - To handle more traffic, deploy several copies of the agent, each in its
   own workspace with its own MCP configuration, and balance new runs
   across them. Each MCP configuration has its own token limit. Keep every

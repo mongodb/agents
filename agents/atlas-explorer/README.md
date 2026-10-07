@@ -205,10 +205,11 @@ token lasts 1 hour. The MCP configuration's client ID is a service account,
 so everything that uses the configuration shares that limit: the
 Playground, the CLI, the Slack bot, and any evaluation runs.
 
-Agent Engine mints a new token each time it starts an AER or Tool Pod process
-(step 2 above), and it starts several processes for each new conversation.
-In testing, a workspace used 3 to 4 tokens per new conversation and stopped
-accepting new conversations after about 25 in one hour. Your numbers can
+Agent Engine mints a new token when it starts an AER or Tool Pod process that
+doesn't already have a valid one (step 2 above). Each pod keeps its own token
+cache, so a fresh process usually needs a new token. A session starts at least
+one AER and one Tool Pod process, and follow-up messages often start new ones.
+Resuming after an approval reuses the session's processes. Your numbers can
 vary with traffic and platform scaling.
 
 When the limit is reached:
@@ -222,15 +223,15 @@ When the limit is reached:
   ```
 
 - The workspace recovers on its own as the oldest tokens expire, within an
-  hour of the burst. Redeploying doesn't help, because each new process
-  needs its own token.
+  hour of the burst. Redeploying doesn't help, because the redeployed
+  processes need new tokens too.
 
 To stay under the limit:
 
 - Use a separate MCP configuration for each environment, as described in
   [Configure](#configure).
-- Plan for about 25 new conversations per hour on each MCP configuration.
-  Spread load tests and evaluation runs over time.
+- Spread load tests and evaluation runs over time. Every message can start
+  new processes, so a burst of messages uses tokens quickly.
 - To handle more traffic, deploy several copies of the agent, each in its
   own workspace with its own MCP configuration, and balance new
   conversations across them. Each MCP configuration has its own token

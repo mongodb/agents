@@ -204,9 +204,9 @@ how they're set up.
   cover only Atlas Agent Engine and the `agentengine` CLI.
 - **Each MCP configuration has an hourly capacity limit.** Atlas limits how
   many access tokens one service account can have active, and Agent Engine
-  mints new tokens as it starts processes to handle requests. When the limit
-  is reached, new conversations fail until older tokens expire. For details,
-  see
+  can mint a new token each time it starts a process to handle a request.
+  When the limit is reached, new conversations fail until older tokens
+  expire. For details, see
   [Access token limit](agents/atlas-explorer/README.md#access-token-limit).
 - **Slack is an optional example.** You host the Slack bot yourself. Everyone
   on its allowlist shares one Atlas identity instead of using their own Atlas
