@@ -65,7 +65,7 @@ Copy `mcp-config.example.json` to ignored `mcp-config.json`. Replace
 `YOUR_LOCAL_PUBLIC_IP` with this machine's public IPv4. The example already
 lists the two
 [Agent Engine egress IP addresses](https://www.mongodb.com/docs/agentengine/network-egress/),
-which a deployed workspace needs to call Managed MCP.
+which a deployed workspace needs to call the Atlas MCP.
 
 Use a separate MCP configuration per environment, named
 `atlas-query-insights-{environment}`. Requires Atlas CLI 1.58 or later.
