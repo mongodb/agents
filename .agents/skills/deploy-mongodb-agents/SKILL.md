@@ -109,7 +109,27 @@ Update all three together, or the deploy will start but model calls will fail:
 
 Outbound traffic is blocked by default. The agent can reach only the hosts listed in `agent.yaml`.
 
-## 5. Check before deploying
+## 5. Tell the agent where to look (optional)
+
+Without this, the agent often has to ask which cluster to use before it can do anything. Offer it once: "Do you want to set a default cluster and anything the agent should always know?" If the user says no, skip it.
+
+Ask the user to type the answers. Don't look them up and don't read their cluster to fill them in. You need:
+
+- The default cluster name, and the Atlas project ID if they know it.
+- Optional notes in plain words, such as what the data is for or which databases to ignore.
+
+Then edit `config.ts` and show the user the diff before saving:
+
+- **Atlas Explorer** (`src/agent_atlas_explorer/config.ts`): put the answers in `systemPrompt.customInstructions`, for example `Default cluster: prod-orders. The orders database holds customer orders. Ignore databases that start with test_.` The text is appended to the system prompt after the built-in rules, and the built-in safety rules still apply.
+- **Atlas Query Insights** (`src/agent_atlas_query_insights/config.ts`): set `scope.clusterName` and `scope.projectId`. A set `projectId` must be a 24-character hex ID, and `clusterName` must be an Atlas cluster name. Leave a field empty to let the agent work it out.
+
+Rules:
+
+- The text goes into the system prompt and into git. Never include credentials, connection strings, or personal data. Keep it short and factual.
+- `scope` pins the agent through its prompt only. It doesn't filter tool calls. The hard boundary is still the Atlas project the MCP configuration belongs to.
+- This is a code change, so the agent needs a rebuild (`pnpm build`) and a deploy to pick it up. It doesn't change what the agent is allowed to do.
+
+## 6. Check before deploying
 
 ```bash
 pnpm install
@@ -123,7 +143,7 @@ agentengine agent validate
 
 Review `git diff agent.yaml` before continuing and make sure every change is intended.
 
-## 6. Build, deploy, smoke test
+## 7. Build, deploy, smoke test
 
 ```bash
 agentengine build

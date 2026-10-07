@@ -144,7 +144,7 @@ Don't call it fixed because a deploy command exited cleanly. Run:
 
 ```bash
 agentengine status --verbose
-agentengine invoke "<the smoke-test prompt from ../SKILL.md, section 6>"
+agentengine invoke "<the smoke-test prompt from ../SKILL.md, section 7>"
 ```
 
 Then report the cause you found, what changed (files, secret names, and whether a redeploy ran), and the `status` and `invoke` results. If you couldn't find a cause or the symptom remains, say so and escalate.
