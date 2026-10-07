@@ -25,6 +25,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   buildReviewCard,
+  MAX_ARGUMENT_TEXT,
   REVIEW_APPROVE_ACTION_ID,
   REVIEW_REJECT_ACTION_ID,
 } from "./cards.js";
@@ -156,7 +157,76 @@ describe("buildReviewCard", () => {
     ]);
     expect(textContents(message).at(-1)).toMatch(/additional action/i);
   });
+
+  it("shows the full arguments and both decisions when they fit", () => {
+    const args = argsWithJsonLength(MAX_ARGUMENT_TEXT);
+    const message = buildReviewCard(
+      [{ name: "mongodb__update_one", args }],
+      "interrupt-full",
+      BOT_NAME,
+    ) as PostableCard;
+
+    expect(buttons(message).map((button) => button.id)).toEqual([
+      REVIEW_APPROVE_ACTION_ID,
+      REVIEW_REJECT_ACTION_ID,
+    ]);
+    expect(textContents(message)[0]).toContain(JSON.stringify(args, null, 2));
+    expect(textContents(message)[0]).not.toMatch(/\.\.\.\n```$/);
+    expect(textContents(message).at(-1)).toBe(
+      "Only the person who requested this operation can decide it.",
+    );
+  });
+
+  it("hides approve when a displayed write is truncated", () => {
+    const hiddenClause = { hidden: "approve-me-unseen" };
+    const args = {
+      ...argsWithJsonLength(MAX_ARGUMENT_TEXT + 1),
+      ...hiddenClause,
+    };
+    const message = buildReviewCard(
+      [{ name: "mongodb__update_one", args }],
+      "interrupt-truncated",
+      BOT_NAME,
+    ) as PostableCard;
+
+    expect(buttons(message).map((button) => button.id)).toEqual([
+      REVIEW_REJECT_ACTION_ID,
+    ]);
+    expect(textContents(message)[0]).toMatch(/\.\.\.\n```$/);
+    expect(JSON.stringify(message)).not.toContain("approve-me-unseen");
+    expect(textContents(message).at(-1)).toMatch(
+      /too long to show in full[\s\S]*Agentic Playground or the CLI/i,
+    );
+  });
+
+  it("hides approve when any action in a fitting batch is truncated", () => {
+    const message = buildReviewCard(
+      [
+        {
+          name: "mongodb__find",
+          args: { database: "inventory" },
+        },
+        {
+          name: "mongodb__update_many",
+          args: argsWithJsonLength(MAX_ARGUMENT_TEXT + 80),
+        },
+      ],
+      "interrupt-mixed",
+      BOT_NAME,
+    ) as PostableCard;
+
+    expect(message.card.subtitle).toBe("2 operations");
+    expect(buttons(message).map((button) => button.id)).toEqual([
+      REVIEW_REJECT_ACTION_ID,
+    ]);
+    expect(textContents(message).at(-1)).toMatch(/too long to show in full/i);
+  });
 });
+
+function argsWithJsonLength(length: number): { note: string } {
+  const overhead = JSON.stringify({ note: "" }, null, 2).length;
+  return { note: "n".repeat(length - overhead) };
+}
 
 function textContents(message: PostableCard): string[] {
   return message.card.children

@@ -37,6 +37,7 @@ export {
   type BuildLLMOptions,
 } from "./llm.js";
 export { stripToolEchoMiddleware } from "./modelResponse.js";
+export { redactSecretsMiddleware } from "./redactSecrets.js";
 export {
   requesterFromCheckpoint,
   withRequesterMetadata,

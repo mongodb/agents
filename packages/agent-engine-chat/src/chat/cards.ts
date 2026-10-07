@@ -32,7 +32,10 @@ export const REVIEW_REJECT_ACTION_ID =
 
 const DEFAULT_REVIEW_CARD_TITLE = "Agent operation requires approval";
 const MAX_DISPLAYED_ACTIONS = 45;
-const MAX_ARGUMENT_TEXT = 1_800;
+// One chat text block cannot carry an unbounded tool call. Slack section
+// text caps at 3,000 characters, so a preview past this limit is truncated
+// and cannot be approved from the card.
+export const MAX_ARGUMENT_TEXT = 1_800;
 
 export interface ReviewCardOptions {
   title?: string;
@@ -45,8 +48,10 @@ export function buildReviewCard(
   options: ReviewCardOptions = {},
 ): PostableCard {
   const displayedActions = actions.slice(0, MAX_DISPLAYED_ACTIONS);
-  const canApproveAll = displayedActions.length === actions.length;
   const overflowCount = actions.length - displayedActions.length;
+  const argumentPreview = argumentBlocks(displayedActions);
+  // A truncated preview is not the write the Approve button would resume.
+  const canApproveAll = overflowCount === 0 && !argumentPreview.truncated;
 
   return {
     card: Card({
@@ -56,13 +61,10 @@ export function buildReviewCard(
           ? displayedActions[0].name
           : `${displayedActions.length} operations`,
       children: [
-        ...argumentBlocks(displayedActions),
-        CardText(
-          canApproveAll
-            ? "Only the person who requested this operation can decide it."
-            : `${overflowCount} additional action${overflowCount === 1 ? "" : "s"} do not fit in this chat card. Approve this batch from Agentic Playground or the CLI; this chat can only reject it safely.`,
-          { style: "muted" },
-        ),
+        ...argumentPreview.elements,
+        CardText(reviewNotice(overflowCount, argumentPreview.truncated), {
+          style: "muted",
+        }),
         Actions([
           ...(canApproveAll
             ? [
@@ -91,20 +93,42 @@ export function buildReviewCard(
   };
 }
 
-function argumentBlocks(actions: AgentActionRequest[]) {
-  const named = actions.length > 1;
-  return actions.flatMap((action, index) => [
-    ...(index > 0 ? [Divider()] : []),
-    ...(named ? [CardText(action.name, { style: "bold" })] : []),
-    CardText(argumentCodeBlock(action.args)),
-  ]);
+function reviewNotice(overflowCount: number, truncated: boolean): string {
+  if (overflowCount > 0) {
+    return `${overflowCount} additional action${overflowCount === 1 ? "" : "s"} do not fit in this chat card. Approve this batch from Agentic Playground or the CLI; this chat can only reject it safely.`;
+  }
+  if (truncated) {
+    return "Some arguments are too long to show in full in this chat card. Approve this batch from Agentic Playground or the CLI; this chat can only reject it safely.";
+  }
+  return "Only the person who requested this operation can decide it.";
 }
 
-function argumentCodeBlock(args: Record<string, unknown>): string {
+function argumentBlocks(actions: AgentActionRequest[]) {
+  const named = actions.length > 1;
+  let truncated = false;
+  const elements = actions.flatMap((action, index) => {
+    const preview = argumentCodeBlock(action.args);
+    truncated ||= preview.truncated;
+    return [
+      ...(index > 0 ? [Divider()] : []),
+      ...(named ? [CardText(action.name, { style: "bold" })] : []),
+      CardText(preview.text),
+    ];
+  });
+  return { elements, truncated };
+}
+
+function argumentCodeBlock(args: Record<string, unknown>): {
+  text: string;
+  truncated: boolean;
+} {
   const argumentsText = JSON.stringify(args, null, 2);
-  const truncatedArguments =
-    argumentsText.length > MAX_ARGUMENT_TEXT
-      ? `${argumentsText.slice(0, MAX_ARGUMENT_TEXT - 3)}...`
-      : argumentsText;
-  return `\`\`\`\n${truncatedArguments}\n\`\`\``;
+  const truncated = argumentsText.length > MAX_ARGUMENT_TEXT;
+  const truncatedArguments = truncated
+    ? `${argumentsText.slice(0, MAX_ARGUMENT_TEXT - 3)}...`
+    : argumentsText;
+  return {
+    text: `\`\`\`\n${truncatedArguments}\n\`\`\``,
+    truncated,
+  };
 }

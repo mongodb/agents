@@ -35,6 +35,8 @@ const harness = vi.hoisted(() => {
   const tools = [
     { name: "mongodb__find" },
     { name: "mongodb__aggregate" },
+    { name: "mongodb__search_knowledge" },
+    { name: "mongodb__list_knowledge_sources" },
     { name: "mongodb__drop_collection" },
   ];
   const model = { id: "orchestrator-model" };
@@ -198,6 +200,7 @@ describe("Atlas Query Insights graph assembly", () => {
     expect(options.middleware?.map((middleware) => middleware.name)).toEqual([
       stampResumeClientUserMiddleware.name,
       "stripOpenAIToolEcho",
+      "redactSecrets",
       "annotatePerformanceAdvisor",
       "rejectAggregateWrites",
       "recoverToolErrors",
