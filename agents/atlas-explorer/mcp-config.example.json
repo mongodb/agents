@@ -8,10 +8,10 @@
       "ipAddress": "YOUR_LOCAL_PUBLIC_IP"
     },
     {
-      "ipAddress": "AGENT_ENGINE_IP_1"
+      "ipAddress": "34.196.57.85"
     },
     {
-      "ipAddress": "AGENT_ENGINE_IP_2..."
+      "ipAddress": "54.227.181.25"
     }
   ]
 }

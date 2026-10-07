@@ -62,9 +62,10 @@ The example config grants `GROUP_DATA_ACCESS_READ_ONLY` only. Do not add
 a read-write role.
 
 Copy `mcp-config.example.json` to ignored `mcp-config.json`. Replace
-`YOUR_LOCAL_PUBLIC_IP` with this machine's public IPv4. Replace the
-`AGENT_ENGINE_IP_*` placeholders with your Agent Engine deployment's egress
-addresses so a deployed workspace can call Managed MCP.
+`YOUR_LOCAL_PUBLIC_IP` with this machine's public IPv4. The example already
+lists the two
+[Agent Engine egress IP addresses](https://www.mongodb.com/docs/agentengine/network-egress/),
+which a deployed workspace needs to call Managed MCP.
 
 Use a separate MCP configuration per environment, named
 `atlas-query-insights-{environment}`. Requires Atlas CLI 1.58 or later.
