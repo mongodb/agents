@@ -115,6 +115,7 @@ export async function createRuntime(
       mode: config.mode === "http" ? "webhook" : "socket",
       botToken: config.slack.botToken,
       displayName: config.slack.botDisplayName,
+      ...(config.slack.apiUrl ? { apiUrl: config.slack.apiUrl } : {}),
       ...(config.slack.appToken
         ? { appToken: config.slack.appToken }
         : {}),

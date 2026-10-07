@@ -209,6 +209,19 @@ describe("loadConfig", () => {
     });
   });
 
+  it("points the Slack Web API client at a local stand-in", () => {
+    const config = loadConfig(
+      {
+        ...sharedEnv,
+        SLACK_APP_TOKEN: "xapp-test",
+        SLACK_API_URL: "http://127.0.0.1:4011/api",
+      },
+      "socket",
+    );
+
+    expect(config.slack.apiUrl).toBe("http://127.0.0.1:4011/api");
+  });
+
   it.each([
     ["AGENTIC_SA_CLIENT_ID", undefined, "agp_sa_sk_test"],
     ["AGENTIC_SA_CLIENT_SECRET", "agp_sa_id_test", undefined],

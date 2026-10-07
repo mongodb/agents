@@ -1,0 +1,206 @@
+name: Slack bot local integration
+
+on:
+  pull_request:
+    paths:
+      - "apps/atlas-explorer-slack-bot/**"
+      - "agents/atlas-explorer/**"
+      - "packages/agent-engine-chat/**"
+      - "packages/agent-engine-core/**"
+      - "packages/atlas-explorer-agent/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - "tsconfig.base.json"
+      - "tsconfig.test.base.json"
+      - "vitest.shared.mts"
+      - ".github/workflows/integration-tests-slack-bot.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "apps/atlas-explorer-slack-bot/**"
+      - "agents/atlas-explorer/**"
+      - "packages/agent-engine-chat/**"
+      - "packages/agent-engine-core/**"
+      - "packages/atlas-explorer-agent/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - "tsconfig.base.json"
+      - "tsconfig.test.base.json"
+      - "vitest.shared.mts"
+      - ".github/workflows/integration-tests-slack-bot.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  test:
+    name: slack-bot local stack
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      COREPACK_ENABLE_DOWNLOAD_PROMPT: "0"
+      AGENTENGINE_VERSION: "0.1.118"
+      AGENTENGINE_USE_GATEWAY_PROXY: "false"
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack install
+
+      - name: Get pnpm store directory
+        run: echo "PNPM_STORE_PATH=$(pnpm store path --silent)" >> "$GITHUB_ENV"
+
+      - uses: actions/cache@v6
+        with:
+          path: ${{ env.PNPM_STORE_PATH }}
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-${{ runner.os }}-
+
+      - uses: actions/cache@v6
+        with:
+          path: ~/.cache/mongodb-binaries
+          key: mongodb-memory-server-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            mongodb-memory-server-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build agent bundle
+        run: pnpm --filter atlas-explorer build
+
+      - name: Install agentengine CLI
+        run: |
+          mkdir -p "$HOME/.local/bin"
+          curl -fsSL -o "$HOME/.local/bin/agentengine" \
+            "https://github.com/mongodb/agent-engine-client-libraries/releases/download/v${AGENTENGINE_VERSION}/agentengine_${AGENTENGINE_VERSION}_linux_x86_64"
+          chmod +x "$HOME/.local/bin/agentengine"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Start local OpenAI stand-in
+        run: |
+          node apps/atlas-explorer-slack-bot/scripts/openai-local-mock.mjs \
+            > "${{ runner.temp }}/openai-mock.log" 2>&1 &
+          for _ in $(seq 1 50); do
+            if curl -fsS http://127.0.0.1:4010/v1/chat/completions \
+              -H 'content-type: application/json' \
+              -d '{"stream":false}' >/dev/null; then
+              echo "OpenAI stand-in is ready"
+              exit 0
+            fi
+            sleep 0.2
+          done
+          echo "::error::local OpenAI stand-in did not start"
+          cat "${{ runner.temp }}/openai-mock.log" || true
+          exit 1
+
+      - name: Write dummy local secrets
+        working-directory: agents/atlas-explorer
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          Path(".env").write_text(
+              "\n".join(
+                  [
+                      "MONGODB_URI=",
+                      "MDB_AGENTIC_STORE_DB=atlas_explorer",
+                      "ATLAS_MCP_CLIENT_ID=ci-dummy-client-id",
+                      "ATLAS_MCP_CLIENT_SECRET=ci-dummy-client-secret",
+                      "ALLOW_WRITE_OPERATIONS=",
+                      "OPENAI_API_KEY=sk-ci-dummy",
+                      "OPENAI_BASE_URL=http://host.docker.internal:4010/v1",
+                      "OPENAI_USE_RESPONSES_API=false",
+                      "",
+                  ]
+              )
+          )
+          PY
+
+      # Dummy Atlas credentials fail tools/list and AER exits before the app
+      # is ready. Empty servers is valid config and skips discovery.
+      - name: Clear MCP servers for local invoke
+        working-directory: agents/atlas-explorer
+        run: |
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          path = Path("agent.yaml")
+          text = path.read_text()
+          updated, count = re.subn(
+              r"^mcp:\n(?:[ \t].*\n)*",
+              "mcp:\n    servers: {}\n",
+              text,
+              count=1,
+              flags=re.M,
+          )
+          if count != 1:
+              raise SystemExit("expected an mcp: block in agent.yaml")
+          path.write_text(updated)
+          if "servers: {}" not in path.read_text():
+              raise SystemExit("mcp.servers was not cleared")
+          print("cleared mcp.servers in", path)
+          PY
+
+      # --headless omits the Playground UI. --no-egress lets the tool sandbox
+      # reach the OpenAI stand-in on the runner via host.docker.internal.
+      - name: Start local stack
+        working-directory: agents/atlas-explorer
+        run: agentengine --no-log dev up --headless --no-egress
+
+      - name: Smoke-check Orchestration Engine health
+        working-directory: agents/atlas-explorer
+        run: |
+          for _ in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8000/health; then
+              echo
+              echo "Orchestration Engine is healthy"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "::error::agentengine dev up finished but OE on port 8000 is not healthy"
+          exit 1
+
+      - name: Run Slack bot integration tests
+        env:
+          AGENTIC_PLAYGROUND_URL: http://127.0.0.1:8000
+        run: pnpm --filter @repo/atlas-explorer-slack-bot test:integration
+
+      - name: Collect stack logs
+        if: always()
+        working-directory: agents/atlas-explorer
+        run: |
+          mkdir -p "${{ runner.temp }}/agentengine-logs"
+          agentengine --no-log dev logs --no-follow --tail 2000 \
+            > "${{ runner.temp }}/agentengine-logs/dev.log" 2>&1 || true
+          cp "${{ runner.temp }}/openai-mock.log" \
+            "${{ runner.temp }}/agentengine-logs/openai-mock.log" || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: slack-bot-dev-logs
+          path: ${{ runner.temp }}/agentengine-logs
+          if-no-files-found: ignore
+
+      - name: Stop stack
+        if: always()
+        working-directory: agents/atlas-explorer
+        run: agentengine --no-log dev clean || true

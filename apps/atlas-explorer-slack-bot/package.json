@@ -19,6 +19,8 @@
     "pretest": "pnpm --filter @repo/agent-engine-chat build",
     "test": "vitest run",
     "test:watch": "vitest",
+    "pretest:integration": "pnpm --filter @repo/agent-engine-chat build",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
     "pretypecheck": "pnpm --filter @repo/agent-engine-chat build",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json --noEmit",
     "vercel": "pnpm dlx --allow-build=esbuild vercel",
@@ -35,6 +37,7 @@
   "devDependencies": {
     "@chat-adapter/tests": "4.40.0",
     "@types/node": "^25.0.0",
+    "mongodb-memory-server-core": "11.2.0",
     "tsx": "^4.21.0",
     "typescript": "^7.0.2",
     "vitest": "^5.0.0"

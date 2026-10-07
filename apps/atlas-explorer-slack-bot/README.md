@@ -415,6 +415,41 @@ pnpm typecheck
 pnpm build
 ```
 
-Tests mock external HTTP and Slack boundaries and start a test-scoped
-`MongoMemoryServer`; they do not require a Slack workspace, Agent Engine deployment,
-Docker, or separately managed MongoDB server.
+Unit tests mock external HTTP and Slack boundaries, or point them at local
+stand-ins, and start a test-scoped `MongoMemoryServer`. They do not require a
+Slack workspace, Agent Engine deployment, Docker, or separately managed
+MongoDB server.
+
+### Local integration test
+
+`pnpm test:integration` starts the bot's HTTP server on localhost, points it
+at the Atlas Explorer Playground (`AGENTIC_INVOKE_TARGET=local`), and answers
+Slack Web API calls from a local stand-in. It does not call slack.com.
+
+Start Atlas Explorer first, from `agents/atlas-explorer`. The default
+target is the Playground on port 3000:
+
+```bash
+agentengine dev up
+```
+
+Then, from this directory:
+
+```bash
+pnpm test:integration
+```
+
+`agentengine dev up --headless` does not start the Playground. Point the
+suite at the Orchestration Engine instead:
+
+```bash
+AGENTIC_PLAYGROUND_URL=http://127.0.0.1:8000 pnpm test:integration
+```
+
+CI runs this suite with `agentengine dev up --headless --no-egress`. Headless
+mode does not start the Playground, so the job sets
+`AGENTIC_PLAYGROUND_URL=http://127.0.0.1:8000` and the bot calls the
+Orchestration Engine `/invoke/stream` route directly. It uses dummy Atlas
+credentials, clears `mcp.servers`, and points `OPENAI_BASE_URL` at
+`scripts/openai-local-mock.mjs` on `host.docker.internal` so the job never
+calls Slack, Atlas, or OpenAI.

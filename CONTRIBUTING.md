@@ -107,10 +107,40 @@ drop request that must not call a write tool, and requester metadata.
 
 ### GitHub Actions
 
-CI does not run these suites. The dev-up smoke job writes dummy OpenAI and
-store settings, clears `mcp.servers` in the runner checkout so startup does
-not call Atlas, and checks that `agentengine dev up --headless` brings the
-Orchestration Engine up on port 8000.
+CI does not run the Atlas Explorer or Atlas Query Insights suites above. The
+dev-up smoke job writes dummy OpenAI and store settings, clears `mcp.servers`
+in the runner checkout so startup does not call Atlas, and checks that
+`agentengine dev up --headless` brings the Orchestration Engine up on port
+8000.
+
+### Slack bot
+
+The Slack bot has a local integration suite that CI does run. It does not
+call Slack or a deployed Agent Engine workspace. The job starts Atlas Explorer
+with `agentengine dev up --headless --no-egress`, points the bot's HTTP server
+at the local Orchestration Engine, and serves Slack Web API calls from an
+in-process stand-in. A local OpenAI stand-in answers model calls.
+
+From `agents/atlas-explorer`, start the Playground, then run the suite from
+the repository root:
+
+```bash
+agentengine dev up
+cd ../..
+pnpm test:slack-bot:integration
+```
+
+Headless mode leaves port 3000 unused. Use the Orchestration Engine URL
+instead:
+
+```bash
+AGENTIC_PLAYGROUND_URL=http://127.0.0.1:8000 pnpm test:slack-bot:integration
+```
+
+A fast unit test in the same app uses a scripted local invoke endpoint
+instead of Agent Engine. `pnpm test:slack-bot` runs that test. The local
+OpenAI stand-in used by CI is
+`apps/atlas-explorer-slack-bot/scripts/openai-local-mock.mjs`.
 
 ## Pull requests
 

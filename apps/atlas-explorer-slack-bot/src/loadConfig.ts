@@ -31,6 +31,8 @@ export interface SlackBotConfig {
     appToken?: string;
     signingSecret?: string;
     botDisplayName: string;
+    /** Local Slack Web API base URL. Unset calls https://slack.com/api. */
+    apiUrl?: string;
   };
   agentEngine: AgentEngineClientConfig;
   store: {
@@ -71,6 +73,7 @@ const environmentSchema = z
     CHAT_ALLOWED_USER_IDS: optionalString,
     AGENTIC_BASE_URL: optionalUrl,
     THREAD_STORE_DB: optionalString,
+    SLACK_API_URL: optionalUrl,
   })
   .passthrough();
 
@@ -192,6 +195,7 @@ export function loadConfig(
       botDisplayName:
         values.SLACK_BOT_DISPLAY_NAME ??
         (slackBotConfig.name.trim() || DEFAULT_SLACK_BOT_NAME),
+      ...(values.SLACK_API_URL ? { apiUrl: values.SLACK_API_URL } : {}),
     },
     agentEngine: buildAgenticConfig(values, invokeTarget),
     store: {

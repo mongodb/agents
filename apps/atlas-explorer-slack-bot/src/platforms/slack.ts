@@ -42,6 +42,7 @@ const SUGGESTED_PROMPTS = [
 ];
 
 export interface SlackPlatformOptions {
+  apiUrl?: string;
   appToken?: string;
   botToken: string;
   displayName: string;
@@ -67,6 +68,7 @@ export function createSlackPlatformAdapter(
       retryConfig: { retries: 0 },
       rejectRateLimitedCalls: true,
     },
+    ...(options.apiUrl ? { apiUrl: options.apiUrl } : {}),
     ...(options.appToken ? { appToken: options.appToken } : {}),
     ...(options.signingSecret
       ? { signingSecret: options.signingSecret }
