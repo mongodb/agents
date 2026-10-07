@@ -81,7 +81,18 @@ run the two phases separately.
 agentengine dev up --headless
 pnpm test:integration
 agentengine dev stop
+```
 
+`knowledgeTools.integration.test.ts` calls `https://knowledge.mongodb.com`
+through the packaged knowledge tools. It does not use the local stack, so it
+can run on its own:
+
+```bash
+pnpm exec vitest run --config vitest.integration.config.ts \
+  src/agent_atlas_explorer/knowledgeTools.integration.test.ts
+```
+
+```bash
 # HITL: the same read-only Atlas MCP credential, with write tools exposed so
 # drop_collection suspends. Approve still fails at Atlas.
 # Set ALLOW_WRITE_OPERATIONS=true in .env so the running agent sees it.
