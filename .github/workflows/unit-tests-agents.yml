@@ -66,3 +66,17 @@ jobs:
       - uses: ./.github/actions/unit-test
         with:
           command: ${{ matrix.command }}
+
+  # Live call to knowledge.mongodb.com. Kept out of `pnpm test` because that
+  # config stubs @mongodb-js/mcp-fetch. Does not start the local stack.
+  knowledge-api:
+    name: atlas-explorer knowledge API
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      COREPACK_ENABLE_DOWNLOAD_PROMPT: "0"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/unit-test
+        with:
+          command: pnpm --filter atlas-explorer test:knowledge

@@ -83,13 +83,12 @@ pnpm test:integration
 agentengine dev stop
 ```
 
-`knowledgeTools.integration.test.ts` calls `https://knowledge.mongodb.com`
-through the packaged knowledge tools. It does not use the local stack, so it
-can run on its own:
+`pnpm test:knowledge` calls `https://knowledge.mongodb.com` through the
+packaged knowledge tools. It does not use the local stack. The agent unit-test
+workflow runs this command on pull requests.
 
 ```bash
-pnpm exec vitest run --config vitest.integration.config.ts \
-  src/agent_atlas_explorer/knowledgeTools.integration.test.ts
+pnpm test:knowledge
 ```
 
 ```bash
@@ -118,7 +117,8 @@ drop request that must not call a write tool, and requester metadata.
 
 ### GitHub Actions
 
-CI does not run these suites. The dev-up smoke job writes dummy OpenAI and
+CI does not run the local-stack suites. It does run `pnpm test:knowledge`
+from the agent unit-test workflow. The dev-up smoke job writes dummy OpenAI and
 store settings, clears `mcp.servers` in the runner checkout so startup does
 not call Atlas, and checks that `agentengine dev up --headless` brings the
 Orchestration Engine up on port 8000.
