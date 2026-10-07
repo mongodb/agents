@@ -29,7 +29,9 @@ import { readFileSync } from "node:fs";
 import type { InterruptRecord, RunRecord, ToolEvent, TurnRecord, WorkspaceKey } from "./types.ts";
 
 
-const ACTOR_ID = "eval:runner";
+// The platform can reject a user_id that differs from the authenticated caller (HTTP 403, "end-user delegation is
+// not enabled"). Set EVAL_ACTOR_ID to the CLI user id (`agentengine auth status`) to run as yourself.
+const ACTOR_ID = process.env.EVAL_ACTOR_ID || "eval:runner";
 const CLIENT = "eval";
 const USER = { id: "eval-runner", username: "eval-runner", actor_id: ACTOR_ID };
 

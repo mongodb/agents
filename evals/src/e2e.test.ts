@@ -175,6 +175,7 @@ function env(extra: Record<string, string> = {}): NodeJS.ProcessEnv {
     AE_SA_CLIENT_SECRET: "secret",
     AE_WS_EXPLORER_READONLY: "ws-ro",
     AE_WS_EXPLORER_WRITE: "ws-write",
+    EVAL_ATLAS_CLUSTER: "Cluster0",
     ...extra,
   };
 }
