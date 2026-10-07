@@ -105,6 +105,39 @@ The checked-in manifest permits the OpenAI endpoint plus the Atlas OAuth
 and Managed MCP hosts. Changing `llm.provider` also requires the matching
 key under `required_secrets` and the provider host under `network.egress`.
 
+## Access token limit
+
+Atlas allows each service account at most 100 active access tokens, and each
+token lasts 1 hour. The MCP configuration's client ID is a service account,
+so every run of every workspace that uses the configuration shares that
+limit.
+
+Agent Engine exchanges the client ID and secret for a new access token each
+time it starts an AER or Tool Pod process, and it starts several processes
+for each new run. In testing, a workspace used 3 to 4 tokens per new run and
+stopped accepting new runs after about 25 in one hour. Your numbers can vary
+with traffic and platform scaling.
+
+When the limit is reached:
+
+- New runs fail with `The agent did not become ready during startup.`
+- Runtime logs show `Access Token limit reached`:
+
+  ```bash
+  agentengine logs --grep "Access Token limit" --since 1h
+  ```
+
+- The workspace recovers on its own as the oldest tokens expire, within an
+  hour of the burst. Redeploying doesn't help, because each new process
+  needs its own token.
+
+To stay under the limit:
+
+- Use a separate MCP configuration for each environment, as described in
+  [Configure](#configure).
+- Plan for about 25 new runs per hour on each MCP configuration. Spread
+  scheduled reports and evaluation runs over time.
+
 ## Seed slow queries
 
 Performance Advisor needs recent slow query logs before it can suggest
