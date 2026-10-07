@@ -26,6 +26,7 @@ import {
   buildSystemPrompt,
   prepareAgentInput,
   recoverToolErrorsMiddleware,
+  redactSecretsMiddleware,
   selectAtlasQueryInsightsTools,
   stampResumeClientUserMiddleware,
   stripToolEchoMiddleware,
@@ -74,6 +75,7 @@ export const buildAgent = app.entrypoint(() => {
       middleware: [
         stampResumeClientUserMiddleware,
         stripToolEchoMiddleware,
+        redactSecretsMiddleware,
         annotatePerformanceAdvisorMiddleware(),
         rejectAggregateWritesMiddleware,
         recoverToolErrorsMiddleware,

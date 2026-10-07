@@ -47,6 +47,7 @@ export {
   buildLLM,
   prepareAgentInput,
   recoverToolErrorsMiddleware,
+  redactSecretsMiddleware,
   stampClientUser,
   stampResumeClientUserMiddleware,
   stripToolEchoMiddleware,

@@ -19,6 +19,7 @@ export {
   buildSystemPrompt,
   prepareAgentInput,
   recoverToolErrorsMiddleware,
+  redactSecretsMiddleware,
   selectAtlasQueryInsightsTools,
   stampResumeClientUserMiddleware,
   stripToolEchoMiddleware,

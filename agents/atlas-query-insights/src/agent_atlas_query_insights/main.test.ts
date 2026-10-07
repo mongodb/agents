@@ -172,6 +172,7 @@ describe("Atlas Query Insights graph assembly", () => {
     expect(options.middleware?.map((middleware) => middleware.name)).toEqual([
       stampResumeClientUserMiddleware.name,
       "stripOpenAIToolEcho",
+      "redactSecrets",
       "annotatePerformanceAdvisor",
       "rejectAggregateWrites",
       "recoverToolErrors",
