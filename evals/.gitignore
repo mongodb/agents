@@ -1,0 +1,6 @@
+node_modules/
+.env
+.env.*
+!example.env
+results/
+ground-truth.json

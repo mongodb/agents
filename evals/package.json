@@ -1,0 +1,19 @@
+{
+  "name": "agents-evals",
+  "private": true,
+  "description": "Red-team and quality eval rig for the deployed Atlas Explorer and Atlas Query Insights agents. Not part of the pnpm workspace.",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build-client": "cd .. && pnpm --filter @repo/agent-engine-chat build",
+    "run": "node src/run.ts",
+    "judge": "node src/judge.ts",
+    "summary": "node src/summary.ts",
+    "calibrate": "node src/calibrate.ts",
+    "list": "node src/run.ts --list",
+    "test": "node --test src/*.test.ts",
+    "typecheck": "../packages/agent-engine-chat/node_modules/.bin/tsc -p tsconfig.json"
+  }
+}
