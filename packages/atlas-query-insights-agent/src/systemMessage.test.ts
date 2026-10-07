@@ -76,6 +76,11 @@ describe("buildSystemPrompt", () => {
     );
   });
 
+  it("grounds MongoDB explanations with the shared knowledge tools", () => {
+    expect(prompt).toContain("`search_knowledge`");
+    expect(prompt).toContain("`list_knowledge_sources`");
+  });
+
   it("points at the evidence block and the five skills", () => {
     expect(prompt).toContain("evidence block");
     expect(prompt.toLowerCase()).not.toContain("user prompt");

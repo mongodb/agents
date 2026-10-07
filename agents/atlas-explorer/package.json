@@ -17,7 +17,6 @@
     "test:watch": "vitest",
     "pretest:integration": "pnpm --filter @repo/atlas-explorer-agent build",
     "test:integration": "vitest run --config vitest.integration.config.ts",
-    "test:knowledge": "vitest run --config vitest.integration.config.ts src/agent_atlas_explorer/knowledgeTools.integration.test.ts",
     "pretypecheck": "pnpm --filter @repo/atlas-explorer-agent build",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json --noEmit",
     "prestart": "pnpm run build",

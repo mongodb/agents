@@ -101,9 +101,10 @@ agentengine secret set ATLAS_MCP_CLIENT_SECRET
 agentengine secret set OPENAI_API_KEY
 ```
 
-The checked-in manifest permits the OpenAI endpoint plus the Atlas OAuth
-and Managed MCP hosts. Changing `llm.provider` also requires the matching
-key under `required_secrets` and the provider host under `network.egress`.
+The checked-in manifest permits the OpenAI endpoint, the Atlas OAuth and
+Managed MCP hosts, and `knowledge.mongodb.com` for the shared knowledge
+tools. Changing `llm.provider` also requires the matching key under
+`required_secrets` and the provider host under `network.egress`.
 
 ### Access token limit
 

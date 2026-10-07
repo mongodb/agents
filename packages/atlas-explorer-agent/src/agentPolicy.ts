@@ -15,6 +15,8 @@
  */
 
 import {
+  LIST_KNOWLEDGE_SOURCES_TOOL_NAME,
+  SEARCH_KNOWLEDGE_TOOL_NAME,
   selectTools,
   writeOperationsAllowed,
 } from "@repo/agent-engine-core";
@@ -28,7 +30,7 @@ export { writeOperationsAllowed };
  * tool annotations on `app.getTools()`.
  *
  * Names follow Atlas Managed MCP `read`, `metadata`, and `connect` tools,
- * plus the wrapped `@mongodb-js/mcp-tools-assistant` tools
+ * plus the shared knowledge tools from `@repo/agent-engine-core`
  * (`search_knowledge`, `list_knowledge_sources`). Local-only tools such as
  * `mongodb-logs` and
  * `switch-connection` are omitted. `aggregate` and `aggregate-db` stay here
@@ -37,7 +39,7 @@ export { writeOperationsAllowed };
  * before it reaches Atlas.
  */
 export const READ_ONLY_MCP_TOOLS: ReadonlySet<string> = new Set([
-  "list_knowledge_sources",
+  LIST_KNOWLEDGE_SOURCES_TOOL_NAME,
   "mongodb__aggregate",
   "mongodb__aggregate_db",
   "mongodb__atlas_connect_cluster",
@@ -62,7 +64,7 @@ export const READ_ONLY_MCP_TOOLS: ReadonlySet<string> = new Set([
   "mongodb__list_collections",
   "mongodb__list_databases",
   "mongodb__remote_atlas_connect",
-  "search_knowledge",
+  SEARCH_KNOWLEDGE_TOOL_NAME,
 ]);
 
 /**

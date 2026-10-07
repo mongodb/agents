@@ -25,6 +25,7 @@ import {
   AgentEngineToolSandboxBackend,
   type DeepAgentOptions,
 } from "@mongodb-js/agent-engine-sdk-langgraph";
+import { registerKnowledgeTools } from "@repo/agent-engine-core";
 import {
   approveAggregateWritesMiddleware,
   buildLLM,
@@ -42,7 +43,6 @@ import {
 } from "@repo/atlas-explorer-agent";
 
 import { atlasExplorerConfig } from "./config.js";
-import { registerKnowledgeTools } from "./knowledgeTools.js";
 
 function log(level: "INFO" | "WARN" | "ERROR", msg: string): void {
   const t = new Date().toISOString().slice(11, 19);

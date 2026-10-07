@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import type { App } from "@mongodb-js/agent-engine-sdk-langgraph";
 import {
   ListKnowledgeSourcesTool,
   ListKnowledgeSourcesToolName,
@@ -23,6 +22,20 @@ import {
   type AssistantToolServer,
 } from "@mongodb-js/mcp-tools-assistant";
 import { z } from "zod";
+
+/**
+ * The subset of `App.tool` both agents use to register these calls.
+ * Kept structural so this package does not depend on the LangGraph SDK.
+ */
+export type KnowledgeToolHost = {
+  tool: (options: {
+    name: string;
+    description: string;
+    schema: z.ZodType;
+    isLocal: boolean;
+    network: readonly string[];
+  }) => (fn: (args: unknown) => Promise<string>) => unknown;
+};
 
 export const KNOWLEDGE_NETWORK_HOST = "knowledge.mongodb.com";
 export const SEARCH_KNOWLEDGE_TOOL_NAME = "search_knowledge";
@@ -116,7 +129,7 @@ export function createKnowledgeTools(): WrappedKnowledgeTool[] {
   });
 }
 
-export function registerKnowledgeTools(app: Pick<App, "tool">): void {
+export function registerKnowledgeTools(app: KnowledgeToolHost): void {
   for (const tool of createKnowledgeTools()) {
     app.tool({
       name: tool.name,

@@ -83,14 +83,6 @@ pnpm test:integration
 agentengine dev stop
 ```
 
-`pnpm test:knowledge` calls `https://knowledge.mongodb.com` through the
-packaged knowledge tools. It does not use the local stack. The agent unit-test
-workflow runs this command on pull requests.
-
-```bash
-pnpm test:knowledge
-```
-
 ```bash
 # HITL: the same read-only Atlas MCP credential, with write tools exposed so
 # drop_collection suspends. Approve still fails at Atlas.
@@ -117,11 +109,14 @@ drop request that must not call a write tool, and requester metadata.
 
 ### GitHub Actions
 
-CI does not run the local-stack suites. It does run `pnpm test:knowledge`
-from the agent unit-test workflow. The dev-up smoke job writes dummy OpenAI and
-store settings, clears `mcp.servers` in the runner checkout so startup does
-not call Atlas, and checks that `agentengine dev up --headless` brings the
-Orchestration Engine up on port 8000.
+CI does not run the local-stack suites. It does run
+`pnpm --filter @repo/agent-engine-core test:knowledge`, which calls
+`https://knowledge.mongodb.com` through the shared knowledge tools registered
+by Atlas Explorer and Atlas Query Insights. That command does not start the
+local stack. The dev-up smoke job writes dummy OpenAI and store settings,
+clears `mcp.servers` in the runner checkout so startup does not call Atlas,
+and checks that `agentengine dev up --headless` brings the Orchestration
+Engine up on port 8000.
 
 ## Pull requests
 
