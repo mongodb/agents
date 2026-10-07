@@ -62,9 +62,10 @@ The example config grants `GROUP_DATA_ACCESS_READ_ONLY` only. Do not add
 a read-write role.
 
 Copy `mcp-config.example.json` to ignored `mcp-config.json`. Replace
-`YOUR_LOCAL_PUBLIC_IP` with this machine's public IPv4. Replace the
-`AGENT_ENGINE_IP_*` placeholders with your Agent Engine deployment's egress
-addresses so a deployed workspace can call Managed MCP.
+`YOUR_LOCAL_PUBLIC_IP` with this machine's public IPv4. The example already
+lists the two
+[Agent Engine egress IP addresses](https://www.mongodb.com/docs/agentengine/network-egress/),
+which a deployed workspace needs to call the Atlas MCP.
 
 Use a separate MCP configuration per environment, named
 `atlas-query-insights-{environment}`. Requires Atlas CLI 1.58 or later.
@@ -103,6 +104,46 @@ agentengine secret set OPENAI_API_KEY
 The checked-in manifest permits the OpenAI endpoint plus the Atlas OAuth
 and Managed MCP hosts. Changing `llm.provider` also requires the matching
 key under `required_secrets` and the provider host under `network.egress`.
+
+### Access token limit
+
+The Atlas MCP server allows each service account at most 100 active access
+tokens, and each token lasts 1 hour. The MCP configuration's client ID is a
+service account, so every run of every workspace that uses the configuration
+shares that limit.
+
+Agent Engine exchanges the client ID and secret for a new access token when it
+starts an AER or Tool Pod process that doesn't already have a valid one. Each
+pod keeps its own token cache, so a fresh process always needs a new token. A
+run starts at least one AER and one Tool Pod process, and follow-up messages
+in the same session often start new ones. Resuming after an approval reuses
+the session's processes. Your numbers can vary with traffic and platform
+scaling.
+
+When the limit is reached:
+
+- New runs fail with `The agent did not become ready during startup.`
+- Runtime logs show `Access Token limit reached`:
+
+  ```bash
+  agentengine logs --grep "Access Token limit" --since 1h
+  ```
+
+- The workspace recovers on its own as the oldest tokens expire, within an
+  hour of the burst. Redeploying doesn't help, because the redeployed
+  processes need new tokens too.
+
+To stay under the limit:
+
+- Use a separate MCP configuration for each environment, as described in
+  [Configure](#configure).
+- Spread scheduled reports and evaluation runs over time. Every run can
+  start new processes, so a burst of runs uses tokens quickly.
+- To handle more traffic, deploy several copies of the agent, each in its
+  own workspace with its own MCP configuration, and balance new runs
+  across them. Each MCP configuration has its own token limit. Keep every
+  run on the copy that started it, because session state belongs to one
+  workspace.
 
 ## Seed slow queries
 
@@ -177,9 +218,8 @@ Things to know:
 - The MCP configuration uses `GROUP_DATA_ACCESS_READ_ONLY`.
 - The tool allowlist never enables writes, and there is no
   human-in-the-loop path.
-- `aggregate` stays available, and the agent isn't told to avoid `$out` or
-  `$merge`. A read-only credential is what stops those stages from writing,
-  so don't give the MCP configuration a read-write role.
+- `aggregate` stays available for read pipelines. A pipeline that contains
+  `$out` or `$merge` is rejected because this agent is read-only.
 - The MCP configuration belongs to one project, so the agent cannot reach
   another.
 - The agent can recommend an index. It cannot create one.

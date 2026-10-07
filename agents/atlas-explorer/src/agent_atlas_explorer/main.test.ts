@@ -23,6 +23,7 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
+  approveAggregateWritesMiddleware,
   prepareAtlasExplorerInput,
   READ_ONLY_SYSTEM_PROMPT,
   stampClientUser,
@@ -37,6 +38,8 @@ const harness = vi.hoisted(() => {
     { name: "mongodb__find" },
     { name: "mongodb__drop_collection" },
     { name: "mongodb__future_mutating_operation" },
+    { name: "mongodb__atlas_create_db_user" },
+    { name: "mongodb__atlas_create_access_list" },
   ];
   const model = { id: "orchestrator-model" };
   const graph = { id: "atlas-graph" };
@@ -84,6 +87,10 @@ vi.mock("@mongodb-js/agent-engine-sdk-langgraph", () => ({
       harness.startupEvents.push("app");
       harness.agentWorkdirAtAppConstruction = process.env.AGENTIC_AGENT_WORKDIR;
       harness.appName = options.appName;
+    }
+
+    get agentConfig(): { mcp: { servers: Record<string, unknown> } } {
+      return { mcp: { servers: {} } };
     }
 
     entrypoint(fn: () => unknown): () => unknown {
@@ -195,11 +202,19 @@ describe("Atlas Explorer graph assembly", () => {
           expect.objectContaining({ name: "stripOpenAIToolEcho" }),
           expect.objectContaining({ name: "redactSecrets" }),
           harness.hitlMiddleware,
+          approveAggregateWritesMiddleware,
           expect.objectContaining({ name: "recoverToolErrors" }),
         ],
       }),
     );
-    expect(harness.prepareAgentInput).toBe(prepareAtlasExplorerInput);
+    const agentInput = { payload: { message: "List projects" } };
+    const requestContext = { userId: "user-1", sessionId: "session-1" };
+    expect(
+      (harness.prepareAgentInput as typeof prepareAtlasExplorerInput)(
+        agentInput,
+        requestContext,
+      ),
+    ).toEqual(prepareAtlasExplorerInput(agentInput, requestContext));
     expect(harness.deepAgent.mock.calls[0]?.[1]).not.toHaveProperty(
       "subagents",
     );
@@ -288,11 +303,14 @@ describe("Atlas Explorer graph assembly", () => {
     const builder = await loadBuilder();
     builder();
 
-    expect(assembledTools()).toEqual([
-      harness.tools[0],
-      harness.tools[1],
-      harness.tools[2],
+    const names = assembledTools().map((tool) => tool.name);
+    expect(names).toEqual([
+      "mongodb__find",
+      "mongodb__drop_collection",
+      "mongodb__future_mutating_operation",
     ]);
+    expect(names).not.toContain("mongodb__atlas_create_db_user");
+    expect(names).not.toContain("mongodb__atlas_create_access_list");
     expect(
       (harness.deepAgent.mock.calls[0]?.[1] as { systemPrompt?: string })
         .systemPrompt,
@@ -304,5 +322,12 @@ describe("Atlas Explorer graph assembly", () => {
       },
       descriptionPrefix: "MongoDB or Atlas operation pending approval",
     });
+    expect(
+      (
+        harness.deepAgent.mock.calls[0]?.[1] as {
+          middleware?: { name?: string }[];
+        }
+      ).middleware?.map((middleware) => middleware.name),
+    ).toContain("approveAggregateWrites");
   });
 });

@@ -167,6 +167,7 @@ describe("Atlas Query Insights graph assembly", () => {
       "stripOpenAIToolEcho",
       "redactSecrets",
       "annotatePerformanceAdvisor",
+      "rejectAggregateWrites",
       "recoverToolErrors",
     ]);
     expect(harness.prepareAgentInput).toBe(prepareAgentInput);

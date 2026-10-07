@@ -14,6 +14,15 @@
  * limitations under the License.
  */
 
+export {
+  AGGREGATE_WRITE_TOOLS,
+  aggregateCallNeedsApproval,
+  aggregatePipelineWrites,
+  approveAggregateWritesMiddleware,
+  guardAggregateWrite,
+  rejectAggregateWrite,
+  rejectAggregateWritesMiddleware,
+} from "./aggregateWriteApproval.js";
 export { withoutShellExecution } from "./agentBackend.js";
 export {
   parseClientUserPayload,
@@ -34,6 +43,12 @@ export {
   withRequesterMetadata,
   type Requester,
 } from "./requesterMetadata.js";
+export {
+  readMcpTokenCacheSummary,
+  startRuntimeDiagnostics,
+  type RuntimeDiagnostics,
+  type RuntimeDiagnosticsOptions,
+} from "./runtimeDiagnostics.js";
 export {
   isAgentEngineResume,
   stampResumeClientUserMiddleware,

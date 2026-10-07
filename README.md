@@ -202,6 +202,12 @@ how they're set up.
 - **Built for Atlas Agent Engine.** You can fork the code and adapt it under
   the Apache 2.0 license. However, the deployment steps in this repository
   cover only Atlas Agent Engine and the `agentengine` CLI.
+- **Each MCP configuration has an hourly capacity limit.** Atlas limits how
+  many access tokens one service account can have active, and Agent Engine
+  can mint a new token each time it starts a process to handle a request.
+  When the limit is reached, new conversations fail until older tokens
+  expire. For details, see
+  [Access token limit](agents/atlas-explorer/README.md#access-token-limit).
 - **Slack is an optional example.** You host the Slack bot yourself. Everyone
   on its allowlist shares one Atlas identity instead of using their own Atlas
   permissions. For details, see

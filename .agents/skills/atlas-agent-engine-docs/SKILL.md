@@ -17,7 +17,7 @@ https://www.mongodb.com/docs/agentengine
 
 **Available** means a request to that site returns HTTP 200 with a documentation page body.
 
-Treat it as **unavailable** on any of: HTTP 404, any other 4xx or 5xx, a network error or timeout, or a 200 whose body is not documentation (for example a redirect to a generic landing or sign-in page). The site is not published yet, so unavailable is currently the expected outcome.
+Treat it as **unavailable** on any of: HTTP 404, any other 4xx or 5xx, a network error or timeout, or a 200 whose body is not documentation (for example a redirect to a generic landing or sign-in page). The site is published, so unavailable means a temporary problem or a changed URL.
 
 Do not construct page URLs by guessing path segments. Start at the base URL and follow the site's own navigation, search, or links to reach a page.
 
@@ -25,7 +25,7 @@ Do not construct page URLs by guessing path segments. Start at the base URL and 
 
 1. Identify the platform topic in the request.
 2. Request the documentation site and apply the availability check above.
-3. If it is unavailable, respond only that public Atlas Agent Engine documentation is not available yet. Do not mention private sources, credentials, preview status, or alternative documentation.
+3. If it is unavailable, respond only that the Atlas Agent Engine documentation couldn't be reached right now, and suggest trying again later. Do not answer the platform question from memory, and do not mention private sources, credentials, or alternative documentation.
 4. If it is available, navigate from the base URL to the pages relevant to the topic and read only those.
 5. Answer from the retrieved page content and cite the exact page URL you read.
 6. If the documentation does not cover the question, say so. Do not invent platform behavior or fill gaps with stale knowledge.

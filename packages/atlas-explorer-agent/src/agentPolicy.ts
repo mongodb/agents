@@ -28,9 +28,10 @@ export { writeOperationsAllowed };
  * tool annotations on `app.getTools()`.
  *
  * Names follow Atlas Managed MCP `read`, `metadata`, and `connect` tools.
- * Local-only tools such as `export`, `mongodb-logs`, and `switch-connection`
- * are omitted. `aggregate` and `aggregate-db` stay here because MongoDB labels
- * them read-only; `$out`/`$merge` is blocked by a read-only Atlas credential.
+ * Local-only tools such as `mongodb-logs` and `switch-connection` are
+ * omitted. `aggregate` and `aggregate-db` stay here because MongoDB labels
+ * them read-only. A pipeline that contains `$out` or `$merge` is a write and
+ * is suspended by `approveAggregateWritesMiddleware` before it reaches Atlas.
  */
 export const READ_ONLY_MCP_TOOLS: ReadonlySet<string> = new Set([
   "mongodb__aggregate",
@@ -61,11 +62,21 @@ export const READ_ONLY_MCP_TOOLS: ReadonlySet<string> = new Set([
   "mongodb__search_knowledge",
 ]);
 
+/**
+ * Always excluded. There is no way to opt into these tools.
+ */
+export const HIGH_RISK_MCP_TOOLS: ReadonlySet<string> = new Set([
+  "mongodb__atlas_create_access_list",
+  "mongodb__atlas_create_db_user",
+]);
+
 export function selectAtlasTools<T extends { name: string }>(
   tools: readonly T[],
   allowWriteOperations: boolean = writeOperationsAllowed(),
 ): T[] {
-  return selectTools(tools, READ_ONLY_MCP_TOOLS, allowWriteOperations);
+  return selectTools(tools, READ_ONLY_MCP_TOOLS, allowWriteOperations).filter(
+    (tool) => !HIGH_RISK_MCP_TOOLS.has(tool.name),
+  );
 }
 
 export function mutativeInterruptOn<T extends { name: string }>(

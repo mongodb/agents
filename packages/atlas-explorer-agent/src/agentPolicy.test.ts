@@ -17,6 +17,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  HIGH_RISK_MCP_TOOLS,
   READ_ONLY_MCP_TOOLS,
   mutativeInterruptOn,
   selectAtlasTools,
@@ -27,10 +28,11 @@ const discoveredCatalog = [
   { name: "mongodb__find" },
   { name: "mongodb__aggregate" },
   { name: "mongodb__aggregate_db" },
-  { name: "mongodb__export" },
   { name: "mongodb__drop_collection" },
   { name: "mongodb__insert_many" },
   { name: "mongodb__atlas_create_cluster" },
+  { name: "mongodb__atlas_create_access_list" },
+  { name: "mongodb__atlas_create_db_user" },
   { name: "mongodb__future_mutating_operation" },
   { name: "mongodb__atlas_local_connect_deployment" },
   { name: "custom_unclassified_tool" },
@@ -91,6 +93,16 @@ describe("Atlas tool policy", () => {
     ]);
   });
 
+  it("denies database-user creation and access-list changes", () => {
+    expect([...HIGH_RISK_MCP_TOOLS].sort()).toEqual([
+      "mongodb__atlas_create_access_list",
+      "mongodb__atlas_create_db_user",
+    ]);
+    expect(
+      [...HIGH_RISK_MCP_TOOLS].every((name) => !READ_ONLY_MCP_TOOLS.has(name)),
+    ).toBe(true);
+  });
+
   it("hides write and unknown tools when writes are disabled", () => {
     expect(selectAtlasTools(discoveredCatalog, false)).toEqual([
       { name: "mongodb__find" },
@@ -106,7 +118,6 @@ describe("Atlas tool policy", () => {
       { name: "mongodb__find" },
       { name: "mongodb__aggregate" },
       { name: "mongodb__aggregate_db" },
-      { name: "mongodb__export" },
       { name: "mongodb__drop_collection" },
       { name: "mongodb__insert_many" },
       { name: "mongodb__atlas_create_cluster" },
@@ -115,7 +126,6 @@ describe("Atlas tool policy", () => {
       { name: "custom_unclassified_tool" },
     ]);
     expect(mutativeInterruptOn(selected)).toEqual({
-      mongodb__export: true,
       mongodb__drop_collection: true,
       mongodb__insert_many: true,
       mongodb__atlas_create_cluster: true,
@@ -123,5 +133,15 @@ describe("Atlas tool policy", () => {
       mongodb__atlas_local_connect_deployment: true,
       custom_unclassified_tool: true,
     });
+  });
+
+  it("withholds high-risk tools in both modes", () => {
+    for (const allowWrites of [false, true]) {
+      const names = selectAtlasTools(discoveredCatalog, allowWrites).map(
+        (tool) => tool.name,
+      );
+      expect(names).not.toContain("mongodb__atlas_create_db_user");
+      expect(names).not.toContain("mongodb__atlas_create_access_list");
+    }
   });
 });

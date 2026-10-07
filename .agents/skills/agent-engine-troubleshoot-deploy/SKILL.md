@@ -1,5 +1,5 @@
 ---
-name: troubleshoot-deploy
+name: agent-engine-troubleshoot-deploy
 description: Diagnose failed or stuck deployments using the agentengine CLI. Guides through status checks, deploy event logs, and runtime logs to identify the root cause and recommend fixes.
 ---
 

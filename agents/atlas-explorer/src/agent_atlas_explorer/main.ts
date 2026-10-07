@@ -22,6 +22,7 @@ import { humanInTheLoopMiddleware } from "langchain";
 
 import { App, AgentEngineToolSandboxBackend } from "@mongodb-js/agent-engine-sdk-langgraph";
 import {
+  approveAggregateWritesMiddleware,
   buildLLM,
   buildSystemPrompt,
   mutativeInterruptOn,
@@ -30,6 +31,7 @@ import {
   redactSecretsMiddleware,
   selectAtlasTools,
   stampResumeClientUserMiddleware,
+  startRuntimeDiagnostics,
   stripToolEchoMiddleware,
   withRequesterMetadata,
   withoutShellExecution,
@@ -46,11 +48,21 @@ function log(level: "INFO" | "WARN" | "ERROR", msg: string): void {
 process.env.AGENTIC_AGENT_WORKDIR ||= process.cwd();
 
 export const app = new App({ appName: "atlas-explorer" });
-app.prepareAgentInput(prepareAtlasExplorerInput);
+const diagnostics = atlasExplorerConfig.diagnostics.logRuntimeLifecycle
+  ? startRuntimeDiagnostics({
+      mcpServers: app.agentConfig.mcp.servers,
+      log: (msg) => log("INFO", msg),
+    })
+  : undefined;
+app.prepareAgentInput((input, ctx) => {
+  diagnostics?.recordExecution(ctx.sessionId);
+  return prepareAtlasExplorerInput(input, ctx);
+});
 log("INFO", "App created; Atlas MCP tools will be discovered from agent.yaml");
 
 export const buildAgent = app.entrypoint(() => {
   log("INFO", "Building atlas-explorer deep agent");
+  diagnostics?.recordGraphBuild();
 
   const allowWriteOperations = writeOperationsAllowed();
   log(
@@ -94,6 +106,7 @@ export const buildAgent = app.entrypoint(() => {
         stripToolEchoMiddleware,
         redactSecretsMiddleware,
         mutativeToolReview,
+        approveAggregateWritesMiddleware,
         recoverToolErrorsMiddleware,
       ] as never,
     },

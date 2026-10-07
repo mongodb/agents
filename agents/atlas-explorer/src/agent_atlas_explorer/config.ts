@@ -24,6 +24,10 @@
  *
  * Leave `systemPrompt.name` empty to keep the default "Atlas Explorer".
  * Leave `systemPrompt.customInstructions` empty to skip extra prompt text.
+ *
+ * `diagnostics.logRuntimeLifecycle` logs `[runtime-diag]` lines showing which
+ * process serves each execution and when each process caches a new Atlas MCP
+ * access token. Token values are never logged.
  */
 
 export const atlasExplorerConfig = {
@@ -34,5 +38,8 @@ export const atlasExplorerConfig = {
   systemPrompt: {
     name: "",
     customInstructions: "",
+  },
+  diagnostics: {
+    logRuntimeLifecycle: true,
   },
 } as const;

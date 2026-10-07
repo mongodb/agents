@@ -78,8 +78,9 @@ this environment is intentionally write-capable.
 
 Copy `mcp-config.example.json` to ignored `mcp-config.json`. Replace
 `YOUR_LOCAL_PUBLIC_IP` with this machine's public IPv4 (`curl -4 ifconfig.me`).
-Replace the `AGENT_ENGINE_IP_*` placeholders with your Agent Engine deployment's
-egress addresses so a deployed workspace can call Managed MCP.
+The example already lists the two
+[Agent Engine egress IP addresses](https://www.mongodb.com/docs/agentengine/network-egress/),
+which a deployed workspace needs to call the Atlas MCP.
 
 Create a **separate MCP configuration and token per environment** (local
 development, staging, production, and so on). Do not share credentials across
@@ -153,15 +154,18 @@ enough to prevent ordinary write-tool use:
 When writes are enabled, every MCP tool that isn't on the read-only allowlist
 is exposed, and each one pauses for approval before it runs. That includes
 tools the allowlist doesn't recognize, such as tools added to Atlas MCP
-later, and `export`. You can approve, edit, or reject each call. The
+later. These tools are not included in either mode:
+
+- `mongodb__atlas_create_db_user`
+- `mongodb__atlas_create_access_list`
+
+You can approve, edit, or reject each remaining call. The
 [Slack bot](../../apps/atlas-explorer-slack-bot) offers only Approve and
 Reject.
 
-Approval is per tool, not per argument, so `aggregate` and `aggregate_db`
-stay unapproved reads. The system prompt tells the agent never to use the
-`$out` or `$merge` stages, which write data. Only a read-only credential
-guarantees that, so keep the credential read-only unless the environment
-needs writes.
+`aggregate` and `aggregate_db` stay on the read allowlist, so a normal
+pipeline runs without approval. A pipeline that contains `$out` or `$merge`
+writes data. These require HITL approval.
 
 ## Model and persona
 
@@ -193,6 +197,46 @@ The MCP configuration is provisioned once in Atlas, scoped to one project:
 
 Rotate the client secret in Atlas, update the local or deployed secret, verify
 the agent, and then revoke the previous secret.
+
+### Access token limit
+
+The Atlas MCP server allows each service account at most 100 active access
+tokens, and each token lasts 1 hour. The MCP configuration's client ID is a
+service account, so everything that uses the configuration shares that limit:
+the Playground, the CLI, the Slack bot, and any evaluation runs.
+
+Agent Engine mints a new token when it starts an AER or Tool Pod process that
+doesn't already have a valid one (step 2 above). Each pod keeps its own token
+cache, so a fresh process always needs a new token. A session starts at least
+one AER and one Tool Pod process, and follow-up messages often start new ones.
+Resuming after an approval reuses the session's processes. Your numbers can
+vary with traffic and platform scaling.
+
+When the limit is reached:
+
+- New conversations fail with `The agent did not become ready during
+  startup.`
+- Runtime logs show `Access Token limit reached`:
+
+  ```bash
+  agentengine logs --grep "Access Token limit" --since 1h
+  ```
+
+- The workspace recovers on its own as the oldest tokens expire, within an
+  hour of the burst. Redeploying doesn't help, because the redeployed
+  processes need new tokens too.
+
+To stay under the limit:
+
+- Use a separate MCP configuration for each environment, as described in
+  [Configure](#configure).
+- Spread load tests and evaluation runs over time. Every message can start
+  new processes, so a burst of messages uses tokens quickly.
+- To handle more traffic, deploy several copies of the agent, each in its
+  own workspace with its own MCP configuration, and balance new
+  conversations across them. Each MCP configuration has its own token
+  limit. Keep every conversation on the copy that started it, because
+  session state belongs to one workspace.
 
 ## Run locally
 
@@ -241,13 +285,12 @@ can be reused with additional Chat SDK adapters.
 - When both write opt-ins are present, persistent mutations are protected by
   LangChain HITL middleware using Agent Engine's persistent checkpointer and
   suspend/resume adapter. This includes database writes; Atlas cluster
-  creation, upgrades, and pause/resume; sample dataset loads; project,
-  database-user, and access-list creation; and Atlas Streams build,
-  management, and teardown operations.
-- `aggregate` remains available for read-only exploration; the agent is
-  explicitly forbidden from using `$out` or `$merge` write stages because HITL
-  is applied at tool granularity. A read-only Atlas credential is the hard
-  boundary for those argument-dependent writes.
+  creation, upgrades, and pause/resume; sample dataset loads; project
+  creation; and Atlas Streams build, management, and teardown operations.
+  `mongodb__atlas_create_db_user` and `mongodb__atlas_create_access_list`
+  stay unavailable even then.
+- `aggregate` remains available for read-only exploration. A pipeline that
+  contains `$out` or `$merge` requires HITL approval.
 - Deep-agent file operations stay on Agent Engine's audited Tool Pod backend, but
   the model is not given general-purpose shell execution that could read
   process credential files outside the filesystem sandbox.
