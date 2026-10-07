@@ -27,6 +27,7 @@ export {
   requesterFromCheckpoint,
   resolveOpenAIResponsesApi,
   stampClientUser,
+  startRuntimeDiagnostics,
   stampResumeClientUserMiddleware,
   stampResumeMessages,
   stripToolEchoMiddleware,

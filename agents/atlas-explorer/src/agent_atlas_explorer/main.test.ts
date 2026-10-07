@@ -89,6 +89,10 @@ vi.mock("@mongodb-js/agent-engine-sdk-langgraph", () => ({
       harness.appName = options.appName;
     }
 
+    get agentConfig(): { mcp: { servers: Record<string, unknown> } } {
+      return { mcp: { servers: {} } };
+    }
+
     entrypoint(fn: () => unknown): () => unknown {
       harness.builder = fn;
       return fn;
@@ -202,7 +206,14 @@ describe("Atlas Explorer graph assembly", () => {
         ],
       }),
     );
-    expect(harness.prepareAgentInput).toBe(prepareAtlasExplorerInput);
+    const agentInput = { payload: { message: "List projects" } };
+    const requestContext = { userId: "user-1", sessionId: "session-1" };
+    expect(
+      (harness.prepareAgentInput as typeof prepareAtlasExplorerInput)(
+        agentInput,
+        requestContext,
+      ),
+    ).toEqual(prepareAtlasExplorerInput(agentInput, requestContext));
     expect(harness.deepAgent.mock.calls[0]?.[1]).not.toHaveProperty(
       "subagents",
     );
