@@ -137,6 +137,11 @@ To stay under the limit:
   [Configure](#configure).
 - Plan for about 25 new runs per hour on each MCP configuration. Spread
   scheduled reports and evaluation runs over time.
+- To handle more traffic, deploy several copies of the agent, each in its
+  own workspace with its own MCP configuration, and balance new runs
+  across them. Each MCP configuration has its own token limit. Keep every
+  run on the copy that started it, because session state belongs to one
+  workspace.
 
 ## Seed slow queries
 
