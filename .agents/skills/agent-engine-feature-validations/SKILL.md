@@ -1,5 +1,5 @@
 ---
-name: feature-validations
+name: agent-engine-feature-validations
 description: Framework-code validation for agents — check agent source against the shapes the SDK supports before build/deploy. Run this skill for framework code, and also run `agentengine validate` for `agent.yaml`; the CLI does not execute these rows. Currently covers Python LangGraph and Google ADK.
 ---
 
