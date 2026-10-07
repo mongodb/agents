@@ -198,7 +198,7 @@ The MCP configuration is provisioned once in Atlas, scoped to one project:
 Rotate the client secret in Atlas, update the local or deployed secret, verify
 the agent, and then revoke the previous secret.
 
-## Access token limit
+### Access token limit
 
 Atlas allows each service account at most 100 active access tokens, and each
 token lasts 1 hour. The MCP configuration's client ID is a service account,

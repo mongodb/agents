@@ -105,7 +105,7 @@ The checked-in manifest permits the OpenAI endpoint plus the Atlas OAuth
 and Managed MCP hosts. Changing `llm.provider` also requires the matching
 key under `required_secrets` and the provider host under `network.egress`.
 
-## Access token limit
+### Access token limit
 
 Atlas allows each service account at most 100 active access tokens, and each
 token lasts 1 hour. The MCP configuration's client ID is a service account,
