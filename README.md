@@ -212,8 +212,11 @@ how they're set up.
   next message arrives. That works out to an expected 40 to 50 new or resumed
   conversations per hour, shared by every user of the configuration. When the
   limit is reached, new conversations fail until older tokens expire, about an
-  hour later. For details, see
-  [Access token limit](agents/atlas-explorer/README.md#access-token-limit).
+  hour later. The Slack bot caps new sessions per hour and replies with a clear
+  message instead of failing. For details, see
+  [Access token limit](agents/atlas-explorer/README.md#access-token-limit)
+  and the
+  [Slack bot's session limit](apps/atlas-explorer-slack-bot/README.md#session-limit).
 - **Slack is an optional example.** You host the Slack bot yourself. Everyone
   on its allowlist shares one Atlas identity instead of using their own Atlas
   permissions. For details, see

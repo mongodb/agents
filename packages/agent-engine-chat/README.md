@@ -15,6 +15,9 @@ Each export is a separate subpath of the package.
   with streaming, and handles service-account tokens.
 - **`/store`.** Thread and Chat SDK state storage in MongoDB, plus an in-memory
   thread store.
+- **`/token-limit`.** `isTokenExhaustionError`, which recognizes failures
+  caused by the Atlas MCP access token limit. It has no dependencies, so the
+  agent runtime in `@repo/agent-engine-core` shares it with the chat handlers.
 - **`/testing`.** Fakes for tests that use the handlers.
 
 ## Wiring
@@ -63,3 +66,33 @@ export const POST = (request: Request) => bot.webhooks.slack(request);
 
 The Slack bot's [`runtime.ts`](../../apps/atlas-explorer-slack-bot/src/runtime.ts)
 shows the full version, with an allowlist and custom messages.
+
+## Limit new sessions
+
+Pass `sessionLimit` to `registerChatHandlers` to cap how many agent sessions
+can be active in a rolling 60 minutes:
+
+```ts
+registerChatHandlers(bot, {
+  // ...
+  sessionLimit: { limit: 30, idleTtlMs: 10 * 60 * 1000 },
+});
+```
+
+A turn that would start a session past the cap gets
+`messages.sessionLimitReached(botName, retryAfterMs)` instead of reaching the
+agent. A turn starts a session when its thread has none yet or has been idle
+for `idleTtlMs`. Approve and Reject actions and warm follow-ups are never
+refused.
+
+The check reads the thread records the store already keeps, through
+`ThreadStore.listRecentSessionActivity`, so a custom store must implement it.
+`MongoThreadStore.initialize()` creates the `session_activity` index it uses.
+If the read fails, the turn is allowed. Without `sessionLimit`, no limit
+applies. See the Slack bot's
+[Session limit](../../apps/atlas-explorer-slack-bot/README.md#session-limit)
+section for how the count works and what it can't promise.
+
+Independently of the cap, when an invocation fails during startup because the
+token limit is exhausted, the handlers post the same limit message instead of
+the generic failure reply.

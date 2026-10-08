@@ -142,11 +142,20 @@ When the limit is reached:
 - The workspace recovers on its own as the oldest tokens expire, within an
   hour of the burst. Redeploying doesn't help, because the redeployed
   processes need new tokens too.
+- If a tool call in a running session fails with the same limit, the agent
+  doesn't retry it or try other tools, because every Atlas tool shares the
+  tokens. It tells the user that the hourly access limit is reached and asks
+  them to try again in about an hour. Other tool errors still go back to the
+  model so it can correct its arguments and retry.
 
 To stay under the limit:
 
 - Use a separate MCP configuration for each environment, as described in
   [Configure](#configure).
+- Cap how many runs clients can start. The
+  [Atlas Explorer Slack bot's session limit](../../apps/atlas-explorer-slack-bot#session-limit)
+  shows one way: it refuses new conversations with a clear message before the
+  tokens run out.
 - Spread scheduled reports and evaluation runs over time. Each new run, and
   each message sent after the idle TTL, costs 2 tokens, so a burst
   of runs uses the limit quickly. Send follow-ups in the same session within

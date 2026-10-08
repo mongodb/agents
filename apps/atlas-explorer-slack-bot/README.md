@@ -274,6 +274,9 @@ Your Slack webhook URL is `$VERCEL_URL/api/webhooks/slack`.
    - `AGENTIC_BASE_URL` (optional; defaults to the platform gateway)
    - `THREAD_STORE_DB` (optional; defaults to `atlas_explorer_slack`)
    - `SLACK_BOT_DISPLAY_NAME` (optional; overrides `slackBotConfig.name`)
+   - `SESSION_LIMIT_PER_HOUR` (optional; defaults to `30`, see
+     [Session limit](#session-limit))
+   - `SESSION_IDLE_TTL_SECONDS` (optional; defaults to `600`)
 
    Enter raw values only, without surrounding shell quotes or a
    `VARIABLE_NAME=` prefix. `CHAT_ALLOWED_USER_IDS` requires qualified values
@@ -364,6 +367,10 @@ Useful failure signals:
   thread-store Atlas IP Access List does not allow Vercel.
 - HTTP 401 from `/api/v1/oauth/token` means the Agent Engine service-account
   credentials are invalid or its IP access list rejects Vercel.
+- "has reached its hourly limit for starting new conversations" in Slack means
+  the session limit refused a message. If it appears while few people are using
+  the bot, check whether `SESSION_LIMIT_PER_HOUR` is set too low or another
+  consumer shares the service account's MCP tokens.
 
 If verification fails, inspect recent production deployments and roll back:
 
@@ -391,6 +398,86 @@ Both buttons continue the same session by sending a `resume_map` keyed by the
 pending interrupt IDs. The bot does not use the generic execution `/resume`
 endpoint. An unconfirmed resume is marked uncertain and is never
 automatically replayed; verify Atlas state before starting a new conversation.
+
+## Session limit
+
+The bot's agents reach Atlas through one shared service account, and that
+account can hold only 100 active MCP access tokens, each valid for 1 hour.
+Starting or resuming an agent session uses 2 of them, so about 50 sessions can
+be active at once. When the tokens run out, the agent can't start and every new
+conversation fails until older tokens expire.
+
+The bot stops that from happening by limiting how many agent sessions can be
+active in any rolling 60 minutes. A message that would start a session past the
+limit gets a reply instead of an error:
+
+> AtlasExplorer has reached its hourly limit for starting new conversations.
+> This limit is shared by everyone using the bot. Please try again in about 25
+> minutes.
+
+The estimate is when enough active sessions will have aged out of the window to
+make room. Nothing is queued, so the user sends the message again later. A
+refused message doesn't count as activity and doesn't change the thread.
+
+### What counts toward the limit
+
+The bot counts sessions from the thread records it already stores in MongoDB
+(`updatedAt`, `agentSessionId`, and `inFlightEventId`). It keeps no separate
+counter.
+
+- **Counted:** the first message in a new thread, and a follow-up sent after the
+  agent's sandbox has been idle for `SESSION_IDLE_TTL_SECONDS`, because Agent
+  Engine starts a new agent process, which takes new tokens.
+- **Not counted:** follow-ups in a thread whose sandbox is still warm, and
+  Approve and Reject clicks. These reuse a running session, so a user who is
+  already in a conversation is never cut off mid-review.
+
+A message is refused when the number of *other* threads that ran or are running
+the agent within the last 60 minutes has already reached
+`SESSION_LIMIT_PER_HOUR`. The thread is claimed before it is counted, so
+messages that arrive at the same moment see each other. In the worst case two
+simultaneous starters both get refused when only one would have fit; the limit
+is never exceeded.
+
+### Configure it
+
+| Variable                   | Default | Meaning                                                                                              |
+| -------------------------- | ------- | ---------------------------------------------------------------------------------------------------- |
+| `SESSION_LIMIT_PER_HOUR`   | `30`    | Most agent sessions allowed to be active in any rolling hour, across everyone using the bot.         |
+| `SESSION_IDLE_TTL_SECONDS` | `600`   | Idle time after which a thread's sandbox is retired. Set it to the Agent Engine sandbox idle TTL.    |
+
+Both must be positive whole numbers. Leave them blank to use the defaults. The
+default cap is a conservative starting point that leaves room under the
+50-session ceiling for other users of the same service account. Load test your
+deployment before raising it.
+
+The limit applies to every platform registered in `src/runtime.ts`, because it
+runs in the shared handlers.
+
+The bot creates the index that makes the count cheap (`session_activity` on
+`chat_threads`) when it starts, so there's nothing to migrate.
+
+### What it can't promise
+
+- **It counts active sessions, not tokens minted.** A thread that goes idle and
+  resumes several times within one hour mints tokens each time but counts once.
+  Keep the cap well below 50 to absorb this.
+- **It can't see other consumers.** If anything else uses the same service
+  account, it shares the 100 tokens and isn't counted here.
+- **It fails open.** If the bot can't read the thread records, it lets the
+  message through and logs a warning rather than blocking everyone.
+
+### If the tokens run out anyway
+
+If agent startup still fails because of the token limit, which can happen when
+the cap is set too high or the account is shared, the bot recognizes the error
+and posts the same "reached its hourly limit" message, estimating "about an
+hour". Other startup failures still get the generic "could not complete that
+request" reply. The agents themselves also stop retrying when an Atlas tool
+reports the limit; see the
+[Atlas Explorer](../../agents/atlas-explorer#access-token-limit) and
+[Atlas Query Insights](../../agents/atlas-query-insights#access-token-limit)
+READMEs.
 
 ## Add another chat platform
 
