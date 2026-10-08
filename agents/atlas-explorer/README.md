@@ -205,12 +205,27 @@ tokens, and each token lasts 1 hour. The MCP configuration's client ID is a
 service account, so everything that uses the configuration shares that limit:
 the Playground, the CLI, the Slack bot, and any evaluation runs.
 
-Agent Engine mints a new token when it starts an AER or Tool Pod process that
-doesn't already have a valid one (step 2 above). Each pod keeps its own token
-cache, so a fresh process always needs a new token. A session starts at least
-one AER and one Tool Pod process, and follow-up messages often start new ones.
-Resuming after an approval reuses the session's processes. Your numbers can
-vary with traffic and platform scaling.
+Agent Engine mints a token when it starts an AER or Tool Pod process that
+doesn't already have a valid one (step 2 above). Each process keeps its own
+token cache, so a fresh process always needs a new token.
+
+A session keeps its processes for the idle TTL, which is 600 seconds (10
+minutes) by default. Within that window, follow-up messages and approval
+resumes reuse the session's processes and mint nothing. A new conversation,
+or a message sent after the idle TTL has expired, starts new processes. Each
+cold start mints up to about 2 tokens: one for the AER process and one for the
+Tool Pod.
+
+Expected capacity:
+
+- About 40 to 50 new or resumed sessions per hour for each MCP configuration,
+  shared by every user of that configuration: the Playground, the CLI, the
+  Slack bot, and evaluation runs. This comes from the token math: 100 tokens,
+  about 2 per cold start, and each token valid for an hour. It has not yet been
+  confirmed under load on a dedicated service account.
+- Agent Engine can start spare processes ahead of demand. Those can mint tokens
+  while no conversation is using them, so an idle agent still uses part of the
+  limit.
 
 When the limit is reached:
 
@@ -230,8 +245,10 @@ To stay under the limit:
 
 - Use a separate MCP configuration for each environment, as described in
   [Configure](#configure).
-- Spread load tests and evaluation runs over time. Every message can start
-  new processes, so a burst of messages uses tokens quickly.
+- Spread load tests and evaluation runs over time. Each new conversation, and
+  each message sent after the idle TTL, costs up to about 2 tokens, so a burst
+  of new conversations uses the limit quickly. Send follow-ups in the same
+  session within 10 minutes to reuse its processes.
 - To handle more traffic, deploy several copies of the agent, each in its
   own workspace with its own MCP configuration, and balance new
   conversations across them. Each MCP configuration has its own token

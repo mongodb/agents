@@ -115,11 +115,21 @@ shares that limit.
 
 Agent Engine exchanges the client ID and secret for a new access token when it
 starts an AER or Tool Pod process that doesn't already have a valid one. Each
-pod keeps its own token cache, so a fresh process always needs a new token. A
-run starts at least one AER and one Tool Pod process, and follow-up messages
-in the same session often start new ones. Resuming after an approval reuses
-the session's processes. Your numbers can vary with traffic and platform
-scaling.
+process keeps its own token cache, so a fresh process always needs a new token.
+
+A session keeps its processes for the idle TTL, which is 600 seconds (10
+minutes) by default. Within that window, follow-up messages in the same
+session reuse the session's processes and mint nothing. A new run, or a
+message sent after the idle TTL has expired, starts new processes. Each cold
+start mints up to about 2 tokens: one for the AER process and one for the Tool
+Pod.
+
+Expected capacity: about 40 to 50 new or resumed sessions per hour for each
+MCP configuration, shared by every run that uses it. This comes from the token
+math: 100 tokens, about 2 per cold start, and each token valid for an hour. It
+has not yet been confirmed under load on a dedicated service account. Agent
+Engine can also start spare processes ahead of demand, and those can mint
+tokens while the agent is idle.
 
 When the limit is reached:
 
@@ -138,8 +148,10 @@ To stay under the limit:
 
 - Use a separate MCP configuration for each environment, as described in
   [Configure](#configure).
-- Spread scheduled reports and evaluation runs over time. Every run can
-  start new processes, so a burst of runs uses tokens quickly.
+- Spread scheduled reports and evaluation runs over time. Each new run, and
+  each message sent after the idle TTL, costs up to about 2 tokens, so a burst
+  of runs uses the limit quickly. Send follow-ups in the same session within
+  10 minutes to reuse its processes.
 - To handle more traffic, deploy several copies of the agent, each in its
   own workspace with its own MCP configuration, and balance new runs
   across them. Each MCP configuration has its own token limit. Keep every

@@ -203,10 +203,13 @@ how they're set up.
   the Apache 2.0 license. However, the deployment steps in this repository
   cover only Atlas Agent Engine and the `agentengine` CLI.
 - **Each MCP configuration has an hourly capacity limit.** Atlas limits how
-  many access tokens one service account can have active, and Agent Engine
-  can mint a new token each time it starts a process to handle a request.
-  When the limit is reached, new conversations fail until older tokens
-  expire. For details, see
+  many access tokens one service account can have active. Agent Engine mints
+  up to about two tokens each time a new conversation starts, and a
+  conversation that has been idle for 10 minutes starts new processes when its
+  next message arrives. That works out to an expected 40 to 50 new or resumed
+  conversations per hour, shared by every user of the configuration. When the
+  limit is reached, new conversations fail until older tokens expire, about an
+  hour later. For details, see
   [Access token limit](agents/atlas-explorer/README.md#access-token-limit).
 - **Slack is an optional example.** You host the Slack bot yourself. Everyone
   on its allowlist shares one Atlas identity instead of using their own Atlas
