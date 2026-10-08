@@ -70,7 +70,7 @@ describe("loadConfig", () => {
       },
       sessionLimit: {
         idleTtlSeconds: 600,
-        limitPerHour: 30,
+        limitPerHour: 40,
       },
       store: {
         databaseName: "atlas_explorer_slack",
@@ -109,7 +109,7 @@ describe("loadConfig", () => {
 
       expect(config.sessionLimit).toEqual({
         idleTtlSeconds: 600,
-        limitPerHour: 30,
+        limitPerHour: 40,
       });
     });
 

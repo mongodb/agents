@@ -55,8 +55,8 @@ const DEFAULT_SLACK_BOT_NAME = "AtlasExplorer";
 // The service account allows 100 active MCP tokens and a session mints 2, so
 // about 50 sessions fit. The cap counts active threads, which undercounts
 // threads resumed several times in an hour, and other consumers share the same
-// tokens, so it leaves generous headroom.
-const DEFAULT_SESSION_LIMIT_PER_HOUR = 30;
+// tokens, so the default stays below that ceiling to leave some headroom.
+const DEFAULT_SESSION_LIMIT_PER_HOUR = 40;
 // Agent Engine keeps a session's sandbox through this idle period (AP-7168).
 const DEFAULT_SESSION_IDLE_TTL_SECONDS = 600;
 
