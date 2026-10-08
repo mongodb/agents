@@ -115,7 +115,7 @@ describe("buildSystemPrompt", () => {
     expect(prompt).toContain(describeScope(undefined));
     expect(custom.startsWith("You are Ada,")).toBe(true);
     expect(custom).toContain(describeScope(scope));
-    expect(custom).toContain("top 5 shape(s)");
+    expect(custom).toContain("top 5 log(s)");
     expect(custom).toContain("## Custom instructions");
     expect(custom).toContain("Prefer the orders collection.");
   });
