@@ -87,6 +87,7 @@ agentengine dev stop
 # HITL: the same read-only Atlas MCP credential, with write tools exposed so
 # drop_collection suspends. Approve still fails at Atlas.
 # Set ALLOW_WRITE_OPERATIONS=true in .env so the running agent sees it.
+# Clear it again afterward, before you deploy.
 agentengine dev up --headless
 ALLOW_WRITE_OPERATIONS=true pnpm test:integration
 agentengine dev stop
@@ -181,7 +182,10 @@ agentengine invoke "Hello"
 ```
 
 - `deploy` refuses to run if `.env` has a populated key that isn't a platform
-  secret. Blank the keys that aren't secrets first.
+  secret. On a terminal it offers to store each one as a project-wide secret;
+  decline for keys that aren't secrets, and blank them instead.
+  `deploy --build-id <id>` skips this check, but also skips the other setup
+  checks.
 - `agentengine status` can show the previous deployment for a few minutes
   after a deploy succeeds. Use `agentengine deploy list` to confirm.
 - Don't pass `--yes` or `--auto` to `deploy`: they accept billed defaults and
