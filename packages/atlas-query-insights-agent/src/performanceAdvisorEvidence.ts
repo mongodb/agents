@@ -328,15 +328,36 @@ function shapeFromCommand(command: Record<string, unknown>): {
     Object.keys(command).find((key) => !key.startsWith("$") && !DROPPED_COMMAND_KEYS.has(key)) ??
     "unknown";
   const shape: Record<string, unknown> = { command: name };
+  const fields = new Set<string>();
   for (const [key, value] of Object.entries(command)) {
     if (key === name || key.startsWith("$") || DROPPED_COMMAND_KEYS.has(key)) continue;
     const structural = key === "sort" || key === "projection";
     shape[key] = redactValue(value, structural);
+    collectFieldReferences(value, fields);
   }
-  const fields = new Set<string>();
   collectFields(shape, fields);
   fields.delete("command");
   return { name, text: JSON.stringify(shape), fields };
+}
+
+// Aggregation expressions such as `{ $eq: ["$type", "premium"] }` name fields as
+// "$"-prefixed string values. Redaction turns those into "?string", so they have to
+// be read from the original command. "$$NOW" style variables are not fields.
+function collectFieldReferences(value: unknown, into: Set<string>): void {
+  if (typeof value === "string") {
+    if (value.length > 1 && value.startsWith("$") && !value.startsWith("$$")) {
+      into.add(value.slice(1));
+    }
+    return;
+  }
+  if (Array.isArray(value)) {
+    value.forEach((item) => collectFieldReferences(item, into));
+    return;
+  }
+  if (!value || typeof value !== "object") return;
+  for (const child of Object.values(value as Record<string, unknown>)) {
+    collectFieldReferences(child, into);
+  }
 }
 
 function redactValue(value: unknown, structural: boolean): unknown {

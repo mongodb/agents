@@ -135,6 +135,55 @@ describe("buildPerformanceAdvisorEvidence", () => {
     expect(text).not.toContain('{"type":1}');
   });
 
+  describe("field references inside aggregation expressions", () => {
+    function suggestionFor(pipeline: unknown[], indexKey: Record<string, number>): string {
+      const line = JSON.stringify({
+        t: { $date: "2026-10-05T17:33:28.913Z" },
+        msg: "Slow query",
+        attr: {
+          ns: "highImpact.dbB",
+          command: { aggregate: "dbB", pipeline, cursor: {}, $db: "highImpact" },
+          planSummary: "COLLSCAN",
+          docsExamined: 100,
+          nreturned: 1,
+          millis: 10,
+        },
+      });
+      const text = buildPerformanceAdvisorEvidence({
+        slowQueryLogs: [{ namespace: "highImpact.dbB", line }],
+        suggestedIndexes: [
+          { namespace: "highImpact.dbB", weight: 1, index: [indexKey] },
+        ],
+      });
+      return section(text ?? "", "## Performance Advisor Suggestion");
+    }
+
+    it("attaches a suggestion for a field referenced only as a $expr value", () => {
+      const suggestion = suggestionFor(
+        [{ $match: { $expr: { $eq: ["$type", "premium"] } } }],
+        { type: 1 },
+      );
+      expect(suggestion).toContain('{"type":1}');
+      expect(suggestion).not.toContain("No PA Suggestion at this time.");
+    });
+
+    it("attaches a suggestion for a dotted $-reference", () => {
+      expect(
+        suggestionFor([{ $group: { _id: "$customer.region" } }], { "customer.region": 1 }),
+      ).toContain('{"customer.region":1}');
+    });
+
+    it("does not treat $$ variables or operators as fields", () => {
+      const pipeline = [
+        { $match: { $expr: { $gt: ["$$NOW", "$$ROOT"] } } },
+        { $group: { _id: 1, n: { $sum: 1 } } },
+      ];
+      expect(suggestionFor(pipeline, { NOW: 1 })).toContain("No PA Suggestion at this time.");
+      expect(suggestionFor(pipeline, { ROOT: 1 })).toContain("No PA Suggestion at this time.");
+      expect(suggestionFor(pipeline, { $gt: 1 })).toContain("No PA Suggestion at this time.");
+    });
+  });
+
   it("says when the sample has no shapes", () => {
     expect(
       buildPerformanceAdvisorEvidence({ slowQueryLogs: [], suggestedIndexes: [] }),
