@@ -25,7 +25,7 @@ directly, build the libraries yourself first.
 
 You need:
 
-- Node.js 24 or later (the Slack bot targets Node.js 22)
+- Node.js 24 or later. Run `nvm use` to pick it up from [`.nvmrc`](.nvmrc).
 - pnpm. Run `corepack enable` to get the version pinned in `package.json`.
 - The [`agentengine` CLI](https://www.mongodb.com/docs/agentengine/build/install-authenticate/)
   and Docker, to run or deploy an agent
@@ -147,6 +147,48 @@ A fast unit test in the same app uses a scripted local invoke endpoint
 instead of Agent Engine. `pnpm test:slack-bot` runs that test. The local
 OpenAI stand-in used by CI is
 `apps/atlas-explorer-slack-bot/scripts/openai-local-mock.mjs`.
+
+## Deploy
+
+Run `agentengine` from the agent directory, or from the repository root with
+`--workspace <name>`. This repository is an Agent Engine
+[monorepo](https://www.mongodb.com/docs/agentengine/manage/monorepo/). For
+MCP configuration and secrets, see each agent's README and the
+`deploy-mongodb-agents` skill.
+
+`.agentengine/state.json` is git-ignored, so a new clone or worktree reports
+"not initialized". Link it to the existing workspace instead of creating one:
+
+```bash
+agentengine context list
+agentengine init --context <context> --workspace-id <workspace-id>
+```
+
+Without `--context`, `init` fails with "multiple platforms have stored
+credentials" if you are signed in to more than one platform. The workspace ID
+is in the workspace's dashboard URL. `init` also writes `.env` (from
+`.env.example`), `.agents/`, `.claude/`, and `.devcontainer/` in the agent
+directory. All are git-ignored. Don't commit them.
+
+Then build and deploy:
+
+```bash
+pnpm test:<agent> && pnpm build:<agent>
+agentengine agent validate
+agentengine build     # about 4 minutes
+agentengine deploy    # about 1 minute
+agentengine invoke "Hello"
+```
+
+- `deploy` refuses to run if `.env` has a populated key that isn't a platform
+  secret. Blank the keys that aren't secrets first.
+- `agentengine status` can show the previous deployment for a few minutes
+  after a deploy succeeds. Use `agentengine deploy list` to confirm.
+- Don't pass `--yes` or `--auto` to `deploy`: they accept billed defaults and
+  change IP access lists, or build and tail in one step. Don't use `-f` or
+  any follow flag in scripts or coding agents, because they never exit.
+- On macOS the CLI writes logs under `~/Library/Logs/agentengine`, and it
+  needs network access. In a sandboxed shell, run it outside the sandbox.
 
 ## Pull requests
 

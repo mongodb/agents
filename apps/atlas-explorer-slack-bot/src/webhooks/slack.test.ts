@@ -78,7 +78,7 @@ describe("Slack webhook route", () => {
       framework: null,
     });
     expect(vercelConfig).not.toHaveProperty("regions");
-    expect(packageConfig.engines.node).toBe("22.x");
+    expect(packageConfig.engines.node).toBe("24.x");
     expect(packageConfig.scripts.vercel).toBe(
       "pnpm dlx --allow-build=esbuild vercel",
     );

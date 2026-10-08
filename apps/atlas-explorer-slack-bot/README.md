@@ -39,7 +39,7 @@ host and operate it yourself.
 
 ## Prerequisites
 
-- Node.js 22 and pnpm
+- Node.js 24 and pnpm
 - A Slack workspace where you can create and install an app
 - Either a deployed Atlas Explorer workspace and project-scoped Agent Engine
   service-account credentials, or a local Atlas Explorer `agentengine dev` stack
@@ -258,7 +258,7 @@ Your Slack webhook URL is `$VERCEL_URL/api/webhooks/slack`.
    `vercel.json` owns the API-only framework and Fluid Compute
    settings, plus the build command `pnpm --filter @repo/agent-engine-chat
    build`, which compiles the workspace library that the webhook imports.
-   `package.json` pins Node.js 22.
+   `package.json` pins Node.js 24.
    Deployment Protection is a project-level setting and must not protect the
    stable webhook domain.
 2. Set these Production-scoped environment variables:
