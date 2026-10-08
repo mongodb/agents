@@ -17,7 +17,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { TurnResult } from "../load/turnResult.js";
-import { oct7Ndjson } from "../logs/oct7Fixture.js";
+import { oct7Ndjson } from "../logs/fixtures/oct7Fixture.js";
 import {
   parseRuntimeDiagLogs,
   type DiagEvent,

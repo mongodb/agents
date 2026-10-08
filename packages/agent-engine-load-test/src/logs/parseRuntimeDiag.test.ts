@@ -16,7 +16,7 @@
 
 import { describe, expect, it } from "vitest";
 
-import { oct7Ndjson } from "./oct7Fixture.js";
+import { oct7Ndjson } from "./fixtures/oct7Fixture.js";
 import { parseLogOutput, parseRuntimeDiagLogs } from "./parseRuntimeDiag.js";
 
 const signalAndExit = [

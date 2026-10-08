@@ -24,7 +24,7 @@ Fill in the same gateway variables the Slack bot uses:
 - `AGENTIC_SA_CLIENT_SECRET`
 - `AGENTIC_PROJECT_ID`
 - `AGENTIC_WORKSPACE_ID`
-- `AGENTIC_BASE_URL` (optional; defaults to `https://agentic-platform.mongodb.com`)
+- `AGENTIC_BASE_URL` (optional; defaults to `https://agentengine.mongodb.com`)
 
 `.env` is gitignored. `load` reads it from this package directory.
 
@@ -76,8 +76,6 @@ pnpm --filter @repo/agent-engine-load-test load -- --scenario ramp --sessions 4 
 ```
 
 ## Reading the report
-
-`report` prints Markdown and writes `report.md` and `report.json`. Attach `report.md` to the ticket.
 
 The header includes the Orchestration Engine image from `agentengine status` at the time of the run (`component_images.oe`). That is the workspace's current engine, not a historical one. A result measured on `v0.11.7` is a pre-fix result. Don't compare it with a later engine without checking this line.
 

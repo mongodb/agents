@@ -18,7 +18,7 @@ import { config as loadDotenv } from "dotenv";
 
 import type { AgentEngineClientConfig } from "@repo/agent-engine-chat/agent-engine";
 
-const DEFAULT_BASE_URL = "https://agentic-platform.mongodb.com";
+const DEFAULT_BASE_URL = "https://agentengine.mongodb.com";
 
 export function loadEnvFile(file: string): void {
   loadDotenv({ path: file });
