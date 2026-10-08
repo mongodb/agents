@@ -113,23 +113,22 @@ tokens, and each token lasts 1 hour. The MCP configuration's client ID is a
 service account, so every run of every workspace that uses the configuration
 shares that limit.
 
-Agent Engine exchanges the client ID and secret for a new access token when it
-starts an AER or Tool Pod process that doesn't already have a valid one. Each
-process keeps its own token cache, so a fresh process always needs a new token.
+Agent Engine mints a new Atlas MCP token, exchanging the client ID and secret
+for it, when it starts an AER or Tool Pod process that doesn't already have a
+valid one. Each process keeps its own token cache, so a fresh process always
+needs a new token.
 
 A session keeps its processes for the idle TTL, which is 600 seconds (10
 minutes) by default. Within that window, follow-up messages in the same
 session reuse the session's processes and mint nothing. A new run, or a
 message sent after the idle TTL has expired, starts new processes. Each cold
-start mints up to about 2 tokens: one for the AER process and one for the Tool
+start mints up to 2 tokens: one for the AER process and one for the Tool
 Pod.
 
 Expected capacity: about 40 to 50 new or resumed sessions per hour for each
-MCP configuration, shared by every run that uses it. This comes from the token
-math: 100 tokens, about 2 per cold start, and each token valid for an hour. It
-has not yet been confirmed under load on a dedicated service account. Agent
-Engine can also start spare processes ahead of demand, and those can mint
-tokens while the agent is idle.
+MCP configuration, shared by every run that uses it. Agent Engine can also
+start spare processes ahead of demand, and those can mint tokens while the
+agent is idle.
 
 When the limit is reached:
 
@@ -149,7 +148,7 @@ To stay under the limit:
 - Use a separate MCP configuration for each environment, as described in
   [Configure](#configure).
 - Spread scheduled reports and evaluation runs over time. Each new run, and
-  each message sent after the idle TTL, costs up to about 2 tokens, so a burst
+  each message sent after the idle TTL, costs up to 2 tokens, so a burst
   of runs uses the limit quickly. Send follow-ups in the same session within
   10 minutes to reuse its processes.
 - To handle more traffic, deploy several copies of the agent, each in its

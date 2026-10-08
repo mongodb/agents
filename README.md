@@ -204,7 +204,7 @@ how they're set up.
   cover only Atlas Agent Engine and the `agentengine` CLI.
 - **Each MCP configuration has an hourly capacity limit.** Atlas limits how
   many access tokens one service account can have active. Agent Engine mints
-  up to about two tokens each time a new conversation starts, and a
+  up to two tokens each time a new conversation starts, and a
   conversation that has been idle for 10 minutes starts new processes when its
   next message arrives. That works out to an expected 40 to 50 new or resumed
   conversations per hour, shared by every user of the configuration. When the
