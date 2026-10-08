@@ -45,10 +45,11 @@ export function isTokenExhaustionError(error: unknown): boolean {
     ) {
       return true;
     }
-    if (typeof current !== "object" || current === null) {
+    const cause = causeOf(current);
+    if (cause === undefined) {
       return false;
     }
-    current = (current as { cause?: unknown }).cause;
+    current = cause;
   }
   return false;
 }
@@ -57,9 +58,15 @@ function messageOf(value: unknown): string {
   if (typeof value === "string") {
     return value;
   }
-  if (typeof value === "object" && value !== null) {
-    const message = (value as { message?: unknown }).message;
-    return typeof message === "string" ? message : "";
+  if (typeof value === "object" && value !== null && "message" in value) {
+    return typeof value.message === "string" ? value.message : "";
   }
   return "";
+}
+
+function causeOf(value: unknown): unknown {
+  if (typeof value === "object" && value !== null && "cause" in value) {
+    return value.cause;
+  }
+  return undefined;
 }

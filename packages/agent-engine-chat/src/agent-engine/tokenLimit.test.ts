@@ -76,6 +76,24 @@ describe("isTokenExhaustionError", () => {
     expect(isTokenExhaustionError({})).toBe(false);
   });
 
+  it("accepts a non-error cause and one that is missing", () => {
+    expect(
+      isTokenExhaustionError({
+        message: "Tool call failed",
+        cause: "Access Token limit reached",
+      }),
+    ).toBe(true);
+    expect(isTokenExhaustionError({ message: "Tool call failed" })).toBe(
+      false,
+    );
+    expect(
+      isTokenExhaustionError({ message: "Tool call failed", cause: null }),
+    ).toBe(false);
+    expect(
+      isTokenExhaustionError({ message: "Tool call failed", cause: 42 }),
+    ).toBe(false);
+  });
+
   it("stops following a circular cause chain", () => {
     const error = new Error("loop");
     (error as { cause?: unknown }).cause = error;
