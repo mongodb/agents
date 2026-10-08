@@ -17,6 +17,7 @@
 import * as path from "node:path";
 
 import { execCommand } from "../command.js";
+import { DEFAULT_WORKSPACE } from "../defaults.js";
 import { fetchLogs, type CommandRunner } from "../logs/fetchLogs.js";
 import { defaultRunId, runDirectory } from "../paths.js";
 import type { RunMeta } from "../report/buildReport.js";
@@ -31,19 +32,21 @@ export async function runFetchLogs(
   runner: CommandRunner = { run: execCommand },
 ): Promise<string> {
   const { directory, meta, since, until } = resolveFetch(options);
+  const outFile = path.join(directory, "logs.ndjson");
   await fetchLogs({
     since,
     until,
     workspace: meta.workspace,
-    outFile: path.join(directory, "logs.ndjson"),
+    outFile,
     runner,
   });
+  // Record the fetched window beside the load window. Writing it into since/until
+  // would make the next default fetch pad the already padded end again.
   writeRunMeta(directory, {
     ...meta,
-    since: since.toISOString(),
-    until: until.toISOString(),
+    logWindow: { since: since.toISOString(), until: until.toISOString() },
   });
-  console.log(`Wrote ${path.join(directory, "logs.ndjson")}`);
+  console.log(`Wrote ${outFile}`);
   return meta.runId;
 }
 
@@ -56,13 +59,15 @@ export function resolveFetch(options: WindowCommandOptions): {
   if (options.runId) {
     const directory = runDirectory(options.runId);
     const meta = readRunMeta(directory);
+    runWorkspace(meta, options.workspace);
     const since = options.since
       ? parseTimestamp(options.since, "--since")
       : new Date(meta.since);
+    // Pad from the load end, never from a fetched window, so repeated fetches agree.
     const until = options.until
       ? parseTimestamp(options.until, "--until")
       : new Date(Date.parse(meta.until) + LOG_PAD_MS);
-    return { directory, meta: { ...meta, workspace: options.workspace || meta.workspace }, since, until };
+    return { directory, meta, since, until };
   }
   if (!options.since || !options.until) {
     throw new Error("Pass --run, or both --since and --until.");
@@ -73,13 +78,26 @@ export function resolveFetch(options: WindowCommandOptions): {
   const directory = runDirectory(runId);
   const meta: RunMeta = {
     runId,
-    workspace: options.workspace,
+    workspace: options.workspace ?? DEFAULT_WORKSPACE,
     since: since.toISOString(),
     until: until.toISOString(),
     orchestrationEngineImage: null,
     engineImageObservedAt: null,
   };
   return { directory, meta, since, until };
+}
+
+/**
+ * The workspace a run was loaded against. An explicit --workspace that differs
+ * is rejected, so a report never mixes one workspace's turns with another's logs.
+ */
+export function runWorkspace(meta: RunMeta, requested: string | undefined): string {
+  if (requested !== undefined && requested !== meta.workspace) {
+    throw new Error(
+      `Run ${meta.runId} was loaded against workspace ${meta.workspace}. Omit --workspace to use it.`,
+    );
+  }
+  return meta.workspace;
 }
 
 export function parseTimestamp(value: string, flag: string): Date {

@@ -26,7 +26,7 @@ import { runDirectory } from "../paths.js";
 import { buildReport, type RunMeta } from "../report/buildReport.js";
 import { renderMarkdown } from "../report/renderMarkdown.js";
 import type { WindowCommandOptions } from "../cli.js";
-import { resolveFetch } from "./fetchLogs.js";
+import { resolveFetch, runWorkspace } from "./fetchLogs.js";
 import { readRunMeta, writeRunMeta } from "./meta.js";
 
 export async function runReport(
@@ -37,6 +37,9 @@ export async function runReport(
     ? runDirectory(options.runId)
     : (await fetchWindow(options, runner)).directory;
   let meta = readRunMeta(directory);
+  if (options.runId) {
+    runWorkspace(meta, options.workspace);
+  }
   const logsFile = path.join(directory, "logs.ndjson");
   if (!fs.existsSync(logsFile)) {
     throw new Error(

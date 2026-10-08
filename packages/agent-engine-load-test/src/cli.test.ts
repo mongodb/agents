@@ -75,11 +75,11 @@ describe("createCli", () => {
     expect(fetches).toEqual([
       { runId: "phase0", workspace: "atlas-explorer" },
     ]);
+    // No --workspace given, so the window commands do not inject a default.
     expect(reports).toEqual([
       {
         since: "2026-10-07T16:55:00.000Z",
         until: "2026-10-07T17:30:00.000Z",
-        workspace: "atlas-explorer",
       },
     ]);
   });

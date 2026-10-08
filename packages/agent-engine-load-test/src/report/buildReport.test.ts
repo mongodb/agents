@@ -235,6 +235,88 @@ describe("buildReport", () => {
     ]);
     expect(report.otherSessions).toEqual([]);
   });
+
+  it("does not count a failed turn's execution line as recovery", () => {
+    const turns: TurnResult[] = [
+      turn("s1", 1, "completed", "2026-10-08T12:00:00.000Z"),
+      turn("s2", 1, "error", "2026-10-08T12:05:00.000Z", "2026-10-08T12:05:01.000Z"),
+      turn("s3", 1, "error", "2026-10-08T12:10:00.000Z", "2026-10-08T12:10:01.000Z"),
+    ];
+    const events: DiagEvent[] = [
+      execution("aaaa", 1, "sess-1", "exec-1", "2026-10-08T12:00:01.000Z"),
+      {
+        kind: "token_limit_error",
+        timestamp: "2026-10-08T12:05:00.000Z",
+        service: "agent",
+        message: "Access Token limit reached",
+      },
+      // prepareAgentInput logs this before the turn runs, so it is not proof of success.
+      execution("bbbb", 1, "sess-3", "exec-3", "2026-10-08T12:10:00.500Z"),
+    ];
+    const report = buildReport({
+      meta: {
+        ...meta,
+        since: "2026-10-08T12:00:00.000Z",
+        until: "2026-10-08T14:00:00.000Z",
+      },
+      events,
+      turns,
+    });
+
+    expect(report.failures).toMatchObject({
+      firstSuccessAfterFailureAt: null,
+      recoveryMs: null,
+    });
+  });
+
+  it("falls back to execution lines for recovery when there are no client turns", () => {
+    const events: DiagEvent[] = [
+      {
+        kind: "token_limit_error",
+        timestamp: "2026-10-08T12:05:00.000Z",
+        service: "agent",
+        message: "Access Token limit reached",
+      },
+      execution("bbbb", 1, "sess-3", "exec-3", "2026-10-08T13:15:00.000Z"),
+    ];
+    const report = buildReport({
+      meta: {
+        ...meta,
+        since: "2026-10-08T12:00:00.000Z",
+        until: "2026-10-08T14:00:00.000Z",
+      },
+      events,
+    });
+
+    expect(report.failures.recoveryMs).toBe(70 * 60 * 1000);
+  });
+
+  it("reads the fetched log window when one is recorded", () => {
+    const events: DiagEvent[] = [
+      // After the load ends at 12:30, inside the 2-minute log padding.
+      processStart("aaaa", "aer", "2026-10-08T12:31:00.000Z"),
+    ];
+    const loadWindow = {
+      ...meta,
+      since: "2026-10-08T12:00:00.000Z",
+      until: "2026-10-08T12:30:00.000Z",
+    };
+
+    expect(buildReport({ meta: loadWindow, events }).processStarts).toEqual({
+      aer: 0,
+      tool: 0,
+    });
+
+    const fetched = {
+      ...loadWindow,
+      logWindow: { since: "2026-10-08T12:00:00.000Z", until: "2026-10-08T12:32:00.000Z" },
+    };
+    const report = buildReport({ meta: fetched, events });
+    expect(report.processStarts).toEqual({ aer: 1, tool: 0 });
+    expect(renderMarkdown(report)).toContain(
+      "- Window: 2026-10-08T12:00:00.000Z to 2026-10-08T12:32:00.000Z",
+    );
+  });
 });
 
 describe("renderMarkdown", () => {

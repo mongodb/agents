@@ -24,12 +24,23 @@ export interface RunMeta {
   scenario?: string;
   workspace: string;
   workspaceId?: string;
+  /** The load window, as written by `load`. Never padded. */
   since: string;
   until: string;
+  /**
+   * The window `fetch-logs` downloaded: the load window plus log padding.
+   * Reports read this window. Absent when the run was not fetched with padding.
+   */
+  logWindow?: { since: string; until: string };
   orchestrationEngineImage: string | null;
   /** When `agentengine status` was read. The image is the workspace's current engine, not a historical one. */
   engineImageObservedAt: string | null;
   prompt?: string;
+}
+
+/** The window whose logs the report covers. */
+export function reportWindow(meta: RunMeta): { since: string; until: string } {
+  return meta.logWindow ?? { since: meta.since, until: meta.until };
 }
 
 export interface SessionTurnReport {
@@ -93,8 +104,9 @@ export function buildReport(input: {
   events: DiagEvent[];
   turns?: TurnResult[];
 }): LoadReport {
-  const since = Date.parse(input.meta.since);
-  const until = Date.parse(input.meta.until);
+  const window = reportWindow(input.meta);
+  const since = Date.parse(window.since);
+  const until = Date.parse(window.until);
   const events = input.events
     .filter((event) => {
       const time = Date.parse(event.timestamp);
@@ -391,22 +403,25 @@ function failureReport(events: DiagEvent[], turns: TurnResult[]): FailureReport 
     };
   }
   const failureMs = Date.parse(failureAt);
-  const successes = [
-    ...turns
-      .filter(
-        (turn) =>
-          (turn.status === "completed" || turn.status === "suspended") &&
-          Date.parse(turn.startedAt) > failureMs,
-      )
-      .map((turn) => turn.startedAt),
-    ...events
-      .filter(
-        (event) =>
-          event.kind === "execution" && Date.parse(event.timestamp) > failureMs,
-      )
-      .map((event) => event.timestamp),
-  ].sort();
-  const firstSuccessAfterFailureAt = successes[0] ?? null;
+  // Client turns decide success when present. An execution line is written in
+  // prepareAgentInput, before the turn finishes, so it cannot show the turn worked.
+  // Execution lines are the only signal for logs-only reports.
+  const successes =
+    turns.length > 0
+      ? turns
+          .filter(
+            (turn) =>
+              (turn.status === "completed" || turn.status === "suspended") &&
+              Date.parse(turn.startedAt) > failureMs,
+          )
+          .map((turn) => turn.startedAt)
+      : events
+          .filter(
+            (event) =>
+              event.kind === "execution" && Date.parse(event.timestamp) > failureMs,
+          )
+          .map((event) => event.timestamp);
+  const firstSuccessAfterFailureAt = [...successes].sort()[0] ?? null;
   return {
     firstTokenLimitErrorAt,
     firstClientErrorAt,

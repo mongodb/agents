@@ -18,6 +18,7 @@ import { pathToFileURL } from "node:url";
 
 import yargs from "yargs";
 
+import { DEFAULT_WORKSPACE } from "./defaults.js";
 import { SCENARIO_NAMES, type ScenarioName } from "./load/scenarios.js";
 import { runFetchLogs } from "./cli/fetchLogs.js";
 import { runLoad } from "./cli/load.js";
@@ -39,7 +40,8 @@ export interface WindowCommandOptions {
   runId?: string;
   since?: string;
   until?: string;
-  workspace: string;
+  /** Omitted means the run's stored workspace, or the default for a new window. */
+  workspace?: string;
 }
 
 export interface CliHandlers {
@@ -102,7 +104,7 @@ export function createCli(handlers: CliHandlers) {
           })
           .option("workspace", {
             type: "string",
-            default: "atlas-explorer",
+            default: DEFAULT_WORKSPACE,
             description: "agentengine workspace name used for status and logs",
           }),
       (argv) => {
@@ -119,7 +121,7 @@ export function createCli(handlers: CliHandlers) {
           ...optionalNumber(argv["concurrency"], "concurrency"),
           ...optionalString(argv["interval"], "interval"),
           ...optionalString(argv["runId"], "runId"),
-          workspace: stringOption(argv["workspace"], "atlas-explorer"),
+          workspace: stringOption(argv["workspace"], DEFAULT_WORKSPACE),
         });
       },
     )
@@ -153,8 +155,8 @@ function windowOptions(args: ReturnType<typeof yargs>) {
     })
     .option("workspace", {
       type: "string",
-      default: "atlas-explorer",
-      description: "agentengine workspace name",
+      description:
+        "agentengine workspace name. Omit it to use the run's workspace, or the default for --since/--until.",
     });
 }
 
@@ -165,7 +167,7 @@ function windowFromArgv(
     ...optionalString(argv["run"], "runId"),
     ...optionalString(argv["since"], "since"),
     ...optionalString(argv["until"], "until"),
-    workspace: stringOption(argv["workspace"], "atlas-explorer"),
+    ...optionalString(argv["workspace"], "workspace"),
   };
 }
 

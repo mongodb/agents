@@ -14,17 +14,18 @@
  * limitations under the License.
  */
 
-import type { LoadReport, SessionReport } from "./buildReport.js";
+import { reportWindow, type LoadReport, type SessionReport } from "./buildReport.js";
 
 export function renderMarkdown(report: LoadReport): string {
   const { meta } = report;
+  const window = reportWindow(meta);
   const lines = [
     "# MCP token load report",
     "",
     `- Run: \`${meta.runId}\``,
     `- Scenario: ${meta.scenario ?? "(logs only)"}`,
     `- Workspace: \`${meta.workspace}\`${meta.workspaceId ? ` (\`${meta.workspaceId}\`)` : ""}`,
-    `- Window: ${meta.since} to ${meta.until}`,
+    `- Window: ${window.since} to ${window.until}`,
     `- Orchestration Engine: ${formatEngine(meta)}`,
     ...(meta.prompt ? [`- Prompt: ${meta.prompt}`] : []),
     "",
@@ -76,9 +77,10 @@ function formatEngine(meta: LoadReport["meta"]): string {
     ? ` (from \`agentengine status\` at ${meta.engineImageObservedAt})`
     : "";
   const observedAt = meta.engineImageObservedAt;
+  const window = reportWindow(meta);
   const outsideWindow =
     observedAt !== null &&
-    (observedAt < meta.since || observedAt > meta.until);
+    (observedAt < window.since || observedAt > window.until);
   const historical = outsideWindow
     ? " This is the engine at report time, not necessarily the engine that wrote these logs."
     : "";

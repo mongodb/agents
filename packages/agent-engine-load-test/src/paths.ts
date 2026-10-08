@@ -27,6 +27,10 @@ export function assertSafeRunId(runId: string): string {
       `Run id "${runId}" may only contain letters, numbers, dots, underscores, and hyphens.`,
     );
   }
+  // "." and ".." pass the pattern but resolve outside results/.
+  if (runId === "." || runId === "..") {
+    throw new Error(`Run id "${runId}" is a dot segment and cannot name a run directory.`);
+  }
   return runId;
 }
 
