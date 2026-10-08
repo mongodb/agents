@@ -138,6 +138,13 @@ export class MongoThreadStore implements ThreadStore {
         },
       },
     );
+    // Backs listRecentSessionActivity. Its key pattern differs from the
+    // partial TTL indexes above, so it cannot collide with them. Reads stay
+    // correct without it; it only avoids scanning the collection.
+    await this.collection.createIndex(
+      { updatedAt: 1, agentSessionId: 1 },
+      { name: "session_activity" },
+    );
   }
 
   async get(threadId: string): Promise<ThreadRecord | null> {
@@ -369,6 +376,28 @@ export class MongoThreadStore implements ThreadStore {
       { returnDocument: "after" },
     );
     return document?.pendingDelivery ?? null;
+  }
+
+  async listRecentSessionActivity(
+    since: Date,
+    excludeThreadId: string,
+  ): Promise<Date[]> {
+    await this.ensureInitialized();
+    const documents = await this.collection
+      .find(
+        {
+          _id: { $ne: threadKey(excludeThreadId) },
+          updatedAt: { $gte: since },
+          $or: [
+            { agentSessionId: { $exists: true } },
+            { inFlightEventId: { $exists: true } },
+          ],
+        },
+        { projection: { updatedAt: 1 } },
+      )
+      .sort({ updatedAt: 1 })
+      .toArray();
+    return documents.map((document) => document.updatedAt);
   }
 
   async close(): Promise<void> {

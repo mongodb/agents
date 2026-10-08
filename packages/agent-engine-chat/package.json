@@ -18,6 +18,10 @@
       "types": "./dist/store/index.d.ts",
       "import": "./dist/store/index.js"
     },
+    "./token-limit": {
+      "types": "./dist/agent-engine/tokenLimit.d.ts",
+      "import": "./dist/agent-engine/tokenLimit.js"
+    },
     "./testing": {
       "types": "./dist/chat/handlers.test-helpers.d.ts",
       "import": "./dist/chat/handlers.test-helpers.js"

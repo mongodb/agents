@@ -16,6 +16,7 @@
 
 import { randomUUID } from "node:crypto";
 
+import { isTokenExhaustionError } from "../agent-engine/tokenLimit.js";
 import type {
   ClientUserMetadata,
   InvocationProgress,
@@ -25,6 +26,12 @@ import type {
 import type { ThreadRecord, ThreadStore } from "../store/threadStore.js";
 import { buildReviewCard } from "./cards.js";
 import { defaultAgentChatMessages } from "./messages.js";
+import {
+  evaluateSessionHealth,
+  sessionWindowStart,
+  startsAgentSession,
+  type SessionHealth,
+} from "./sessionHealth.js";
 import type {
   ChatHandlerDependencies,
   ConversationSurface,
@@ -91,6 +98,12 @@ export async function handleConversationMessage(
 
   const claimedAt = dependencies.now?.() ?? new Date();
   const eventId = input.eventId ?? randomUUID();
+  // Claiming a turn overwrites `updatedAt`, so the thread's state before this
+  // turn has to be read first to tell whether its agent sandbox is still warm.
+  const previousRecord = await readPreviousRecord(
+    input.threadId,
+    dependencies,
+  );
   const claim = await dependencies.store.claimTurn(
     input.threadId,
     eventId,
@@ -141,6 +154,35 @@ export async function handleConversationMessage(
     activeRecord = withoutDelivery;
   }
 
+  const sessionHealth = await checkSessionHealth(
+    input.threadId,
+    previousRecord,
+    claimedAt,
+    dependencies,
+  );
+  if (sessionHealth.kind === "limit_reached") {
+    // Hand the turn back untouched. Restoring `updatedAt` keeps a rejected
+    // message from making this thread look like it has an active session.
+    await releaseTurn(
+      eventId,
+      activeRecord,
+      dependencies,
+      previousRecord?.updatedAt,
+    ).catch((error: unknown) => {
+      dependencies.logger?.error(
+        "Could not release a turn rejected by the session limit",
+        error,
+      );
+    });
+    await dependencies.conversation.post(
+      (dependencies.messages ?? defaultAgentChatMessages).sessionLimitReached(
+        dependencies.botName,
+        sessionHealth.retryAfterMs,
+      ),
+    );
+    return;
+  }
+
   await dependencies.conversation
     .setStatus(`Initializing ${dependencies.botName}…`)
     .catch((error: unknown) => {
@@ -183,7 +225,12 @@ export async function handleConversationMessage(
     });
     if (released) {
       await dependencies.conversation.post(
-        `${dependencies.botName} could not complete that request. Please try again in a moment.`,
+        isTokenExhaustionError(error)
+          ? // No estimate: Agent Engine recovers as the oldest tokens expire.
+            (
+              dependencies.messages ?? defaultAgentChatMessages
+            ).sessionLimitReached(dependencies.botName)
+          : `${dependencies.botName} could not complete that request. Please try again in a moment.`,
       );
     }
     return;
@@ -408,6 +455,7 @@ async function releaseTurn(
   eventId: string,
   record: ThreadRecord,
   dependencies: ChatHandlerDependencies,
+  updatedAt?: Date,
 ): Promise<boolean> {
   const {
     inFlightEventId: _eventId,
@@ -419,8 +467,71 @@ async function releaseTurn(
     ...(released.pendingDelivery
       ? { retentionState: "delivery_pending" as const }
       : { retentionState: "inactive" as const }),
-    updatedAt: dependencies.now?.() ?? new Date(),
+    updatedAt: updatedAt ?? dependencies.now?.() ?? new Date(),
   });
+}
+
+/**
+ * Reads the thread as it was before this turn. Returns undefined when no
+ * session limit is configured or the read fails, which skips the limit check
+ * rather than blocking the message.
+ */
+async function readPreviousRecord(
+  threadId: string,
+  dependencies: ChatHandlerDependencies,
+): Promise<ThreadRecord | null | undefined> {
+  if (!dependencies.sessionLimit) {
+    return undefined;
+  }
+  try {
+    return await dependencies.store.get(threadId);
+  } catch (error) {
+    dependencies.logger?.warn?.(
+      "Could not read the thread before checking the session limit",
+      error,
+    );
+    return undefined;
+  }
+}
+
+/**
+ * Decides whether this turn may start an agent session. Health comes from
+ * thread records the bot already stores: a turn starts a session when the
+ * thread has never run the agent or has been idle past the sandbox TTL, and it
+ * is refused when too many other threads have been active in the last hour.
+ * The turn is already claimed, so concurrent starters see each other; at worst
+ * two contenders for the last slot are both refused, never both admitted.
+ *
+ * Any failure to measure health lets the turn through. The startup-failure
+ * fallback still protects the user if tokens really have run out.
+ */
+async function checkSessionHealth(
+  threadId: string,
+  previousRecord: ThreadRecord | null | undefined,
+  now: Date,
+  dependencies: ChatHandlerDependencies,
+): Promise<SessionHealth> {
+  const sessionLimit = dependencies.sessionLimit;
+  if (
+    !sessionLimit ||
+    previousRecord === undefined ||
+    !startsAgentSession(previousRecord, now, sessionLimit.idleTtlMs)
+  ) {
+    return { kind: "available" };
+  }
+  try {
+    const activity = await dependencies.store.listRecentSessionActivity(
+      sessionWindowStart(now),
+      threadId,
+    );
+    return evaluateSessionHealth(activity, now, sessionLimit.limit);
+  } catch (error) {
+    dependencies.logger?.warn?.(
+      "Could not check the agent session limit",
+      error,
+    );
+    return { kind: "available" };
+  }
 }
 
 function replaceClaimedRecord(

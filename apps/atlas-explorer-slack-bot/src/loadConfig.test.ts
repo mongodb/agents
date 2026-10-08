@@ -68,9 +68,62 @@ describe("loadConfig", () => {
         },
         workspaceId: "workspace-1",
       },
+      sessionLimit: {
+        idleTtlSeconds: 600,
+        limitPerHour: 30,
+      },
       store: {
         databaseName: "atlas_explorer_slack",
       },
+    });
+  });
+
+  describe("session limit", () => {
+    const socketEnv = { ...sharedEnv, SLACK_APP_TOKEN: "xapp-test" };
+
+    it("reads the cap and idle TTL from the environment", () => {
+      const config = loadConfig(
+        {
+          ...socketEnv,
+          SESSION_LIMIT_PER_HOUR: " 12 ",
+          SESSION_IDLE_TTL_SECONDS: "300",
+        },
+        "socket",
+      );
+
+      expect(config.sessionLimit).toEqual({
+        idleTtlSeconds: 300,
+        limitPerHour: 12,
+      });
+    });
+
+    it("uses the defaults when the variables are blank", () => {
+      const config = loadConfig(
+        {
+          ...socketEnv,
+          SESSION_LIMIT_PER_HOUR: "",
+          SESSION_IDLE_TTL_SECONDS: "   ",
+        },
+        "socket",
+      );
+
+      expect(config.sessionLimit).toEqual({
+        idleTtlSeconds: 600,
+        limitPerHour: 30,
+      });
+    });
+
+    it.each([
+      ["SESSION_LIMIT_PER_HOUR", "0"],
+      ["SESSION_LIMIT_PER_HOUR", "-5"],
+      ["SESSION_LIMIT_PER_HOUR", "2.5"],
+      ["SESSION_LIMIT_PER_HOUR", "many"],
+      ["SESSION_IDLE_TTL_SECONDS", "0"],
+      ["SESSION_IDLE_TTL_SECONDS", "ten"],
+    ])("rejects %s=%s", (variable, value) => {
+      expect(() =>
+        loadConfig({ ...socketEnv, [variable]: value }, "socket"),
+      ).toThrow(new RegExp(variable));
     });
   });
 

@@ -21,6 +21,11 @@ export interface AgentChatMessages {
   resumeUncertain: (botName: string) => string;
   reviewCardTitle: string;
   reviewStatusUncertain: string;
+  /**
+   * Shown instead of starting the agent when the hourly session limit is
+   * reached. `retryAfterMs` is omitted when no estimate is available.
+   */
+  sessionLimitReached: (botName: string, retryAfterMs?: number) => string;
 }
 
 export const defaultAgentChatMessages: AgentChatMessages = {
@@ -34,7 +39,17 @@ export const defaultAgentChatMessages: AgentChatMessages = {
   reviewCardTitle: "Agent operation requires approval",
   reviewStatusUncertain:
     "Decision submitted, but its outcome could not be confirmed. Check the target system before retrying.",
+  sessionLimitReached: (botName, retryAfterMs) =>
+    `${botName} has reached its hourly limit for starting new conversations. This limit is shared by everyone using the bot. Please try again in about ${describeRetryDelay(retryAfterMs)}.`,
 };
+
+function describeRetryDelay(retryAfterMs: number | undefined): string {
+  if (retryAfterMs === undefined) {
+    return "an hour";
+  }
+  const minutes = Math.max(1, Math.ceil(retryAfterMs / 60_000));
+  return minutes === 1 ? "1 minute" : `${minutes} minutes`;
+}
 
 export function resolveAgentChatMessages(
   overrides?: Partial<AgentChatMessages>,

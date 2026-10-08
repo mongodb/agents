@@ -35,6 +35,16 @@ export interface SlackBotConfig {
     apiUrl?: string;
   };
   agentEngine: AgentEngineClientConfig;
+  /**
+   * Caps how many agent sessions can be active at once, so the shared Atlas
+   * service account does not run out of MCP access tokens.
+   */
+  sessionLimit: {
+    /** Seconds without activity after which a thread's agent sandbox is retired. */
+    idleTtlSeconds: number;
+    /** Most agent sessions allowed to be active within any rolling hour. */
+    limitPerHour: number;
+  };
   store: {
     mongoUri?: string;
     databaseName: string;
@@ -42,6 +52,13 @@ export interface SlackBotConfig {
 }
 
 const DEFAULT_SLACK_BOT_NAME = "AtlasExplorer";
+// The service account allows 100 active MCP tokens and a session mints 2, so
+// about 50 sessions fit. The cap counts active threads, which undercounts
+// threads resumed several times in an hour, and other consumers share the same
+// tokens, so it leaves generous headroom.
+const DEFAULT_SESSION_LIMIT_PER_HOUR = 30;
+// Agent Engine keeps a session's sandbox through this idle period (AP-7168).
+const DEFAULT_SESSION_IDLE_TTL_SECONDS = 600;
 
 const requiredString = z.string().trim().min(1, "is required");
 const emptyStringToUndefined = (value: unknown): unknown =>
@@ -53,6 +70,10 @@ const optionalString = z.preprocess(
 const optionalUrl = z.preprocess(
   emptyStringToUndefined,
   z.url().optional(),
+);
+const optionalPositiveInteger = z.preprocess(
+  emptyStringToUndefined,
+  z.coerce.number().int().positive().optional(),
 );
 
 const environmentSchema = z
@@ -74,6 +95,8 @@ const environmentSchema = z
     AGENTIC_BASE_URL: optionalUrl,
     THREAD_STORE_DB: optionalString,
     SLACK_API_URL: optionalUrl,
+    SESSION_LIMIT_PER_HOUR: optionalPositiveInteger,
+    SESSION_IDLE_TTL_SECONDS: optionalPositiveInteger,
   })
   .passthrough();
 
@@ -198,6 +221,13 @@ export function loadConfig(
       ...(values.SLACK_API_URL ? { apiUrl: values.SLACK_API_URL } : {}),
     },
     agentEngine: buildAgenticConfig(values, invokeTarget),
+    sessionLimit: {
+      idleTtlSeconds:
+        values.SESSION_IDLE_TTL_SECONDS ??
+        DEFAULT_SESSION_IDLE_TTL_SECONDS,
+      limitPerHour:
+        values.SESSION_LIMIT_PER_HOUR ?? DEFAULT_SESSION_LIMIT_PER_HOUR,
+    },
     store: {
       ...(values.MONGODB_URI ? { mongoUri: values.MONGODB_URI } : {}),
       databaseName: values.THREAD_STORE_DB ?? "atlas_explorer_slack",

@@ -25,6 +25,10 @@ export {
   type AccessTokenProvider,
 } from "./serviceAccountTokenProvider.js";
 export {
+  isTokenExhaustionError,
+  TOKEN_EXHAUSTION_SIGNATURES,
+} from "./tokenLimit.js";
+export {
   agentActionRequestSchema,
   agentInterruptSchema,
   completedInvocationSchema,

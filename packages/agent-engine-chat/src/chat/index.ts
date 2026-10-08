@@ -35,6 +35,10 @@ export {
   resolveAgentChatMessages,
   type AgentChatMessages,
 } from "./messages.js";
+export {
+  SESSION_WINDOW_MS,
+  type SessionLimit,
+} from "./sessionHealth.js";
 export type { DeliveryBoundary } from "./surface.js";
 export type {
   AgentGateway,

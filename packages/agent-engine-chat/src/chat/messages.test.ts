@@ -21,6 +21,31 @@ import {
   resolveAgentChatMessages,
 } from "./messages.js";
 
+describe("sessionLimitReached", () => {
+  const { sessionLimitReached } = defaultAgentChatMessages;
+
+  it("rounds the retry estimate up to whole minutes", () => {
+    expect(sessionLimitReached("AtlasExplorer", 11 * 60_000 + 1)).toBe(
+      "AtlasExplorer has reached its hourly limit for starting new conversations. This limit is shared by everyone using the bot. Please try again in about 12 minutes.",
+    );
+  });
+
+  it("never suggests retrying in less than a minute", () => {
+    expect(sessionLimitReached("AtlasExplorer", 0)).toContain(
+      "about 1 minute.",
+    );
+    expect(sessionLimitReached("AtlasExplorer", 500)).toContain(
+      "about 1 minute.",
+    );
+  });
+
+  it("falls back to an hour when there is no estimate", () => {
+    expect(sessionLimitReached("AtlasExplorer")).toContain(
+      "Please try again in about an hour.",
+    );
+  });
+});
+
 describe("resolveAgentChatMessages", () => {
   it("returns the shared defaults when nothing is overridden", () => {
     expect(resolveAgentChatMessages()).toBe(defaultAgentChatMessages);

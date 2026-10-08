@@ -90,6 +90,18 @@ export interface ThreadStore {
     deliveryId: string,
     claimId: string,
   ): Promise<boolean>;
+  /**
+   * Returns the `updatedAt` of every thread other than `excludeThreadId` that
+   * has run the agent, or is running it now, and was updated at or after
+   * `since`. Values are in ascending order.
+   *
+   * This reads existing thread metadata only; it is how callers measure how
+   * many agent sessions are active without keeping a separate counter.
+   */
+  listRecentSessionActivity(
+    since: Date,
+    excludeThreadId: string,
+  ): Promise<Date[]>;
   close(): Promise<void>;
 }
 

@@ -163,6 +163,60 @@ export async function exercisesTurnClaim(
   });
 }
 
+export async function exercisesSessionActivity(
+  store: ThreadStore,
+): Promise<void> {
+  const at = (time: string): Date =>
+    new Date(`2026-09-08T${time}:00.000Z`);
+  await store.put({
+    threadId: "slack:C123:self",
+    agentSessionId: "session-self",
+    updatedAt: at("12:15"),
+  });
+  await store.put({
+    threadId: "slack:C123:newest-session",
+    agentSessionId: "session-a",
+    updatedAt: at("12:10"),
+  });
+  await store.put({
+    threadId: "slack:C123:older-session",
+    agentSessionId: "session-b",
+    updatedAt: at("12:05"),
+  });
+  await store.put({
+    threadId: "slack:C123:on-the-boundary",
+    agentSessionId: "session-c",
+    updatedAt: at("12:00"),
+  });
+  await store.put({
+    threadId: "slack:C123:starting",
+    inFlightEventId: "event-1",
+    inFlightStartedAt: at("12:20"),
+    updatedAt: at("12:20"),
+  });
+  await store.put({
+    threadId: "slack:C123:never-ran-agent",
+    updatedAt: at("12:30"),
+  });
+  await store.put({
+    threadId: "slack:C123:before-window",
+    agentSessionId: "session-d",
+    updatedAt: at("11:59"),
+  });
+
+  await expect(
+    store.listRecentSessionActivity(at("12:00"), "slack:C123:self"),
+  ).resolves.toEqual([
+    at("12:00"),
+    at("12:05"),
+    at("12:10"),
+    at("12:20"),
+  ]);
+  await expect(
+    store.listRecentSessionActivity(at("12:21"), "slack:C123:self"),
+  ).resolves.toEqual([]);
+}
+
 export async function exercisesDeliveryCompletion(
   store: ThreadStore,
 ): Promise<void> {

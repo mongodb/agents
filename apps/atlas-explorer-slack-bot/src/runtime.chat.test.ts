@@ -147,6 +147,53 @@ describe("Chat SDK runtime", () => {
     await runtime.bot.shutdown();
   });
 
+  it("refuses a new conversation once the configured session limit is reached", async () => {
+    const adapter = createMockAdapter("slack", {
+      botUserId: "B123",
+      isDM: () => true,
+    }) as SlackAdapter;
+    const agent = new FakeAgentGateway();
+    agent.invokeResult = completed;
+    const limitedConfig = config();
+    limitedConfig.sessionLimit.limitPerHour = 1;
+    const runtime = await createRuntime(limitedConfig, {
+      agent,
+      slackAdapter: adapter,
+      state: createMockState(),
+      store: new MemoryThreadStore(),
+    });
+    await runtime.bot.initialize();
+    const firstThread = "slack:D123:1720000000.000100";
+    const secondThread = "slack:D123:1720000000.000200";
+
+    await runtime.bot.processMessage(
+      adapter,
+      firstThread,
+      createTestMessage("event-1", "List projects", {
+        threadId: firstThread,
+        author: author(),
+      }),
+    );
+    await runtime.bot.processMessage(
+      adapter,
+      secondThread,
+      createTestMessage("event-2", "List clusters", {
+        threadId: secondThread,
+        author: author(),
+      }),
+    );
+
+    expect(agent.invokeInputs).toHaveLength(1);
+    expect(adapter.postMessage).toHaveBeenCalledWith(
+      secondThread,
+      expect.stringContaining(
+        `${BOT_NAME} has reached its hourly limit for starting new conversations.`,
+      ),
+    );
+
+    await runtime.bot.shutdown();
+  });
+
   it("routes handler failures through the runtime logger", async () => {
     const adapter = createMockAdapter("slack", {
       botUserId: "B123",
@@ -196,6 +243,10 @@ function config(): SlackBotConfig {
     agentEngine: {
       baseUrl: "http://localhost:3000",
       invokeTarget: "local",
+    },
+    sessionLimit: {
+      idleTtlSeconds: 600,
+      limitPerHour: 30,
     },
     store: {
       databaseName: "atlas_explorer_test",

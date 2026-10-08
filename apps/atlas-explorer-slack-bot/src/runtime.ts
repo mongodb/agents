@@ -153,6 +153,10 @@ export async function createRuntime(
       adapter.name === slackAdapter.name
         ? parseSlackReviewInterruptId(value, threadId)
         : value,
+    sessionLimit: {
+      idleTtlMs: config.sessionLimit.idleTtlSeconds * 1_000,
+      limit: config.sessionLimit.limitPerHour,
+    },
     store,
   });
   registerSlackPlatformHandlers(

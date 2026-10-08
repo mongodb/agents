@@ -17,6 +17,7 @@
 import type { AdapterPostableMessage } from "chat";
 
 import type { AgentChatMessages } from "./messages.js";
+import type { SessionLimit } from "./sessionHealth.js";
 import type {
   InvocationProgressHandler,
   InvocationResult,
@@ -66,5 +67,10 @@ export interface ChatHandlerDependencies {
   logger?: HandlerLogger;
   messages?: AgentChatMessages;
   now?: () => Date;
+  /**
+   * Caps how many agent sessions may be active at once. When omitted, no
+   * limit is applied.
+   */
+  sessionLimit?: SessionLimit;
   store: ThreadStore;
 }

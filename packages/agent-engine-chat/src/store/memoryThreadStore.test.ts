@@ -22,6 +22,7 @@ import {
   exercisesDeliveryCompletion,
   exercisesReviewClaim,
   exercisesRoundTrip,
+  exercisesSessionActivity,
   exercisesTurnClaim,
 } from "./threadStore.test-helpers.js";
 
@@ -90,5 +91,9 @@ describe("MemoryThreadStore", () => {
 
   it("conditionally clears a delivered Slack response", async () => {
     await exercisesDeliveryCompletion(createStore());
+  });
+
+  it("lists recent agent session activity from thread records", async () => {
+    await exercisesSessionActivity(createStore());
   });
 });

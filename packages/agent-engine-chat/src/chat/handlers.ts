@@ -44,6 +44,7 @@ import {
   resolveAgentChatMessages,
   type AgentChatMessages,
 } from "./messages.js";
+import type { SessionLimit } from "./sessionHealth.js";
 import type {
   AgentGateway,
   HandlerLogger,
@@ -64,6 +65,12 @@ export interface ChatHandlerOptions {
     value: string,
     threadId: string,
   ) => string | null;
+  /**
+   * Caps concurrent agent sessions, which each use Atlas MCP access tokens.
+   * Messages that would start a session past the cap get a limit-reached
+   * reply instead. Leave unset for no cap.
+   */
+  sessionLimit?: SessionLimit;
   store: ThreadStore;
 }
 
@@ -222,6 +229,9 @@ async function dispatchMessage(
         ? { authorizedActorIds: options.authorizedActorIds }
         : {}),
       ...(options.logger ? { logger: options.logger } : {}),
+      ...(options.sessionLimit
+        ? { sessionLimit: options.sessionLimit }
+        : {}),
     },
   );
 }

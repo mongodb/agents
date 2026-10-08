@@ -30,6 +30,7 @@ import {
   exercisesDeliveryCompletion,
   exercisesReviewClaim,
   exercisesRoundTrip,
+  exercisesSessionActivity,
   exercisesTurnClaim,
 } from "./threadStore.test-helpers.js";
 
@@ -98,6 +99,28 @@ describe("MongoThreadStore", () => {
 
   it("conditionally completes pending delivery claims", async () => {
     await exercisesDeliveryCompletion(store);
+  });
+
+  it("lists recent agent session activity from thread records", async () => {
+    await exercisesSessionActivity(store);
+  });
+
+  it("creates the session activity index idempotently", async () => {
+    await store.initialize();
+
+    const indexes = await database
+      .collection("chat_threads")
+      .listIndexes()
+      .toArray();
+
+    expect(
+      indexes.filter((index) => index.name === "session_activity"),
+    ).toEqual([
+      expect.objectContaining({
+        key: { updatedAt: 1, agentSessionId: 1 },
+        name: "session_activity",
+      }),
+    ]);
   });
 
   it("lazily translates active Slack records during cutover", async () => {
