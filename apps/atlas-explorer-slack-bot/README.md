@@ -274,7 +274,7 @@ Your Slack webhook URL is `$VERCEL_URL/api/webhooks/slack`.
    - `AGENTIC_BASE_URL` (optional; defaults to the platform gateway)
    - `THREAD_STORE_DB` (optional; defaults to `atlas_explorer_slack`)
    - `SLACK_BOT_DISPLAY_NAME` (optional; overrides `slackBotConfig.name`)
-   - `SESSION_LIMIT_PER_HOUR` (optional; defaults to `30`, see
+   - `SESSION_LIMIT_PER_HOUR` (optional; defaults to `40`, see
      [Session limit](#session-limit))
    - `SESSION_IDLE_TTL_SECONDS` (optional; defaults to `600`)
 
@@ -443,13 +443,13 @@ is never exceeded.
 
 | Variable                   | Default | Meaning                                                                                              |
 | -------------------------- | ------- | ---------------------------------------------------------------------------------------------------- |
-| `SESSION_LIMIT_PER_HOUR`   | `30`    | Most agent sessions allowed to be active in any rolling hour, across everyone using the bot.         |
+| `SESSION_LIMIT_PER_HOUR`   | `40`    | Most agent sessions allowed to be active in any rolling hour, across everyone using the bot.         |
 | `SESSION_IDLE_TTL_SECONDS` | `600`   | Idle time after which a thread's sandbox is retired. Set it to the Agent Engine sandbox idle TTL.    |
 
 Both must be positive whole numbers. Leave them blank to use the defaults. The
-default cap is a conservative starting point that leaves room under the
-50-session ceiling for other users of the same service account. Load test your
-deployment before raising it.
+default cap is a starting point that stays under the 50-session ceiling to
+leave some room for resumed threads and other users of the same service
+account. Load test your deployment before raising it.
 
 The limit applies to every platform registered in `src/runtime.ts`, because it
 runs in the shared handlers.
