@@ -183,6 +183,9 @@ You host and operate it yourself. Read these limitations before you use it:
 - Anyone on the allowlist can reach everything that the shared identity can
   reach. Give that identity only the roles every allowlisted user should
   have.
+- Everyone on the allowlist also shares one token budget, which limits how
+  many new sessions the bot can start each hour. See
+  [What to expect](#what-to-expect).
 - Only the user who requested a write can approve or reject it.
 - When deployed, the bot needs its own host and its own MongoDB database to
   store thread state. Run locally, it can start a temporary database instead.
@@ -202,6 +205,12 @@ how they're set up.
 - **Built for Atlas Agent Engine.** You can fork the code and adapt it under
   the Apache 2.0 license. However, the deployment steps in this repository
   cover only Atlas Agent Engine and the `agentengine` CLI.
+- **Sessions share a token budget.** Each new or resumed session uses two
+  of the 100 active tokens that an Atlas MCP identity allows, and tokens last
+  about an hour. That's roughly 50 new or resumed sessions per hour per
+  deployment, shared by everyone who uses the agent. When the budget runs
+  out, new sessions fail for up to an hour. For details, see
+  [MCP credential lifecycle](agents/atlas-explorer/README.md#mcp-credential-lifecycle).
 - **Slack is an optional example.** You host the Slack bot yourself. Everyone
   on its allowlist shares one Atlas identity instead of using their own Atlas
   permissions. For details, see

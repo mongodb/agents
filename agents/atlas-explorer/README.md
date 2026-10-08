@@ -197,6 +197,26 @@ The MCP configuration is provisioned once in Atlas, scoped to one project:
 Rotate the client secret in Atlas, update the local or deployed secret, verify
 the agent, and then revoke the previous secret.
 
+### Token limit
+
+The Atlas MCP server allows 100 active tokens per service account, and each
+MCP configuration has its own. Every new or resumed session mints two tokens
+when its sandboxes start, one for the agent sandbox and one for the tool
+sandbox. Tokens stay active for about an hour.
+
+- **Follow-ups within the idle TTL reuse the session's sandboxes** and mint no
+  new tokens. A follow-up after the idle TTL has passed starts new sandboxes
+  and mints two more.
+- **The ceiling is about 50 new or resumed sessions per hour per deployment.**
+  Every user of the agent shares it. That includes everyone on the Slack
+  bot's allowlist, because they all use one Atlas identity.
+- **When the budget runs out, new sessions fail to start.** There is no clear
+  error. Recovery takes about an hour, until the oldest tokens expire.
+
+If a deployment is busy, expect to hit this limit through many concurrent
+conversations, or through conversations that go idle and resume. Plan for
+that when you choose who can use the agent.
+
 ## Run locally
 
 ```bash
