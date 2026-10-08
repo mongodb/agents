@@ -73,11 +73,20 @@ export async function startLocalWebhookServer(
         });
       });
       const { bot } = await getHttpRuntime();
-      await Promise.allSettled([
+      const results = await Promise.allSettled([
         bot.shutdown(),
         closeSharedMongoConnection(),
       ]);
       resetHttpRuntime();
+      const failures = results.flatMap((result) =>
+        result.status === "rejected" ? [result.reason] : [],
+      );
+      if (failures.length > 0) {
+        throw new AggregateError(
+          failures,
+          "Failed to tear down the local webhook runtime",
+        );
+      }
     },
   };
 }

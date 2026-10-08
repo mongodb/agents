@@ -105,7 +105,7 @@ describe("Slack bot against a local Agent Engine", () => {
     expect(invoke?.path).toBe("/invoke/stream");
     expect(invoke?.message).toBe(PROMPT);
     expect(invoke?.userId).toBe(`slack:${ALLOWED_USER}`);
-    expect(invoke?.status).toBeGreaterThan(0);
+    expect(invoke?.status).toBe(200);
     const posted = slack.postedTexts().join("\n");
     expect(posted.toLowerCase()).toContain("pong");
   });
