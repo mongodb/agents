@@ -122,7 +122,7 @@ A session keeps its processes for the idle TTL, which is 600 seconds (10
 minutes) by default. Within that window, follow-up messages in the same
 session reuse the session's processes and mint nothing. A new run, or a
 message sent after the idle TTL has expired, starts new processes. Each cold
-start mints up to 2 tokens: one for the AER process and one for the Tool
+start mints 2 tokens: one for the AER process and one for the Tool
 Pod.
 
 Expected capacity: about 40 to 50 new or resumed sessions per hour for each
@@ -148,7 +148,7 @@ To stay under the limit:
 - Use a separate MCP configuration for each environment, as described in
   [Configure](#configure).
 - Spread scheduled reports and evaluation runs over time. Each new run, and
-  each message sent after the idle TTL, costs up to 2 tokens, so a burst
+  each message sent after the idle TTL, costs 2 tokens, so a burst
   of runs uses the limit quickly. Send follow-ups in the same session within
   10 minutes to reuse its processes.
 - To handle more traffic, deploy several copies of the agent, each in its
