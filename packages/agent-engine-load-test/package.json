@@ -1,0 +1,42 @@
+{
+  "name": "@repo/agent-engine-load-test",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Load tests and log reports for Atlas MCP token use on Agent Engine",
+  "license": "Apache-2.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "prebuild": "pnpm --filter @repo/agent-engine-chat build",
+    "build": "tsc -p tsconfig.json",
+    "preload": "pnpm --filter @repo/agent-engine-chat build",
+    "load": "tsx src/cli.ts load",
+    "fetch-logs": "tsx src/cli.ts fetch-logs",
+    "report": "tsx src/cli.ts report",
+    "pretest": "pnpm --filter @repo/agent-engine-chat build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "pretypecheck": "pnpm --filter @repo/agent-engine-chat build",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json --noEmit"
+  },
+  "dependencies": {
+    "@repo/agent-engine-chat": "workspace:*",
+    "dotenv": "^17.4.2",
+    "yargs": "^17.7.2"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.0",
+    "@types/yargs": "^17.0.33",
+    "tsx": "^4.21.0",
+    "typescript": "^5.5.0",
+    "vitest": "^4.1.11"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

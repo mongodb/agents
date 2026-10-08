@@ -10,3 +10,5 @@ dist/
 .mcp-credentials.json
 .vercel
 .env*
+# Load-test output (packages/agent-engine-load-test/results).
+results/

@@ -57,6 +57,7 @@ describe("runtime diagnostics", () => {
   afterEach(() => {
     diagnostics?.stop();
     diagnostics = undefined;
+    vi.useRealTimers();
     vi.restoreAllMocks();
     if (previousCacheDir === undefined) {
       delete process.env["AGENTIC_MCP_OAUTH_DIR"];
@@ -91,6 +92,8 @@ describe("runtime diagnostics", () => {
       mcpServers: { [server.name]: { url: server.url } },
       log: (msg) => lines.push(msg),
       pollIntervalMs: 60_000,
+      startupPollIntervalMs: 60_000,
+      startupPollWindowMs: 60_000,
     });
 
     expect(lines).toEqual([
@@ -122,6 +125,8 @@ describe("runtime diagnostics", () => {
       mcpServers: { [server.name]: { url: server.url } },
       log: (msg) => lines.push(msg),
       pollIntervalMs: 60_000,
+      startupPollIntervalMs: 60_000,
+      startupPollWindowMs: 60_000,
     });
   }
 
@@ -164,6 +169,55 @@ describe("runtime diagnostics", () => {
 
     expect(lines.at(-1)).toContain("signal_received signal=SIGINT");
     expect(kill).toHaveBeenCalledWith(process.pid, "SIGINT");
+  });
+
+  it("logs a token cached before the graph is built", () => {
+    diagnostics = start();
+    writeCache("graph-token");
+    diagnostics.recordGraphBuild();
+
+    expect(lines.map((line) => line.split(" ")[3])).toEqual([
+      "process_start",
+      "mcp_token_cached",
+      "graph_build",
+    ]);
+    expect(lines.join("\n")).not.toContain("graph-token");
+  });
+
+  it("reads the token cache quickly during startup", () => {
+    vi.useFakeTimers();
+    diagnostics = startRuntimeDiagnostics({
+      mcpServers: { [server.name]: { url: server.url } },
+      log: (msg) => lines.push(msg),
+      pollIntervalMs: 5_000,
+      startupPollIntervalMs: 250,
+      startupPollWindowMs: 30_000,
+    });
+    writeCache("startup-token");
+
+    vi.advanceTimersByTime(250);
+
+    expect(lines.some((line) => line.includes("mcp_token_cached"))).toBe(true);
+  });
+
+  it("switches to the steady poll after the startup window", () => {
+    vi.useFakeTimers();
+    diagnostics = startRuntimeDiagnostics({
+      mcpServers: { [server.name]: { url: server.url } },
+      log: (msg) => lines.push(msg),
+      pollIntervalMs: 5_000,
+      startupPollIntervalMs: 250,
+      startupPollWindowMs: 30_000,
+    });
+
+    vi.advanceTimersByTime(30_000);
+    const before = lines.length;
+    writeCache("later-token");
+    vi.advanceTimersByTime(250);
+    expect(lines).toHaveLength(before);
+
+    vi.advanceTimersByTime(4_750);
+    expect(lines.some((line) => line.includes("mcp_token_cached"))).toBe(true);
   });
 
   it("logs process exit ahead of other exit listeners, including late tokens", () => {

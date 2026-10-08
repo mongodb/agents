@@ -44,7 +44,15 @@ export interface RuntimeDiagnosticsOptions {
   /** `mcp.servers` from agent.yaml, keyed by server name. */
   mcpServers: Record<string, unknown>;
   log: (msg: string) => void;
+  /** Steady polling interval after the startup window. Default 5s. */
   pollIntervalMs?: number;
+  /**
+   * How often to read token caches during startup. Sandboxes mint a token
+   * and are then paused, often before the steady poll runs.
+   */
+  startupPollIntervalMs?: number;
+  /** How long the fast startup poll runs before switching to `pollIntervalMs`. */
+  startupPollWindowMs?: number;
 }
 
 export interface RuntimeDiagnostics {
@@ -158,8 +166,18 @@ export function startRuntimeDiagnostics(
   );
   checkTokenCaches();
 
-  const timer = setInterval(checkTokenCaches, options.pollIntervalMs ?? 5_000);
-  timer.unref();
+  const startupPollIntervalMs = options.startupPollIntervalMs ?? 250;
+  const startupPollWindowMs = options.startupPollWindowMs ?? 30_000;
+  const steadyPollIntervalMs = options.pollIntervalMs ?? 5_000;
+  let steadyTimer: ReturnType<typeof setInterval> | undefined;
+  const startupTimer = setInterval(checkTokenCaches, startupPollIntervalMs);
+  startupTimer.unref();
+  const switchTimer = setTimeout(() => {
+    clearInterval(startupTimer);
+    steadyTimer = setInterval(checkTokenCaches, steadyPollIntervalMs);
+    steadyTimer.unref();
+  }, startupPollWindowMs);
+  switchTimer.unref();
 
   const lifetimeSummary = (): string => {
     const tokensSeen = caches.reduce((total, cache) => total + cache.tokensSeen, 0);
@@ -193,6 +211,7 @@ export function startRuntimeDiagnostics(
     instanceId,
     recordGraphBuild() {
       graphBuilds += 1;
+      checkTokenCaches();
       options.log(`${prefix} graph_build n=${graphBuilds} uptime=${uptime()}`);
     },
     recordExecution(sessionId) {
@@ -207,7 +226,11 @@ export function startRuntimeDiagnostics(
     },
     checkTokenCaches,
     stop() {
-      clearInterval(timer);
+      clearInterval(startupTimer);
+      clearTimeout(switchTimer);
+      if (steadyTimer) {
+        clearInterval(steadyTimer);
+      }
       process.off("SIGTERM", onSignal);
       process.off("SIGINT", onSignal);
       process.off("exit", onExit);
