@@ -64,7 +64,6 @@ export {
   classifyTokenMintError,
   guardTokenMintStartup,
   handleAgentRuntimeTokenLimit,
-  handleToolCallTokenLimit,
   handleToolRuntimeTokenLimit,
   type McpTokenFailure,
   type McpTokenRuntime,

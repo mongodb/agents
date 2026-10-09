@@ -21,7 +21,6 @@ import {
   classifyTokenMintError,
   guardTokenMintStartup,
   handleAgentRuntimeTokenLimit,
-  handleToolCallTokenLimit,
   handleToolRuntimeTokenLimit,
 } from "./tokenLimit.js";
 
@@ -33,13 +32,6 @@ const discoveryTokenLimit = Object.assign(
   { name: "MCPConfigError" },
 );
 
-const toolCallTokenLimit = Object.assign(
-  new Error(
-    `mcp server 'mongodb' tool 'list-clusters' failed: ${tokenLimitDescription}`,
-  ),
-  { name: "MCPToolError" },
-);
-
 const discoveryRateLimit = Object.assign(
   new Error(
     `mcp server 'mongodb' tools/list failed: HTTP 429: Invalid OAuth error response: ZodError: invalid input. Raw body: {"status":"ERROR","errorCode":"RATE_LIMITED"}`,
@@ -48,9 +40,8 @@ const discoveryRateLimit = Object.assign(
 );
 
 describe("classifyTokenMintError", () => {
-  it("recognizes the token limit from discovery and tool calls", () => {
+  it("recognizes the token limit", () => {
     expect(classifyTokenMintError(discoveryTokenLimit)).toBe("token_limit");
-    expect(classifyTokenMintError(toolCallTokenLimit)).toBe("token_limit");
   });
 
   it("recognizes the token endpoint rate limit", () => {
@@ -62,7 +53,7 @@ describe("classifyTokenMintError", () => {
   it("finds the failure in an error cause", () => {
     expect(
       classifyTokenMintError(
-        new Error("tool failed", { cause: toolCallTokenLimit }),
+        new Error("startup failed", { cause: discoveryTokenLimit }),
       ),
     ).toBe("token_limit");
   });
@@ -115,34 +106,6 @@ describe("token mint handlers", () => {
     const failure = new Error("The agent did not become ready during startup.");
     expect(() => handleAgentRuntimeTokenLimit(failure)).toThrow(failure);
     expect(() => handleToolRuntimeTokenLimit(failure)).toThrow(failure);
-  });
-
-  it("tells the model to stop for about an hour at the token limit", () => {
-    const text = handleToolCallTokenLimit(
-      "atlas-list-clusters",
-      toolCallTokenLimit,
-    );
-
-    expect(text).toContain('Tool "atlas-list-clusters"');
-    expect(text).toContain("tool runtime");
-    expect(text).toContain("Do not call more tools");
-    expect(text).toContain("about an hour");
-  });
-
-  it("tells the model to stop for about a minute at the rate limit", () => {
-    const text = handleToolCallTokenLimit(
-      "atlas-list-clusters",
-      discoveryRateLimit,
-    );
-
-    expect(text).toContain("Do not call more tools");
-    expect(text).toContain("about a minute");
-  });
-
-  it("leaves other tool failures to the caller", () => {
-    expect(
-      handleToolCallTokenLimit("atlas-list-clusters", new Error("nope")),
-    ).toBeUndefined();
   });
 
   it("uses the tool handler when the process is the tool runtime", async () => {

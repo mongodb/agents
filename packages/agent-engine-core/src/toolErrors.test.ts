@@ -17,7 +17,6 @@
 import { GraphInterrupt } from "@langchain/langgraph";
 import { describe, expect, it } from "vitest";
 
-import { handleToolCallTokenLimit } from "./tokenLimit.js";
 import { recoverToolCall } from "./toolErrors.js";
 
 describe("recoverToolCall", () => {
@@ -44,61 +43,6 @@ describe("recoverToolCall", () => {
     expect(result.content).toContain(
       "mixed inclusion and exclusion projection",
     );
-  });
-
-  it.each([
-    "mcp server 'mongodb' tool 'list-clusters' failed: Access Token limit reached. Please use the existing Access Tokens or create a new Service Account",
-    `mcp server 'mongodb' tool 'list-clusters' failed: HTTP 429: Invalid OAuth error response: ZodError: invalid input. Raw body: {"status":"ERROR","errorCode":"RATE_LIMITED"}`,
-  ])("tells the model to stop retrying when %s", async (message) => {
-    const result = await recoverToolCall(
-      {
-        toolCall: {
-          id: "call-3",
-          name: "atlas-list-clusters",
-        },
-      },
-      async () => {
-        throw new Error(message);
-      },
-    );
-
-    expect(result.status).toBe("error");
-    expect(result.tool_call_id).toBe("call-3");
-    expect(result.content).toBe(
-      handleToolCallTokenLimit("atlas-list-clusters", new Error(message)),
-    );
-    expect(result.content).toContain("Do not call more tools");
-    expect(result.content).not.toContain("correct the tool arguments");
-    expect(result.content).not.toContain(message);
-  });
-
-  it("recognizes token exhaustion reported through an error cause", async () => {
-    const result = await recoverToolCall(
-      { toolCall: { id: "call-4", name: "atlas-list-projects" } },
-      async () => {
-        throw new Error("tool failed", {
-          cause: new Error("Access Token limit reached"),
-        });
-      },
-    );
-
-    expect(result.content).toBe(
-      handleToolCallTokenLimit(
-        "atlas-list-projects",
-        new Error("Access Token limit reached"),
-      ),
-    );
-  });
-
-  it("treats a generic startup failure as an ordinary tool error", async () => {
-    const result = await recoverToolCall(
-      { toolCall: { id: "call-5", name: "atlas-list-projects" } },
-      async () => {
-        throw new Error("Agent did not become ready during startup");
-      },
-    );
-
-    expect(result.content).toContain("correct the tool arguments, and retry");
   });
 
   it("rethrows graph interrupts so Agent Engine can suspend the execution", async () => {

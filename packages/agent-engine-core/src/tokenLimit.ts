@@ -17,17 +17,14 @@
 /**
  * Contract for the Atlas MCP access-token limit.
  *
- * One service account holds 100 access tokens, each for one hour. Minting
- * happens inside the process that opens the MCP session, and Agent Engine
- * runs two of those processes per execution:
- *
- * - The agent runtime lists tools at startup (`registerMcpTools`), which
- *   opens a session and mints a token for that process.
- * - The tool runtime does the same at its own startup, and opens a new
- *   session again for each tool call.
+ * One service account holds 100 access tokens, each for one hour. Agent
+ * Engine runs two processes per execution, the agent runtime and the tool
+ * runtime, and each mints its own token while listing MCP tools at startup
+ * (`registerMcpTools`, inside `ready()`). Later MCP sessions in that process,
+ * including tool calls, reuse the cached token until it expires.
  *
  * The caches are per process, so a token minted in one runtime is invisible
- * to the other. Each runtime therefore has its own handler.
+ * to the other. Each runtime therefore has its own startup handler.
  *
  * Tokens come from `POST https://cloud.mongodb.com/api/oauth/token`, which
  * can refuse a mint in two ways:
@@ -39,9 +36,8 @@
  *   `{"status":"ERROR","errorCode":"RATE_LIMITED"}`, at 50 requests per
  *   minute for each IP and client ID. Clears within a minute.
  *
- * The runner rethrows MCP auth failures as `MCPConfigError` or
- * `MCPToolError` carrying only the message, so the HTTP status and OAuth
- * error code are lost. The MCP SDK writes `HTTP 429` into the message only
+ * The runner rethrows tool discovery failures as `MCPConfigError` carrying
+ * only the message, so the HTTP status and OAuth error code are lost. The MCP SDK writes `HTTP 429` into the message only
  * when the body is not an OAuth error, which is why the 429 is recognizable
  * and the 403 is matched by its description.
  */
@@ -86,11 +82,6 @@ const FAILURE_REASONS: Record<McpTokenFailure, string> = {
   token_rate_limit: "the token endpoint rate limit is reached",
 };
 
-const RETRY_HINTS: Record<McpTokenFailure, string> = {
-  token_limit: "has reached its hourly access limit and ask them to try again in about an hour",
-  token_rate_limit: "is briefly rate limited and ask them to try again in about a minute",
-};
-
 /**
  * Returns which token mint limit the error reports, checking the error and
  * its `cause` chain, or undefined for any other failure.
@@ -114,9 +105,9 @@ export function classifyTokenMintError(
 }
 
 /**
- * Agent runtime. The only mint this process performs is listing tools while
- * it starts. A failure there aborts startup with {@link McpTokenLimitError}.
- * Any other error is rethrown unchanged.
+ * Agent runtime startup. A token mint failure while listing tools aborts
+ * startup with {@link McpTokenLimitError}. Any other error is rethrown
+ * unchanged.
  */
 export function handleAgentRuntimeTokenLimit(error: unknown): never {
   throw tokenLimitOrOriginal("agent", error);
@@ -129,31 +120,6 @@ export function handleAgentRuntimeTokenLimit(error: unknown): never {
  */
 export function handleToolRuntimeTokenLimit(error: unknown): never {
   throw tokenLimitOrOriginal("tool", error);
-}
-
-/**
- * Tool runtime, during a tool call. The tool process opens a new MCP session
- * for the call, so this is a second mint on top of startup. The agent graph
- * is where that failure arrives: tell the model to stop, because every Atlas
- * tool in this process shares the exhausted budget.
- *
- * Returns undefined when the error is not the token limit, so the caller can
- * keep its normal tool-error behavior.
- */
-export function handleToolCallTokenLimit(
-  toolName: string,
-  error: unknown,
-): string | undefined {
-  const failure = classifyTokenMintError(error);
-  if (failure === undefined) {
-    return undefined;
-  }
-  return (
-    `Tool "${toolName}" could not run because the tool runtime could not ` +
-    `mint an Atlas access token: ${FAILURE_REASONS[failure]}. Retrying, or ` +
-    `calling any other Atlas tool, will fail the same way. Do not call more ` +
-    `tools. Tell the user that the assistant ${RETRY_HINTS[failure]}.`
-  );
 }
 
 export interface TokenMintStartup {
