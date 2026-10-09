@@ -36,10 +36,19 @@
  *   `{"status":"ERROR","errorCode":"RATE_LIMITED"}`, at 50 requests per
  *   minute for each IP and client ID. Clears within a minute.
  *
- * The runner rethrows tool discovery failures as `MCPConfigError` carrying
- * only the message, so the HTTP status and OAuth error code are lost. The MCP SDK writes `HTTP 429` into the message only
- * when the body is not an OAuth error, which is why the 429 is recognizable
- * and the 403 is matched by its description.
+ * Why the errors are matched by message text: by the time startup fails,
+ * only the message string is left. The runner wraps the failure in an
+ * `MCPConfigError` that keeps the message but drops the HTTP status and the
+ * OAuth error code, so we can't check for 403 or 429 directly.
+ *
+ * What each message contains depends on the response body:
+ * - The 403 body is a valid OAuth error, so the MCP SDK uses its
+ *   `error_description` as the message. We match that text, "Access Token
+ *   limit reached".
+ * - The 429 body is not a valid OAuth error, so the SDK builds a message
+ *   from the status and the raw body: `HTTP 429: Invalid OAuth error
+ *   response: ... Raw body: {"status":"ERROR","errorCode":"RATE_LIMITED"}`.
+ *   We match `HTTP 429` together with `RATE_LIMITED`.
  */
 
 export const MCP_ACCESS_TOKEN_LIMIT = 100;
