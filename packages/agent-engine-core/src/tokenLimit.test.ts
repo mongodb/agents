@@ -19,8 +19,8 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
   McpTokenLimitError,
   classifyTokenMintError,
-  handleAgentRuntimeTokenLimit,
-  handleToolRuntimeTokenLimit,
+  throwAgentRuntimeTokenLimit,
+  throwToolRuntimeTokenLimit,
   surfaceTokenMintFailures,
 } from "./tokenLimit.js";
 
@@ -76,7 +76,7 @@ describe("token mint handlers", () => {
 
   it("aborts agent startup with the agent runtime's own error", () => {
     try {
-      handleAgentRuntimeTokenLimit(discoveryTokenLimit);
+      throwAgentRuntimeTokenLimit(discoveryTokenLimit);
       throw new Error("expected the agent handler to throw");
     } catch (error) {
       expect(error).toBeInstanceOf(McpTokenLimitError);
@@ -91,7 +91,7 @@ describe("token mint handlers", () => {
 
   it("aborts tool startup with the tool runtime's own error", () => {
     try {
-      handleToolRuntimeTokenLimit(discoveryRateLimit);
+      throwToolRuntimeTokenLimit(discoveryRateLimit);
       throw new Error("expected the tool handler to throw");
     } catch (error) {
       expect(error).toBeInstanceOf(McpTokenLimitError);
@@ -104,8 +104,8 @@ describe("token mint handlers", () => {
 
   it("rethrows unrelated startup failures unchanged", () => {
     const failure = new Error("The agent did not become ready during startup.");
-    expect(() => handleAgentRuntimeTokenLimit(failure)).toThrow(failure);
-    expect(() => handleToolRuntimeTokenLimit(failure)).toThrow(failure);
+    expect(() => throwAgentRuntimeTokenLimit(failure)).toThrow(failure);
+    expect(() => throwToolRuntimeTokenLimit(failure)).toThrow(failure);
   });
 
   it("uses the tool handler when the process is the tool runtime", async () => {

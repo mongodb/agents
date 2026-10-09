@@ -114,20 +114,22 @@ export function classifyTokenMintError(
 }
 
 /**
- * Agent runtime startup. A token mint failure while listing tools aborts
- * startup with {@link McpTokenLimitError}. Any other error is rethrown
- * unchanged.
+ * Throws for a failed agent runtime startup. If `error` is a token mint
+ * refusal, throws {@link McpTokenLimitError} labelled "agent" with `error`
+ * as its cause. Otherwise throws `error` unchanged.
  */
-export function handleAgentRuntimeTokenLimit(error: unknown): never {
+export function throwAgentRuntimeTokenLimit(error: unknown): never {
   throw tokenLimitOrOriginal("agent", error);
 }
 
 /**
- * Tool runtime startup. This process mints its own token while listing
- * tools, separate from the agent runtime's token. A failure aborts this
- * process's startup with {@link McpTokenLimitError}.
+ * Throws for a failed tool runtime startup. The tool process lists MCP
+ * tools and mints its own token at startup, separate from the agent
+ * runtime's token, so it can be refused too. If `error` is a token mint
+ * refusal, throws {@link McpTokenLimitError} labelled "tool" with `error` as
+ * its cause. Otherwise throws `error` unchanged.
  */
-export function handleToolRuntimeTokenLimit(error: unknown): never {
+export function throwToolRuntimeTokenLimit(error: unknown): never {
   throw tokenLimitOrOriginal("tool", error);
 }
 
@@ -159,9 +161,9 @@ export function surfaceTokenMintFailures(app: TokenMintStartup): void {
       await ready();
     } catch (error) {
       if (tokenMintRuntime() === "tool") {
-        handleToolRuntimeTokenLimit(error);
+        throwToolRuntimeTokenLimit(error);
       }
-      handleAgentRuntimeTokenLimit(error);
+      throwAgentRuntimeTokenLimit(error);
     }
   };
 }
