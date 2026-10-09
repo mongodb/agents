@@ -417,7 +417,9 @@ limit gets a reply instead of an error:
 
 The estimate is when enough active sessions will have aged out of the window to
 make room. Nothing is queued, so the user sends the message again later. A
-refused message doesn't count as activity and doesn't change the thread.
+refused message doesn't count as activity and doesn't change the thread. The
+same is true when a restart of an idle thread fails to start: the thread keeps
+its previous activity time, so a retry is checked against the cap again.
 
 ### What counts toward the limit
 

@@ -92,4 +92,6 @@ section for how the count works and what it can't promise.
 
 The cap is the only protection the handlers provide. If an invocation fails
 anyway, including when the agent can't start, they post the generic failure
-reply, because Agent Engine doesn't say why a startup failed.
+reply, because Agent Engine doesn't say why a startup failed. A failed restart
+of an idle thread keeps that thread's previous activity time, so the retry is
+checked against the cap again.
