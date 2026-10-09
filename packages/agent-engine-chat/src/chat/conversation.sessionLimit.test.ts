@@ -306,7 +306,7 @@ describe("handleConversationMessage session limit", () => {
   });
 });
 
-describe("handleConversationMessage token exhaustion fallback", () => {
+describe("handleConversationMessage startup failures", () => {
   let agent: FakeAgentGateway;
   let conversation: FakeConversation;
   let store: MemoryThreadStore;
@@ -335,18 +335,17 @@ describe("handleConversationMessage token exhaustion fallback", () => {
     );
   }
 
-  it("shows the limit message when the agent cannot start for lack of tokens", async () => {
+  it("posts the generic message when the agent cannot start", async () => {
     agent.invokeError = new AgenticApiError(
       "The agent did not become ready during startup.",
-      { status: 500, requestOutcome: "unknown" },
+      { status: 500, code: "AGENT_STARTUP_FAILED", requestOutcome: "unknown" },
     );
 
     await send();
 
     expect(conversation.messages).toEqual([
-      expect.stringMatching(LIMIT_MESSAGE),
+      `${BOT_NAME} could not complete that request. Please try again in a moment.`,
     ]);
-    expect(conversation.messages[0]).toContain("about an hour");
     expect(await store.get(THREAD_ID)).not.toHaveProperty(
       "inFlightEventId",
     );

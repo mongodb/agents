@@ -16,7 +16,6 @@
 
 import { randomUUID } from "node:crypto";
 
-import { isTokenExhaustionError } from "../agent-engine/tokenLimit.js";
 import type {
   ClientUserMetadata,
   InvocationProgress,
@@ -224,13 +223,11 @@ export async function handleConversationMessage(
       return false;
     });
     if (released) {
+      // Agent Engine reports every startup failure, including an exhausted
+      // access token limit, with the same generic text, so the failure can't
+      // be told apart here. The session limit above is the proactive guard.
       await dependencies.conversation.post(
-        isTokenExhaustionError(error)
-          ? // No estimate: Agent Engine recovers as the oldest tokens expire.
-            (
-              dependencies.messages ?? defaultAgentChatMessages
-            ).sessionLimitReached(dependencies.botName)
-          : `${dependencies.botName} could not complete that request. Please try again in a moment.`,
+        `${dependencies.botName} could not complete that request. Please try again in a moment.`,
       );
     }
     return;
