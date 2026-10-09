@@ -470,10 +470,11 @@ The bot creates the index that makes the count cheap (`session_activity` on
 ### If the tokens run out anyway
 
 If agent startup still fails because of the token limit, which can happen when
-the cap is set too high or the account is shared, the bot recognizes the error
-and posts the same "reached its hourly limit" message, estimating "about an
-hour". Other startup failures still get the generic "could not complete that
-request" reply. For how the agents report the failure, see the
+the cap is set too high or the account is shared, the bot can't tell. Agent
+Engine reports every startup failure as "The agent did not become ready during
+startup." and doesn't say why, so the user gets the generic "could not complete
+that request" reply, as for any other failure. To confirm the cause, check the
+agents' logs for `Access Token limit reached`. See the
 [Atlas Explorer](../../agents/atlas-explorer#access-token-limit) and
 [Atlas Query Insights](../../agents/atlas-query-insights#access-token-limit)
 READMEs.

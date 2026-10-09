@@ -15,9 +15,6 @@ Each export is a separate subpath of the package.
   with streaming, and handles service-account tokens.
 - **`/store`.** Thread and Chat SDK state storage in MongoDB, plus an in-memory
   thread store.
-- **`/token-limit`.** `isTokenExhaustionError`, which recognizes failures
-  caused by the Atlas MCP access token limit. It has no dependencies, so the
-  agent runtime in `@repo/agent-engine-core` shares it with the chat handlers.
 - **`/testing`.** Fakes for tests that use the handlers.
 
 ## Wiring
@@ -93,6 +90,6 @@ applies. See the Slack bot's
 [Session limit](../../apps/atlas-explorer-slack-bot/README.md#session-limit)
 section for how the count works and what it can't promise.
 
-Independently of the cap, when an invocation fails during startup because the
-token limit is exhausted, the handlers post the same limit message instead of
-the generic failure reply.
+The cap is the only protection the handlers provide. If an invocation fails
+anyway, including when the agent can't start, they post the generic failure
+reply, because Agent Engine doesn't say why a startup failed.
