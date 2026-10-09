@@ -304,6 +304,40 @@ describe("handleConversationMessage session limit", () => {
       `${BOT_NAME} is full for ${55 * MINUTE} ms.`,
     ]);
   });
+
+  it("checks the limit again when retrying an idle session that failed to restart", async () => {
+    const idleSince = minutesAgo(15);
+    await store.put({
+      threadId: THREAD_ID,
+      agentSessionId: "session-idle",
+      updatedAt: idleSince,
+    });
+    agent.invokeError = new AgenticApiError(
+      "The agent did not become ready during startup.",
+      { status: 500, code: "AGENT_STARTUP_FAILED", requestOutcome: "unknown" },
+    );
+
+    await send("event-1");
+
+    expect(agent.invokeInputs).toHaveLength(1);
+    await expect(store.get(THREAD_ID)).resolves.toMatchObject({
+      agentSessionId: "session-idle",
+      updatedAt: idleSince,
+    });
+
+    agent.invokeError = undefined;
+    await seedActiveSession("other-1", 5);
+    clock = new Date(clock.getTime() + MINUTE);
+    conversation.messages = [];
+    await send("event-2", {
+      sessionLimit: { limit: 1, idleTtlMs: 10 * MINUTE },
+    });
+
+    expect(agent.invokeInputs).toHaveLength(1);
+    expect(conversation.messages).toEqual([
+      expect.stringMatching(LIMIT_MESSAGE),
+    ]);
+  });
 });
 
 describe("handleConversationMessage startup failures", () => {

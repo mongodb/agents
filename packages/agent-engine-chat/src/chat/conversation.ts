@@ -215,6 +215,10 @@ export async function handleConversationMessage(
       eventId,
       activeRecord,
       dependencies,
+      // A failed restart of an idle session did not bring a sandbox up, so
+      // keep the pre-turn timestamp. Refreshing it would make the retry look
+      // like a warm follow-up and skip the limit check.
+      newSessionUpdatedAt(previousRecord, claimedAt, dependencies),
     ).catch((storeError: unknown) => {
       dependencies.logger?.error(
         "Could not release failed conversation turn",
@@ -499,8 +503,9 @@ async function readPreviousRecord(
  * The turn is already claimed, so concurrent starters see each other; at worst
  * two contenders for the last slot are both refused, never both admitted.
  *
- * Any failure to measure health lets the turn through. The startup-failure
- * fallback still protects the user if tokens really have run out.
+ * Any failure to measure health lets the turn through. A startup that fails
+ * anyway is reported with Agent Engine's generic message, which does not say
+ * why, so this check is the only guard.
  */
 async function checkSessionHealth(
   threadId: string,
@@ -529,6 +534,29 @@ async function checkSessionHealth(
     );
     return { kind: "available" };
   }
+}
+
+/**
+ * The `updatedAt` to keep when a turn that needed a new agent session fails.
+ * The claim refreshed it, but no sandbox came up. Keeping the pre-turn value
+ * leaves the thread looking idle, so a retry is checked against the limit
+ * again. A warm follow-up, and a thread with no earlier timestamp, return
+ * undefined so the release keeps the claim time.
+ */
+function newSessionUpdatedAt(
+  previousRecord: ThreadRecord | null | undefined,
+  now: Date,
+  dependencies: ChatHandlerDependencies,
+): Date | undefined {
+  const sessionLimit = dependencies.sessionLimit;
+  if (
+    !sessionLimit ||
+    !previousRecord ||
+    !startsAgentSession(previousRecord, now, sessionLimit.idleTtlMs)
+  ) {
+    return undefined;
+  }
+  return previousRecord.updatedAt;
 }
 
 function replaceClaimedRecord(
