@@ -28,56 +28,89 @@
  *
  * The caches are per process, so a token minted in one runtime is invisible
  * to the other. Each runtime therefore has its own handler.
+ *
+ * Tokens come from `POST https://cloud.mongodb.com/api/oauth/token`, which
+ * can refuse a mint in two ways:
+ *
+ * - `token_limit`: 403 `access_denied`, `error_description` "Access Token
+ *   limit reached. Please use the existing Access Tokens or create a new
+ *   Service Account". Clears as the oldest tokens expire, up to an hour.
+ * - `token_rate_limit`: 429 with the non-OAuth body
+ *   `{"status":"ERROR","errorCode":"RATE_LIMITED"}`, at 50 requests per
+ *   minute for each IP and client ID. Clears within a minute.
+ *
+ * The runner rethrows MCP auth failures as `MCPConfigError` or
+ * `MCPToolError` carrying only the message, so the HTTP status and OAuth
+ * error code are lost. The MCP SDK writes `HTTP 429` into the message only
+ * when the body is not an OAuth error, which is why the 429 is recognizable
+ * and the 403 is matched by its description.
  */
 
 export const MCP_ACCESS_TOKEN_LIMIT = 100;
 export const MCP_ACCESS_TOKEN_TTL_MS = 60 * 60 * 1000;
 
-export const TOKEN_EXHAUSTION_SIGNATURES = [
-  "did not become ready during startup",
-  "access token limit",
-] as const;
+export const ACCESS_TOKEN_LIMIT_MESSAGE = "Access Token limit reached";
+export const TOKEN_RATE_LIMIT_STATUS = "HTTP 429";
+export const TOKEN_RATE_LIMIT_ERROR_CODE = "RATE_LIMITED";
 
 const MAX_CAUSE_DEPTH = 3;
 
 export type McpTokenRuntime = "agent" | "tool";
+export type McpTokenFailure = "token_limit" | "token_rate_limit";
 
 /**
  * Startup failed because this process could not mint an MCP access token.
- * `runtime` says which process. Clients match this error, or the signatures
- * above, to tell the user the hourly limit is reached.
+ * `runtime` says which process and `failure` says which limit refused it.
  */
 export class McpTokenLimitError extends Error {
   readonly runtime: McpTokenRuntime;
+  readonly failure: McpTokenFailure;
 
-  constructor(runtime: McpTokenRuntime, cause: unknown) {
+  constructor(
+    runtime: McpTokenRuntime,
+    failure: McpTokenFailure,
+    cause: unknown,
+  ) {
     super(
-      `${runtime} runtime did not become ready during startup: shared Atlas access token limit reached`,
+      `${runtime} runtime could not mint an Atlas MCP access token: ${FAILURE_REASONS[failure]}`,
       cause === undefined ? undefined : { cause },
     );
     this.name = "McpTokenLimitError";
     this.runtime = runtime;
+    this.failure = failure;
   }
 }
 
-export function isTokenExhaustionError(error: unknown): boolean {
+const FAILURE_REASONS: Record<McpTokenFailure, string> = {
+  token_limit: "the service account has reached its access token limit",
+  token_rate_limit: "the token endpoint rate limit is reached",
+};
+
+const RETRY_HINTS: Record<McpTokenFailure, string> = {
+  token_limit: "has reached its hourly access limit and ask them to try again in about an hour",
+  token_rate_limit: "is briefly rate limited and ask them to try again in about a minute",
+};
+
+/**
+ * Returns which token mint limit the error reports, checking the error and
+ * its `cause` chain, or undefined for any other failure.
+ */
+export function classifyTokenMintError(
+  error: unknown,
+): McpTokenFailure | undefined {
   let current: unknown = error;
   for (let depth = 0; depth <= MAX_CAUSE_DEPTH; depth += 1) {
-    const message = messageOf(current).toLowerCase();
-    if (
-      TOKEN_EXHAUSTION_SIGNATURES.some((signature) =>
-        message.includes(signature),
-      )
-    ) {
-      return true;
+    const failure = classifyMessage(messageOf(current));
+    if (failure !== undefined) {
+      return failure;
     }
     const cause = causeOf(current);
     if (cause === undefined) {
-      return false;
+      return undefined;
     }
     current = cause;
   }
-  return false;
+  return undefined;
 }
 
 /**
@@ -111,15 +144,15 @@ export function handleToolCallTokenLimit(
   toolName: string,
   error: unknown,
 ): string | undefined {
-  if (!isTokenExhaustionError(error)) {
+  const failure = classifyTokenMintError(error);
+  if (failure === undefined) {
     return undefined;
   }
   return (
-    `Tool "${toolName}" could not run because the tool runtime hit the ` +
-    `shared Atlas access token limit for this hour. Retrying, or calling ` +
-    `any other Atlas tool, will fail the same way. Do not call more tools. ` +
-    `Tell the user that the assistant has reached its hourly access limit ` +
-    `and ask them to try again in about an hour.`
+    `Tool "${toolName}" could not run because the tool runtime could not ` +
+    `mint an Atlas access token: ${FAILURE_REASONS[failure]}. Retrying, or ` +
+    `calling any other Atlas tool, will fail the same way. Do not call more ` +
+    `tools. Tell the user that the assistant ${RETRY_HINTS[failure]}.`
   );
 }
 
@@ -156,9 +189,23 @@ function tokenLimitOrOriginal(
   runtime: McpTokenRuntime,
   error: unknown,
 ): unknown {
-  return isTokenExhaustionError(error)
-    ? new McpTokenLimitError(runtime, error)
-    : error;
+  const failure = classifyTokenMintError(error);
+  return failure === undefined
+    ? error
+    : new McpTokenLimitError(runtime, failure, error);
+}
+
+function classifyMessage(message: string): McpTokenFailure | undefined {
+  if (message.includes(ACCESS_TOKEN_LIMIT_MESSAGE)) {
+    return "token_limit";
+  }
+  if (
+    message.includes(TOKEN_RATE_LIMIT_STATUS) &&
+    message.includes(TOKEN_RATE_LIMIT_ERROR_CODE)
+  ) {
+    return "token_rate_limit";
+  }
+  return undefined;
 }
 
 function messageOf(value: unknown): string {

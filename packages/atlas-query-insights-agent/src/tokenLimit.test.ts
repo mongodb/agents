@@ -27,7 +27,9 @@ describe("access token limit handling", () => {
       toolCall: { id: "call-1", name: "atlas-list-clusters", args: {} },
     };
     const result = await wrapToolCall(request as never, async () => {
-      throw new Error("Agent did not become ready during startup");
+      throw new Error(
+        "mcp server 'mongodb' tool 'list-clusters' failed: Access Token limit reached. Please use the existing Access Tokens or create a new Service Account",
+      );
     });
 
     expect(result).toMatchObject({

@@ -47,8 +47,8 @@ describe("recoverToolCall", () => {
   });
 
   it.each([
-    "Agent did not become ready during startup",
-    "MCP request rejected: access token limit reached for service account",
+    "mcp server 'mongodb' tool 'list-clusters' failed: Access Token limit reached. Please use the existing Access Tokens or create a new Service Account",
+    `mcp server 'mongodb' tool 'list-clusters' failed: HTTP 429: Invalid OAuth error response: ZodError: invalid input. Raw body: {"status":"ERROR","errorCode":"RATE_LIMITED"}`,
   ])("tells the model to stop retrying when %s", async (message) => {
     const result = await recoverToolCall(
       {
@@ -77,7 +77,7 @@ describe("recoverToolCall", () => {
       { toolCall: { id: "call-4", name: "atlas-list-projects" } },
       async () => {
         throw new Error("tool failed", {
-          cause: new Error("Access token limit exceeded"),
+          cause: new Error("Access Token limit reached"),
         });
       },
     );
@@ -85,9 +85,20 @@ describe("recoverToolCall", () => {
     expect(result.content).toBe(
       handleToolCallTokenLimit(
         "atlas-list-projects",
-        new Error("Access token limit exceeded"),
+        new Error("Access Token limit reached"),
       ),
     );
+  });
+
+  it("treats a generic startup failure as an ordinary tool error", async () => {
+    const result = await recoverToolCall(
+      { toolCall: { id: "call-5", name: "atlas-list-projects" } },
+      async () => {
+        throw new Error("Agent did not become ready during startup");
+      },
+    );
+
+    expect(result.content).toContain("correct the tool arguments, and retry");
   });
 
   it("rethrows graph interrupts so Agent Engine can suspend the execution", async () => {

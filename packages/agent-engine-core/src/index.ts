@@ -55,14 +55,18 @@ export {
   stampResumeMessages,
 } from "./stampResume.js";
 export {
+  ACCESS_TOKEN_LIMIT_MESSAGE,
   MCP_ACCESS_TOKEN_LIMIT,
   MCP_ACCESS_TOKEN_TTL_MS,
   McpTokenLimitError,
+  TOKEN_RATE_LIMIT_ERROR_CODE,
+  TOKEN_RATE_LIMIT_STATUS,
+  classifyTokenMintError,
   guardTokenMintStartup,
   handleAgentRuntimeTokenLimit,
   handleToolCallTokenLimit,
   handleToolRuntimeTokenLimit,
-  isTokenExhaustionError,
+  type McpTokenFailure,
   type McpTokenRuntime,
   type TokenMintStartup,
 } from "./tokenLimit.js";
