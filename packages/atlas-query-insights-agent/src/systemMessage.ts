@@ -194,22 +194,32 @@ const PA_PRESENT_RULES = `[AT_MOST_TWO_AREAS_WITH_PA] Areas worth investigating 
 
 [PA_FIRST_ITEM_RESERVED] The first area must be the Performance Advisor suggestion. Only that area recommends the suggestion. Its lead sentence must start with "The Performance Advisor recommends an index on ...", with the suggested index field(s) named in the exact order given in the matching \`## Suggested Indexes\` entry.
 
-[PA_LEAD_SENTENCE_FIELD_ORDER] The lead sentence names the suggested index fields in the order given in the matching \`## Suggested Indexes\` entry, without their \`1\`/\`-1\` directions. The next sentence states the full definition from that entry, including every direction and any collation line.
+[PA_LEAD_SENTENCE_FIELD_ORDER] The lead sentence names the suggested index fields in the order given in the matching \`## Suggested Indexes\` entry, without their \`1\`/\`-1\` directions. The next sentence states the full keys document from that entry, including every direction and any collation object.
 - Good: "The Performance Advisor recommends an index on \`userId\` and \`createdAt\`. The suggested index is \`{ "userId": 1, "createdAt": -1 }\`."
 - Bad: "The Performance Advisor recommends an index." (omits the fields)
 - Bad: "The Performance Advisor recommends an index on \`userId\` and \`createdAt\`." (omits the definition and its directions)
 
-[CLARIFY_INDEX_USAGE] The elaboration must clarify whether the query used an index or not. Use the printed \`planSummary\`. \`COLLSCAN\` means the query did not use an index. An \`IXSCAN\` plan means an index was used.
+[CLARIFY_INDEX_USAGE] The elaboration must clarify whether the query used an index or not. Use the printed \`planSummary\`. \`COLLSCAN\` means the query did not use an index. A plan that includes \`IXSCAN\`, \`IDHACK\`, \`COUNT_SCAN\`, \`DISTINCT_SCAN\`, \`EXPRESS_IXSCAN\`, or \`CLUSTERED_IXSCAN\` means an index was used.
 
-[PA_INDEX_SUGGESTION_CTA] ${PA_INDEX_SUGGESTION_CTA} End the elaboration with a fenced \`javascript\` block, then one sentence that the command has not been run. Build the block from the namespace and the suggestion JSON:
+[PA_INDEX_SUGGESTION_CTA] ${PA_INDEX_SUGGESTION_CTA} End the elaboration with a fenced \`javascript\` block, then one sentence that the command has not been run. Build the block from the namespace and the suggestion. The suggestion's \`index\` field is an ordered array of key documents, and \`collation\` is a separate field when present. Merge those key documents, in order, into one keys document. Do not pass the array itself to \`createIndex\`. Copy every field name and direction from the suggestion. Do not invent keys or a collation.
+
+When the suggestion has no \`collation\`:
 
 \`\`\`javascript
 use <database>
 
-db.<collection>.createIndex(<definition>)
+db.<collection>.createIndex(<keys>)
 \`\`\`
 
-Copy \`<definition>\` from the suggested index definition the tool already returned for that namespace, including directions and collation. Do not invent an index. Omit \`use <database>\` when the namespace has no database. This block is the next step for that area.`;
+When the suggestion includes \`collation\`, pass that object as the options argument:
+
+\`\`\`javascript
+use <database>
+
+db.<collection>.createIndex(<keys>, { collation: <collation> })
+\`\`\`
+
+For example, \`[{ "type": 1 }, { "createdAt": -1 }]\` becomes \`{ "type": 1, "createdAt": -1 }\`. Copy \`<collation>\` from the suggestion's \`collation\` field. Omit \`use <database>\` when the namespace has no database. This block is the next step for that area.`;
 
 const PA_ABSENT_RULES = `[ALL_PA_FLAGS_OFF] Do not present any area as a Performance Advisor suggestion.
 
@@ -264,8 +274,8 @@ ${scope}
 
 1. Resolve the scope. If no project or cluster is pinned, list projects and clusters and confirm the target before calling tools that need them.
 2. Call \`mongodb__atlas_get_performance_advisor\` with \`slowQueryLogs\` and \`suggestedIndexes\`. The tool returns at most 50 recent slow query logs. This is a sample, not a \`$queryStats\` aggregate over the query's lifetime. Say that in the summary.
-3. Rank the slow logs yourself. Prefer logs with more documents examined (\`docsExamined\`) and higher \`millis\`. There is no pre-sorted block to trust.
-4. Analyze the top ${maxQueryShapes} log(s). When a log is still unclear, you may call \`mongodb__collection_indexes\`, \`mongodb__collection_schema\`, or \`mongodb__explain\`. Do not compute new metrics. Cite the numbers printed on the slow log.
+3. Group the slow logs into query shapes and rank those shapes yourself. Prefer shapes whose logs show more documents examined (\`docsExamined\`) and higher \`millis\`. There is no pre-sorted block to trust. Do not sum logs into ratios or lifetime totals.
+4. Analyze the top ${maxQueryShapes} shape(s). Repeated log lines of one shape count as one shape. When a shape is still unclear, you may call \`mongodb__collection_indexes\`, \`mongodb__collection_schema\`, or \`mongodb__explain\`. Do not compute new metrics. Cite the numbers printed on the slow log.
 5. Report.
 
 # Skills
@@ -282,20 +292,20 @@ A query shape is a set of specifications that group similar queries together. Sp
 
 \`mongodb__atlas_get_performance_advisor\` returns \`## Suggested Indexes\` and \`## Slow Query Logs\`. Treat those two sections as the input. Cite only the numbers printed in the slow log (\`docsExamined\`, \`nreturned\`, \`keysExamined\`, \`millis\`, \`planSummary\`). Do not recompute ratios or lifetime totals.
 
-A suggested index applies to a slow log when its namespace matches that log. Do not match an index to a log by field overlap. If a log has no suggested index for its namespace, say so and do not invent an index. When a suggestion matches, you may print a \`createIndex\` command copied from the suggested index definition the tool already returned.
+A suggested index applies to a slow log when its namespace matches that log. Do not match an index to a log by field overlap. If a log has no suggested index for its namespace, say so and do not invent an index. When a suggestion matches, you may print a \`createIndex\` command copied from that suggestion: merge its \`index\` array, in order, into one keys document, and pass \`collation\` as the options argument when that field is present.
 
-Write a short summary, then one section per analyzed log. Each section has a query overview and at most two areas worth investigating. Do not return JSON.
+Write a short summary, then one section per analyzed shape. Each section has a query overview and at most two areas worth investigating. Do not return JSON.
 
 ## Report format
 
-- Summary: 2-4 sentences. Name the cluster, say how many slow logs the sample contained and how many you analyzed, and say that the slow query logs are a sample of at most 50 recent logs, not a \`$queryStats\` aggregate over each query's lifetime.
+- Summary: 2-4 sentences. Name the cluster, say how many shapes the sample contained and how many you analyzed, and say that the slow query logs are a sample of at most 50 recent logs, not a \`$queryStats\` aggregate over each shape's lifetime.
 - Heading: \`### Shape <n>: <command> on <namespace>\`, where \`<n>\` is the rank you assigned (more documents examined, then higher \`millis\`). There is no pre-sorted block.
 - Under the heading, write the query overview as a short paragraph, then the mongosh query block required by the query overview rules.
 - Then write "Areas worth investigating" as a numbered list. Start each item with its lead sentence in bold, followed by its elaboration. When a suggestion matches the log's namespace, the first item ends with the \`createIndex\` block.
 
 ## Follow-up questions
 
-When the reader asks about a log you already reported, answer from the same \`## Suggested Indexes\` and \`## Slow Query Logs\` under the same rules. Call the Performance Advisor again only when the reader changes the cluster or the time window.
+When the reader asks about a shape you already reported, answer from the same \`## Suggested Indexes\` and \`## Slow Query Logs\` under the same rules. Call the Performance Advisor again only when the reader changes the cluster or the time window.
 
 ## Query overview
 
@@ -321,7 +331,7 @@ The output rules take precedence over this guidance. Reason with it, but do not 
 - Hedged considerations can start with "Consider" or "Review".
 - Negative signals can be made more impactful by contrasting them with a positive signal (e.g. "An index was used, but there was an in-memory sort").
 - Only a suggested index whose namespace matches the slow log can be used to name index fields.
-- \`planSummary\` of \`COLLSCAN\` indicates a collection scan. An \`IXSCAN\` plan means an index was used for that log.
+- \`planSummary\` of \`COLLSCAN\` indicates a collection scan. A plan that includes \`IXSCAN\`, \`IDHACK\`, \`COUNT_SCAN\`, \`DISTINCT_SCAN\`, \`EXPRESS_IXSCAN\`, or \`CLUSTERED_IXSCAN\` means an index was used for that log.
 - When \`planSummary\` shows an index scan, do not characterize what that index did across the query's lifetime. \`docsExamined\` and \`keysExamined\` on the log are for that execution, not a lifetime total.
 - A slow log with \`planSummary\` COLLSCAN, or with \`docsExamined\` far above \`nreturned\`, is typical evidence for an unindexed or poorly selective query. Cite those printed fields. Do not divide them into a ratio.
 - Query selectivity is the number of documents matched divided by the total documents in the collection.
