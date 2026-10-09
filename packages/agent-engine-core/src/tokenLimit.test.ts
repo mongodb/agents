@@ -19,9 +19,9 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
   McpTokenLimitError,
   classifyTokenMintError,
-  guardTokenMintStartup,
   handleAgentRuntimeTokenLimit,
   handleToolRuntimeTokenLimit,
+  surfaceTokenMintFailures,
 } from "./tokenLimit.js";
 
 const tokenLimitDescription =
@@ -114,7 +114,7 @@ describe("token mint handlers", () => {
       ready: () => Promise.reject(discoveryTokenLimit),
     };
 
-    guardTokenMintStartup(app);
+    surfaceTokenMintFailures(app);
 
     await expect(app.ready()).rejects.toMatchObject({ runtime: "tool" });
   });
@@ -125,14 +125,14 @@ describe("token mint handlers", () => {
       ready: () => Promise.reject(discoveryTokenLimit),
     };
 
-    guardTokenMintStartup(app);
+    surfaceTokenMintFailures(app);
 
     await expect(app.ready()).rejects.toMatchObject({ runtime: "agent" });
   });
 
   it("leaves a successful startup alone", async () => {
     const app = { ready: () => Promise.resolve() };
-    guardTokenMintStartup(app);
+    surfaceTokenMintFailures(app);
     await expect(app.ready()).resolves.toBeUndefined();
   });
 });

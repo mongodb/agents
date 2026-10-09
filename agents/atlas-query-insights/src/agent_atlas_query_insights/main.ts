@@ -23,7 +23,7 @@ import { registerKnowledgeTools } from "@repo/agent-engine-core";
 import {
   annotatePerformanceAdvisorMiddleware,
   rejectAggregateWritesMiddleware,
-  guardTokenMintStartup,
+  surfaceTokenMintFailures,
   buildLLM,
   buildSystemPrompt,
   prepareAgentInput,
@@ -46,7 +46,7 @@ function log(level: "INFO" | "WARN" | "ERROR", msg: string): void {
 process.env.AGENTIC_AGENT_WORKDIR ||= process.cwd();
 
 export const app = new App({ appName: "atlas-query-insights" });
-guardTokenMintStartup(app);
+surfaceTokenMintFailures(app);
 registerKnowledgeTools(app);
 app.prepareAgentInput(prepareAgentInput);
 log("INFO", "App created; Atlas MCP tools will be discovered from agent.yaml");

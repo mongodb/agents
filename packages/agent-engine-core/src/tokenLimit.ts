@@ -127,12 +127,23 @@ export interface TokenMintStartup {
 }
 
 /**
- * Runs the process's startup handler around `ready()`, which is where Agent
- * Engine discovers MCP tools and mints this process's token. Agent and tool
- * processes both load the agent entrypoint, so the handler follows
- * `RUNNER_MODE`.
+ * Replaces `app.ready()` with a wrapper that rewrites token mint failures
+ * into {@link McpTokenLimitError}. `ready()` is where Agent Engine discovers
+ * MCP tools and mints this process's token.
+ *
+ * The wrapper awaits the original `ready()`. If it rejects with a token
+ * limit or token rate limit refusal, the wrapper throws
+ * {@link McpTokenLimitError} with the original error as `cause`. The error
+ * names the runtime, taken from `RUNNER_MODE` because agent and tool
+ * processes load the same entrypoint, and the limit that refused the mint.
+ * Any other rejection is rethrown unchanged.
+ *
+ * It does not catch or recover: startup still fails and the launcher logs
+ * the error and exits as before. The only effect is that the log and the
+ * deployment's termination message say why. Call it once, before
+ * `app.run()`.
  */
-export function guardTokenMintStartup(app: TokenMintStartup): void {
+export function surfaceTokenMintFailures(app: TokenMintStartup): void {
   const ready = app.ready.bind(app);
   app.ready = async () => {
     try {

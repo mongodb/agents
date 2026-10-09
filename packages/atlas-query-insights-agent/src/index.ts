@@ -43,7 +43,7 @@ export {
   type SystemPromptOptions,
 } from "./systemMessage.js";
 export {
-  guardTokenMintStartup,
+  surfaceTokenMintFailures,
   rejectAggregateWritesMiddleware,
   buildLLM,
   prepareAgentInput,
