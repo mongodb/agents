@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { getLogger } from "@mongodb-js/agent-engine-runner-shared";
+
 /**
  * Contract for the Atlas MCP access-token limit.
  *
@@ -57,6 +59,8 @@ export const MCP_ACCESS_TOKEN_TTL_MS = 60 * 60 * 1000;
 export const ACCESS_TOKEN_LIMIT_MESSAGE = "Access Token limit reached";
 export const TOKEN_RATE_LIMIT_STATUS = "HTTP 429";
 export const TOKEN_RATE_LIMIT_ERROR_CODE = "RATE_LIMITED";
+
+const logger = getLogger("agent-engine-core.tokenLimit");
 
 const MAX_CAUSE_DEPTH = 3;
 
@@ -142,30 +146,44 @@ export interface TokenMintStartup {
  * into {@link McpTokenLimitError}. `ready()` is where Agent Engine discovers
  * MCP tools and mints this process's token.
  *
- * The wrapper awaits the original `ready()`. If it rejects with a token
- * limit or token rate limit refusal, the wrapper throws
- * {@link McpTokenLimitError} with the original error as `cause`. The error
- * names the runtime, taken from `RUNNER_MODE` because agent and tool
+ * The wrapper calls the original `ready()` right away, because the SDK has
+ * already started discovery in its constructor and a refusal can arrive
+ * before the runtime asks for `ready()`. If it rejects with a token limit
+ * or token rate limit refusal, the wrapper logs an ERROR line and rejects
+ * with {@link McpTokenLimitError}, with the original error as `cause`. The
+ * error names the runtime, taken from `RUNNER_MODE` because agent and tool
  * processes load the same entrypoint, and the limit that refused the mint.
- * Any other rejection is rethrown unchanged.
+ * Any other rejection is passed on unchanged and not logged here.
  *
- * It does not catch or recover: startup still fails and the launcher logs
- * the error and exits as before. The only effect is that the log and the
- * deployment's termination message say why. Call it once, before
- * `app.run()`.
+ * It does not recover: startup still fails. The only effects are the log
+ * line and the clearer error that the runner then reports. Call it once,
+ * before `app.run()`.
  */
 export function surfaceTokenMintFailures(app: TokenMintStartup): void {
-  const ready = app.ready.bind(app);
-  app.ready = async () => {
+  const started = app.ready().catch((error: unknown) => {
     try {
-      await ready();
-    } catch (error) {
       if (tokenMintRuntime() === "tool") {
         throwToolRuntimeTokenLimit(error);
       }
       throwAgentRuntimeTokenLimit(error);
+    } catch (surfaced) {
+      if (surfaced instanceof McpTokenLimitError) {
+        logger.error(
+          {
+            err: surfaced,
+            runtime: surfaced.runtime,
+            failure: surfaced.failure,
+          },
+          `${surfaced.message}. Startup cannot continue.`,
+        );
+      }
+      throw surfaced;
     }
-  };
+  });
+  // Mark handled so a refusal before the runtime awaits ready() is not
+  // reported as an unhandled rejection. Callers still see the rejection.
+  started.catch(() => undefined);
+  app.ready = () => started;
 }
 
 function tokenMintRuntime(): McpTokenRuntime {

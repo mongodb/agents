@@ -14,7 +14,13 @@
  * limitations under the License.
  */
 
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+const { loggerError } = vi.hoisted(() => ({ loggerError: vi.fn() }));
+
+vi.mock("@mongodb-js/agent-engine-runner-shared", () => ({
+  getLogger: () => ({ error: loggerError }),
+}));
 
 import {
   McpTokenLimitError,
@@ -70,6 +76,10 @@ describe("classifyTokenMintError", () => {
 });
 
 describe("token mint handlers", () => {
+  beforeEach(() => {
+    loggerError.mockClear();
+  });
+
   afterEach(() => {
     delete process.env["RUNNER_MODE"];
   });
@@ -134,5 +144,51 @@ describe("token mint handlers", () => {
     const app = { ready: () => Promise.resolve() };
     surfaceTokenMintFailures(app);
     await expect(app.ready()).resolves.toBeUndefined();
+    expect(loggerError).not.toHaveBeenCalled();
+  });
+
+  it("logs an error naming the runtime and the limit", async () => {
+    process.env["RUNNER_MODE"] = "aer";
+    const app = { ready: () => Promise.reject(discoveryRateLimit) };
+
+    surfaceTokenMintFailures(app);
+    await expect(app.ready()).rejects.toBeInstanceOf(McpTokenLimitError);
+
+    expect(loggerError).toHaveBeenCalledOnce();
+    const [fields, message] = loggerError.mock.calls[0] as [
+      Record<string, unknown>,
+      string,
+    ];
+    expect(fields).toMatchObject({
+      runtime: "agent",
+      failure: "token_rate_limit",
+    });
+    expect(fields["err"]).toBeInstanceOf(McpTokenLimitError);
+    expect(message).toContain("agent runtime could not mint");
+  });
+
+  it("does not log or rewrite unrelated startup failures", async () => {
+    const failure = new Error("boom");
+    const app = { ready: () => Promise.reject(failure) };
+
+    surfaceTokenMintFailures(app);
+
+    await expect(app.ready()).rejects.toBe(failure);
+    expect(loggerError).not.toHaveBeenCalled();
+  });
+
+  it("surfaces a refusal that arrives before ready() is awaited", async () => {
+    process.env["RUNNER_MODE"] = "aer";
+    const app = { ready: () => Promise.reject(discoveryTokenLimit) };
+    const unhandled = vi.fn();
+    process.on("unhandledRejection", unhandled);
+
+    surfaceTokenMintFailures(app);
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    process.off("unhandledRejection", unhandled);
+
+    expect(unhandled).not.toHaveBeenCalled();
+    await expect(app.ready()).rejects.toBeInstanceOf(McpTokenLimitError);
+    expect(loggerError).toHaveBeenCalledOnce();
   });
 });
