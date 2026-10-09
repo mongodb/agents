@@ -238,11 +238,12 @@ When the limit is reached:
 - The workspace recovers on its own as the oldest tokens expire, within an
   hour of the burst. Redeploying doesn't help, because the redeployed
   processes need new tokens too.
-- If a tool call in a running session fails with the same limit, the agent
-  doesn't retry it or try other tools, because every Atlas tool shares the
-  tokens. It tells the user that the hourly access limit is reached and asks
-  them to try again in about an hour. Other tool errors still go back to the
-  model so it can correct its arguments and retry.
+- The process that failed to start throws `McpTokenLimitError`. It names the
+  runtime (`agent` or `tool`) and the limit that refused the token: the
+  service account's token limit, or the token endpoint's rate limit of 50
+  requests per minute.
+- Tool calls reuse the token their process minted at startup, so a running
+  session isn't affected until that token expires an hour later.
 
 To stay under the limit:
 
@@ -320,9 +321,7 @@ can be reused with additional Chat SDK adapters.
   the model is not given general-purpose shell execution that could read
   process credential files outside the filesystem sandbox.
 - MCP validation and query errors are returned to the model so it can correct
-  arguments and retry. The exception is the
-  [access token limit](#access-token-limit), which tells the model to stop
-  and ask the user to try again later. Graph interrupts are always rethrown.
+  arguments and retry. Graph interrupts are always rethrown.
 - OpenAI Responses tool definitions echoed in `response_metadata` are removed
   from prior messages before model calls and from new responses before
   checkpointing, keeping durable sessions compact.

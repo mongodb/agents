@@ -473,8 +473,7 @@ If agent startup still fails because of the token limit, which can happen when
 the cap is set too high or the account is shared, the bot recognizes the error
 and posts the same "reached its hourly limit" message, estimating "about an
 hour". Other startup failures still get the generic "could not complete that
-request" reply. The agents themselves also stop retrying when an Atlas tool
-reports the limit; see the
+request" reply. For how the agents report the failure, see the
 [Atlas Explorer](../../agents/atlas-explorer#access-token-limit) and
 [Atlas Query Insights](../../agents/atlas-query-insights#access-token-limit)
 READMEs.

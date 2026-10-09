@@ -142,11 +142,12 @@ When the limit is reached:
 - The workspace recovers on its own as the oldest tokens expire, within an
   hour of the burst. Redeploying doesn't help, because the redeployed
   processes need new tokens too.
-- If a tool call in a running session fails with the same limit, the agent
-  doesn't retry it or try other tools, because every Atlas tool shares the
-  tokens. It tells the user that the hourly access limit is reached and asks
-  them to try again in about an hour. Other tool errors still go back to the
-  model so it can correct its arguments and retry.
+- The process that failed to start throws `McpTokenLimitError`. It names the
+  runtime (`agent` or `tool`) and the limit that refused the token: the
+  service account's token limit, or the token endpoint's rate limit of 50
+  requests per minute.
+- Tool calls reuse the token their process minted at startup, so a running
+  session isn't affected until that token expires an hour later.
 
 To stay under the limit:
 
