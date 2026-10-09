@@ -98,6 +98,10 @@ vi.mock("@mongodb-js/agent-engine-sdk-langgraph", () => ({
       return { mcp: { servers: {} } };
     }
 
+    ready(): Promise<void> {
+      return Promise.resolve();
+    }
+
     tool(options: {
       name?: string;
       isLocal?: boolean;

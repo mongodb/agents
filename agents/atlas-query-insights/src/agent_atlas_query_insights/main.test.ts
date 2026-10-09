@@ -76,6 +76,10 @@ vi.mock("@mongodb-js/agent-engine-sdk-langgraph", () => ({
       harness.appName = options.appName;
     }
 
+    ready(): Promise<void> {
+      return Promise.resolve();
+    }
+
     entrypoint(fn: () => unknown): () => unknown {
       harness.builder = fn;
       return fn;
