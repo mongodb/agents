@@ -18,10 +18,7 @@ import { ToolMessage } from "@langchain/core/messages";
 import { isGraphInterrupt } from "@langchain/langgraph";
 import { createMiddleware } from "langchain";
 
-import {
-  formatTokenLimitForAgent,
-  isTokenExhaustionError,
-} from "./tokenLimit.js";
+import { handleToolCallTokenLimit } from "./tokenLimit.js";
 
 interface ToolCallRequest {
   toolCall?: {
@@ -54,9 +51,9 @@ export async function recoverToolCall<T>(
     if (!toolCall?.id) throw error;
 
     return new ToolMessage({
-      content: isTokenExhaustionError(error)
-        ? formatTokenLimitForAgent(toolCall.name)
-        : formatToolErrorForAgent(toolCall.name, error),
+      content:
+        handleToolCallTokenLimit(toolCall.name, error) ??
+        formatToolErrorForAgent(toolCall.name, error),
       tool_call_id: toolCall.id,
       name: toolCall.name,
       status: "error",

@@ -19,6 +19,7 @@ export {
   buildLLM,
   clientUserSchema,
   formatToolErrorForAgent,
+  guardTokenMintStartup,
   isAgentEngineResume,
   parseClientUserPayload,
   prepareAgentInput as prepareAtlasExplorerInput,

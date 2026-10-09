@@ -17,7 +17,7 @@
 import { GraphInterrupt } from "@langchain/langgraph";
 import { describe, expect, it } from "vitest";
 
-import { formatTokenLimitForAgent } from "./tokenLimit.js";
+import { handleToolCallTokenLimit } from "./tokenLimit.js";
 import { recoverToolCall } from "./toolErrors.js";
 
 describe("recoverToolCall", () => {
@@ -65,7 +65,7 @@ describe("recoverToolCall", () => {
     expect(result.status).toBe("error");
     expect(result.tool_call_id).toBe("call-3");
     expect(result.content).toBe(
-      formatTokenLimitForAgent("atlas-list-clusters"),
+      handleToolCallTokenLimit("atlas-list-clusters", new Error(message)),
     );
     expect(result.content).toContain("Do not call more tools");
     expect(result.content).not.toContain("correct the tool arguments");
@@ -83,7 +83,10 @@ describe("recoverToolCall", () => {
     );
 
     expect(result.content).toBe(
-      formatTokenLimitForAgent("atlas-list-projects"),
+      handleToolCallTokenLimit(
+        "atlas-list-projects",
+        new Error("Access token limit exceeded"),
+      ),
     );
   });
 

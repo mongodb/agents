@@ -31,6 +31,7 @@ import {
   buildLLM,
   buildSystemPrompt,
   mutativeInterruptOn,
+  guardTokenMintStartup,
   prepareAtlasExplorerInput,
   recoverToolErrorsMiddleware,
   redactSecretsMiddleware,
@@ -53,6 +54,7 @@ function log(level: "INFO" | "WARN" | "ERROR", msg: string): void {
 process.env.AGENTIC_AGENT_WORKDIR ||= process.cwd();
 
 export const app = new App({ appName: "atlas-explorer" });
+guardTokenMintStartup(app);
 registerKnowledgeTools(app);
 const diagnostics = atlasExplorerConfig.diagnostics.logRuntimeLifecycle
   ? startRuntimeDiagnostics({
