@@ -35,7 +35,7 @@ const MAX_DISPLAYED_ACTIONS = 45;
 // One chat text block cannot carry an unbounded tool call. Slack section
 // text caps at 3,000 characters, so a preview past this limit is truncated
 // and cannot be approved from the card. The limit counts the escaped text,
-// which is longer than the arguments when they contain `&`, `<`, or `>`.
+// which is longer than the arguments.
 export const MAX_ARGUMENT_TEXT = 1_800;
 
 export interface ReviewCardOptions {
@@ -134,15 +134,25 @@ function argumentCodeBlock(args: Record<string, unknown>): {
   };
 }
 
-// Argument values are attacker-influenced. Slack reads `<...>` as a link,
-// mention, or broadcast, and two backticks in a row can close the code block.
-// The chat SDK also rewrites `**bold**` and `{{emoji:name}}` in card text, even
-// inside a code block. A zero-width space breaks those sequences without
-// changing how the text reads, so the preview still shows the real arguments.
+// An invisible character. Putting one after a character changes how Slack and
+// the chat SDK parse the text without changing how it reads.
+const ZERO_WIDTH_SPACE = "\u200b";
+
+// Argument values are attacker-influenced, so nothing in them may act as
+// formatting in the card.
 function escapeCodeBlockText(text: string): string {
-  return text
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replace(/`(?=`)|\*(?=\*)|\{(?=\{emoji:)/gi, "$&\u200b");
+  return (
+    text
+      // Slack turns `<...>` into links, mentions, and `@here`. Written as
+      // entities, `&`, `<`, and `>` show up as plain characters.
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      // Three backticks in a row would end the code block early.
+      .replaceAll("`", `\`${ZERO_WIDTH_SPACE}`)
+      // The chat SDK turns `**text**` into bold and `{{emoji:name}}` into an
+      // emoji, even inside a code block.
+      .replaceAll("*", `*${ZERO_WIDTH_SPACE}`)
+      .replaceAll("{", `{${ZERO_WIDTH_SPACE}`)
+  );
 }

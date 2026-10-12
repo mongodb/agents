@@ -63,7 +63,7 @@ describe("buildReviewCard", () => {
     expect(message.fallbackText).toContain(BOT_NAME);
     expect(message.card.title).toBe("Agent operation requires approval");
     expect(message.card.subtitle).toBe("mongodb__insert_many");
-    expect(textContents(message)).toEqual([
+    expect(textContents(message).map(withoutZeroWidthSpaces)).toEqual([
       `\`\`\`
 {
   "database": "inventory",
@@ -116,7 +116,7 @@ describe("buildReviewCard", () => {
     ) as PostableCard;
 
     expect(message.card.subtitle).toBe("2 operations");
-    expect(textContents(message)).toEqual([
+    expect(textContents(message).map(withoutZeroWidthSpaces)).toEqual([
       "mongodb__insert_many",
       `\`\`\`
 {
@@ -160,7 +160,7 @@ describe("buildReviewCard", () => {
   });
 
   it("shows the full arguments and both decisions when they fit", () => {
-    const args = argsWithJsonLength(MAX_ARGUMENT_TEXT);
+    const args = argsWithPreviewLength(MAX_ARGUMENT_TEXT);
     const message = buildReviewCard(
       [{ name: "mongodb__update_one", args }],
       "interrupt-full",
@@ -171,7 +171,9 @@ describe("buildReviewCard", () => {
       REVIEW_APPROVE_ACTION_ID,
       REVIEW_REJECT_ACTION_ID,
     ]);
-    expect(textContents(message)[0]).toContain(JSON.stringify(args, null, 2));
+    expect(visibleArguments(textContents(message)[0])).toBe(
+      JSON.stringify(args, null, 2),
+    );
     expect(textContents(message)[0]).not.toMatch(/\.\.\.\n```$/);
     expect(textContents(message).at(-1)).toBe(
       "Only the person who requested this operation can decide it.",
@@ -181,7 +183,7 @@ describe("buildReviewCard", () => {
   it("hides approve when a displayed write is truncated", () => {
     const hiddenClause = { hidden: "approve-me-unseen" };
     const args = {
-      ...argsWithJsonLength(MAX_ARGUMENT_TEXT + 1),
+      ...argsWithPreviewLength(MAX_ARGUMENT_TEXT + 1),
       ...hiddenClause,
     };
     const message = buildReviewCard(
@@ -209,7 +211,7 @@ describe("buildReviewCard", () => {
         },
         {
           name: "mongodb__update_many",
-          args: argsWithJsonLength(MAX_ARGUMENT_TEXT + 80),
+          args: argsWithPreviewLength(MAX_ARGUMENT_TEXT + 80),
         },
       ],
       "interrupt-mixed",
@@ -316,10 +318,10 @@ function visibleArguments(preview: string): string {
     "&lt;": "<",
     "&gt;": ">",
   };
-  return preview
-    .slice(4, -4)
-    .replaceAll("\u200B", "")
-    .replace(/&(?:amp|lt|gt);/g, (entity) => entities[entity]);
+  return withoutZeroWidthSpaces(preview.slice(4, -4)).replace(
+    /&(?:amp|lt|gt);/g,
+    (entity) => entities[entity],
+  );
 }
 
 // The text Slack receives for each section block, after the Slack adapter
@@ -333,8 +335,14 @@ function slackSectionTexts(message: PostableCard): string[] {
   });
 }
 
-function argsWithJsonLength(length: number): { note: string } {
-  const overhead = JSON.stringify({ note: "" }, null, 2).length;
+function withoutZeroWidthSpaces(text: string): string {
+  return text.replaceAll("\u200B", "");
+}
+
+// Arguments whose escaped preview text is `length` characters long. The
+// opening brace is followed by a zero-width space.
+function argsWithPreviewLength(length: number): { note: string } {
+  const overhead = JSON.stringify({ note: "" }, null, 2).length + 1;
   return { note: "n".repeat(length - overhead) };
 }
 
