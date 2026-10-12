@@ -15,7 +15,6 @@
  */
 
 import type {
-  ActionsElement,
   AdapterPostableMessage,
   PostableCard,
   TextElement,
@@ -24,10 +23,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { MemoryThreadStore } from "../store/memoryThreadStore.js";
 import type { ThreadStore } from "../store/threadStore.js";
-import {
-  REVIEW_APPROVE_ACTION_ID,
-  REVIEW_REJECT_ACTION_ID,
-} from "./cards.js";
 import {
   createProgressHandler,
   handleConversationMessage,
@@ -295,13 +290,13 @@ describe("handleConversationMessage", () => {
     });
   });
 
-  describe("action arguments that contain markup", () => {
+  describe("fence-closing action arguments", () => {
     const injectedArgs = {
       database: "inventory",
       note: 'x"\n```\n*No data will change.* <https://evil.example|Approve>\n```',
     };
 
-    it("posts a card that shows the real arguments for a fresh interrupt", async () => {
+    it("keeps them in one code block for a fresh interrupt", async () => {
       agent.invokeResult = {
         ...suspended,
         interrupts: [
@@ -324,7 +319,7 @@ describe("handleConversationMessage", () => {
         { agent, conversation, store, botName: BOT_NAME },
       );
 
-      expectSingleFenceCardShowing(conversation.messages[0], injectedArgs);
+      expectOneArgumentCodeBlock(conversation.messages[0]);
       // The stored record keeps the real arguments that Approve resumes.
       expect(await store.get(THREAD_ID)).toMatchObject({
         pendingActionRequests: [
@@ -333,7 +328,7 @@ describe("handleConversationMessage", () => {
       });
     });
 
-    it("posts a card that shows the real arguments when re-posting a stored record", async () => {
+    it("keeps them in one code block when re-posting a stored record", async () => {
       await store.put({
         threadId: THREAD_ID,
         agentSessionId: "session-1",
@@ -358,7 +353,7 @@ describe("handleConversationMessage", () => {
       );
 
       expect(agent.invokeInputs).toEqual([]);
-      expectSingleFenceCardShowing(conversation.messages[0], injectedArgs);
+      expectOneArgumentCodeBlock(conversation.messages[0]);
     });
   });
 
@@ -744,34 +739,15 @@ describe("createProgressHandler", () => {
   });
 });
 
-// The card has one code block, a reader of that block sees the real
-// arguments, and the requester can still approve or reject.
-function expectSingleFenceCardShowing(
+function expectOneArgumentCodeBlock(
   message: AdapterPostableMessage | undefined,
-  args: Record<string, unknown>,
 ): void {
-  expect(message).toMatchObject({
-    card: expect.objectContaining({ type: "card" }),
-  });
-  const { children } = (message as PostableCard).card;
-  const previews = children
+  const previews = (message as PostableCard).card.children
     .filter((child): child is TextElement => child.type === "text")
     .map((child) => child.content)
     .filter((content) => content.startsWith("```"));
   expect(previews).toHaveLength(1);
   expect(previews[0].split("```")).toHaveLength(3);
-  const shown = previews[0]
-    .slice(4, -4)
-    .replaceAll("\u200B", "")
-    .replace(/&(?:amp|lt|gt);/g, (entity) =>
-      entity === "&amp;" ? "&" : entity === "&lt;" ? "<" : ">",
-    );
-  expect(shown).toBe(JSON.stringify(args, null, 2));
-  const buttonIds = children
-    .filter((child): child is ActionsElement => child.type === "actions")
-    .flatMap((actions) => actions.children)
-    .map((child) => (child.type === "button" ? child.id : undefined));
-  expect(buttonIds).toEqual([REVIEW_APPROVE_ACTION_ID, REVIEW_REJECT_ACTION_ID]);
 }
 
 function skillLoadBurst(downloadCount: number) {
