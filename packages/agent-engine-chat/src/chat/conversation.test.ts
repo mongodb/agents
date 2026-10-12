@@ -14,10 +14,20 @@
  * limitations under the License.
  */
 
+import type {
+  ActionsElement,
+  AdapterPostableMessage,
+  PostableCard,
+  TextElement,
+} from "chat";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { MemoryThreadStore } from "../store/memoryThreadStore.js";
 import type { ThreadStore } from "../store/threadStore.js";
+import {
+  REVIEW_APPROVE_ACTION_ID,
+  REVIEW_REJECT_ACTION_ID,
+} from "./cards.js";
 import {
   createProgressHandler,
   handleConversationMessage,
@@ -282,6 +292,73 @@ describe("handleConversationMessage", () => {
     expect(conversation.messages[0]).toMatchObject({
       card: expect.objectContaining({ type: "card" }),
       fallbackText: expect.stringMatching(/requires approval/i),
+    });
+  });
+
+  describe("action arguments that contain markup", () => {
+    const injectedArgs = {
+      database: "inventory",
+      note: 'x"\n```\n*No data will change.* <https://evil.example|Approve>\n```',
+    };
+
+    it("posts a card that shows the real arguments for a fresh interrupt", async () => {
+      agent.invokeResult = {
+        ...suspended,
+        interrupts: [
+          {
+            id: "interrupt-1",
+            actionRequests: [
+              { name: "mongodb__update_many", args: injectedArgs },
+            ],
+          },
+        ],
+      };
+
+      await handleConversationMessage(
+        {
+          threadId: THREAD_ID,
+          eventId: "event-1",
+          actorId: ACTOR_ID,
+          text: "Update the items",
+        },
+        { agent, conversation, store, botName: BOT_NAME },
+      );
+
+      expectSingleFenceCardShowing(conversation.messages[0], injectedArgs);
+      // The stored record keeps the real arguments that Approve resumes.
+      expect(await store.get(THREAD_ID)).toMatchObject({
+        pendingActionRequests: [
+          { name: "mongodb__update_many", args: injectedArgs },
+        ],
+      });
+    });
+
+    it("posts a card that shows the real arguments when re-posting a stored record", async () => {
+      await store.put({
+        threadId: THREAD_ID,
+        agentSessionId: "session-1",
+        pendingExecutionId: "execution-2",
+        pendingInterruptId: "interrupt-1",
+        pendingActionRequests: [
+          { name: "mongodb__update_many", args: injectedArgs },
+        ],
+        pendingRequestedByActorId: ACTOR_ID,
+        pendingReviewState: "pending",
+        updatedAt: new Date(),
+      });
+
+      await handleConversationMessage(
+        {
+          threadId: THREAD_ID,
+          eventId: "event-2",
+          actorId: ACTOR_ID,
+          text: "What is pending?",
+        },
+        { agent, conversation, store, botName: BOT_NAME },
+      );
+
+      expect(agent.invokeInputs).toEqual([]);
+      expectSingleFenceCardShowing(conversation.messages[0], injectedArgs);
     });
   });
 
@@ -666,6 +743,36 @@ describe("createProgressHandler", () => {
     );
   });
 });
+
+// The card has one code block, a reader of that block sees the real
+// arguments, and the requester can still approve or reject.
+function expectSingleFenceCardShowing(
+  message: AdapterPostableMessage | undefined,
+  args: Record<string, unknown>,
+): void {
+  expect(message).toMatchObject({
+    card: expect.objectContaining({ type: "card" }),
+  });
+  const { children } = (message as PostableCard).card;
+  const previews = children
+    .filter((child): child is TextElement => child.type === "text")
+    .map((child) => child.content)
+    .filter((content) => content.startsWith("```"));
+  expect(previews).toHaveLength(1);
+  expect(previews[0].split("```")).toHaveLength(3);
+  const shown = previews[0]
+    .slice(4, -4)
+    .replaceAll("\u200B", "")
+    .replace(/&(?:amp|lt|gt);/g, (entity) =>
+      entity === "&amp;" ? "&" : entity === "&lt;" ? "<" : ">",
+    );
+  expect(shown).toBe(JSON.stringify(args, null, 2));
+  const buttonIds = children
+    .filter((child): child is ActionsElement => child.type === "actions")
+    .flatMap((actions) => actions.children)
+    .map((child) => (child.type === "button" ? child.id : undefined));
+  expect(buttonIds).toEqual([REVIEW_APPROVE_ACTION_ID, REVIEW_REJECT_ACTION_ID]);
+}
 
 function skillLoadBurst(downloadCount: number) {
   return [

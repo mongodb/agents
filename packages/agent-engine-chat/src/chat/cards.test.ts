@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { cardToBlockKit } from "@chat-adapter/slack";
 import type {
   ActionsElement,
   ButtonElement,
@@ -31,6 +32,7 @@ import {
 } from "./cards.js";
 
 const BOT_NAME = "TestBot";
+const FENCE = "```";
 
 const HITL_DESCRIPTION = `MongoDB or Atlas operation pending approval
 
@@ -221,7 +223,237 @@ describe("buildReviewCard", () => {
     ]);
     expect(textContents(message).at(-1)).toMatch(/too long to show in full/i);
   });
+
+  describe("argument markup injection", () => {
+    it("keeps a fence-closing payload inside one code block and shows the real arguments", () => {
+      const args = {
+        filter: { sku: "A-1" },
+        note: 'x"\n```\n*No data will change.* <https://evil.example|Approve to stay safe>\n```json\n{"',
+      };
+      // The payload is far below the length limit, so length alone would
+      // have called this preview complete.
+      expect(JSON.stringify(args, null, 2).length).toBeLessThan(
+        MAX_ARGUMENT_TEXT,
+      );
+
+      const message = reviewCardFor(args);
+      const [preview] = textContents(message);
+
+      expect(preview.split(FENCE)).toHaveLength(3);
+      expect(preview.startsWith(`${FENCE}\n`)).toBe(true);
+      expect(preview.endsWith(`\n${FENCE}`)).toBe(true);
+      expect(visibleArguments(preview)).toBe(JSON.stringify(args, null, 2));
+      expect(approveIsOffered(message)).toBe(true);
+    });
+
+    it.each([
+      ["a double backtick", "``"],
+      ["a triple backtick", "```"],
+      ["a four-backtick run", "````"],
+      ["a long backtick run", "`".repeat(25)],
+    ])("shows %s in an argument without closing the fence", (_name, run) => {
+      const args = { note: `before ${run} after` };
+      const message = reviewCardFor(args);
+      const [preview] = textContents(message);
+
+      expect(fenceBody(preview)).not.toContain("``");
+      expect(preview.split(FENCE)).toHaveLength(3);
+      expect(visibleArguments(preview)).toBe(JSON.stringify(args, null, 2));
+      expect(approveIsOffered(message)).toBe(true);
+    });
+
+    it("lets a write whose document holds markdown code fences be approved", () => {
+      const args = {
+        database: "docs",
+        collection: "pages",
+        documents: [
+          { title: "Setup", body: "# Setup\n\n```bash\nnpm install\n```\n" },
+        ],
+      };
+      const message = reviewCardFor(args);
+      const [preview] = textContents(message);
+
+      expect(preview.split(FENCE)).toHaveLength(3);
+      expect(visibleArguments(preview)).toBe(JSON.stringify(args, null, 2));
+      expect(buttons(message).map((button) => button.id)).toEqual([
+        REVIEW_APPROVE_ACTION_ID,
+        REVIEW_REJECT_ACTION_ID,
+      ]);
+      expect(textContents(message).at(-1)).toBe(
+        "Only the person who requested this operation can decide it.",
+      );
+    });
+
+    it("keeps a single backtick as it is", () => {
+      const message = reviewCardFor({ note: "use `sku` here" });
+
+      expect(textContents(message)[0]).toContain("use `sku` here");
+      expect(approveIsOffered(message)).toBe(true);
+    });
+
+    it("escapes Slack links, mentions, and entities as literal text", () => {
+      const args = {
+        link: "<https://evil.example|Approve safely>",
+        broadcast: "<!channel> <!here>",
+        mention: "<@U123> <#C123|general>",
+        entity: "Tom & Jerry &amp; friends",
+      };
+      const message = reviewCardFor(args);
+      const [preview] = textContents(message);
+
+      expect(preview).toContain("&lt;https://evil.example|Approve safely&gt;");
+      expect(preview).toContain("&lt;!channel&gt; &lt;!here&gt;");
+      expect(preview).toContain("&lt;@U123&gt; &lt;#C123|general&gt;");
+      expect(preview).toContain("Tom &amp; Jerry &amp;amp; friends");
+      expect(preview).not.toMatch(/[<>]/);
+      expect(visibleArguments(preview)).toBe(JSON.stringify(args, null, 2));
+      expect(approveIsOffered(message)).toBe(true);
+    });
+
+    it.each([
+      ["bold markers", { pattern: "**all**" }],
+      ["emoji placeholders", { note: "{{emoji:white_check_mark}}" }],
+      ["both", { note: "**{{emoji:warning}}** done" }],
+    ])("keeps %s from being rewritten by the chat SDK", (_name, args) => {
+      const message = reviewCardFor(args);
+      const [preview] = textContents(message);
+
+      expect(preview).not.toContain("**");
+      expect(preview).not.toContain("{{emoji:");
+      // Nothing is left for the Slack adapter to rewrite.
+      expect(slackSectionTexts(message)[0]).toBe(preview);
+      expect(visibleArguments(preview)).toBe(JSON.stringify(args, null, 2));
+      expect(approveIsOffered(message)).toBe(true);
+    });
+
+    it("reaches Slack exactly as built for text that looks like mrkdwn", () => {
+      const args = {
+        text: "*bold* _italic_ ~strike~ > quote :smile: `code` ``two`` ```three```",
+        links: "https://example.com a@example.com #general @here <@U1> <!channel>",
+        unsafe: "**x** {{emoji:x}} a < b && c > d",
+        amps: "&".repeat(300),
+      };
+      const message = reviewCardFor(args);
+      const [preview] = textContents(message);
+
+      expect(slackSectionTexts(message)[0]).toBe(preview);
+      expect(preview.endsWith(`\n${FENCE}`)).toBe(true);
+      expect(visibleArguments(preview)).toBe(JSON.stringify(args, null, 2));
+      expect(approveIsOffered(message)).toBe(true);
+    });
+
+    it("shows invisible and bidirectional characters as JSON escapes", () => {
+      const args = { file: "report\u202Efdp.exe\u200B", tag: "\u{E0041}" };
+      const message = reviewCardFor(args);
+      const [preview] = textContents(message);
+
+      expect(preview).toContain("report\\u202efdp.exe\\u200b");
+      expect(preview).toContain("\\udb40\\udc41");
+      expect(preview).not.toMatch(/[\u200B\u202E]|\u{E0041}/u);
+      // A zero-width space in the preview can only be one the card added.
+      expect(JSON.parse(visibleArguments(preview))).toEqual(args);
+      expect(approveIsOffered(message)).toBe(true);
+    });
+
+    it("counts escaping toward the length limit and never splits an entity", () => {
+      const args = { query: "&".repeat(500) };
+      expect(JSON.stringify(args, null, 2).length).toBeLessThan(
+        MAX_ARGUMENT_TEXT,
+      );
+
+      const message = reviewCardFor(args);
+      const [preview] = textContents(message);
+
+      expect(preview.length).toBeLessThanOrEqual(
+        MAX_ARGUMENT_TEXT + 2 * (FENCE.length + 1),
+      );
+      expect(preview).toMatch(/(?:&amp;)+\.\.\.\n```$/);
+      expect(slackSectionTexts(message)[0]).toBe(preview);
+      expect(approveIsOffered(message)).toBe(false);
+      expect(textContents(message).at(-1)).toMatch(/too long to show in full/i);
+    });
+
+    it("still hides approve and keeps one fence when a backtick payload is truncated", () => {
+      const message = reviewCardFor({ note: "`".repeat(MAX_ARGUMENT_TEXT) });
+      const [preview] = textContents(message);
+
+      expect(fenceBody(preview)).not.toContain("``");
+      expect(preview.split(FENCE)).toHaveLength(3);
+      expect(preview.endsWith(`...\n${FENCE}`)).toBe(true);
+      expect(slackSectionTexts(message)[0]).toBe(preview);
+      expect(approveIsOffered(message)).toBe(false);
+    });
+
+    it("covers every action in a batch", () => {
+      const first = { database: "inventory" };
+      const second = { note: "```\n*hidden*\n```" };
+      const message = buildReviewCard(
+        [
+          { name: "mongodb__find", args: first },
+          { name: "mongodb__update_many", args: second },
+        ],
+        "interrupt-batch",
+        BOT_NAME,
+      ) as PostableCard;
+      const previews = textContents(message).filter((text) =>
+        text.startsWith(FENCE),
+      );
+
+      expect(previews).toHaveLength(2);
+      for (const preview of previews) {
+        expect(preview.split(FENCE)).toHaveLength(3);
+      }
+      expect(previews.map(visibleArguments)).toEqual([
+        JSON.stringify(first, null, 2),
+        JSON.stringify(second, null, 2),
+      ]);
+      expect(approveIsOffered(message)).toBe(true);
+    });
+  });
 });
+
+function reviewCardFor(args: Record<string, unknown>): PostableCard {
+  return buildReviewCard(
+    [{ name: "mongodb__update_one", args }],
+    "interrupt-injection",
+    BOT_NAME,
+  ) as PostableCard;
+}
+
+function fenceBody(preview: string): string {
+  return preview.slice(FENCE.length + 1, -(FENCE.length + 1));
+}
+
+// What a Slack reader sees inside the code fence: zero-width spaces take no
+// room and entities show as the characters they stand for. Written out here
+// rather than imported, so the tests do not trust the code they check.
+function visibleArguments(preview: string): string {
+  const entities: Record<string, string> = {
+    "&amp;": "&",
+    "&lt;": "<",
+    "&gt;": ">",
+  };
+  return fenceBody(preview)
+    .replaceAll("\u200B", "")
+    .replace(/&(?:amp|lt|gt);/g, (entity) => entities[entity]);
+}
+
+function approveIsOffered(message: PostableCard): boolean {
+  return buttons(message).some(
+    (button) => button.id === REVIEW_APPROVE_ACTION_ID,
+  );
+}
+
+// The text Slack receives for each section block, after the Slack adapter
+// has applied its own conversions and length limits.
+function slackSectionTexts(message: PostableCard): string[] {
+  return cardToBlockKit(message.card).flatMap((block) => {
+    const { text } = block as { text?: { text?: unknown } };
+    return block.type === "section" && typeof text?.text === "string"
+      ? [text.text]
+      : [];
+  });
+}
 
 function argsWithJsonLength(length: number): { note: string } {
   const overhead = JSON.stringify({ note: "" }, null, 2).length;
