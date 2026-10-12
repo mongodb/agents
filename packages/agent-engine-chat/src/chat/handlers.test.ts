@@ -77,6 +77,17 @@ describe("registerChatHandlers", () => {
     await bot.initialize();
   });
 
+  it("refuses to register with a session limit it can't enforce", () => {
+    expect(() =>
+      registerChatHandlers(bot, {
+        agent,
+        botName: BOT_NAME,
+        sessionLimit: { limit: 0, idleTtlMs: 600_000 },
+        store,
+      }),
+    ).toThrow("sessionLimit.limit must be a positive integer, got 0");
+  });
+
   it("subscribes on a mention and routes normalized identity", async () => {
     const message = testMessage(
       "message-1",

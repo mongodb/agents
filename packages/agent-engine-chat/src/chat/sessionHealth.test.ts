@@ -17,6 +17,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  assertValidSessionLimit,
   evaluateSessionHealth,
   SESSION_WINDOW_MS,
   sessionWindowStart,
@@ -29,6 +30,32 @@ const MINUTE = 60_000;
 function minutesAgo(minutes: number): Date {
   return new Date(NOW.getTime() - minutes * MINUTE);
 }
+
+describe("assertValidSessionLimit", () => {
+  it("accepts a positive integer limit and a positive idle TTL", () => {
+    expect(() =>
+      assertValidSessionLimit({ limit: 1, idleTtlMs: 10 * MINUTE }),
+    ).not.toThrow();
+  });
+
+  it.each([0, -1, 1.5, Number.NaN, Number.POSITIVE_INFINITY])(
+    "rejects a limit of %s",
+    (limit) => {
+      expect(() =>
+        assertValidSessionLimit({ limit, idleTtlMs: 10 * MINUTE }),
+      ).toThrow("sessionLimit.limit must be a positive integer");
+    },
+  );
+
+  it.each([0, -1, Number.NaN, Number.POSITIVE_INFINITY])(
+    "rejects an idle TTL of %s",
+    (idleTtlMs) => {
+      expect(() =>
+        assertValidSessionLimit({ limit: 1, idleTtlMs }),
+      ).toThrow("sessionLimit.idleTtlMs must be a positive number");
+    },
+  );
+});
 
 describe("startsAgentSession", () => {
   const idleTtlMs = 10 * MINUTE;

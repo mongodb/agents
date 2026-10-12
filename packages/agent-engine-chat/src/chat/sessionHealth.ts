@@ -29,6 +29,26 @@ export interface SessionLimit {
   limit: number;
 }
 
+/**
+ * Throws when `sessionLimit` can't be enforced, so bad config fails at
+ * startup instead of producing nonsense refusals.
+ */
+export function assertValidSessionLimit(
+  sessionLimit: SessionLimit,
+): void {
+  const { idleTtlMs, limit } = sessionLimit;
+  if (!Number.isInteger(limit) || limit < 1) {
+    throw new Error(
+      `sessionLimit.limit must be a positive integer, got ${limit}`,
+    );
+  }
+  if (!Number.isFinite(idleTtlMs) || idleTtlMs <= 0) {
+    throw new Error(
+      `sessionLimit.idleTtlMs must be a positive number, got ${idleTtlMs}`,
+    );
+  }
+}
+
 export type SessionHealth =
   | { kind: "available" }
   | { kind: "limit_reached"; retryAfterMs: number };

@@ -44,7 +44,10 @@ import {
   resolveAgentChatMessages,
   type AgentChatMessages,
 } from "./messages.js";
-import type { SessionLimit } from "./sessionHealth.js";
+import {
+  assertValidSessionLimit,
+  type SessionLimit,
+} from "./sessionHealth.js";
 import type {
   AgentGateway,
   HandlerLogger,
@@ -81,6 +84,9 @@ interface ResolvedChatHandlerOptions extends ChatHandlerOptions {
 function resolveHandlerOptions(
   options: ChatHandlerOptions,
 ): ResolvedChatHandlerOptions {
+  if (options.sessionLimit) {
+    assertValidSessionLimit(options.sessionLimit);
+  }
   return {
     ...options,
     messages: resolveAgentChatMessages(options.messages),
