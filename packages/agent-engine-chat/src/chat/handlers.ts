@@ -66,9 +66,9 @@ export interface ChatHandlerOptions {
     threadId: string,
   ) => string | null;
   /**
-   * Caps concurrent agent sessions, which each use Atlas MCP access tokens.
-   * Messages that would start a session past the cap get a limit-reached
-   * reply instead. Leave unset for no cap.
+   * Caps how many agent sessions can be active within a rolling hour. Each
+   * session uses Atlas MCP access tokens. Messages that would start a session
+   * past the cap get a limit-reached reply instead. Leave unset for no cap.
    */
   sessionLimit?: SessionLimit;
   store: ThreadStore;

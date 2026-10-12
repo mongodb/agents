@@ -34,7 +34,7 @@ const BOT_NAME = "TestBot";
 const ACTOR_ID = "slack:U123";
 const THREAD_ID = "slack:C123:1720000000.000100";
 const MINUTE = 60_000;
-const LIMIT_MESSAGE = /hourly limit for starting new conversations/;
+const LIMIT_MESSAGE = /hourly limit for starting or resuming conversations/;
 
 function createLogger() {
   return { error: vi.fn(), warn: vi.fn() };

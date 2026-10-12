@@ -36,8 +36,8 @@ export interface SlackBotConfig {
   };
   agentEngine: AgentEngineClientConfig;
   /**
-   * Caps how many agent sessions can be active at once, so the shared Atlas
-   * service account does not run out of MCP access tokens.
+   * Caps how many agent sessions can be active within a rolling hour, so the
+   * shared Atlas service account does not run out of MCP access tokens.
    */
   sessionLimit: {
     /** Seconds without activity after which a thread's agent sandbox is retired. */

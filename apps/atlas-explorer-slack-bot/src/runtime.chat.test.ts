@@ -187,7 +187,7 @@ describe("Chat SDK runtime", () => {
     expect(adapter.postMessage).toHaveBeenCalledWith(
       secondThread,
       expect.stringContaining(
-        `${BOT_NAME} has reached its hourly limit for starting new conversations.`,
+        `${BOT_NAME} has reached its hourly limit for starting or resuming conversations.`,
       ),
     );
 

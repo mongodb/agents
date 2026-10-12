@@ -25,7 +25,7 @@ export const SESSION_WINDOW_MS = 60 * 60 * 1_000;
 export interface SessionLimit {
   /** Idle time after which a thread's agent sandbox is gone and a follow-up starts a new one. */
   idleTtlMs: number;
-  /** Most other active agent sessions allowed when a new one starts. */
+  /** Most agent sessions allowed within the rolling hour, counting the one about to start. */
   limit: number;
 }
 

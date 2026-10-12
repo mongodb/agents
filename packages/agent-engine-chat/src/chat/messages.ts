@@ -40,7 +40,7 @@ export const defaultAgentChatMessages: AgentChatMessages = {
   reviewStatusUncertain:
     "Decision submitted, but its outcome could not be confirmed. Check the target system before retrying.",
   sessionLimitReached: (botName, retryAfterMs) =>
-    `${botName} has reached its hourly limit for starting new conversations. This limit is shared by everyone using the bot. Please try again in about ${describeRetryDelay(retryAfterMs)}.`,
+    `${botName} has reached its hourly limit for starting or resuming conversations. This limit is shared by everyone using the bot. Please try again in about ${describeRetryDelay(retryAfterMs)}.`,
 };
 
 function describeRetryDelay(retryAfterMs: number | undefined): string {

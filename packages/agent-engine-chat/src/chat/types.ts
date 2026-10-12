@@ -68,8 +68,8 @@ export interface ChatHandlerDependencies {
   messages?: AgentChatMessages;
   now?: () => Date;
   /**
-   * Caps how many agent sessions may be active at once. When omitted, no
-   * limit is applied.
+   * Caps how many agent sessions may be active within a rolling hour. When
+   * omitted, no limit is applied.
    */
   sessionLimit?: SessionLimit;
   store: ThreadStore;

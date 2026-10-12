@@ -26,7 +26,7 @@ describe("sessionLimitReached", () => {
 
   it("rounds the retry estimate up to whole minutes", () => {
     expect(sessionLimitReached("AtlasExplorer", 11 * 60_000 + 1)).toBe(
-      "AtlasExplorer has reached its hourly limit for starting new conversations. This limit is shared by everyone using the bot. Please try again in about 12 minutes.",
+      "AtlasExplorer has reached its hourly limit for starting or resuming conversations. This limit is shared by everyone using the bot. Please try again in about 12 minutes.",
     );
   });
 
