@@ -138,11 +138,22 @@ function argumentCodeBlock(args: Record<string, unknown>): {
 // the chat SDK parse the text without changing how it reads.
 const ZERO_WIDTH_SPACE = "\u200b";
 
+// Unicode "format" characters: invisible characters such as zero-width spaces
+// and right-to-left overrides, which can hide text or display it out of order.
+const UNICODE_FORMAT_CHARACTERS = /\p{Cf}/gu;
+
 // Argument values are attacker-influenced, so nothing in them may act as
 // formatting in the card.
 function escapeCodeBlockText(text: string): string {
   return (
     text
+      // Show invisible characters as `\uXXXX` so the reviewer sees they are
+      // there. This runs first, so the only invisible characters left in the
+      // preview are the zero-width spaces added below.
+      .replace(
+        UNICODE_FORMAT_CHARACTERS,
+        (char) => `\\u${char.codePointAt(0)!.toString(16).padStart(4, "0")}`,
+      )
       // Slack turns `<...>` into links, mentions, and `@here`. Written as
       // entities, `&`, `<`, and `>` show up as plain characters.
       .replaceAll("&", "&amp;")

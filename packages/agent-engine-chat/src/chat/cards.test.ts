@@ -282,6 +282,21 @@ describe("buildReviewCard", () => {
       expect(approveIsOffered(message)).toBe(true);
     });
 
+    it("shows invisible and text-reordering characters as escapes", () => {
+      const args = { path: "/tmp/\u202Etxt.exe", user: "admin\u200B" };
+      const [preview] = textContents(reviewCardFor(args));
+
+      expect(preview.replaceAll(/[`*{]\u200B/g, "")).not.toMatch(/\p{Cf}/u);
+      expect(visibleArguments(preview)).toBe(
+        [
+          "{",
+          '  "path": "/tmp/\\u202etxt.exe",',
+          '  "user": "admin\\u200b"',
+          "}",
+        ].join("\n"),
+      );
+    });
+
     it("counts escaped text toward the length limit", () => {
       const args = { query: "&".repeat(500) };
       expect(JSON.stringify(args, null, 2).length).toBeLessThan(
