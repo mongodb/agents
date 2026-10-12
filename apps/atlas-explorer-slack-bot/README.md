@@ -370,7 +370,9 @@ Useful failure signals:
 - "has reached its hourly limit for starting or resuming conversations" in
   Slack means the session limit refused a message. If it appears while few
   people are using the bot, check whether `SESSION_LIMIT_PER_HOUR` is set too
-  low or another consumer shares the service account's MCP tokens.
+  low or another deployment shares this bot's thread store database. Other
+  consumers of the service account's MCP tokens aren't counted, so they show up
+  as the generic "could not complete that request" reply instead.
 
 If verification fails, inspect recent production deployments and roll back:
 
@@ -417,9 +419,9 @@ limit gets a reply instead of an error:
 
 The estimate is when enough active sessions will have aged out of the window to
 make room. Nothing is queued, so the user sends the message again later. A
-refused message doesn't count as activity and doesn't change the thread. The
-same is true when a restart of an idle thread fails to start: the thread keeps
-its previous activity time, so a retry is checked against the cap again.
+refused message doesn't count as activity, because the thread keeps its
+previous activity time. The same goes for a failed restart of an idle thread,
+so a retry is checked against the cap again.
 
 ### What counts toward the limit
 

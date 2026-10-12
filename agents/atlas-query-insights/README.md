@@ -145,7 +145,7 @@ When the limit is reached:
 - The process that failed to start throws `McpTokenLimitError`. It names the
   runtime (`agent` or `tool`) and the limit that refused the token: the
   service account's token limit, or the token endpoint's rate limit of 50
-  requests per minute.
+  requests per minute per service account and IP address.
 - Tool calls reuse the token their process minted at startup, so a running
   session isn't affected until that token expires an hour later.
 
