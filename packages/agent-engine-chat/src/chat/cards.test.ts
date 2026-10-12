@@ -282,19 +282,20 @@ describe("buildReviewCard", () => {
       expect(approveIsOffered(message)).toBe(true);
     });
 
-    it("shows invisible and text-reordering characters as escapes", () => {
-      const args = { path: "/tmp/\u202Etxt.exe", user: "admin\u200B" };
-      const [preview] = textContents(reviewCardFor(args));
+    it("shows characters that reorder text as escapes", () => {
+      const args = {
+        path: "/tmp/\u202E\u2067txt.exe",
+        greeting: "مرحبا\u200D\u200B",
+      };
+      const message = reviewCardFor(args);
+      const [preview] = textContents(message);
 
-      expect(preview.replaceAll(/[`*{]\u200B/g, "")).not.toMatch(/\p{Cf}/u);
-      expect(visibleArguments(preview)).toBe(
-        [
-          "{",
-          '  "path": "/tmp/\\u202etxt.exe",',
-          '  "user": "admin\\u200b"',
-          "}",
-        ].join("\n"),
+      expect(preview).not.toMatch(/[\u202A-\u202E\u2066-\u2069]/);
+      expect(preview).toContain("مرحبا\u200D\u200B");
+      expect(visibleArguments(preview)).toContain(
+        '"/tmp/\\u202e\\u2067txt.exe"',
       );
+      expect(approveIsOffered(message)).toBe(true);
     });
 
     it("counts escaped text toward the length limit", () => {

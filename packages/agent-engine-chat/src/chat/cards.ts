@@ -138,20 +138,21 @@ function argumentCodeBlock(args: Record<string, unknown>): {
 // the chat SDK parse the text without changing how it reads.
 const ZERO_WIDTH_SPACE = "\u200b";
 
-// Unicode "format" characters: invisible characters such as zero-width spaces
-// and right-to-left overrides, which can hide text or display it out of order.
-const UNICODE_FORMAT_CHARACTERS = /\p{Cf}/gu;
+// Invisible characters that display the text after them in a different order:
+// embeddings, overrides, and isolates, and the characters that end them.
+// Line-break and joining characters are left as they are, so Arabic, Hebrew,
+// and Thai still render.
+const BIDI_OVERRIDE_CHARACTERS = /[\u202A-\u202E\u2066-\u2069]/g;
 
 // Argument values are attacker-influenced, so nothing in them may act as
 // formatting in the card.
 function escapeCodeBlockText(text: string): string {
   return (
     text
-      // Show invisible characters as `\uXXXX` so the reviewer sees they are
-      // there. This runs first, so the only invisible characters left in the
-      // preview are the zero-width spaces added below.
+      // Show text-reordering characters as `\uXXXX`, so a value can't be
+      // displayed in a different order from the one that will run.
       .replace(
-        UNICODE_FORMAT_CHARACTERS,
+        BIDI_OVERRIDE_CHARACTERS,
         (char) => `\\u${char.codePointAt(0)!.toString(16).padStart(4, "0")}`,
       )
       // Slack turns `<...>` into links, mentions, and `@here`. Written as
