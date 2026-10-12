@@ -215,10 +215,7 @@ export async function handleConversationMessage(
       eventId,
       activeRecord,
       dependencies,
-      // A failed restart of an idle session did not bring a sandbox up, so
-      // keep the pre-turn timestamp. Refreshing it would make the retry look
-      // like a warm follow-up and skip the limit check.
-      newSessionUpdatedAt(previousRecord, claimedAt, dependencies),
+      updatedAtAfterFailedTurn(previousRecord, claimedAt, dependencies),
     ).catch((storeError: unknown) => {
       dependencies.logger?.error(
         "Could not release failed conversation turn",
@@ -537,13 +534,17 @@ async function checkSessionHealth(
 }
 
 /**
- * The `updatedAt` to keep when a turn that needed a new agent session fails.
- * The claim refreshed it, but no sandbox came up. Keeping the pre-turn value
- * leaves the thread looking idle, so a retry is checked against the limit
- * again. A warm follow-up, and a thread with no earlier timestamp, return
- * undefined so the release keeps the claim time.
+ * Picks the `updatedAt` to save on a thread whose agent call just failed.
+ *
+ * The bot reads `updatedAt` to decide whether a message continues a running
+ * agent session or starts a new one, and only messages that start a new
+ * session are checked against the hourly session limit. If a thread was idle
+ * and its new session failed to start, saving the current time would make the
+ * thread look active, so the user's retry would skip the limit. In that case
+ * this returns the thread's previous `updatedAt`. Otherwise it returns
+ * undefined, and `releaseTurn` saves the current time as usual.
  */
-function newSessionUpdatedAt(
+function updatedAtAfterFailedTurn(
   previousRecord: ThreadRecord | null | undefined,
   now: Date,
   dependencies: ChatHandlerDependencies,
