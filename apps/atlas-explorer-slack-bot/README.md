@@ -367,10 +367,10 @@ Useful failure signals:
   thread-store Atlas IP Access List does not allow Vercel.
 - HTTP 401 from `/api/v1/oauth/token` means the Agent Engine service-account
   credentials are invalid or its IP access list rejects Vercel.
-- "has reached its hourly limit for starting new conversations" in Slack means
-  the session limit refused a message. If it appears while few people are using
-  the bot, check whether `SESSION_LIMIT_PER_HOUR` is set too low or another
-  consumer shares the service account's MCP tokens.
+- "has reached its hourly limit for starting or resuming conversations" in
+  Slack means the session limit refused a message. If it appears while few
+  people are using the bot, check whether `SESSION_LIMIT_PER_HOUR` is set too
+  low or another consumer shares the service account's MCP tokens.
 
 If verification fails, inspect recent production deployments and roll back:
 
@@ -411,9 +411,9 @@ The bot stops that from happening by limiting how many agent sessions can be
 active in any rolling 60 minutes. A message that would start a session past the
 limit gets a reply instead of an error:
 
-> AtlasExplorer has reached its hourly limit for starting new conversations.
-> This limit is shared by everyone using the bot. Please try again in about 25
-> minutes.
+> AtlasExplorer has reached its hourly limit for starting or resuming
+> conversations. This limit is shared by everyone using the bot. Please try
+> again in about 25 minutes.
 
 The estimate is when enough active sessions will have aged out of the window to
 make room. Nothing is queued, so the user sends the message again later. A

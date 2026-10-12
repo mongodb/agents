@@ -86,7 +86,8 @@ The check reads the thread records the store already keeps, through
 `ThreadStore.listRecentSessionActivity`, so a custom store must implement it.
 `MongoThreadStore.initialize()` creates the `session_activity` index it uses.
 If the read fails, the turn is allowed. Without `sessionLimit`, no limit
-applies. See the Slack bot's
+applies. `limit` must be a positive whole number and `idleTtlMs` a positive
+number, or `registerChatHandlers` throws when it's called. See the Slack bot's
 [Session limit](../../apps/atlas-explorer-slack-bot/README.md#session-limit)
 section for how the count works and what it can't promise.
 
