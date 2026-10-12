@@ -116,6 +116,9 @@ export async function exercisesTurnClaim(
     "claimed",
     "duplicate",
   ]);
+  expect([first, duplicate]).toContainEqual(
+    expect.objectContaining({ status: "claimed", previousRecord: null }),
+  );
   expect(
     (
       await store.claimTurn(
@@ -139,6 +142,18 @@ export async function exercisesTurnClaim(
     new Date("2026-09-08T12:02:00.000Z"),
   );
   expect(next.status).toBe("claimed");
+  expect(next).toMatchObject({
+    previousRecord: {
+      recentEventIds: ["event-1"],
+      updatedAt: new Date("2026-09-08T12:00:00.000Z"),
+    },
+  });
+  expect(next.record).toMatchObject({
+    recentEventIds: ["event-1", "event-2"],
+    inFlightEventId: "event-2",
+    updatedAt: new Date("2026-09-08T12:02:00.000Z"),
+  });
+  expect(await store.get(baseRecord.threadId)).toEqual(next.record);
   const {
     inFlightEventId: _eventId,
     inFlightStartedAt: _startedAt,

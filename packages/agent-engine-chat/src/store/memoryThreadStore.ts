@@ -116,6 +116,7 @@ export class MemoryThreadStore implements ThreadStore {
     return {
       status: "claimed",
       record: structuredClone(claimed),
+      previousRecord: existing ? structuredClone(existing) : null,
     };
   }
 

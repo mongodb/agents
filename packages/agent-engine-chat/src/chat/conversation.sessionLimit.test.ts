@@ -255,19 +255,37 @@ describe("handleConversationMessage session limit", () => {
     );
   });
 
-  it("lets the message through when the thread cannot be read first", async () => {
-    const failure = new Error("mongo unavailable");
-    const listActivity = vi.spyOn(store, "listRecentSessionActivity");
-    vi.spyOn(store, "get").mockRejectedValueOnce(failure);
+  it("judges whether the thread is idle from the state it claimed", async () => {
+    await seedActiveSession("other-1", 5);
+    const idleRecord = {
+      threadId: THREAD_ID,
+      agentSessionId: "session-idle",
+      updatedAt: minutesAgo(15),
+    };
+    // Another message is restarting this idle thread, so its claim makes the
+    // thread look active.
+    await store.put({
+      ...idleRecord,
+      inFlightEventId: "event-0",
+      inFlightStartedAt: clock,
+      updatedAt: clock,
+    });
+    // That restart fails and puts the idle timestamp back just before this
+    // message claims the thread.
+    const claimTurn = store.claimTurn.bind(store);
+    vi.spyOn(store, "claimTurn").mockImplementationOnce(async (...args) => {
+      await store.put(idleRecord);
+      return claimTurn(...args);
+    });
 
-    await send("event-1");
+    await send("event-1", {
+      sessionLimit: { limit: 1, idleTtlMs: 10 * MINUTE },
+    });
 
-    expect(agent.invokeInputs).toHaveLength(1);
-    expect(listActivity).not.toHaveBeenCalled();
-    expect(logger.warn).toHaveBeenCalledWith(
-      "Could not read the thread before checking the session limit",
-      failure,
-    );
+    expect(agent.invokeInputs).toEqual([]);
+    expect(conversation.messages).toEqual([
+      expect.stringMatching(LIMIT_MESSAGE),
+    ]);
   });
 
   it("never starts more sessions than the limit when threads arrive together", async () => {

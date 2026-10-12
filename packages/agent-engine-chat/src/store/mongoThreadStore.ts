@@ -191,6 +191,7 @@ export class MongoThreadStore implements ThreadStore {
           return {
             status: "claimed",
             record: withoutId(inserted),
+            previousRecord: null,
           };
         } catch (error) {
           if (isDuplicateKeyError(error)) {
@@ -209,7 +210,7 @@ export class MongoThreadStore implements ThreadStore {
         return { status, record: withoutId(existing) };
       }
 
-      const updated = await this.collection.findOneAndUpdate(
+      const previous = await this.collection.findOneAndUpdate(
         {
           _id: key,
           recentEventIds: { $ne: eventId },
@@ -241,10 +242,15 @@ export class MongoThreadStore implements ThreadStore {
             },
           },
         },
-        { returnDocument: "after" },
+        { returnDocument: "before" },
       );
-      if (updated) {
-        return { status: "claimed", record: withoutId(updated) };
+      if (previous) {
+        const previousRecord = withoutId(previous);
+        return {
+          status: "claimed",
+          record: claimedRecord(previousRecord, eventId, claimedAt),
+          previousRecord,
+        };
       }
     }
 
@@ -516,6 +522,24 @@ function withId(record: ThreadRecord): StoredThreadRecord {
 function withoutId(document: StoredThreadRecord): ThreadRecord {
   const { _id: _discarded, ...record } = document;
   return record;
+}
+
+/** Applies `claimTurn`'s update to `previous`. Keep the two in step. */
+function claimedRecord(
+  previous: ThreadRecord,
+  eventId: string,
+  claimedAt: Date,
+): ThreadRecord {
+  const { retentionState: _discarded, ...record } = previous;
+  return {
+    ...record,
+    recentEventIds: [...(previous.recentEventIds ?? []), eventId].slice(
+      -RECENT_EVENT_LIMIT,
+    ),
+    inFlightEventId: eventId,
+    inFlightStartedAt: claimedAt,
+    updatedAt: claimedAt,
+  };
 }
 
 function legacySlackThreadKey(threadId: string): string | null {
