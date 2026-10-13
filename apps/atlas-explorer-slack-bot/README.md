@@ -21,9 +21,7 @@ Explorer suspends for human review.
 ## Before you use this
 
 This bot is an example to learn from and adapt, not a managed Slack app. You
-host and operate it yourself, and every allowlisted Slack user shares the
-Atlas Explorer workspace's single Atlas identity. Review
-[Security](#security) before deploying it.
+host and operate it yourself.
 
 ## Prerequisites
 
