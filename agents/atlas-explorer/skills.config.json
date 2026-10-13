@@ -3,7 +3,6 @@
   "skills": [
     "mongodb-atlas-stream-processing",
     "mongodb-connection",
-    "mongodb-mcp-setup",
     "mongodb-natural-language-querying",
     "mongodb-qe-size-estimation",
     "mongodb-query-optimizer",
