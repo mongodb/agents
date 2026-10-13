@@ -8,6 +8,9 @@
     "mongodb-connection": {
       "sha256": "7f94a9fc89b6c6645fb1b5459c1febdab79e3572c678d1b7d26e3e80fd8a5f3e"
     },
+    "mongodb-mcp-setup": {
+      "sha256": "8b7afb080341d226b40061fa4d29e2e0947664e865cd8369221adaa3f976f6c2"
+    },
     "mongodb-natural-language-querying": {
       "sha256": "b3061e7287611afff287d2849aab9a2efaa18f9d510eff5f82db35e639365074"
     },
