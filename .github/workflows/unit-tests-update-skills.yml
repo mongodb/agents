@@ -1,0 +1,48 @@
+name: Update-skills unit tests
+
+on:
+  pull_request:
+    paths:
+      - "packages/update-skills/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - "tsconfig.base.json"
+      - "tsconfig.test.base.json"
+      - "vitest.shared.mts"
+      - ".github/actions/unit-test/**"
+      - ".github/workflows/unit-tests-update-skills.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "packages/update-skills/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - "tsconfig.base.json"
+      - "tsconfig.test.base.json"
+      - "vitest.shared.mts"
+      - ".github/actions/unit-test/**"
+      - ".github/workflows/unit-tests-update-skills.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  test:
+    name: update-skills
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      COREPACK_ENABLE_DOWNLOAD_PROMPT: "0"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/unit-test
+        with:
+          command: pnpm --filter @repo/update-skills typecheck && pnpm --filter @repo/update-skills test
