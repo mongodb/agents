@@ -229,7 +229,9 @@ Things to know:
 - The agent only names index fields that Performance Advisor suggested.
 - The model sees the raw Performance Advisor output as well as the redacted
   query shapes. The raw slow query log lines can include literal query
-  values, and those values are sent to your model provider.
+  values; those values are sent to your model provider and appear in Agent
+  Engine traces. You govern that data. See
+  [Your data](../../README.md#your-data).
 - `scope.projectId` and `scope.clusterName` in `config.ts` pin the agent to
   one project and cluster through its system prompt. Tool calls aren't
   filtered by that pin. The hard boundary is the one Atlas project that the
@@ -248,12 +250,9 @@ Things to know:
 - Access belongs to the MCP configuration, not to each user. Everyone who can
   run this agent sees the same cluster data. Grant it only to people who may
   see that data.
-- Prompt injection. Slow query logs and Performance Advisor output can contain
+- Slow query logs and Performance Advisor output can contain prompt-injection
   text aimed at the model. The agent can't write, but injected text can still
   skew its report, so review its recommendations before you act on them.
-- Slow query logs can contain literal query values. Those values go to your
-  model provider and appear in Agent Engine traces. You govern that data. See
-  [Your data](../../README.md#your-data).
 
 ### Roll back or shut down
 

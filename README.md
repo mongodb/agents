@@ -157,17 +157,6 @@ limits from the start.
   `agent.yaml` doesn't list. Treat content from untrusted sources as
   untrusted, and review what an agent can reach before you deploy it.
 
-### Your data
-
-- **Traces and conversations include your data.** Agent Engine stores every
-  conversation and trace in your project. They can include database and
-  collection names, field names, and documents the agent reads. Only people
-  with access to your project can see them, and you are responsible for
-  governing that data. See
-  [Inspect traces](https://www.mongodb.com/docs/agentengine/manage/inspect-traces/).
-- **Your model provider sees prompts and tool results.** That includes query
-  results the agent reads. Choose a provider that meets your data policy.
-
 ## Why Atlas Agent Engine
 
 Atlas Agent Engine is the managed runtime for these agents. It handles the
@@ -246,6 +235,17 @@ how they're set up.
   [Example: talk to Atlas Explorer from Slack](#example-talk-to-atlas-explorer-from-slack).
   The bot is built on [Chat SDK](https://chat-sdk.dev), so you can adapt it to
   other chat platforms.
+
+### Your data
+
+- **Traces and conversations include your data.** Agent Engine stores every
+  conversation and trace in your project. They can include database and
+  collection names, field names, and documents the agent reads. Only people
+  with access to your project can see them, and you are responsible for
+  governing that data. See
+  [Inspect traces](https://www.mongodb.com/docs/agentengine/manage/inspect-traces/).
+- **Your model provider sees prompts and tool results.** That includes query
+  results the agent reads. Choose a provider that meets your data policy.
 
 ## Contributing
 
