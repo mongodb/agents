@@ -246,11 +246,6 @@ how they're set up.
   [Example: talk to Atlas Explorer from Slack](#example-talk-to-atlas-explorer-from-slack).
   The bot is built on [Chat SDK](https://chat-sdk.dev), so you can adapt it to
   other chat platforms.
-- **Support is as-is.** These templates have no uptime SLA or on-call rotation.
-  Report template problems in
-  [GitHub issues](https://github.com/mongodb/agents/issues). If you've changed
-  the code, mention that in your report. For problems with Atlas Agent Engine,
-  the Atlas MCP Server, or Atlas itself, use your usual MongoDB support channel.
 
 ## Contributing
 
