@@ -254,6 +254,18 @@ Things to know:
 - Slow query logs can contain literal query values. Those values go to your
   model provider and appear in Agent Engine traces. You govern that data. See
   [Your data](../../README.md#your-data).
-- To roll back or shut down, follow
-  [Roll back or shut down](../atlas-explorer/README.md#roll-back-or-shut-down)
-  in the Atlas Explorer README, using this agent's MCP configuration.
+
+### Roll back or shut down
+
+You own your deployment, so MongoDB can't roll it back for you. If you find a
+defect or a security problem:
+
+1. **Stop callers.** Pause any scheduled workflow or job that invokes the
+   agent.
+2. **Revoke credentials.** Delete the MCP client secret in Atlas.
+3. **Reissue and redeploy.** Create a new MCP client secret and update the
+   Agent Engine secrets. Then redeploy a known-good build with
+   `agentengine deploy --build-id <id>`, or build and deploy a fixed version
+   from `mongodb/agents`.
+4. **Check and restart.** Confirm the agent works with `agentengine invoke`,
+   then turn callers back on.
