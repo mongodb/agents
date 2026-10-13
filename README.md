@@ -251,12 +251,6 @@ how they're set up.
   [GitHub issues](https://github.com/mongodb/agents/issues). If you've changed
   the code, mention that in your report. For problems with Atlas Agent Engine,
   the Atlas MCP Server, or Atlas itself, use your usual MongoDB support channel.
-- **Answer quality is checked by hand.** There is no automated evaluation suite
-  yet. Review the agent's answers before you act on them, and review any index
-  or change it recommends.
-- **Availability depends on other services.** A deployed agent depends on
-  Atlas Agent Engine, Atlas, and your model provider. The Slack example also
-  depends on Slack and its host. The templates add no service of their own.
 
 ## Contributing
 
