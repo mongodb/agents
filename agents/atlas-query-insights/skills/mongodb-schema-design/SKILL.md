@@ -145,9 +145,9 @@ If the MCP server is running and connected, I can automatically run verification
 **⚠️ Security**: Use `--readOnly` for safety. Remove only if you need write operations.
 
 When connected, I can automatically:
-- Infer schema via `mongodb__collection_schema`
-- Measure document/array sizes via `mongodb__aggregate`
-- Check collection statistics via `mongodb__db_stats`
+- Infer schema via `mcp__mongodb__collection-schema`
+- Measure document/array sizes via `mcp__mongodb__aggregate`
+- Check collection statistics via `mcp__mongodb__db-stats`
 
 ### ⚠️ Action Policy
 
@@ -157,8 +157,9 @@ Before any write or destructive operation via MCP, I will: (1) summarize the exa
 
 | Operation Type | MCP Tools | Action |
 |---------------|-----------|--------|
-| **Read (Safe)** | `mongodb__find`, `mongodb__aggregate`, `mongodb__collection_schema`, `mongodb__db_stats`, `mongodb__count` | I may run automatically to verify |
-| **Mutative (Runtime Approval)** | `mongodb__insert_many`, `mongodb__create_index`, `mongodb__drop_index`, `mongodb__update_one`, `mongodb__update_many`, `mongodb__rename_collection`, `mongodb__create_collection`, `mongodb__delete_many`, `mongodb__drop_collection`, `mongodb__drop_database` | Magenta suspends the graph for an approve/edit/reject decision |
+| **Read (Safe)** | `find`, `aggregate`, `collection-schema`, `db-stats`, `count` | I may run automatically to verify |
+| **Write (Requires Approval)** | `update-many`, `insert-many`, `create-collection` | I will show the command and wait for your "yes" |
+| **Destructive (Requires Approval)** | `delete-many`, `drop-collection`, `drop-database` | I will warn you and require explicit confirmation |
 
 When I recommend schema changes or data modifications:
 1. I'll explain **what** I want to do and **why**

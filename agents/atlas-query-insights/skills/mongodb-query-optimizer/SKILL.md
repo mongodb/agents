@@ -3,7 +3,7 @@ name: mongodb-query-optimizer
 description: >-
   Help with MongoDB query optimization and indexing. Use only when the user asks for optimization or performance: "How do I optimize this query?", "How do I index this?", "Why is this query slow?", "Can you fix my slow queries?", "What are the slow queries on my cluster?", etc. Do not invoke for general MongoDB query writing unless user asks for performance or index help. Prefer indexing as optimization strategy. Use MongoDB MCP when available.
 compatibility: >-
-  Best with MongoDB Managed MCP. Uses mongodb__collection_indexes and mongodb__explain when a cluster connection works; uses Atlas Performance Advisor when Atlas API access is available. Without either, suggest indexes from query shape only. User creates indexes in Atlas or migrations unless tooling allows otherwise.
+  Best with MongoDB MCP server. Uses collection-indexes and explain when the connection string works; uses Atlas Performance Advisor when Atlas API is configured. Without either, suggest indexes from query shape only. User creates indexes in Atlas or migrations unless tooling allows otherwise.
 license: Apache-2.0
 metadata:
   version: "1.0.0"
@@ -27,17 +27,17 @@ Do **not** invoke for routine query authoring unless the user has requested help
 
 If the user wants to examine slow queries, or is looking for general performance suggestions (not regarding any particular query):
 
-- Use `mongodb__atlas_get_performance_advisor` to fetch slow query logs and performance advisor output  
+- Use MongoDB MCP server **atlas-get-performance-advisor** tool to fetch slow query logs and performance advisor output  
 - Make suggestions based on this information
 
-If Atlas access is unavailable or you do not have enough information to run `mongodb__atlas_get_performance_advisor` against the correct cluster, explain what project or cluster information is missing and suggest asking about a specific query instead.
+If Atlas MCP Server for Atlas is not configured or you don’t have enough information to run **atlas-get-performance-advisor** against the correct cluster, tell the user that general performance analysis requires Atlas MCP Server configuration with API credentials, and suggest they configure it or ask about a specific query instead.
 
 ### Help with a Specific Query
 
 If the user is asking about a particular query:
 
-- Use `mongodb__collection_indexes`, `mongodb__explain`, and `mongodb__find` to get existing indexes on the collection, explain() output for the query, and a sample document from the collection  
-- Use `mongodb__atlas_get_performance_advisor` to fetch slow query logs and performance advisor output
+- Use **collection-indexes**, **explain**, and **find** MCP tools to get existing indexes on the collection, explain() output for the query, and a sample document from the collection  
+- Use **atlas-get-performance-advisor MCP** tool to fetch slow query logs and performance advisor output
 
 Then make an optimization suggestion based on collected information and MongoDB best practices and examples from reference files. Prefer creating an index that fully covers the query if possible. If you cannot use MongoDB MCP Server then still try to make a suggestion.
 
@@ -49,29 +49,29 @@ Then make an optimization suggestion based on collected information and MongoDB 
 
 | Tool name (exact) | Arguments object |
 | :---- | :---- |
-| `mongodb__collection_indexes` | `{ "database": "<db>", "collection": "<coll>" }` — both required strings. |
-| `mongodb__explain` | `{ "database": "<db>", "collection": "<coll>", "method": [ { "name": "find", "arguments": { "filter": {...}, "sort": {...}, "limit": N } } ], "verbosity": "executionStats" }`. `method` is an array of one object: `name` is `"find"`, `"aggregate"`, or `"count"`; `arguments` holds that method's params (e.g. find: `filter`, `sort`, `limit`; aggregate: `pipeline`; count: `query`). Optional `verbosity`: `"queryPlanner"` (default), `"executionStats"`, `"queryPlannerExtended"`, `"allPlansExecution"`. |
-| `mongodb__find` |  `{ "database": "<db>", "collection": "<coll>", "filter": {...}, "projection": {...}, "sort": {...}, "limit": N }` — `database`, `collection`, and `filter` are required. Optional: `projection`, `sort`, `limit`. |
+| `collection-indexes` | `{ "database": "<db>", "collection": "<coll>" }` — both required strings. |
+| `explain` | `{ "database": "<db>", "collection": "<coll>", "method": [ { "name": "find", "arguments": { "filter": {...}, "sort": {...}, "limit": N } } ], "verbosity": "executionStats" }`. `method` is an array of one object: `name` is `"find"`, `"aggregate"`, or `"count"`; `arguments` holds that method's params (e.g. find: `filter`, `sort`, `limit`; aggregate: `pipeline`; count: `query`). Optional `verbosity`: `"queryPlanner"` (default), `"executionStats"`, `"queryPlannerExtended"`, `"allPlansExecution"`. |
+| `find` |  `{ "database": "<db>", "collection": "<coll>", "filter": {...}, "projection": {...}, "sort": {...}, "limit": N }` — `database`, `collection`, and `filter` are required. Optional: `projection`, `sort`, `limit`. |
 
 **Atlas tools** (when Atlas API credentials are configured):
 
 | Tool name (exact) | Arguments object |
 | :---- | :---- |
-| `mongodb__atlas_list_projects` | `{}` or `{ "orgId": "<24-char hex>" }`. Returns projects with their IDs; use to get `projectId` for Performance Advisor. |
-| `mongodb__atlas_get_performance_advisor` | **Required:** `"projectId"` (24-character hex string), `"clusterName"` (string, 1–64 chars, alphanumeric/underscore/dash). **Optional:** `"operations"` — array of strings from `"suggestedIndexes"`, `"dropIndexSuggestions"`, `"slowQueryLogs"`, `"schemaSuggestions"` (request only what you need); for slowQueryLogs only: `"since"` (ISO 8601 date-time), `"namespaces"` (array of `"db.coll"` strings). |
+| `atlas-list-projects` | `{}` or `{ "orgId": "<24-char hex>" }`. Returns projects with their IDs; use to get `projectId` for Performance Advisor. |
+| `atlas-get-performance-advisor` | **Required:** `"projectId"` (24-character hex string), `"clusterName"` (string, 1–64 chars, alphanumeric/underscore/dash). **Optional:** `"operations"` — array of strings from `"suggestedIndexes"`, `"dropIndexSuggestions"`, `"slowQueryLogs"`, `"schemaSuggestions"` (request only what you need); for slowQueryLogs only: `"since"` (ISO 8601 date-time), `"namespaces"` (array of `"db.coll"` strings). |
 
 For a user question, try to fetch information from both the connection string and Atlas API related to the query you are optimizing.
 
 ### 1\. DB connection string works for MongoDB MCP
 
-Typical flow: call `mongodb__collection_indexes` → `mongodb__explain` → `mongodb__find` (sample doc).
+Typical flow: call `collection-indexes` → `explain` → `find` (sample doc).
 
-- **`mongodb__collection_indexes`** — Use the result's `classicIndexes` (each has `name`, `key`) to see if the query can already use an existing index.
-- **`mongodb__explain`** — Run in `"queryPlanner"` mode first to check for COLLSCAN. If the query uses an index or the collection is very small, run again with `"executionStats"` (10-second timeout) to get docs scanned vs. returned.
+- **`collection-indexes`** — Use the result's `classicIndexes` (each has `name`, `key`) to see if the query can already use an existing index.
+- **`explain`** — Run in `"queryPlanner"` mode first to check for COLLSCAN. If the query uses an index or the collection is very small, run again with `"executionStats"` (10-second timeout) to get docs scanned vs. returned.
 
 ### 2\. Atlas API access works for MongoDB MCP
 
-If you need a project ID, call `mongodb__atlas_list_projects` first. Then call `mongodb__atlas_get_performance_advisor` with only the `operations` you need:
+If you need a project ID, call `atlas-list-projects` first. Then call `atlas-get-performance-advisor` with only the `operations` you need:
 
 | Operation value | Use when |
 | :---- | :---- |
@@ -89,19 +89,19 @@ Do not pass the MCP tool name as an `operations` value—`operations` is a separ
 **If MCP db connection is configured and the database + collection names are known**, run steps 1–3. Otherwise skip to step 4.
 
 1. **Check existing collection indexes:**
-   - Call `mongodb__collection_indexes` with database=`store`, collection=`orders`
+   - Call `collection-indexes` with database=`store`, collection=`orders`
    - Result shows: `{_id: 1}`, `{status: 1}`, `{date: -1}`
 
 2. **Run explain:**
-   - Call `mongodb__explain` with method=`find`, filter=`{status: 'shipped', region: 'US'}`, sort=`{date: -1}`, verbosity=`queryPlanner` and `executionStats`
+   - Call `explain` with method=`find`, filter=`{status: 'shipped', region: 'US'}`, sort=`{date: -1}`, verbosity=`queryPlanner` and `executionStats`
    - Result: Uses `{status: 1}` index, then in-memory SORT, `totalKeysExamined: 50000`, `nReturned: 100`
 
 3. **Run find:**
-   - Call `mongodb__find` with limit=1 to fetch a sample document to impute the schema.
+   - Call `find` with limit=1 to fetch a sample document to impute the schema.
 
 **If MCP Atlas connection is configured**, run step 4. Otherwise skip to step 5.
 
-4. **Run `mongodb__atlas_get_performance_advisor`:**
+4. **Run atlas-get-performance-advisor:**
    - Try to get the cluster name from the MCP connection string, or ask the user for projectId/clusterName
    - Use slowQueryLogs to fetch slow query logs from database=`store`, collection=`orders` in the past 24 hours
    - Use suggestedIndexes to check for index suggestions for the query
@@ -116,8 +116,8 @@ If the MongoDB MCP server is not set up, follow best indexing practices.
 
 **User:** "Can you help with optimizing slow queries on my cluster?”
 
-1. **Run `mongodb__atlas_get_performance_advisor`:**  
-   - Try to get the cluster name from the connection string and deduce the project name you need in `mongodb__atlas_list_projects`; if you are not sure, then ask the user for cluster name and project id.
+1. **Run atlas-get-performance-advisor:**  
+   - Try to get the cluster name from the connection string and deduce the project name you need in atlas-list-projects; if you are not sure, then ask the user for cluster name and project id.
    - Use slowQueryLogs to fetch slow query logs from the past 24 hours  
    - Use suggestedIndexes  
    - Use dropIndexSuggestions  

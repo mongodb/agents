@@ -13,14 +13,12 @@ Build, operate, and debug Atlas Stream Processing (ASP) pipelines using four MCP
 
 ## Prerequisites
 
-This skill requires the Agent Engine-discovered **MongoDB Managed MCP** tools.
-Atlas Explorer creates their client credentials at process startup from the
-operator-provided `ATLAS_ORG_ID`, `ATLAS_PUBLIC_API_KEY`, and
-`ATLAS_PRIVATE_API_KEY` secrets.
+This skill requires the **MongoDB MCP Server** connected with:
+- Atlas API credentials (`apiClientId` and `apiClientSecret`)
 
-The 4 tools: `mongodb__atlas_streams_discover`, `mongodb__atlas_streams_build`, `mongodb__atlas_streams_manage`, `mongodb__atlas_streams_teardown`.
+The 4 tools: `atlas-streams-discover`, `atlas-streams-build`, `atlas-streams-manage`, `atlas-streams-teardown`.
 
-**All operations require an Atlas project ID.** If unknown, call `mongodb__atlas_list_projects` first to find your project ID.
+**All operations require an Atlas project ID.** If unknown, call `atlas-list-projects` first to find your project ID.
 
 ## If MCP tools are unavailable
 
@@ -28,7 +26,7 @@ If the MongoDB MCP Server is not connected or the streams tools are missing, see
 
 ## Tool Selection Matrix
 
-### mongodb__atlas_streams_discover — ALL read operations
+### atlas-streams-discover — ALL read operations
 | Action | Use when |
 |--------|----------|
 | `list-workspaces` | See all workspaces in a project |
@@ -43,7 +41,7 @@ If the MongoDB MCP Server is not connected or the streams tools are missing, see
 **Pagination** (all list actions): `limit` (1-100, default 20), `pageNum` (default 1).
 **Response format**: `responseFormat` — `"concise"` (default for list actions) or `"detailed"` (default for inspect/diagnose).
 
-### mongodb__atlas_streams_build — ALL create operations
+### atlas-streams-build — ALL create operations
 | Resource | Key parameters |
 |----------|---------------|
 | `workspace` | `cloudProvider`, `region`, `tier` (default SP10), `includeSampleData` |
@@ -58,7 +56,7 @@ If the MongoDB MCP Server is not connected or the streams tools are missing, see
 - **resource = "processor":** Fill: `projectId`, `workspaceName`, `processorName`, `pipeline`, `dlq` (recommended), `autoStart` (optional). Leave empty: all workspace and connection fields. (See [references/pipeline-patterns.md](references/pipeline-patterns.md) for pipeline examples.)
 - **resource = "privatelink":** Fill: `projectId`, `privateLinkConfig`. Note: PrivateLink is **project-level**, not workspace-level. `workspaceName` is not required — omit it. Leave empty: all connection and processor fields.
 
-### mongodb__atlas_streams_manage — ALL update/state operations
+### atlas-streams-manage — ALL update/state operations
 | Action | Notes |
 |--------|-------|
 | `start-processor` | Begins billing. Optional `tier` override, `resumeFromCheckpoint` |
@@ -90,7 +88,7 @@ If the MongoDB MCP Server is not connected or the streams tools are missing, see
 - **Connection deletion** → blocks if any running processor references it. Stop/delete referencing processors first.
 - **Workspace deletion** → See detailed workflow below (lines 108-111).
 
-### mongodb__atlas_streams_teardown — ALL delete operations
+### atlas-streams-teardown — ALL delete operations
 | Resource | Safety behavior |
 |----------|----------------|
 | `processor` | Auto-stops before deleting |
@@ -105,17 +103,17 @@ If the MongoDB MCP Server is not connected or the streams tools are missing, see
 - `resource: "privatelink"` or `"peering"` → `resourceName` (the ID). These are project-level resources, not tied to a specific workspace.
 
 **Before deleting a workspace**, inspect it first:
-1. `mongodb__atlas_streams_discover` → `inspect-workspace` — get connection/processor counts
+1. `atlas-streams-discover` → `inspect-workspace` — get connection/processor counts
 2. Present to user: "Workspace X contains N connections and M processors. Deleting permanently removes all. Proceed?"
-3. Wait for confirmation before calling `mongodb__atlas_streams_teardown`
+3. Wait for confirmation before calling `atlas-streams-teardown`
 
 ## CRITICAL: Validate Before Creating Processors
 
-**You MUST read the relevant bundled reference files before composing any
-processor pipeline.** This is not optional. Validate source/sink field names
-against `references/connection-configs.md` and pipeline structure against
-`references/pipeline-patterns.md`. This catches errors such as `prefix` versus
-`path` for an S3 `$emit`.
+**You MUST call `search-knowledge` before composing any processor pipeline.** This is not optional.
+- **Field validation:** Query with the sink/source type, e.g. "Atlas Stream Processing $emit S3 fields" or "Atlas Stream Processing Kafka $source configuration". This catches errors like `prefix` vs `path` for S3 `$emit`.
+- **Pattern examples:** Query with `dataSources: [{"name": "devcenter"}]` for working pipelines, e.g. "Atlas Stream Processing tumbling window example".
+
+Also fetch examples from the official ASP examples repo when building non-trivial processors: **https://github.com/mongodb/ASP_example** (quickstarts, example processors, Terraform examples). Start with `example_processors/README.md` for the full pattern catalog.
 
 Key quickstarts:
 | Quickstart | Pattern |
@@ -174,7 +172,7 @@ See [references/pipeline-patterns.md](references/pipeline-patterns.md) for stage
 | **Azure** | eastus | `eastus` |
 | **Azure** | westeurope | `westeurope` |
 
-See [references/connection-configs.md](references/connection-configs.md) for the full region mapping table. If unsure, inspect an existing workspace with `mongodb__atlas_streams_discover` → `inspect-workspace` and check `dataProcessRegion.region`.
+See [references/connection-configs.md](references/connection-configs.md) for the full region mapping table. If unsure, inspect an existing workspace with `atlas-streams-discover` → `inspect-workspace` and check `dataProcessRegion.region`.
 
 ## Connection Capabilities — Source/Sink Reference
 
@@ -201,13 +199,13 @@ See [references/connection-configs.md](references/connection-configs.md) for det
 ## Core Workflows
 
 ### Setup from scratch
-1. `mongodb__atlas_streams_discover` → `list-workspaces` (check existing)
-2. `mongodb__atlas_streams_build` → `resource: "workspace"` (region near data, SP10 for dev)
-3. `mongodb__atlas_streams_build` → `resource: "connection"` (for each source/sink/enrichment)
-4. **Validate connections:** `mongodb__atlas_streams_discover` → `list-connections` + `inspect-connection` for each — verify names match targets, present summary to user
-5. Read the relevant bundled connection and pipeline reference files to validate field names.
-6. `mongodb__atlas_streams_build` → `resource: "processor"` (with DLQ configured)
-7. `mongodb__atlas_streams_manage` → `start-processor` (warn about billing)
+1. `atlas-streams-discover` → `list-workspaces` (check existing)
+2. `atlas-streams-build` → `resource: "workspace"` (region near data, SP10 for dev)
+3. `atlas-streams-build` → `resource: "connection"` (for each source/sink/enrichment)
+4. **Validate connections:** `atlas-streams-discover` → `list-connections` + `inspect-connection` for each — verify names match targets, present summary to user
+5. Call `search-knowledge` to validate field names. Fetch relevant examples from https://github.com/mongodb/ASP_example
+6. `atlas-streams-build` → `resource: "processor"` (with DLQ configured)
+7. `atlas-streams-manage` → `start-processor` (warn about billing)
 
 ### Workflow Patterns
 
@@ -220,12 +218,12 @@ See [references/development-workflow.md](references/development-workflow.md) for
 5. Add error handling / DLQ configuration
 
 **Modify a processor pipeline:**
-1. `mongodb__atlas_streams_manage` → `action: "stop-processor"` — **processor MUST be stopped first**
-2. `mongodb__atlas_streams_manage` → `action: "modify-processor"` — provide new pipeline
-3. `mongodb__atlas_streams_manage` → `action: "start-processor"` — restart
+1. `atlas-streams-manage` → `action: "stop-processor"` — **processor MUST be stopped first**
+2. `atlas-streams-manage` → `action: "modify-processor"` — provide new pipeline
+3. `atlas-streams-manage` → `action: "start-processor"` — restart
 
 **Debug a failing processor:**
-1. `mongodb__atlas_streams_discover` → `diagnose-processor` — one-shot health report. Always call this first.
+1. `atlas-streams-discover` → `diagnose-processor` — one-shot health report. Always call this first.
 2. **Commit to a specific root cause.** Match symptoms to diagnostic patterns:
    - **Error 419 + "no partitions found"** → Kafka topic doesn't exist or is misspelled
    - **State: FAILED + multiple restarts** → connection-level error (bypasses DLQ), check connection config
@@ -264,8 +262,8 @@ See [references/development-workflow.md](references/development-workflow.md) for
 
 ## Safety Rules
 
-- `mongodb__atlas_streams_teardown` and `mongodb__atlas_streams_manage` require user confirmation and are protected by Agent Engine's approval interrupt — do not bypass
-- **BEFORE calling `mongodb__atlas_streams_teardown` for a workspace**, you MUST first inspect the workspace with `mongodb__atlas_streams_discover` to count connections and processors, then present this information to the user before requesting confirmation
+- `atlas-streams-teardown` and `atlas-streams-manage` require user confirmation — do not bypass
+- **BEFORE calling `atlas-streams-teardown` for a workspace**, you MUST first inspect the workspace with `atlas-streams-discover` to count connections and processors, then present this information to the user before requesting confirmation
 - **BEFORE creating any processor**, you MUST validate all connections per the "Pre-Deployment Validation" section in [references/development-workflow.md](references/development-workflow.md)
 - Deleting a workspace removes ALL connections and processors permanently
 - After stopping a processor, state is preserved 45 days — then checkpoints are discarded

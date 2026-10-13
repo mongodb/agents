@@ -1,48 +1,55 @@
-# Managed MCP Troubleshooting
+# MCP Server Troubleshooting
 
-Atlas Explorer receives Atlas Stream Processing tools through Agent Engine's native
-MongoDB Managed MCP registration. Do not install or configure a separate MCP
-server, invoke the Atlas API outside the Tool Pod, or fall back to unaudited
-local commands.
+This skill requires the MongoDB MCP Server with Atlas Stream Processing tools enabled. If these tools are unavailable, follow the diagnostic steps below.
 
-## Verify tool discovery
+## Step 1: Verify MCP Server Connection
 
-Confirm that all four server-prefixed tools are available:
+Check if the MongoDB MCP Server is connected to your environment.
 
-- `mongodb__atlas_streams_discover`
-- `mongodb__atlas_streams_build`
-- `mongodb__atlas_streams_manage`
-- `mongodb__atlas_streams_teardown`
+**If not connected:**
+- Install the MongoDB MCP Server
+- Configure it with your Atlas API credentials (`apiClientId` and `apiClientSecret`)
 
-If every `mongodb__*` tool is missing, treat this as process-startup or MCP
-discovery failure. Follow the `mongodb-mcp-setup` skill and ask the operator to
-inspect both AER and Tool Pod startup logs.
+## Step 2: Verify Tool Availability
 
-If MongoDB tools exist but the Streams tools are absent, report a Managed MCP
-capability/version mismatch. Do not emulate the missing write tools with shell
-commands or raw HTTP requests.
+Check that all four streams tools are available:
+- `atlas-streams-discover`
+- `atlas-streams-build`
+- `atlas-streams-manage`
+- `atlas-streams-teardown`
 
-## Diagnose authentication failures
+## Fallback Options (Limited Functionality)
 
-- Missing `ATLAS_ORG_ID`, `ATLAS_PUBLIC_API_KEY`, or
-  `ATLAS_PRIVATE_API_KEY`: identify only the missing secret names and ask the
-  operator to configure them in Agent Engine.
-- Atlas Admin API authorization failure during startup: verify that the key
-  belongs to the configured organization and can create organization MCP
-  configurations.
-- MCP OAuth failure after startup: restart the affected runtime so it creates
-  a fresh process identity and one-time secret.
-- 401/403 during a Streams call: inspect startup and Tool Pod logs before
-  changing configuration. Never request, print, or persist credential values.
+If you cannot configure the MCP server immediately, you have limited alternatives:
 
-## Diagnose tool-call failures
+### Option 1: Atlas CLI (Read-Only)
+Use Atlas CLI API commands for exploration only:
+```bash
+atlas api streams listStreamWorkspaces --projectId <project-id>
+atlas api streams getStreamWorkspace --workspaceName <workspace-name> --projectId <project-id>
+```
 
-- Validation error: correct the action-specific arguments and retry.
-- Missing project ID: call `mongodb__atlas_list_projects`.
-- Missing workspace or resource name: use
-  `mongodb__atlas_streams_discover` to list and inspect the parent resources.
-- Permission or feature error from a correctly authenticated tool: report the
-  Atlas response and required capability; do not bypass Tool Pod routing.
+**Limitations:**
+- Read-only operations only
+- Cannot create or modify processors
+- No automated validation or diagnostics
 
-The read-only discover tool is safe for diagnostics. The manage and teardown
-tools remain subject to Agent Engine's approval interrupt.
+### Option 2: mongosh with sp.process() (Prototyping Only)
+Use `sp.process()` in mongosh for ephemeral pipeline testing:
+```javascript
+sp.process([
+  { $source: { connectionName: "sample_stream_solar" } },
+  { $match: { temperature: { $gt: 50 } } },
+  { $limit: 10 }
+])
+```
+
+**Limitations:**
+- Ephemeral only (no deployed processors)
+- No billing (runs locally)
+- Cannot test production connections
+- Limited to simple pipeline validation
+
+## Recommended Action
+
+**For full Atlas Stream Processing capabilities, configure the MongoDB MCP Server with streams preview features enabled.** The fallback options above provide minimal functionality and are not suitable for production workflows.

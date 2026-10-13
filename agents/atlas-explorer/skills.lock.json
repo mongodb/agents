@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "source": "mongodb/agent-skills",
+  "skills": {
+    "mongodb-atlas-stream-processing": {
+      "sha256": "f799259bfedcc253782cc8197b00e9f7c1440d2fc07fb1fdf24d16a6905ae3b5"
+    },
+    "mongodb-connection": {
+      "sha256": "7f94a9fc89b6c6645fb1b5459c1febdab79e3572c678d1b7d26e3e80fd8a5f3e"
+    },
+    "mongodb-mcp-setup": {
+      "sha256": "8b7afb080341d226b40061fa4d29e2e0947664e865cd8369221adaa3f976f6c2"
+    },
+    "mongodb-natural-language-querying": {
+      "sha256": "b3061e7287611afff287d2849aab9a2efaa18f9d510eff5f82db35e639365074"
+    },
+    "mongodb-qe-size-estimation": {
+      "sha256": "c00e2dddfb351fde79aa8b09be7b1026bef54b0c9e1adbc05a3285138e8c087f"
+    },
+    "mongodb-query-optimizer": {
+      "sha256": "d493b9bfa633805f35c6d75acf2fa1904be8969d6f13781cd3328386bb90ab11"
+    },
+    "mongodb-schema-design": {
+      "sha256": "89878d242e53f617300420ef81251650c9e737fa52aa3764b60b8e02beafdf97"
+    },
+    "mongodb-search-and-ai": {
+      "sha256": "0477fac6bdb5b0b79d4e4be3ad2baf5b2039cf54bfaaa1dead9d18789db4aed6"
+    }
+  }
+}

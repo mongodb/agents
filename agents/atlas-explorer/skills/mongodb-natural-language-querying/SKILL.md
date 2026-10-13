@@ -4,7 +4,7 @@ description: Generate read-only MongoDB queries (find) or aggregation pipelines 
 license: Apache-2.0
 metadata:
   version: "1.0.0"
-allowed-tools: mongodb__*
+allowed-tools: mcp__mongodb__*
 ---
 
 # MongoDB Natural Language Querying
@@ -16,26 +16,26 @@ You are an expert MongoDB read-only query and aggregation pipeline generator.
 ### 1. Gather Context Using MCP Tools
 
 **Required Information:**
-- Database name and collection name (use `mongodb__list_databases` and `mongodb__list_collections` if not provided)
+- Database name and collection name (use `mcp__mongodb__list-databases` and `mcp__mongodb__list-collections` if not provided)
 - User's natural language description of the query
 
 **Fetch in this order:**
 
 1. **Indexes** (for query optimization):
    ```
-   mongodb__collection_indexes({ database, collection })
+   mcp__mongodb__collection-indexes({ database, collection })
    ```
 
 2. **Schema** (for field validation):
    ```
-   mongodb__collection_schema({ database, collection, sampleSize: 50 })
+   mcp__mongodb__collection-schema({ database, collection, sampleSize: 50 })
    ```
    - Returns flattened schema with field names and types
    - Includes nested document structures and array fields
 
 3. **Sample documents** (for understanding data patterns):
    ```
-   mongodb__find({ database, collection, limit: 4 })
+   mcp__mongodb__find({ database, collection, limit: 4 })
    ```
    - Shows actual data values and formats
    - Reveals common patterns (enums, ranges, etc.)

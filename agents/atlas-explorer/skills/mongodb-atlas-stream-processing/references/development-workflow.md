@@ -23,17 +23,17 @@ Understanding stage categories helps compose valid pipelines. Stages must appear
 **Goal:** Workspace and connections ready.
 
 1. Discover existing resources:
-   - `mongodb__atlas_streams_discover` → `list-workspaces` — see what already exists
+   - `atlas-streams-discover` → `list-workspaces` — see what already exists
    - If workspace exists, `inspect-workspace` to review config
 
 2. Create workspace (if needed):
-   - `mongodb__atlas_streams_build` → `resource: "workspace"`
+   - `atlas-streams-build` → `resource: "workspace"`
    - Choose region close to your data sources
    - Start with `tier: "SP10"` for development
    - `includeSampleData: true` (default) gives you `sample_stream_solar` for testing
 
 3. Verify workspace:
-   - `mongodb__atlas_streams_discover` → `inspect-workspace` — confirm state and region
+   - `atlas-streams-discover` → `inspect-workspace` — confirm state and region
 
 ### Phase 2: Connection Development
 
@@ -45,13 +45,13 @@ Understanding stage categories helps compose valid pipelines. Stages must appear
    - Enrichment connections (Https for `$https`, Cluster for `$lookup`)
 
 2. Create each connection:
-   - `mongodb__atlas_streams_build` → `resource: "connection"` for each
+   - `atlas-streams-build` → `resource: "connection"` for each
    - Let the tool elicit missing sensitive fields (passwords, bootstrap servers)
    - See [connection-configs.md](connection-configs.md) for type-specific schemas
 
 3. Verify connections:
-   - `mongodb__atlas_streams_discover` → `list-connections` — confirm all created
-   - `mongodb__atlas_streams_discover` → `inspect-connection` for each — verify state and config
+   - `atlas-streams-discover` → `list-connections` — confirm all created
+   - `atlas-streams-discover` → `inspect-connection` for each — verify state and config
 
 ### Phase 3: Processor Development
 
@@ -63,7 +63,7 @@ Understanding stage categories helps compose valid pipelines. Stages must appear
 
 **Step 1: List all connections in workspace**
 ```
-mongodb__atlas_streams_discover → action: "list-connections", workspaceName: "<your-workspace>"
+atlas-streams-discover → action: "list-connections", workspaceName: "<your-workspace>"
 ```
 Verify all required connections exist.
 
@@ -71,7 +71,7 @@ Verify all required connections exist.
 
 For EVERY `connectionName` in your pipeline (source, sink, enrichment), inspect it:
 ```
-mongodb__atlas_streams_discover → action: "inspect-connection",
+atlas-streams-discover → action: "inspect-connection",
                          workspaceName: "<your-workspace>",
                          resourceName: "<connection-name>"
 ```
@@ -160,10 +160,10 @@ Modify pipeline (`stop` → `modify-processor` → `start`). Verify filtered out
 **Goal:** Processor verified working correctly.
 
 1. Confirm processor state:
-   - `mongodb__atlas_streams_discover` → `inspect-processor` — state should be STARTED
+   - `atlas-streams-discover` → `inspect-processor` — state should be STARTED
 
 2. Run diagnostics:
-   - `mongodb__atlas_streams_discover` → `diagnose-processor` — full health report
+   - `atlas-streams-discover` → `diagnose-processor` — full health report
 
 3. Verify data flow:
    - Use MongoDB `count` tool on output collection — documents arriving?
@@ -184,7 +184,7 @@ Modify pipeline (`stop` → `modify-processor` → `start`). Verify filtered out
    - See [sizing-and-parallelism.md](sizing-and-parallelism.md) for tier selection
    - Review `memoryUsageBytes` from diagnostics
    - Consider parallelism needs for `$merge`, `$lookup`, `$https`
-   - Upgrade tier: `mongodb__atlas_streams_manage` → `stop-processor`, then `start-processor` with `tier` override
+   - Upgrade tier: `atlas-streams-manage` → `stop-processor`, then `start-processor` with `tier` override
 
 2. Ensure DLQ is configured (mandatory for production)
 
@@ -193,14 +193,14 @@ Modify pipeline (`stop` → `modify-processor` → `start`). Verify filtered out
 ## Debugging Decision Trees
 
 ### Connection Failures
-1. `mongodb__atlas_streams_discover` → `inspect-connection` — check state
+1. `atlas-streams-discover` → `inspect-connection` — check state
 2. If Kafka: verify `bootstrapServers` is a comma-separated string (not array)
-3. If Cluster: verify cluster exists in project (`mongodb__atlas_list_clusters`)
+3. If Cluster: verify cluster exists in project (`atlas-list-clusters`)
 4. If AWS (S3/Kinesis/Lambda): verify IAM role ARN is registered in Cloud Provider Access
 5. If Https: verify URL is reachable and auth headers are in connection config
 
 ### Processor Startup Failures
-1. `mongodb__atlas_streams_discover` → `diagnose-processor` — check state and errors
+1. `atlas-streams-discover` → `diagnose-processor` — check state and errors
 2. If FAILED: read the error message in diagnostics
 3. Common causes:
    - Invalid pipeline syntax (missing `$source`, missing sink)
@@ -219,7 +219,7 @@ Modify pipeline (`stop` → `modify-processor` → `start`). Verify filtered out
 3. Fix: `stop-processor` → `modify-processor` (fix pipeline) → `start-processor`
 
 ### Performance Issues (Running but slow)
-1. `mongodb__atlas_streams_discover` → `diagnose-processor` — check stats
+1. `atlas-streams-discover` → `diagnose-processor` — check stats
 2. Check `memoryUsageBytes` — if near 80% of tier RAM, upgrade tier
 3. Check if `$match` is early in pipeline (reduces downstream volume)
 4. Check if `$https` has `parallelism` setting (increase for I/O-bound enrichment)
@@ -229,7 +229,7 @@ Modify pipeline (`stop` → `modify-processor` → `start`). Verify filtered out
 ## Operational Monitoring Cadence
 
 ### Daily
-- Check processor states via `mongodb__atlas_streams_discover` → `list-processors`
+- Check processor states via `atlas-streams-discover` → `list-processors`
 - Verify DLQ collections aren't growing via MongoDB `count` tool
 - Confirm output collections are receiving data
 
@@ -254,19 +254,19 @@ Modify pipeline (`stop` → `modify-processor` → `start`). Verify filtered out
 | Windows not closing | Idle Kafka partitions | Add `partitionIdleTimeout` to `$source` (e.g., `{"size": 30, "unit": "second"}`) |
 | OOM / processor crash | Tier too small for window state | `diagnose-processor` → check `memoryUsageBytes` → upgrade tier |
 | Slow throughput | Low parallelism on I/O stages | Increase `parallelism` on `$merge`/`$lookup`/`$https` |
-| 404 on workspace | Doesn't exist or misspelled | `mongodb__atlas_streams_discover` → `list-workspaces` |
+| 404 on workspace | Doesn't exist or misspelled | `discover` → `list-workspaces` |
 | 409 on create | Name already exists | Inspect existing resource or pick new name |
 | 402 error on start | No billing configured | Do NOT retry. Add payment method in Atlas → Billing. Use `sp.process()` in mongosh as free alternative |
 | "processor must be stopped" | Tried to modify running processor | `manage` → `stop-processor` first |
 | bootstrapServers format | Passed as array instead of string | Use comma-separated string: `"broker1:9092,broker2:9092"` |
 | "must choose at least one role" | Cluster connection without `dbRoleToExecute` | Defaults to `readWriteAnyDatabase` — or specify custom role |
-| "No cluster named X" | Cluster doesn't exist in project | `mongodb__atlas_list_clusters` to verify |
+| "No cluster named X" | Cluster doesn't exist in project | `atlas-list-clusters` to verify |
 | IAM role ARN not found | ARN not registered in project | Register via Atlas → Cloud Provider Access |
 | dataProcessRegion format | Wrong region format | See region table above. If unsure, inspect an existing workspace |
 | Processor PROVISIONING for minutes | Restart cycle with exponential backoff | Wait for FAILED state, or stop → restart. Check logs for repeated error |
 | Parallelism exceeded | Tier too small for requested parallelism | Start with higher tier (see `sizing-and-parallelism.md`) |
 | Networking change needed | Networking is immutable after creation | Delete connection and recreate with new networking config |
-| 401 / 403 on API call | Managed MCP startup identity or permission failure | Inspect AER/Tool Pod startup logs and verify the named `ATLAS_*` secrets and organization permissions; never print their values |
+| 401 / 403 on API call | Invalid or expired Atlas API credentials | Verify `apiClientId`/`apiClientSecret` and project-level permissions |
 | 429 rate limit | Too many API calls | Wait and retry; avoid tight loops of discover calls |
 
 ## Pre-Deploy Quality Checklist
@@ -274,8 +274,8 @@ Modify pipeline (`stop` → `modify-processor` → `start`). Verify filtered out
 Before creating a processor, verify:
 
 ### Connection Validation (MANDATORY - Always do this first)
-- [ ] **CRITICAL**: Call `mongodb__atlas_streams_discover` → `action: "list-connections"` to list all connections in workspace
-- [ ] **CRITICAL**: Call `mongodb__atlas_streams_discover` → `action: "inspect-connection"` for EACH connection referenced in pipeline
+- [ ] **CRITICAL**: Call `atlas-streams-discover` → `action: "list-connections"` to list all connections in workspace
+- [ ] **CRITICAL**: Call `atlas-streams-discover` → `action: "inspect-connection"` for EACH connection referenced in pipeline
 - [ ] **CRITICAL**: Verify connection names clearly indicate their actual targets (avoid generic names like "atlascluster" pointing to "ClusterRestoreTest")
 - [ ] **CRITICAL**: Present connection summary to user: "Connection 'X' → Actual target 'Y'" for each connection
 - [ ] **CRITICAL**: Warn user if connection names don't match their targets and ask for confirmation
@@ -283,7 +283,7 @@ Before creating a processor, verify:
 - [ ] Connection types match usage (Cluster for $source/$merge, Kafka for topics, etc.)
 
 ### Pipeline Validation
-- [ ] Bundled connection and pipeline references were read to validate sink/source field names
+- [ ] `search-knowledge` was called to validate sink/source field names
 - [ ] Pipeline starts with `$source` and ends with `$merge`, `$emit`, `$https`, or `$externalFunction` (async)
 - [ ] No `$$NOW`, `$$ROOT`, or `$$CURRENT` in the pipeline
 - [ ] Kafka `$source` includes a `topic` field
@@ -297,8 +297,8 @@ Before creating a processor, verify:
 ## Post-Deploy Verification Workflow
 
 After creating and starting a processor:
-1. `mongodb__atlas_streams_discover` → `action: "inspect-processor"` — confirm state is STARTED
-2. `mongodb__atlas_streams_discover` → `action: "diagnose-processor"` — check for errors in the health report
+1. `atlas-streams-discover` → `action: "inspect-processor"` — confirm state is STARTED
+2. `atlas-streams-discover` → `action: "diagnose-processor"` — check for errors in the health report
 3. Use MongoDB `count` tool on the DLQ collection — verify no errors accumulating
 4. Use MongoDB `find` tool on the output collection — verify documents are arriving
 5. If output is low/zero, classify processor type before assuming a problem (see Debug section)

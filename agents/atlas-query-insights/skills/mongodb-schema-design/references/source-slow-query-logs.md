@@ -19,9 +19,9 @@ Atlas Admin API endpoint ([query parameters reference](https://www.mongodb.com/d
 GET /groups/{PROJECT-ID}/hosts/{HOST-ID}/performanceAdvisor/slowQueryLogs
 ```
 
-With MongoDB Managed MCP:
+With MongoDB MCP server:
 ```javascript
-mongodb__atlas_get_performance_advisor({
+mcp__plugin_mongodb_mongodb__atlas-get-performance-advisor({
   projectId: "507f1f77bcf86cd799439011",
   clusterName: "MyCluster",
   operations: ["slowQueryLogs"]

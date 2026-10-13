@@ -75,7 +75,7 @@ If you specify a tier too small for the pipeline's parallelism, the API returns:
 (Requested: X, Limit: Y). Minimum tier for this workload: SPxx or larger."
 ```
 
-Solution: Use `mongodb__atlas_streams_manage` → `stop-processor`, then `start-processor` with a higher `tier` value.
+Solution: Use `atlas-streams-manage` → `stop-processor`, then `start-processor` with a higher `tier` value.
 
 ## Complexity-Based Tier Selection
 
@@ -149,9 +149,9 @@ For current pricing: https://www.mongodb.com/docs/atlas/billing/stream-processin
 
 ### Phase 2: Validation
 
-1. Deploy the processor: `mongodb__atlas_streams_build` → `resource: "processor"` with `autoStart: true`
+1. Deploy the processor: `atlas-streams-build` → `resource: "processor"` with `autoStart: true`
 2. Let it run for a representative period
-3. Check stats: `mongodb__atlas_streams_discover` → `diagnose-processor`
+3. Check stats: `atlas-streams-discover` → `diagnose-processor`
 4. Review `memoryUsageBytes`:
    - Below 50% of tier RAM → over-provisioned, consider downsizing
    - 50-70% → good fit
@@ -160,8 +160,8 @@ For current pricing: https://www.mongodb.com/docs/atlas/billing/stream-processin
 
 ### Phase 3: Optimization
 
-1. Stop processor: `mongodb__atlas_streams_manage` → `stop-processor`
-2. Restart with adjusted tier: `mongodb__atlas_streams_manage` → `start-processor` with `tier` override
+1. Stop processor: `atlas-streams-manage` → `stop-processor`
+2. Restart with adjusted tier: `atlas-streams-manage` → `start-processor` with `tier` override
 3. Monitor for another period
 4. Repeat until right-sized
 

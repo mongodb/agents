@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "source": "mongodb/agent-skills",
+  "skills": {
+    "mongodb-connection": {
+      "sha256": "7f94a9fc89b6c6645fb1b5459c1febdab79e3572c678d1b7d26e3e80fd8a5f3e"
+    },
+    "mongodb-natural-language-querying": {
+      "sha256": "b3061e7287611afff287d2849aab9a2efaa18f9d510eff5f82db35e639365074"
+    },
+    "mongodb-query-optimizer": {
+      "sha256": "d493b9bfa633805f35c6d75acf2fa1904be8969d6f13781cd3328386bb90ab11"
+    },
+    "mongodb-schema-design": {
+      "sha256": "89878d242e53f617300420ef81251650c9e737fa52aa3764b60b8e02beafdf97"
+    },
+    "mongodb-search-and-ai": {
+      "sha256": "0477fac6bdb5b0b79d4e4be3ad2baf5b2039cf54bfaaa1dead9d18789db4aed6"
+    }
+  }
+}

@@ -70,7 +70,7 @@ Examples:
 ### Step 1: Classify the processor
 
 Ask the user what the processor does, or inspect the pipeline:
-- `mongodb__atlas_streams_discover` → `inspect-processor` — read the pipeline stages
+- `atlas-streams-discover` → `inspect-processor` — read the pipeline stages
 
 **Classification heuristics from pipeline:**
 - Has `$match` with narrow conditions (e.g., `severity > 8`) → likely **Alert**
@@ -81,7 +81,7 @@ Ask the user what the processor does, or inspect the pipeline:
 
 ### Step 2: Check processor state
 
-- `mongodb__atlas_streams_discover` → `diagnose-processor`
+- `atlas-streams-discover` → `diagnose-processor`
 - If state is FAILED → the problem is not low output, it's a crash. See debugging trees in [development-workflow.md](development-workflow.md).
 
 ### Step 3: Check operational logs

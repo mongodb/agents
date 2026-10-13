@@ -12,7 +12,7 @@ Atlas M10+ tier.
 
 Aggregate on the admin database.
 
-With Managed MCP, use the `mongodb__aggregate_db` tool with database set to `admin`.
+With mcp-server, use the `mcp__mongodb__aggregateDB` tool with database set to `admin`.
 
 ```javascript
 db.getSiblingDB("admin").aggregate([{ $queryStats: {} }])

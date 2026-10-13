@@ -58,8 +58,8 @@ Know what each connection type can do before creating pipelines:
 
 **Before creating processors**, always inspect your connections to verify they point where you expect:
 ```
-1. mongodb__atlas_streams_discover → action: "list-connections"
-2. mongodb__atlas_streams_discover → action: "inspect-connection" for each
+1. atlas-streams-discover → action: "list-connections"
+2. atlas-streams-discover → action: "inspect-connection" for each
 3. Verify connection name matches actual target (clusterName, bootstrapServers, url, etc.)
 4. If mismatch exists, consider renaming or warn the user
 ```
@@ -107,7 +107,7 @@ The `region` field for workspace creation uses Atlas-specific names that differ 
 | **Azure** | westus | `westus` |
 | **Azure** | westeurope | `westeurope` |
 
-This is a partial list. If unsure, inspect an existing workspace with `mongodb__atlas_streams_discover` → `inspect-workspace` and check `dataProcessRegion.region`.
+This is a partial list. If unsure, inspect an existing workspace with `atlas-streams-discover` → `inspect-workspace` and check `dataProcessRegion.region`.
 
 ## MCP Tool Behaviors for Connections
 
@@ -148,12 +148,12 @@ Kafka supports both **PrivateLink** and **VPC Peering** for private networking. 
 **VPC Peering:**
 - Supported for outbound connections to Kafka brokers in your own VPC
 - Requires `SASL_SSL` security protocol
-- Use `mongodb__atlas_streams_manage` with `accept-peering` action to complete the peering setup
+- Use `atlas-streams-manage` with `accept-peering` action to complete the peering setup
 - Requires AWS account ID, VPC ID, and region information
 
 **Important: Networking cannot be modified after connection creation.** To add or change PrivateLink/VPC peering on an existing Kafka connection, you must delete it and recreate it with the networking config.
 
-Use `mongodb__atlas_streams_discover` → `action: "get-networking"` to list available PrivateLink endpoints and VPC peering connections.
+Use `atlas-streams-discover` → `action: "get-networking"` to list available PrivateLink endpoints and VPC peering connections.
 
 ### Cluster (Atlas)
 ```json
@@ -165,7 +165,7 @@ Use `mongodb__atlas_streams_discover` → `action: "get-networking"` to list ava
   }
 }
 ```
-`clusterName` is **required** — must be a cluster in the same project (use `mongodb__atlas_list_clusters` to verify).
+`clusterName` is **required** — must be a cluster in the same project (use `atlas-list-clusters` to verify).
 
 `dbRoleToExecute` defaults to `{role: "readWriteAnyDatabase", type: "BUILT_IN"}` if not provided.
 
@@ -269,7 +269,7 @@ Available sample formats: `sample_stream_solar` (default, auto-created when `inc
 
 PrivateLink is supported for Kafka, S3, Kinesis, and Azure EventHub connections. Create a project-level PrivateLink first, then reference it in the connection's `networking.access` config.
 
-**Step 1: Create project-level PrivateLink** via `mongodb__atlas_streams_build` resource='privatelink':
+**Step 1: Create project-level PrivateLink** via `atlas-streams-build` resource='privatelink':
 
 | Provider | Vendor | Required privateLinkConfig fields |
 |----------|--------|----------------------------------|
@@ -293,6 +293,6 @@ PrivateLink is supported for Kafka, S3, Kinesis, and Azure EventHub connections.
 }
 ```
 
-Use `mongodb__atlas_streams_discover` action='get-networking' to find the PrivateLink `_id`.
+Use `atlas-streams-discover` action='get-networking' to find the PrivateLink `_id`.
 
 **Note:** Networking config cannot be modified after connection creation — delete and recreate to change.
