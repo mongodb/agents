@@ -245,3 +245,15 @@ Things to know:
 - The MCP configuration belongs to one project, so the agent cannot reach
   another.
 - The agent can recommend an index. It cannot create one.
+- Access belongs to the MCP configuration, not to each user. Everyone who can
+  run this agent sees the same cluster data. Grant it only to people who may
+  see that data.
+- Prompt injection. Slow query logs and Performance Advisor output can contain
+  text aimed at the model. The agent can't write, but injected text can still
+  skew its report, so review its recommendations before you act on them.
+- Slow query logs can contain literal query values. Those values go to your
+  model provider and appear in Agent Engine traces. You govern that data. See
+  [Your data](../../README.md#your-data).
+- To roll back or shut down, follow
+  [Roll back or shut down](../atlas-explorer/README.md#roll-back-or-shut-down)
+  in the Atlas Explorer README, using this agent's MCP configuration.

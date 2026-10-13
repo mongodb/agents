@@ -139,11 +139,34 @@ Agents that can see production data need clear limits. Both agents set those
 limits from the start.
 
 - **Their own Atlas identity.** Each agent connects to Atlas with its own
-  programmatic identity for one Atlas project, and you choose its roles.
+  programmatic identity for one Atlas project, and you choose its roles. Atlas
+  authorizes that identity, not the person chatting with the agent, so anyone
+  who can reach an agent can use everything its roles allow. Give the agent
+  only the roles that all of its users should have, and be cautious about
+  giving any agent access to a cluster that holds sensitive data. The Atlas
+  MCP Server doesn't currently support per-user sign-in (OIDC) for custom
+  clients like these agents.
 - **Read-only by default.** The example configurations grant read-only
   access. Atlas Explorer can be set up to write, with your approval for each
   write tool. Atlas Query Insights can't write.
 - **No shell access.** Neither agent can run shell commands in its sandbox.
+- **Prompt injection can't be fully prevented.** Text in your data or in chat
+  messages can contain instructions aimed at the model. The templates limit
+  what such text can do. The agent reads only what its roles allow, every
+  write needs approval, and the egress policy blocks traffic to hosts that
+  `agent.yaml` doesn't list. Treat content from untrusted sources as
+  untrusted, and review what an agent can reach before you deploy it.
+
+### Your data
+
+- **Traces and conversations include your data.** Agent Engine stores every
+  conversation and trace in your project. They can include database and
+  collection names, field names, and documents the agent reads. Only people
+  with access to your project can see them, and you are responsible for
+  governing that data. See
+  [Inspect traces](https://www.mongodb.com/docs/agentengine/manage/inspect-traces/).
+- **Your model provider sees prompts and tool results.** That includes query
+  results the agent reads. Choose a provider that meets your data policy.
 
 ## Why Atlas Agent Engine
 
@@ -223,6 +246,17 @@ how they're set up.
   [Example: talk to Atlas Explorer from Slack](#example-talk-to-atlas-explorer-from-slack).
   The bot is built on [Chat SDK](https://chat-sdk.dev), so you can adapt it to
   other chat platforms.
+- **Support is as-is.** These templates have no uptime SLA or on-call rotation.
+  Report template problems in
+  [GitHub issues](https://github.com/mongodb/agents/issues). If you've changed
+  the code, mention that in your report. For problems with Atlas Agent Engine,
+  the Atlas MCP Server, or Atlas itself, use your usual MongoDB support channel.
+- **Answer quality is checked by hand.** There is no automated evaluation suite
+  yet. Review the agent's answers before you act on them, and review any index
+  or change it recommends.
+- **Availability depends on other services.** A deployed agent depends on
+  Atlas Agent Engine, Atlas, and your model provider. The Slack example also
+  depends on Slack and its host. The templates add no service of their own.
 
 ## Contributing
 
@@ -231,6 +265,8 @@ To learn about the repository layout, local development, and tests, see
 
 ## Feedback
 
+We want to hear what worked and what didn't, including setup friction and
+use cases you'd like covered.
 [Open an issue](https://github.com/mongodb/agents/issues).
 
 ## License

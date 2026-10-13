@@ -36,6 +36,15 @@ host and operate it yourself.
   username, and display name with each request. Atlas Explorer stores them
   as `metadata.requester` on the session's checkpoints. On a resume, that
   field records the user who approved or rejected the write.
+- **Requests are verified.** In Vercel (HTTP) mode, the bot rejects any request
+  that doesn't carry a valid Slack signature, made with `SLACK_SIGNING_SECRET`.
+  Someone who finds the webhook URL can't impersonate Slack events. Socket Mode
+  makes an outbound connection and doesn't accept inbound requests.
+- **Users who aren't on the allowlist are denied.** They get a reply that says
+  they aren't authorized to use the bot, such as "You are not authorized to use
+  this AtlasExplorer bot.", so a wrong allowlist is easy to spot. Messages from
+  other bots, such as a scheduled workflow, are logged without a reply. See
+  "Authorize scheduled Workflow Builder messages".
 
 ## Prerequisites
 
@@ -386,6 +395,12 @@ Restore the prior Slack request path or Socket Mode. Keep the reusable
 `manifest.json` placeholders; do not commit deployment-specific URLs or
 credentials there. Leave `manifest.local.json` Socket Mode-only, with no
 request URLs.
+
+To stop the bot, uninstall the Slack app, or remove its Event Subscriptions and
+Interactivity request URLs. To cut off Agent Engine access, rotate the
+service-account secret. The old secret stays valid for a grace period, as
+described above. For the agent itself, see
+[Roll back or shut down](../../agents/atlas-explorer/README.md#roll-back-or-shut-down).
 
 ## Human review
 
