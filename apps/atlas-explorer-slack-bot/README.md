@@ -21,21 +21,9 @@ Explorer suspends for human review.
 ## Before you use this
 
 This bot is an example to learn from and adapt, not a managed Slack app. You
-host and operate it yourself.
-
-- **One shared Atlas identity.** The bot calls the Atlas Explorer workspace,
-  which connects to Atlas with that workspace's MCP credentials. Every
-  allowlisted Slack user has the same Atlas access. Access isn't scoped to
-  each user's own Atlas permissions, so give the MCP configuration only the
-  roles every allowlisted user should have.
-- **An allowlist is required.** The bot won't start without
-  `CHAT_ALLOWED_USER_IDS`.
-- **Only the requester can approve.** When Atlas Explorer pauses a write for
-  review, only the Slack user who asked for it can approve or reject it.
-- **Each run records who asked.** The bot sends the Slack user's ID,
-  username, and display name with each request. Atlas Explorer stores them
-  as `metadata.requester` on the session's checkpoints. On a resume, that
-  field records the user who approved or rejected the write.
+host and operate it yourself, and every allowlisted Slack user shares the
+Atlas Explorer workspace's single Atlas identity. Review
+[Security](#security) before deploying it.
 
 ## Prerequisites
 
@@ -164,10 +152,6 @@ bot named `AtlasExplorer` treating that structured mention as its own.
 By default, the local bot invokes a deployed Agent Engine workspace. The Atlas MCP
 client credentials remain configured on Agent Engine and never enter the Slack bot
 environment.
-
-`CHAT_ALLOWED_USER_IDS` is required in both Socket and HTTP modes. The bot
-refuses to start without an explicit allowlist because every permitted user
-acts through the Agent Engine workspace's shared Atlas identity.
 
 ### Authorize scheduled Workflow Builder messages
 
@@ -548,15 +532,26 @@ calls Slack, Atlas, or OpenAI.
 
 ## Security
 
+- **One shared Atlas identity.** The bot calls the Atlas Explorer workspace,
+  which connects to Atlas with that workspace's MCP credentials. Every
+  allowlisted Slack user has the same Atlas access. Access isn't scoped to
+  each user's own Atlas permissions, so give the MCP configuration only the
+  roles every allowlisted user should have.
+- **An allowlist is required.** The bot won't start in Socket or HTTP mode
+  without `CHAT_ALLOWED_USER_IDS`. Users who aren't on the allowlist get a
+  denial reply (such as "You are not authorized to use this AtlasExplorer
+  bot."), so a wrong allowlist is easy to spot. For bot-authored messages, see
+  [Authorize scheduled Workflow Builder messages](#authorize-scheduled-workflow-builder-messages).
 - **Requests are verified.** In Vercel (HTTP) mode, the bot rejects any request
   that doesn't carry a valid Slack signature, made with `SLACK_SIGNING_SECRET`.
   Someone who finds the webhook URL can't impersonate Slack events. Socket Mode
   makes an outbound connection and doesn't accept inbound requests.
-- **Users who aren't on the allowlist are denied.** They get a reply that says
-  they aren't authorized to use the bot, such as "You are not authorized to use
-  this AtlasExplorer bot.", so a wrong allowlist is easy to spot. Messages from
-  other bots, such as a scheduled workflow, are logged without a reply. See
-  [Authorize scheduled Workflow Builder messages](#authorize-scheduled-workflow-builder-messages).
+- **Only the requester can approve.** When Atlas Explorer pauses a write for
+  review, only the Slack user who asked for it can approve or reject it.
+- **Each run records who asked.** The bot sends the Slack user's ID,
+  username, and display name with each request. Atlas Explorer stores them
+  as `metadata.requester` on the session's checkpoints. On a resume, that
+  field records the user who approved or rejected the write.
 
 ### Shut down the bot
 

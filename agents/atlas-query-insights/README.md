@@ -244,9 +244,6 @@ Things to know:
   human-in-the-loop path.
 - `aggregate` stays available for read pipelines. A pipeline that contains
   `$out` or `$merge` is rejected because this agent is read-only.
-- The MCP configuration belongs to one project, so the agent cannot reach
-  another.
-- The agent can recommend an index. It cannot create one.
 - Access belongs to the MCP configuration, not to each user. Everyone who can
   run this agent sees the same cluster data. Grant it only to people who may
   see that data.

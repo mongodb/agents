@@ -229,12 +229,10 @@ how they're set up.
   [Access token limit](agents/atlas-explorer/README.md#access-token-limit)
   and the
   [Slack bot's session limit](apps/atlas-explorer-slack-bot/README.md#session-limit).
-- **Slack is an optional example.** You host the Slack bot yourself. Everyone
-  on its allowlist shares one Atlas identity instead of using their own Atlas
-  permissions. For details, see
+- **Slack is an optional example.** The Slack bot is a self-hosted example
+  built on [Chat SDK](https://chat-sdk.dev), so you can adapt it to other chat
+  platforms. See
   [Example: talk to Atlas Explorer from Slack](#example-talk-to-atlas-explorer-from-slack).
-  The bot is built on [Chat SDK](https://chat-sdk.dev), so you can adapt it to
-  other chat platforms.
 
 ### Your data
 

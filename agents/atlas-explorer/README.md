@@ -136,7 +136,8 @@ agentengine secret set OPENAI_API_KEY
 Atlas Explorer is read-only by default. The example MCP configuration grants
 read-only roles, and the agent hides every MCP tool that isn't on its
 read-only allowlist (`READ_ONLY_MCP_TOOLS` in
-[`agentPolicy.ts`](../../packages/atlas-explorer-agent/src/agentPolicy.ts)).
+[`agentPolicy.ts`](../../packages/atlas-explorer-agent/src/agentPolicy.ts);
+a bridge until Agent Engine preserves MCP tool annotations).
 
 Writes require two independent opt-ins. Either one remaining read-only is
 enough to prevent ordinary write-tool use:
@@ -152,7 +153,8 @@ enough to prevent ordinary write-tool use:
    add it.
 
 When writes are enabled, every MCP tool that isn't on the read-only allowlist
-is exposed, and each one pauses for approval before it runs. That includes
+is exposed, and each one pauses for approval before it runs (through LangChain
+HITL middleware and Agent Engine's persistent checkpointer). That includes
 tools the allowlist doesn't recognize, such as tools added to Atlas MCP
 later. These tools are not included in either mode:
 
@@ -304,14 +306,9 @@ can be reused with additional Chat SDK adapters.
 
 ### Security model
 
-- **Read-only by default, with approval for writes.** The example MCP
-  configuration uses `GROUP_DATA_ACCESS_READ_ONLY`, and non-read tools stay
-  hidden unless `ALLOW_WRITE_OPERATIONS` is enabled (a bridge until Agent
-  Engine preserves MCP tool annotations). When both write opt-ins are set,
-  persistent mutations pause for approval through LangChain HITL middleware
-  and Agent Engine's checkpointer. See [How writes work](#how-writes-work)
-  for the full policy, including `$out` and `$merge` pipelines and excluded
-  tools.
+- **Read-only by default, with approval for writes.** Writes stay off unless
+  both opt-ins are set, and every write pauses for human approval. See
+  [How writes work](#how-writes-work).
 - **The MCP configuration decides access, not the user.** Atlas checks the
   configuration's roles. It doesn't check who is chatting with the agent.
   Everyone who can reach the agent has the same Atlas access. Grant only roles
