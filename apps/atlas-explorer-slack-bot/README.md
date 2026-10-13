@@ -36,15 +36,6 @@ host and operate it yourself.
   username, and display name with each request. Atlas Explorer stores them
   as `metadata.requester` on the session's checkpoints. On a resume, that
   field records the user who approved or rejected the write.
-- **Requests are verified.** In Vercel (HTTP) mode, the bot rejects any request
-  that doesn't carry a valid Slack signature, made with `SLACK_SIGNING_SECRET`.
-  Someone who finds the webhook URL can't impersonate Slack events. Socket Mode
-  makes an outbound connection and doesn't accept inbound requests.
-- **Users who aren't on the allowlist are denied.** They get a reply that says
-  they aren't authorized to use the bot, such as "You are not authorized to use
-  this AtlasExplorer bot.", so a wrong allowlist is easy to spot. Messages from
-  other bots, such as a scheduled workflow, are logged without a reply. See
-  "Authorize scheduled Workflow Builder messages".
 
 ## Prerequisites
 
@@ -555,7 +546,19 @@ credentials, clears `mcp.servers`, and points `OPENAI_BASE_URL` at
 `scripts/openai-local-mock.mjs` on `host.docker.internal` so the job never
 calls Slack, Atlas, or OpenAI.
 
-## Shut down the bot
+## Security
+
+- **Requests are verified.** In Vercel (HTTP) mode, the bot rejects any request
+  that doesn't carry a valid Slack signature, made with `SLACK_SIGNING_SECRET`.
+  Someone who finds the webhook URL can't impersonate Slack events. Socket Mode
+  makes an outbound connection and doesn't accept inbound requests.
+- **Users who aren't on the allowlist are denied.** They get a reply that says
+  they aren't authorized to use the bot, such as "You are not authorized to use
+  this AtlasExplorer bot.", so a wrong allowlist is easy to spot. Messages from
+  other bots, such as a scheduled workflow, are logged without a reply. See
+  [Authorize scheduled Workflow Builder messages](#authorize-scheduled-workflow-builder-messages).
+
+### Shut down the bot
 
 To stop the bot, uninstall the Slack app, or remove its Event Subscriptions and
 Interactivity request URLs. To cut off Agent Engine access, rotate the
