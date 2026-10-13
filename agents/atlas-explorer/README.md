@@ -337,8 +337,9 @@ See [Safe by default](../../README.md#safe-by-default) for the repo-wide view.
 You own your deployment, so MongoDB can't roll it back for you. If you find a
 defect or a security problem:
 
-1. **Stop callers.** Stop the Slack bot and pause any scheduled workflow or
-   job that invokes the agent.
+1. **Stop callers.** Stop the
+   [Slack bot](../../apps/atlas-explorer-slack-bot/README.md#shut-down-the-bot)
+   and pause any scheduled workflow or job that invokes the agent.
 2. **Revoke credentials.** Delete the MCP client secret in Atlas.
 3. **Reissue and redeploy.** Create a new MCP client secret and update the
    Agent Engine secrets. Then redeploy a known-good build with

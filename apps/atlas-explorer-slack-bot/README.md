@@ -396,12 +396,6 @@ Restore the prior Slack request path or Socket Mode. Keep the reusable
 credentials there. Leave `manifest.local.json` Socket Mode-only, with no
 request URLs.
 
-To stop the bot, uninstall the Slack app, or remove its Event Subscriptions and
-Interactivity request URLs. To cut off Agent Engine access, rotate the
-service-account secret. The old secret stays valid for a grace period, as
-described above. For the agent itself, see
-[Roll back or shut down](../../agents/atlas-explorer/README.md#roll-back-or-shut-down).
-
 ## Human review
 
 Mutative Atlas Explorer tools suspend with an `agent_interrupt`. The bot stores
@@ -560,3 +554,12 @@ Orchestration Engine `/invoke/stream` route directly. It uses dummy Atlas
 credentials, clears `mcp.servers`, and points `OPENAI_BASE_URL` at
 `scripts/openai-local-mock.mjs` on `host.docker.internal` so the job never
 calls Slack, Atlas, or OpenAI.
+
+## Shut down the bot
+
+To stop the bot, uninstall the Slack app, or remove its Event Subscriptions and
+Interactivity request URLs. To cut off Agent Engine access, rotate the
+service-account secret (the old secret stays valid for a grace period, as
+described under [Deploy to Vercel](#deploy-to-vercel)). For the agent itself,
+see
+[Roll back or shut down](../../agents/atlas-explorer/README.md#roll-back-or-shut-down).
