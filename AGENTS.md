@@ -21,3 +21,6 @@ In chat, plans, and PR bodies:
 - Explain any term or finding from the codebase or your exploration the first time you use it, or leave it out.
 - Say each thing once. Don't repeat reasoning across sections.
 - Take longer to think and rewrite if it makes the writing clearer.
+- Limit lines of text to approximately 80 characters. Add a new line as appropriate.
+  - This helps keep the git diffs more readable.
+  - In shell commands, you can use the \ character to wrap the line.
