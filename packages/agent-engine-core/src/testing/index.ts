@@ -14,5 +14,6 @@
  * limitations under the License.
  */
 
+export * from "./agentManifest.js";
 export * from "./localStack.js";
 export * from "./providerManifest.js";
