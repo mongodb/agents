@@ -66,6 +66,9 @@ const harness = vi.hoisted(() => {
     prepareAgentInput: undefined as ((...args: never[]) => unknown) | undefined,
     buildLLM: vi.fn((_options: unknown) => model),
     deepAgent: vi.fn((_model: unknown, _options: unknown) => graph),
+    llm: vi.fn((_model: unknown, _llmId?: string) => ({
+      bindTools: () => ({ withConfig: () => ({ invoke: vi.fn() }) }),
+    })),
     run: vi.fn(),
   };
 });
@@ -140,8 +143,8 @@ vi.mock("@mongodb-js/agent-engine-sdk-langgraph", () => ({
       harness.run();
     }
 
-    llm(model: unknown): unknown {
-      return model;
+    llm(model: unknown, llmId?: string): unknown {
+      return harness.llm(model, llmId);
     }
   },
 }));
@@ -181,6 +184,7 @@ describe("Atlas Explorer graph assembly", () => {
   beforeEach(() => {
     harness.buildLLM.mockClear();
     harness.deepAgent.mockClear();
+    harness.llm.mockClear();
     harness.checkpointer = new MemorySaver();
     delete process.env.ALLOW_WRITE_OPERATIONS;
   });
@@ -223,6 +227,7 @@ describe("Atlas Explorer graph assembly", () => {
         skills: ["skills"],
         checkpointer: harness.checkpointer,
         middleware: [
+          expect.objectContaining({ name: "inputGuard" }),
           stampResumeClientUserMiddleware,
           expect.objectContaining({ name: "stripOpenAIToolEcho" }),
           expect.objectContaining({ name: "redactSecrets" }),
@@ -271,6 +276,37 @@ describe("Atlas Explorer graph assembly", () => {
     } else {
       process.env.AGENTIC_AGENT_WORKDIR = previousAgentWorkdir;
     }
+  });
+
+  it("leaves the input guard judge unregistered by default", async () => {
+    const builder = await loadBuilder();
+    builder();
+
+    expect(harness.llm).not.toHaveBeenCalled();
+  });
+
+  it("registers a separate model for the input guard judge when enabled", async () => {
+    const builder = await loadBuilder();
+    const judge = atlasExplorerConfig.inputGuard.judge as {
+      enabled: boolean;
+      model: string;
+    };
+    judge.enabled = true;
+    judge.model = "judge-model";
+    try {
+      builder();
+    } finally {
+      judge.enabled = false;
+      judge.model = "";
+    }
+
+    expect(harness.llm).toHaveBeenCalledTimes(1);
+    expect(harness.llm).toHaveBeenCalledWith(harness.model, "input-judge");
+    expect(harness.buildLLM).toHaveBeenCalledWith({
+      provider: atlasExplorerConfig.llm.provider,
+      model: "judge-model",
+      logPrefix: "atlas-explorer-input-judge",
+    });
   });
 
   it("hands the deep agent a checkpointer that records the requester", async () => {

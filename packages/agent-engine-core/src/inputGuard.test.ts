@@ -35,6 +35,7 @@ import {
   INPUT_GUARD_REFUSAL,
   createInputGuardMiddleware,
   createLlmInjectionJudge,
+  inputGuardFromConfig,
   screenUserInput,
 } from "./inputGuard.js";
 
@@ -419,5 +420,42 @@ describe("createLlmInjectionJudge", () => {
     );
 
     await expect(judge("hello")).rejects.toThrow("boom");
+  });
+});
+
+describe("inputGuardFromConfig", () => {
+  const config = (judge: { enabled: boolean; model?: string }) => ({
+    mode: "enforce" as const,
+    judge: { model: "", ...judge },
+  });
+  const judgeModel = () =>
+    new VerdictModel(async () => ({ injection: false }));
+
+  it("does not build a judge model when the judge is disabled", () => {
+    const build = vi.fn(judgeModel);
+
+    expect(inputGuardFromConfig(config({ enabled: false }), build).name).toBe(
+      "inputGuard",
+    );
+    expect(build).not.toHaveBeenCalled();
+  });
+
+  it("does not build a judge model when the guard is off", () => {
+    const build = vi.fn(judgeModel);
+
+    inputGuardFromConfig(
+      { mode: "off", judge: { enabled: true, model: "" } },
+      build,
+    );
+
+    expect(build).not.toHaveBeenCalled();
+  });
+
+  it("builds the judge model with the configured model name", () => {
+    const build = vi.fn(judgeModel);
+
+    inputGuardFromConfig(config({ enabled: true, model: "small" }), build);
+
+    expect(build).toHaveBeenCalledWith("small");
   });
 });

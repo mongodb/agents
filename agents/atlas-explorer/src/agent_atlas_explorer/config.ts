@@ -28,6 +28,13 @@
  * `diagnostics.logRuntimeLifecycle` logs `[runtime-diag]` lines showing which
  * process serves each execution and when each process caches a new Atlas MCP
  * access token. Token values are never logged.
+ *
+ * `inputGuard` screens each user message before the model sees it. `mode` is
+ * "enforce" (block prompt injection, redact pasted secrets), "monitor" (log
+ * only) or "off". `judge.enabled` adds an LLM check after the regex tier.
+ * It reuses the agent's provider and API key, so it needs no new secret or
+ * egress rule. Leave `judge.model` empty to use the agent's own model. See
+ * docs/input-guard.md.
  */
 
 export const atlasExplorerConfig = {
@@ -41,5 +48,12 @@ export const atlasExplorerConfig = {
   },
   diagnostics: {
     logRuntimeLifecycle: true,
+  },
+  inputGuard: {
+    mode: "enforce",
+    judge: {
+      enabled: false,
+      model: "",
+    },
   },
 } as const;

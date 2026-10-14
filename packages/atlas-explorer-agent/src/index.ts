@@ -19,6 +19,8 @@ export {
   buildLLM,
   clientUserSchema,
   formatToolErrorForAgent,
+  INPUT_GUARD_JUDGE_LLM_ID,
+  inputGuardFromConfig,
   isAgentEngineResume,
   parseClientUserPayload,
   prepareAgentInput as prepareAtlasExplorerInput,
@@ -38,6 +40,7 @@ export {
   type BuildLLMOptions,
   type ClientUser,
   type ClientUserExtras,
+  type InputGuardConfig,
   type Requester,
 } from "@repo/agent-engine-core";
 export {

@@ -22,6 +22,13 @@
  * Leave `scope.projectId` and `scope.clusterName` empty to let the agent
  * resolve the target. A set field must be a 24-hex project id or an Atlas
  * cluster name. `maxQueryShapes` is how many shapes the report covers.
+ *
+ * `inputGuard` screens each user message before the model sees it. `mode` is
+ * "enforce" (block prompt injection, redact pasted secrets), "monitor" (log
+ * only) or "off". `judge.enabled` adds an LLM check after the regex tier.
+ * It reuses the agent's provider and API key, so it needs no new secret or
+ * egress rule. Leave `judge.model` empty to use the agent's own model. See
+ * docs/input-guard.md.
  */
 
 export const atlasQueryInsightsConfig = {
@@ -38,4 +45,11 @@ export const atlasQueryInsightsConfig = {
     clusterName: "",
   },
   maxQueryShapes: 3,
+  inputGuard: {
+    mode: "enforce",
+    judge: {
+      enabled: false,
+      model: "",
+    },
+  },
 } as const;

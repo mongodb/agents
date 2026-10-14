@@ -59,6 +59,9 @@ const harness = vi.hoisted(() => {
     prepareAgentInput: undefined as ((...args: never[]) => unknown) | undefined,
     buildLLM: vi.fn((_options: unknown) => model),
     deepAgent: vi.fn((_model: unknown, _options: unknown) => graph),
+    llm: vi.fn((_model: unknown, _llmId?: string) => ({
+      bindTools: () => ({ withConfig: () => ({ invoke: vi.fn() }) }),
+    })),
     run: vi.fn(),
   };
 });
@@ -117,6 +120,10 @@ vi.mock("@mongodb-js/agent-engine-sdk-langgraph", () => ({
     run(): void {
       harness.run();
     }
+
+    llm(model: unknown, llmId?: string): unknown {
+      return harness.llm(model, llmId);
+    }
   },
 }));
 
@@ -147,6 +154,7 @@ describe("Atlas Query Insights graph assembly", () => {
   beforeEach(() => {
     harness.buildLLM.mockClear();
     harness.deepAgent.mockClear();
+    harness.llm.mockClear();
     harness.checkpointer = new MemorySaver();
   });
 
@@ -156,6 +164,30 @@ describe("Atlas Query Insights graph assembly", () => {
     } else {
       process.env.AGENTIC_AGENT_WORKDIR = previousAgentWorkdir;
     }
+  });
+
+  it("registers a separate model for the input guard judge when enabled", async () => {
+    await import("./main.js");
+    const judge = atlasQueryInsightsConfig.inputGuard.judge as {
+      enabled: boolean;
+      model: string;
+    };
+    judge.enabled = true;
+    judge.model = "judge-model";
+    try {
+      harness.builder!();
+    } finally {
+      judge.enabled = false;
+      judge.model = "";
+    }
+
+    expect(harness.llm).toHaveBeenCalledTimes(1);
+    expect(harness.llm).toHaveBeenCalledWith(harness.model, "input-judge");
+    expect(harness.buildLLM).toHaveBeenCalledWith({
+      provider: atlasQueryInsightsConfig.llm.provider,
+      model: "judge-model",
+      logPrefix: "atlas-query-insights-input-judge",
+    });
   });
 
   it("builds a read-only deep agent with the evidence middleware and no write tools", async () => {
@@ -202,12 +234,14 @@ describe("Atlas Query Insights graph assembly", () => {
     );
     expect(options.skills).toEqual(["skills"]);
     expect(options.middleware?.map((middleware) => middleware.name)).toEqual([
+      "inputGuard",
       stampResumeClientUserMiddleware.name,
       "stripOpenAIToolEcho",
       "redactSecrets",
       "rejectAggregateWrites",
       "recoverToolErrors",
     ]);
+    expect(harness.llm).not.toHaveBeenCalled();
     expect(harness.prepareAgentInput).toBe(prepareAgentInput);
     expect(options.backend?.id).toBe("agent-engine-toolpod");
     expect(options.backend?.execute).toBeUndefined();

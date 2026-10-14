@@ -33,6 +33,8 @@ export {
   surfaceTokenMintFailures,
   rejectAggregateWritesMiddleware,
   buildLLM,
+  INPUT_GUARD_JUDGE_LLM_ID,
+  inputGuardFromConfig,
   prepareAgentInput,
   recoverToolErrorsMiddleware,
   redactSecretsMiddleware,
@@ -41,6 +43,7 @@ export {
   stripToolEchoMiddleware,
   withRequesterMetadata,
   withoutShellExecution,
+  type InputGuardConfig,
 } from "@repo/agent-engine-core";
 export {
   describeScope,
