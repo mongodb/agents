@@ -20,7 +20,7 @@ import {
   type ContentBlock,
   type MessageContent,
 } from "@langchain/core/messages";
-import { isCommand } from "@langchain/langgraph";
+import { Command, isCommand } from "@langchain/langgraph";
 import { createMiddleware } from "langchain";
 import { z } from "zod";
 
@@ -101,39 +101,103 @@ function redactContent(content: MessageContent): {
   return { content: blocks, kinds };
 }
 
-function redactToolMessage(message: ToolMessage): string[] {
+function redactAIMessage(message: AIMessage): {
+  message: AIMessage;
+  kinds: string[];
+} {
   const redacted = redactContent(message.content);
-  if (redacted.kinds.length > 0) {
-    message.content = redacted.content;
+  if (redacted.kinds.length === 0) {
+    return { message, kinds: [] };
   }
-  return redacted.kinds;
+  return {
+    message: new AIMessage({
+      id: message.id,
+      name: message.name,
+      content: redacted.content,
+      tool_calls: message.tool_calls,
+      invalid_tool_calls: message.invalid_tool_calls,
+      usage_metadata: message.usage_metadata,
+      additional_kwargs: message.additional_kwargs,
+      response_metadata: message.response_metadata,
+    }),
+    kinds: redacted.kinds,
+  };
 }
 
-const commandMessagesSchema = z.object({
-  messages: z.array(z.unknown()),
-});
+function redactToolMessage(message: ToolMessage): {
+  message: ToolMessage;
+  kinds: string[];
+} {
+  const redacted = redactContent(message.content);
+  if (redacted.kinds.length === 0) {
+    return { message, kinds: [] };
+  }
+  return {
+    message: new ToolMessage({
+      id: message.id,
+      name: message.name,
+      content: redacted.content,
+      tool_call_id: message.tool_call_id,
+      status: message.status,
+      artifact: message.artifact,
+      additional_kwargs: message.additional_kwargs,
+      response_metadata: message.response_metadata,
+    }),
+    kinds: redacted.kinds,
+  };
+}
 
-function redactCommandToolMessages(command: { update?: unknown }): string[] {
-  const parsed = commandMessagesSchema.safeParse(command.update);
-  if (!parsed.success) return [];
+const commandUpdateSchema = z
+  .object({
+    messages: z.array(z.unknown()),
+  })
+  .passthrough();
+
+function redactCommandToolMessages(command: Command): {
+  command: Command;
+  kinds: string[];
+} {
+  const parsed = commandUpdateSchema.safeParse(command.update);
+  if (!parsed.success) {
+    return { command, kinds: [] };
+  }
 
   const kinds: string[] = [];
-  for (const entry of parsed.data.messages) {
-    if (ToolMessage.isInstance(entry)) {
-      kinds.push(...redactToolMessage(entry));
-    }
+  const messages = parsed.data.messages.map((entry) => {
+    if (!ToolMessage.isInstance(entry)) return entry;
+    const redacted = redactToolMessage(entry);
+    kinds.push(...redacted.kinds);
+    return redacted.message;
+  });
+
+  if (kinds.length === 0) {
+    return { command, kinds: [] };
   }
-  return kinds;
+
+  return {
+    command: new Command({
+      graph: command.graph,
+      update: { ...parsed.data, messages },
+      resume: command.resume,
+      goto: command.goto,
+    }),
+    kinds,
+  };
 }
 
-function redactToolCallResult(result: unknown): string[] {
+function redactToolCallResult(result: ToolMessage | Command): {
+  result: ToolMessage | Command;
+  kinds: string[];
+} {
   if (ToolMessage.isInstance(result)) {
-    return redactToolMessage(result);
+    const redacted = redactToolMessage(result);
+    return { result: redacted.message, kinds: redacted.kinds };
   }
   if (isCommand(result)) {
-    return redactCommandToolMessages(result);
+    const redacted = redactCommandToolMessages(result);
+    return { result: redacted.command, kinds: redacted.kinds };
   }
-  return [];
+  return { result, kinds: [] };
 }
 
 function warnRedacted(
@@ -156,19 +220,18 @@ export const redactSecretsMiddleware = createMiddleware({
     const message = await handler(request);
     if (!AIMessage.isInstance(message)) return message;
 
-    const redacted = redactContent(message.content);
-    if (redacted.kinds.length === 0) return message;
-
-    message.content = redacted.content;
-    warnRedacted(redacted.kinds, "assistant response");
-    return message;
+    const redacted = redactAIMessage(message);
+    if (redacted.kinds.length > 0) {
+      warnRedacted(redacted.kinds, "assistant response");
+    }
+    return redacted.message;
   },
   wrapToolCall: async (request, handler) => {
     const result = await handler(request);
-    const kinds = redactToolCallResult(result);
-    if (kinds.length > 0) {
-      warnRedacted(kinds, "tool message");
+    const redacted = redactToolCallResult(result);
+    if (redacted.kinds.length > 0) {
+      warnRedacted(redacted.kinds, "tool message");
     }
-    return result;
+    return redacted.result;
   },
 });
