@@ -499,31 +499,30 @@ describe("registerChatHandlers", () => {
       expect(bots.logger.warn).not.toHaveBeenCalled();
     });
 
-    it("does not loop when no allowlist is configured", async () => {
-      const bots = await twoBots({});
-
-      await tagBoth(bots);
-      await exchangeReplies(bots);
-
-      expect(bots.a.agent.invokeInputs).toHaveLength(1);
-      expect(bots.b.agent.invokeInputs).toHaveLength(1);
-    });
-
-    it("does not loop when both bots are allowlisted", async () => {
-      const bots = await twoBots({
-        authorizedActorIds: new Set([
+    it.each([
+      ["no allowlist is configured", undefined],
+      [
+        "both bots are allowlisted",
+        new Set([
           "slack:U123",
           `slack:${BOT_A_ID}`,
           `slack:${BOT_B_ID}`,
         ]),
-      });
+      ],
+    ] as const)(
+      "does not loop when %s",
+      async (_name, authorizedActorIds) => {
+        const bots = await twoBots(
+          authorizedActorIds ? { authorizedActorIds } : {},
+        );
 
-      await tagBoth(bots);
-      await exchangeReplies(bots);
+        await tagBoth(bots);
+        await exchangeReplies(bots);
 
-      expect(bots.a.agent.invokeInputs).toHaveLength(1);
-      expect(bots.b.agent.invokeInputs).toHaveLength(1);
-    });
+        expect(bots.a.agent.invokeInputs).toHaveLength(1);
+        expect(bots.b.agent.invokeInputs).toHaveLength(1);
+      },
+    );
 
     it("still routes an allowlisted bot that mentions this bot in a subscribed thread", async () => {
       const bots = await twoBots({
@@ -542,15 +541,14 @@ describe("registerChatHandlers", () => {
       expect(bots.b.agent.invokeInputs[1]?.message).toBe(text);
     });
 
-    it("ignores a bot message that mentions only another bot", async () => {
+    it("ignores a bot message that names this bot without a structured mention", async () => {
       const bots = await twoBots({});
       await tagBoth(bots);
-      const text = `<@U999> FYI from ${BOT_A_ID}`;
 
       await bots.b.chat.processMessage(
         bots.b.adapter,
         CHANNEL_THREAD_ID,
-        botReply(BOT_A_ID, text, true),
+        botReply(BOT_A_ID, "Thanks @BotB, done", true),
       );
 
       expect(bots.b.agent.invokeInputs).toHaveLength(1);
