@@ -209,9 +209,11 @@ Tool Pod calls, and `knowledge.mongodb.com` for the wrapped knowledge-base tools
    agentengine secret set ANTHROPIC_API_KEY
    ```
 
-To send requests through an Anthropic-compatible gateway, also set
-`ANTHROPIC_BASE_URL` in `.env` and allow that host in `network.egress` instead
-of `api.anthropic.com`.
+To send requests through an Anthropic-compatible gateway, allow that host in
+`network.egress` instead of `api.anthropic.com`, set `ANTHROPIC_BASE_URL` in
+`.env`, and for a deployed workspace add `ANTHROPIC_BASE_URL` to
+`required_secrets.aer` and `required_secrets.tools.invoke_llm` and store it
+with `agentengine secret set ANTHROPIC_BASE_URL`.
 
 </details>
 
