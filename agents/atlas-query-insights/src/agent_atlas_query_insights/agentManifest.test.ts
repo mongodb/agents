@@ -22,7 +22,7 @@ import {
   providerManifestProblems,
   switchProvider,
   type VerifiedProvider,
-} from "@repo/agent-engine-core/testing/provider-manifest";
+} from "@repo/agent-engine-core/testing";
 import { describe, expect, it } from "vitest";
 
 import { atlasQueryInsightsConfig } from "./config.js";
