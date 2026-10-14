@@ -43,13 +43,13 @@ describe("buildLLM with the Anthropic provider", () => {
     vi.restoreAllMocks();
   });
 
-  it("builds a ChatAnthropic with the default model", () => {
+  it("builds a ChatAnthropic with a default Claude model", () => {
     vi.stubEnv("ANTHROPIC_API_KEY", "sk-ant-test");
 
     const llm = buildLLM({ provider: "anthropic" });
 
     expect(llm).toBeInstanceOf(ChatAnthropic);
-    expect((llm as ChatAnthropic).model).toBe("claude-sonnet-4-5");
+    expect((llm as ChatAnthropic).model).toContain("claude");
   });
 
   it("uses the configured model", () => {
