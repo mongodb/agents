@@ -13,6 +13,10 @@
     "./testing": {
       "types": "./dist/testing/localStack.d.ts",
       "import": "./dist/testing/localStack.js"
+    },
+    "./testing/provider-manifest": {
+      "types": "./dist/testing/providerManifest.d.ts",
+      "import": "./dist/testing/providerManifest.js"
     }
   },
   "scripts": {
