@@ -499,30 +499,31 @@ describe("registerChatHandlers", () => {
       expect(bots.logger.warn).not.toHaveBeenCalled();
     });
 
-    it.each([
-      ["no allowlist is configured", undefined],
-      [
-        "both bots are allowlisted",
-        new Set([
+    it("does not loop when no allowlist is configured", async () => {
+      const bots = await twoBots({});
+
+      await tagBoth(bots);
+      await exchangeReplies(bots);
+
+      expect(bots.a.agent.invokeInputs).toHaveLength(1);
+      expect(bots.b.agent.invokeInputs).toHaveLength(1);
+    });
+
+    it("does not loop when both bots are allowlisted", async () => {
+      const bots = await twoBots({
+        authorizedActorIds: new Set([
           "slack:U123",
           `slack:${BOT_A_ID}`,
           `slack:${BOT_B_ID}`,
         ]),
-      ],
-    ] as const)(
-      "does not loop when %s",
-      async (_name, authorizedActorIds) => {
-        const bots = await twoBots(
-          authorizedActorIds ? { authorizedActorIds } : {},
-        );
+      });
 
-        await tagBoth(bots);
-        await exchangeReplies(bots);
+      await tagBoth(bots);
+      await exchangeReplies(bots);
 
-        expect(bots.a.agent.invokeInputs).toHaveLength(1);
-        expect(bots.b.agent.invokeInputs).toHaveLength(1);
-      },
-    );
+      expect(bots.a.agent.invokeInputs).toHaveLength(1);
+      expect(bots.b.agent.invokeInputs).toHaveLength(1);
+    });
 
     it("still answers a thread reply from an allowlisted bot that @-mentions this bot", async () => {
       const bots = await twoBots({
