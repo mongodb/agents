@@ -106,8 +106,7 @@ Managed MCP hosts, and `knowledge.mongodb.com` for the shared knowledge
 tools. Changing `llm.provider` also requires the matching key under
 `required_secrets` and the provider host under `network.egress`.
 
-OpenAI and Anthropic Claude models are the verified providers. Gemini and
-Cerebras are available in code but are not verified.
+OpenAI and Anthropic Claude models are the verified providers.
 
 <details>
 <summary><strong>Switch to Anthropic</strong></summary>

@@ -172,11 +172,10 @@ writes data. These require HITL approval.
 ## Model and persona
 
 The application selects OpenAI `gpt-6-luna` in `config.ts`. OpenAI and
-Anthropic Claude models are the verified providers. Gemini and Cerebras are
-available in code but are not verified. To use another provider, model, or
-custom-compatible endpoint, update that file together with the provider-key
-entries under `required_secrets` and the Tool Pod destination under
-`network.egress`. The checked-in manifest permits the default OpenAI
+Anthropic Claude models are the verified providers. To use another provider,
+model, or custom-compatible endpoint, update that file together with the
+provider-key entries under `required_secrets` and the Tool Pod destination
+under `network.egress`. The checked-in manifest permits the default OpenAI
 endpoint, the Atlas OAuth and Managed MCP hosts needed by AER discovery and
 Tool Pod calls, and `knowledge.mongodb.com` for the wrapped knowledge-base tools.
 
