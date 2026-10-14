@@ -3,7 +3,7 @@
 `@AtlasExplorer` is a [Vercel Chat SDK](https://chat-sdk.dev) client for the
 [Atlas Explorer agent on Agent Engine](../../agents/atlas-explorer). It is a
 thin configuration and deployment wrapper around
-[`@repo/agent-engine-chat`](../../packages/agent-engine-chat) and the official
+[`@repo/agent-engine-chat`](../../packages/agent-engine-chat) and the
 `@chat-adapter/slack` package:
 
 - **[`@repo/agent-engine-chat`](../../packages/agent-engine-chat)** owns the
