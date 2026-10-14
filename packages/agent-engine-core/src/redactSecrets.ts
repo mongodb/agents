@@ -16,6 +16,7 @@
 
 import {
   AIMessage,
+  ToolMessage,
   type ContentBlock,
   type MessageContent,
 } from "@langchain/core/messages";
@@ -98,16 +99,19 @@ function redactContent(content: MessageContent): {
   return { content: blocks, kinds };
 }
 
-function warnRedacted(kinds: readonly string[]): void {
+function warnRedacted(
+  kinds: readonly string[],
+  source: "assistant response" | "tool message" = "assistant response",
+): void {
   const unique = [...new Set(kinds)];
   console.warn(
-    `[redactSecrets] Redacted ${unique.join(", ")} from assistant response`,
+    `[redactSecrets] Redacted ${unique.join(", ")} from ${source}`,
   );
 }
 
 /**
- * Remove common credentials from the model reply before it is checkpointed
- * or delivered. The warning names the pattern only.
+ * Remove common credentials from the model reply or tool message before it is
+ * checkpointed or delivered. The warning names the pattern only.
  */
 export const redactSecretsMiddleware = createMiddleware({
   name: "redactSecrets",
@@ -119,7 +123,18 @@ export const redactSecretsMiddleware = createMiddleware({
     if (redacted.kinds.length === 0) return message;
 
     message.content = redacted.content;
-    warnRedacted(redacted.kinds);
+    warnRedacted(redacted.kinds, "assistant response");
+    return message;
+  },
+  wrapToolCall: async (request, handler) => {
+    const message = await handler(request);
+    if (!ToolMessage.isInstance(message)) return message;
+
+    const redacted = redactContent(message.content);
+    if (redacted.kinds.length === 0) return message;
+
+    message.content = redacted.content;
+    warnRedacted(redacted.kinds, "tool message");
     return message;
   },
 });

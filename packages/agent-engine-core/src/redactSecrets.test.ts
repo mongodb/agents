@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { AIMessage } from "@langchain/core/messages";
+import { AIMessage, ToolMessage } from "@langchain/core/messages";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { redactSecretText, redactSecretsMiddleware } from "./redactSecrets.js";
@@ -161,6 +161,64 @@ describe("redactSecretsMiddleware", () => {
     );
     expect(returned).toBe(clean);
     expect(clean.content).toBe("Nothing sensitive here.");
+    expect(warn).not.toHaveBeenCalled();
+  });
+
+  it("redacts ToolMessage content in wrapToolCall and warns without the secret value", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const toolMessage = new ToolMessage({
+      content: `Failed connecting to ${MONGO_URI} with ${ATLAS_SECRET}.`,
+      tool_call_id: "call-1",
+      name: "mongodb__find",
+      status: "error",
+    });
+    const handler = vi.fn(async () => toolMessage);
+
+    const result = await redactSecretsMiddleware.wrapToolCall!(
+      {} as never,
+      handler,
+    );
+
+    expect(result).toBe(toolMessage);
+    expect(toolMessage.content).toBe(
+      "Failed connecting to mongodb+srv://[redacted-username]:[redacted-password]@cluster0.example.mongodb.net/admin with mdb_sa_sk_[redacted-api-key].",
+    );
+    expect(warn).toHaveBeenCalledOnce();
+    const warning = String(warn.mock.calls[0]?.[0]);
+    expect(warning).toContain("mongodb-uri");
+    expect(warning).toContain("atlas-service-account");
+    expect(warning).toContain("from tool message");
+    expect(warning).not.toContain("s3cr3t-pass");
+    expect(warning).not.toContain(ATLAS_SECRET);
+  });
+
+  it("redacts ToolMessage content blocks and leaves clean ToolMessages untouched", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const secretToolMessage = new ToolMessage({
+      content: [{ type: "text", text: `Key ${OPENAI_KEY}\n${PEM}` }],
+      tool_call_id: "call-2",
+      name: "search_knowledge",
+    });
+    await redactSecretsMiddleware.wrapToolCall!(
+      {} as never,
+      async () => secretToolMessage,
+    );
+    expect(secretToolMessage.content).toEqual([
+      { type: "text", text: "Key sk-[redacted-api-key]\n[redacted-private-key]" },
+    ]);
+
+    warn.mockClear();
+    const cleanToolMessage = new ToolMessage({
+      content: "Found 3 documents in sample_mflix.",
+      tool_call_id: "call-3",
+      name: "mongodb__find",
+    });
+    const returned = await redactSecretsMiddleware.wrapToolCall!(
+      {} as never,
+      async () => cleanToolMessage,
+    );
+    expect(returned).toBe(cleanToolMessage);
+    expect(cleanToolMessage.content).toBe("Found 3 documents in sample_mflix.");
     expect(warn).not.toHaveBeenCalled();
   });
 });

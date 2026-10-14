@@ -18,6 +18,8 @@ import { ToolMessage } from "@langchain/core/messages";
 import { isGraphInterrupt } from "@langchain/langgraph";
 import { createMiddleware } from "langchain";
 
+import { redactSecretText } from "./redactSecrets.js";
+
 interface ToolCallRequest {
   toolCall?: {
     id?: string;
@@ -29,7 +31,9 @@ export function formatToolErrorForAgent(
   toolName: string,
   error: unknown,
 ): string {
-  const detail = error instanceof Error ? error.message : String(error);
+  const { text: detail } = redactSecretText(
+    error instanceof Error ? error.message : String(error),
+  );
   return (
     `Tool "${toolName}" failed. Do not stop the task. Read the error, ` +
     `correct the tool arguments, and retry.\n\n${detail}`
