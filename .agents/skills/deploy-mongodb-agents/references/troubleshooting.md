@@ -113,7 +113,7 @@ Don't send the user to the "Troubleshoot MongoDB MCP Server" page. It covers the
 
 ## Token limit reached
 
-The Atlas MCP server allows 100 active access tokens per service account, and each token lasts 1 hour. Everything that uses the same MCP configuration shares the limit: the Playground, the CLI, the Slack bot, and evaluation runs. A session keeps its processes for an idle TTL of 10 minutes, and follow-ups within that window mint nothing. A new conversation, or a message after the TTL, starts new processes and mints 2 tokens: one for the agent process and one for the tool process. Spare processes that Agent Engine starts ahead of demand can also mint tokens, so an idle agent still uses part of the limit. Once the limit is reached, new conversations fail until the oldest tokens expire. This is the right section when new conversations fail but `status` is `ready` and the credentials are correct.
+The Atlas MCP server allows 100 active access tokens per service account, and each token lasts 1 hour. Everything that uses the same MCP configuration shares the limit: the Playground, the CLI, the Slack bot, and evaluation runs. A session keeps its processes for an idle TTL of 10 minutes, and follow-ups within that window mint nothing. A new conversation, or a message after the TTL, starts new processes and mints 2 tokens: one for the agent process and one for the tool process. Spare processes that Agent Engine starts ahead of demand can also mint tokens, so an idle agent still uses part of the limit. Once the limit is reached, the token endpoint returns HTTP 403 and new conversations fail until the oldest tokens expire. This is the right section when new conversations fail but `status` is `ready` and the credentials are correct.
 
 Confirm it:
 
