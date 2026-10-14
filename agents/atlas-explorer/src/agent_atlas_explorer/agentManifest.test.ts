@@ -36,6 +36,11 @@ const mcpConfig = JSON.parse(
   readFileSync(new URL("../../mcp-config.example.json", import.meta.url), "utf8"),
 ) as { roles: string[] };
 
+const envExample = readFileSync(
+  new URL("../../.env.example", import.meta.url),
+  "utf8",
+);
+
 describe("agent.yaml MCP authentication", () => {
   it("injects dedicated MCP credentials without runtime bootstrap access", () => {
     expect(manifest).toMatch(
@@ -88,6 +93,9 @@ describe("agent.yaml model provider", () => {
       );
 
       expect(providerManifestProblems(switched, target)).toEqual([]);
+      expect(envExample).toMatch(
+        new RegExp(`^${VERIFIED_PROVIDERS[target].secret}=`, "m"),
+      );
     },
   );
 });

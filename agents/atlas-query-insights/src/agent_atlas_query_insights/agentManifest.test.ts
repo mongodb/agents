@@ -94,6 +94,9 @@ describe("agent.yaml model provider", () => {
       );
 
       expect(providerManifestProblems(switched, target)).toEqual([]);
+      expect(envExample).toMatch(
+        new RegExp(`^${VERIFIED_PROVIDERS[target].secret}=`, "m"),
+      );
     },
   );
 });
