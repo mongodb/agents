@@ -22,6 +22,7 @@ import {
 } from "@langchain/core/messages";
 import { isCommand } from "@langchain/langgraph";
 import { createMiddleware } from "langchain";
+import { z } from "zod";
 
 interface SecretRule {
   kind: string;
@@ -108,19 +109,31 @@ function redactToolMessage(message: ToolMessage): string[] {
   return redacted.kinds;
 }
 
+const commandMessagesSchema = z.object({
+  messages: z.array(z.unknown()),
+});
+
 function redactCommandToolMessages(command: { update?: unknown }): string[] {
-  const update = command.update;
-  if (!update || typeof update !== "object" || Array.isArray(update)) return [];
-  const messages = (update as { messages?: unknown }).messages;
-  if (!Array.isArray(messages)) return [];
+  const parsed = commandMessagesSchema.safeParse(command.update);
+  if (!parsed.success) return [];
 
   const kinds: string[] = [];
-  for (const entry of messages) {
+  for (const entry of parsed.data.messages) {
     if (ToolMessage.isInstance(entry)) {
       kinds.push(...redactToolMessage(entry));
     }
   }
   return kinds;
+}
+
+function redactToolCallResult(result: unknown): string[] {
+  if (ToolMessage.isInstance(result)) {
+    return redactToolMessage(result);
+  }
+  if (isCommand(result)) {
+    return redactCommandToolMessages(result);
+  }
+  return [];
 }
 
 function warnRedacted(
@@ -152,11 +165,7 @@ export const redactSecretsMiddleware = createMiddleware({
   },
   wrapToolCall: async (request, handler) => {
     const result = await handler(request);
-    const kinds = ToolMessage.isInstance(result)
-      ? redactToolMessage(result)
-      : isCommand(result)
-        ? redactCommandToolMessages(result)
-        : [];
+    const kinds = redactToolCallResult(result);
     if (kinds.length > 0) {
       warnRedacted(kinds, "tool message");
     }
