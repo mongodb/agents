@@ -20,6 +20,7 @@ import {
   type ContentBlock,
   type MessageContent,
 } from "@langchain/core/messages";
+import { isCommand } from "@langchain/langgraph";
 import { createMiddleware } from "langchain";
 
 interface SecretRule {
@@ -99,6 +100,29 @@ function redactContent(content: MessageContent): {
   return { content: blocks, kinds };
 }
 
+function redactToolMessage(message: ToolMessage): string[] {
+  const redacted = redactContent(message.content);
+  if (redacted.kinds.length > 0) {
+    message.content = redacted.content;
+  }
+  return redacted.kinds;
+}
+
+function redactCommandToolMessages(command: { update?: unknown }): string[] {
+  const update = command.update;
+  if (!update || typeof update !== "object" || Array.isArray(update)) return [];
+  const messages = (update as { messages?: unknown }).messages;
+  if (!Array.isArray(messages)) return [];
+
+  const kinds: string[] = [];
+  for (const entry of messages) {
+    if (ToolMessage.isInstance(entry)) {
+      kinds.push(...redactToolMessage(entry));
+    }
+  }
+  return kinds;
+}
+
 function warnRedacted(
   kinds: readonly string[],
   source: "assistant response" | "tool message" = "assistant response",
@@ -127,14 +151,15 @@ export const redactSecretsMiddleware = createMiddleware({
     return message;
   },
   wrapToolCall: async (request, handler) => {
-    const message = await handler(request);
-    if (!ToolMessage.isInstance(message)) return message;
-
-    const redacted = redactContent(message.content);
-    if (redacted.kinds.length === 0) return message;
-
-    message.content = redacted.content;
-    warnRedacted(redacted.kinds, "tool message");
-    return message;
+    const result = await handler(request);
+    const kinds = ToolMessage.isInstance(result)
+      ? redactToolMessage(result)
+      : isCommand(result)
+        ? redactCommandToolMessages(result)
+        : [];
+    if (kinds.length > 0) {
+      warnRedacted(kinds, "tool message");
+    }
+    return result;
   },
 });

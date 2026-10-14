@@ -15,6 +15,7 @@
  */
 
 import { AIMessage, ToolMessage } from "@langchain/core/messages";
+import { Command } from "@langchain/langgraph";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { redactSecretText, redactSecretsMiddleware } from "./redactSecrets.js";
@@ -220,5 +221,36 @@ describe("redactSecretsMiddleware", () => {
     expect(returned).toBe(cleanToolMessage);
     expect(cleanToolMessage.content).toBe("Found 3 documents in sample_mflix.");
     expect(warn).not.toHaveBeenCalled();
+  });
+
+  it("redacts ToolMessage entries inside a Command update from wrapToolCall", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const taskMessage = new ToolMessage({
+      content: `Subagent failed connecting to ${MONGO_URI} using ${OPENAI_KEY}.`,
+      tool_call_id: "call-task-1",
+      name: "task",
+    });
+    const command = new Command({
+      update: {
+        messages: [taskMessage],
+      },
+    });
+
+    const result = await redactSecretsMiddleware.wrapToolCall!(
+      {} as never,
+      async () => command,
+    );
+
+    expect(result).toBe(command);
+    expect(taskMessage.content).toBe(
+      "Subagent failed connecting to mongodb+srv://[redacted-username]:[redacted-password]@cluster0.example.mongodb.net/admin using sk-[redacted-api-key].",
+    );
+    expect(warn).toHaveBeenCalledOnce();
+    const warning = String(warn.mock.calls[0]?.[0]);
+    expect(warning).toContain("mongodb-uri");
+    expect(warning).toContain("api-key");
+    expect(warning).toContain("from tool message");
+    expect(warning).not.toContain("s3cr3t-pass");
+    expect(warning).not.toContain(OPENAI_KEY);
   });
 });
