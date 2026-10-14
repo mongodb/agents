@@ -32,13 +32,6 @@ repository root with `--workspace atlas-query-insights`.
 
 Policy, prompts, and middleware live in
 [`@repo/atlas-query-insights-agent`](../../packages/atlas-query-insights-agent).
-`pnpm build` bundles that library and
-[`@repo/agent-engine-core`](../../packages/agent-engine-core) into
-`dist/agent_atlas_query_insights/main.js` so Agent Engine runs one file plus
-this app's npm dependencies. The `build`, `test`, `typecheck`, and `dev`
-scripts first build those workspace libraries through `pre*` hooks. See the
-[package README](../../packages/atlas-query-insights-agent/README.md) for its
-exports.
 
 ## Configure
 
@@ -215,10 +208,9 @@ the highest-impact shapes.
 
 [`@repo/agent-engine-chat`](../../packages/agent-engine-chat) connects any
 Agent Engine workspace, including `atlas-query-insights`, to Slack or other
-[Chat SDK](https://chat-sdk.dev) platforms. See
-[`apps/atlas-explorer-slack-bot`](../../apps/atlas-explorer-slack-bot) for a
-reference app that wraps `@repo/agent-engine-chat` for local Socket Mode,
-Vercel deployment, and scheduled Slack Workflow Builder messages.
+[Chat SDK](https://chat-sdk.dev) platforms.
+[`apps/atlas-explorer-slack-bot`](../../apps/atlas-explorer-slack-bot) is a
+reference Slack bot app built on it.
 
 ## How the report works
 

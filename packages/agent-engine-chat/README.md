@@ -10,7 +10,7 @@ are simply unused).
 A consuming app such as
 [`apps/atlas-explorer-slack-bot`](../../apps/atlas-explorer-slack-bot) provides
 the platform adapter and credentials, the Slack manifest and suggested prompts,
-and the Socket Mode or webhook entrypoint.
+and the webhook entrypoint.
 
 ## What's in it
 

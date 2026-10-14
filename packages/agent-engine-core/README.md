@@ -12,6 +12,5 @@ token. If Atlas refuses the token, the wrapper rethrows the failure as
 `McpTokenLimitError` naming the runtime and the limit, so the logs say why
 startup failed. It does not recover from the failure.
 
-Agent-specific prompts and tool allowlists stay in the agent packages:
-[`@repo/atlas-explorer-agent`](../atlas-explorer-agent) and
-[`@repo/atlas-query-insights-agent`](../atlas-query-insights-agent).
+Agent-specific prompts and tool allowlists stay in the agent package. Atlas
+Explorer's package is [`@repo/atlas-explorer-agent`](../atlas-explorer-agent).
