@@ -117,7 +117,7 @@ export function buildLLM(opts: BuildLLMOptions = {}): BaseChatModel {
   };
 
   const buildAnthropic = (): BaseChatModel => {
-    const modelName = model ?? "claude-sonnet-4-5";
+    const modelName = model ?? "claude-haiku-5-5";
     write(`Using Anthropic LLM: ${modelName}`);
     const config: ConstructorParameters<typeof ChatAnthropic>[0] = {
       apiKey: anthropicKey,

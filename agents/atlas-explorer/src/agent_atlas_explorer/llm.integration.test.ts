@@ -84,9 +84,9 @@ describe.skipIf(Boolean(process.env.CI))("LLM API keys", () => {
   );
 
   it(
-    "Anthropic claude-sonnet-4-5 accepts ANTHROPIC_API_KEY",
+    "Anthropic claude-haiku-5-5 accepts ANTHROPIC_API_KEY",
     async () => {
-      await pingProvider("anthropic", "claude-sonnet-4-5", "ANTHROPIC_API_KEY");
+      await pingProvider("anthropic", "claude-haiku-5-5", "ANTHROPIC_API_KEY");
     },
     TIMEOUT_MS,
   );
