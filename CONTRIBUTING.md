@@ -69,6 +69,12 @@ OpenAI credentials. When `CI` is unset, the suite also pings OpenAI and
 Anthropic. The two agents share ports 3000 and 8000, so stop one before
 starting the other.
 
+To run the suite against Anthropic, make the changes in the agent README's
+"Switch to Anthropic" section, set `ANTHROPIC_API_KEY` in `.env`, restart the
+stack, and run `pnpm test:integration`. Revert those changes before you
+commit. Unit tests check that `config.ts` and `agent.yaml` agree on the
+provider without calling any API.
+
 ### Atlas Explorer
 
 From `agents/atlas-explorer`. The read-only suite skips when

@@ -106,6 +106,45 @@ Managed MCP hosts, and `knowledge.mongodb.com` for the shared knowledge
 tools. Changing `llm.provider` also requires the matching key under
 `required_secrets` and the provider host under `network.egress`.
 
+OpenAI and Anthropic Claude models are the verified providers. Gemini and
+Cerebras are available in code but are not verified.
+
+<details>
+<summary><strong>Switch to Anthropic</strong></summary>
+
+1. In `src/agent_atlas_query_insights/config.ts`, set the provider and a
+   Claude model:
+
+   ```ts
+   llm: {
+     provider: "anthropic",
+     model: "claude-sonnet-4-5",
+   },
+   ```
+
+2. In `agent.yaml`, replace `OPENAI_API_KEY` with `ANTHROPIC_API_KEY` under
+   both `required_secrets.aer` and `required_secrets.tools.invoke_llm`. Then
+   replace the `api.openai.com` egress rule with the Anthropic API host:
+
+   ```yaml
+   - fqdn: api.anthropic.com
+     ports: [443]
+     component: tool
+   ```
+
+3. Set `ANTHROPIC_API_KEY` in `.env`. For a deployed workspace, also store it
+   as a platform secret and stop requiring the OpenAI key:
+
+   ```bash
+   agentengine secret set ANTHROPIC_API_KEY
+   ```
+
+To send requests through an Anthropic-compatible gateway, also set
+`ANTHROPIC_BASE_URL` in `.env` and allow that host in `network.egress` instead
+of `api.anthropic.com`.
+
+</details>
+
 ### Access token limit
 
 The Atlas MCP server allows each service account at most 100 active access

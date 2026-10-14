@@ -171,12 +171,50 @@ writes data. These require HITL approval.
 
 ## Model and persona
 
-The application selects OpenAI `gpt-6-luna` in `config.ts`. To use another
-provider, model, or custom-compatible endpoint, update that file together with
-the provider-key entries under `required_secrets` and the Tool Pod destination
-under `network.egress`. The checked-in manifest permits the default OpenAI
+The application selects OpenAI `gpt-6-luna` in `config.ts`. OpenAI and
+Anthropic Claude models are the verified providers. Gemini and Cerebras are
+available in code but are not verified. To use another provider, model, or
+custom-compatible endpoint, update that file together with the provider-key
+entries under `required_secrets` and the Tool Pod destination under
+`network.egress`. The checked-in manifest permits the default OpenAI
 endpoint, the Atlas OAuth and Managed MCP hosts needed by AER discovery and
 Tool Pod calls, and `knowledge.mongodb.com` for the wrapped knowledge-base tools.
+
+<details>
+<summary><strong>Switch to Anthropic</strong></summary>
+
+1. In `src/agent_atlas_explorer/config.ts`, set the provider and a Claude
+   model:
+
+   ```ts
+   llm: {
+     provider: "anthropic",
+     model: "claude-sonnet-4-5",
+   },
+   ```
+
+2. In `agent.yaml`, replace `OPENAI_API_KEY` with `ANTHROPIC_API_KEY` under
+   both `required_secrets.aer` and `required_secrets.tools.invoke_llm`. Then
+   replace the `api.openai.com` egress rule with the Anthropic API host:
+
+   ```yaml
+   - fqdn: api.anthropic.com
+     ports: [443]
+     component: tool
+   ```
+
+3. Set `ANTHROPIC_API_KEY` in `.env`. For a deployed workspace, also store it
+   as a platform secret and stop requiring the OpenAI key:
+
+   ```bash
+   agentengine secret set ANTHROPIC_API_KEY
+   ```
+
+To send requests through an Anthropic-compatible gateway, also set
+`ANTHROPIC_BASE_URL` in `.env` and allow that host in `network.egress` instead
+of `api.anthropic.com`.
+
+</details>
 
 `config.ts` also owns the system-prompt persona. Set
 `systemPrompt.name` to change how the agent introduces itself; leave it empty
