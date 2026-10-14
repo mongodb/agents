@@ -286,8 +286,9 @@ Open the playground at http://localhost:3000. Stop the stack with
 The sibling [`@AtlasExplorer` Chat SDK integration](../../apps/atlas-explorer-slack-bot) invokes
 this same Agent Engine workspace and preserves Agentic sessions per platform thread.
 Its current Slack adapter supports local Socket Mode, Vercel deployment, and
-Approve/Reject controls for this agent's mutation interrupts; shared handlers
-can be reused with additional Chat SDK adapters.
+Approve/Reject controls for this agent's mutation interrupts; the shared handlers in
+[`@repo/agent-engine-chat`](../../packages/agent-engine-chat) can be reused with
+additional Chat SDK adapters or other Agent Engine workspaces.
 
 ## What to try
 

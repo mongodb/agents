@@ -1,9 +1,16 @@
 # @repo/agent-engine-chat
 
 Private library that connects a [Chat SDK](https://chat-sdk.dev) app to any
-Atlas Agent Engine agent. The Atlas Explorer Slack bot in
-[`apps/atlas-explorer-slack-bot`](../../apps/atlas-explorer-slack-bot) is its
-consumer.
+Atlas Agent Engine agent. It works with both write-capable agents that pause
+for human review (such as [Atlas Explorer](../../agents/atlas-explorer)) and
+read-only agents (such as
+[Atlas Query Insights](../../agents/atlas-query-insights), where review cards
+are simply unused).
+
+A consuming app such as
+[`apps/atlas-explorer-slack-bot`](../../apps/atlas-explorer-slack-bot) provides
+the platform adapter and credentials, the Slack manifest and suggested prompts,
+and the Socket Mode or webhook entrypoint.
 
 ## What's in it
 

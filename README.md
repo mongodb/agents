@@ -182,9 +182,19 @@ for the full list.
 
 [`apps/atlas-explorer-slack-bot`](apps/atlas-explorer-slack-bot) is an
 example of how to connect a deployed agent to the tools your team already
-uses. It calls Atlas Explorer on Agent Engine with a service account. You can
-ask questions in a channel or DM, approve or reject proposed writes, and post
-read-only reports on a schedule with Slack Workflow Builder.
+uses. It is a thin Slack app for Atlas Explorer built on
+[`packages/agent-engine-chat`](packages/agent-engine-chat)
+(`@repo/agent-engine-chat`), the general-purpose library that connects any
+Agent Engine workspace to [Chat SDK](https://chat-sdk.dev) platforms. It calls
+Atlas Explorer on Agent Engine with a service account. You can ask questions in
+a channel or DM, approve or reject proposed writes, and post read-only reports
+on a schedule with Slack Workflow Builder.
+
+To connect [Atlas Query Insights](agents/atlas-query-insights) or another agent
+to Slack (for example, for on-demand slow-query questions or scheduled Workflow
+Builder reports), build a small app around
+[`packages/agent-engine-chat`](packages/agent-engine-chat) using
+`apps/atlas-explorer-slack-bot` as a template.
 
 This bot is an example to learn from and adapt. It isn't a managed Slack app.
 You host and operate it yourself. Read these limitations before you use it:
@@ -229,9 +239,11 @@ how they're set up.
   [Access token limit](agents/atlas-explorer/README.md#access-token-limit)
   and the
   [Slack bot's session limit](apps/atlas-explorer-slack-bot/README.md#session-limit).
-- **Slack is an optional example.** The Slack bot is a self-hosted example
-  built on [Chat SDK](https://chat-sdk.dev), so you can adapt it to other chat
-  platforms. See
+- **Slack is an optional example.** [`apps/atlas-explorer-slack-bot`](apps/atlas-explorer-slack-bot)
+  is a self-hosted Slack app built on
+  [`packages/agent-engine-chat`](packages/agent-engine-chat) and
+  [Chat SDK](https://chat-sdk.dev), so you can connect other Agent Engine
+  workspaces or adapt it to other chat platforms. See
   [Example: talk to Atlas Explorer from Slack](#example-talk-to-atlas-explorer-from-slack).
 
 ### Your data

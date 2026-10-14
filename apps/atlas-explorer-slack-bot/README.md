@@ -1,17 +1,30 @@
 # Atlas Explorer Slack bot
 
 `@AtlasExplorer` is a [Vercel Chat SDK](https://chat-sdk.dev) client for the
-[Atlas Explorer agent on Agent Engine](../../agents/atlas-explorer). Shared
-handlers contain the conversation, delivery, and human-review behavior; the
-official `@chat-adapter/slack` package contains Slack transport behavior. This
-keeps the core ready for another Chat SDK adapter without duplicating the
-Agent Engine workflow.
+[Atlas Explorer agent on Agent Engine](../../agents/atlas-explorer). It is a
+thin configuration and deployment wrapper around
+[`@repo/agent-engine-chat`](../../packages/agent-engine-chat) and the official
+`@chat-adapter/slack` package:
 
-Conversation handling, Slack mention filtering (`slackMentions`), the Agent
-Engine client, and thread storage live in
-[`@repo/agent-engine-chat`](../../packages/agent-engine-chat). This app
-keeps Slack transport, Socket Mode, the Vercel webhook, and Atlas Explorer
-copy.
+- **[`@repo/agent-engine-chat`](../../packages/agent-engine-chat)** owns the
+  agent-agnostic chat integration: invoking and streaming any Agent Engine
+  workspace, mapping threads to sessions in MongoDB, enforcing the rolling-hour
+  session cap, filtering Slack mentions (`slackMentions`), and rendering
+  Approve/Reject review cards when an agent suspends.
+- **This app** owns only the `@AtlasExplorer` Slack surface:
+  [`manifest.json`](./manifest.json) and
+  [`manifest.local.json`](./manifest.local.json), suggested prompts and App
+  Home copy in [`src/platforms/slack.ts`](./src/platforms/slack.ts),
+  review-card strings in
+  [`src/atlasExplorerChat.ts`](./src/atlasExplorerChat.ts), environment loading
+  in [`src/loadConfig.ts`](./src/loadConfig.ts), Socket Mode startup, and the
+  Vercel webhook.
+
+To put [Atlas Query Insights](../../agents/atlas-query-insights) or another
+Agent Engine workspace in Slack, create a sibling app (such as
+`apps/query-insights-slack-bot`) that wraps `@repo/agent-engine-chat` with that
+agent's Slack manifest, prompts, and `AGENTIC_PROJECT_ID` /
+`AGENTIC_WORKSPACE_ID`.
 
 The bot does not run LangGraph, MCP, or Atlas credentials. It sends normalized
 chat messages to the Agent Engine invocation API, maps Chat SDK threads to

@@ -12,10 +12,19 @@ To report a bug or suggest an agent,
 | Path | What it is |
 | --- | --- |
 | [`agents/`](agents) | Deployable agents, one workspace each, such as `atlas-explorer` and `atlas-query-insights`. |
-| [`apps/`](apps) | Chat clients, such as the example Slack bot. |
-| [`packages/`](packages) | Shared libraries. Each agent's prompts, tool policy, and middleware live in its own package, built on `@repo/agent-engine-core`. |
+| [`apps/`](apps) | Chat clients. [`apps/atlas-explorer-slack-bot`](apps/atlas-explorer-slack-bot) is the Atlas Explorer Slack wrapper around `@repo/agent-engine-chat`. |
+| [`packages/`](packages) | Shared libraries and internal CLIs (see below). |
 | [`scripts/`](scripts) | Helper scripts, such as a seeder that creates slow queries for Performance Advisor. |
 | [`agent.yaml`](agent.yaml) | Registers each agent workspace with Agent Engine. |
+
+Packages under [`packages/`](packages):
+
+- [`@repo/agent-engine-core`](packages/agent-engine-core): shared Agent Engine runtime (LLM builder, tool selection, requester metadata, and LangGraph middleware).
+- [`@repo/atlas-explorer-agent`](packages/atlas-explorer-agent): Atlas Explorer prompts, read-only tool allowlist, and HITL write policy, built on `@repo/agent-engine-core`.
+- [`@repo/atlas-query-insights-agent`](packages/atlas-query-insights-agent): Atlas Query Insights prompts, read-only tool allowlist, and middleware, built on `@repo/agent-engine-core`.
+- [`@repo/agent-engine-chat`](packages/agent-engine-chat): general-purpose [Chat SDK](https://chat-sdk.dev) library that connects any Agent Engine workspace to Slack or other chat platforms.
+- [`@repo/agent-engine-load-test`](packages/agent-engine-load-test): CLI for measuring sandbox reuse and Atlas MCP access-token minting.
+- [`@repo/update-skills`](packages/update-skills): CLI for refreshing each agent's vendored MongoDB Agent Skills from `mongodb/agent-skills`.
 
 Apps import each library's compiled `dist` folder. The `test`, `build`, and
 `typecheck` scripts build the libraries first. If you run `vitest` or `tsc`

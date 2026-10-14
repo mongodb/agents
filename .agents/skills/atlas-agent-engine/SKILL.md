@@ -19,13 +19,17 @@ agents/<name>/
 │   ├── main.ts                  # App entrypoint: builds the agent
 │   └── config.ts                # non-secret settings: LLM provider/model, prompt persona
 └── skills/                      # vendored MongoDB Agent Skills, loaded at runtime
+apps/
+└── atlas-explorer-slack-bot/    # Atlas Explorer Slack app wrapping @repo/agent-engine-chat
 packages/
 ├── agent-engine-core/           # shared: LLM builder, tool policy, middleware, test client
-└── <name>-agent/                # this agent's prompt, tool allowlist, middleware
+├── <name>-agent/                # this agent's prompt, tool allowlist, middleware
+└── agent-engine-chat/           # reusable Chat SDK library for any Agent Engine workspace
 ```
 
 - **Behavior belongs in `packages/<name>-agent`**: system prompt, tool allowlists, approval and error middleware. `main.ts` should only assemble them.
 - **Shared behavior belongs in `packages/agent-engine-core`.** Don't copy middleware between the two agents.
+- **Chat integration belongs in `packages/agent-engine-chat`.** It connects any agent in `agents/` to Slack or other Chat SDK platforms; `apps/atlas-explorer-slack-bot` is the Atlas Explorer Slack wrapper around it.
 - `pnpm build` bundles the library into `dist/agent_<name>/main.js` with esbuild, so the platform runs one file plus npm dependencies. It also copies that bundle to `src/agent_<name>/main.bundle.js`, which is git-ignored for the dev container. Don't edit either file.
 - Apps import each library's compiled `dist`. Scripts at the repo root and in each agent build the libraries first. If you run `vitest` or `tsc` directly, build them yourself.
 
