@@ -7,10 +7,9 @@ read-only agents (such as
 [Atlas Query Insights](../../agents/atlas-query-insights), where review cards
 are simply unused).
 
-A consuming app such as
-[`apps/atlas-explorer-slack-bot`](../../apps/atlas-explorer-slack-bot) provides
-the platform adapter and credentials, the Slack manifest and suggested prompts,
-and the webhook entrypoint.
+[`apps/atlas-explorer-slack-bot`](../../apps/atlas-explorer-slack-bot) is an
+example app built on this library. It adds the Slack adapter and credentials,
+the Slack manifest and suggested prompts, and the webhook entrypoint.
 
 ## What's in it
 
