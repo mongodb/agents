@@ -313,11 +313,11 @@ can be reused with additional Chat SDK adapters.
   configuration's roles. It doesn't check who is chatting with the agent.
   Everyone who can reach the agent has the same Atlas access. Grant only roles
   that all of them should have, and be cautious about giving any agent access
-  to a cluster that holds sensitive data.
+  to sensitive data.
 - **No general-purpose shell access.** Deep-agent file operations run on Agent
   Engine's audited Tool Pod backend without shell execution that could read
   process credential files outside the filesystem sandbox.
-- **Prompt injection.** Cluster data, documents, and chat messages can contain
+- **Prompt injection.** Data and chat messages can contain
   instructions aimed at the model, and no defense fully prevents that. Impact
   is bounded by the controls above and the egress policy in `agent.yaml`,
   which blocks outbound traffic to unlisted hosts so injected text can't send

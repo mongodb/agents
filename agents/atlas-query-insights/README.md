@@ -245,8 +245,8 @@ Things to know:
 - `aggregate` stays available for read pipelines. A pipeline that contains
   `$out` or `$merge` is rejected because this agent is read-only.
 - Access belongs to the MCP configuration, not to each user. Everyone who can
-  run this agent sees the same cluster data. Grant it only to people who may
-  see that data.
+  run this agent sees the same data. Grant it only to people who may see that
+  data.
 - Slow query logs and Performance Advisor output can contain prompt-injection
   text aimed at the model. The agent can't write, but injected text can still
   skew its report, so review its recommendations before you act on them.

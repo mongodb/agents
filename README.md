@@ -143,9 +143,9 @@ limits from the start.
   authorizes that identity, not the person chatting with the agent, so anyone
   who can reach an agent can use everything its roles allow. Give the agent
   only the roles that all of its users should have, and be cautious about
-  giving any agent access to a cluster that holds sensitive data. The Atlas
-  MCP Server doesn't currently support per-user sign-in (OIDC) for custom
-  clients like these agents.
+  giving any agent access to sensitive data. The Atlas MCP Server doesn't
+  currently support per-user sign-in (OIDC) for custom clients like these
+  agents.
 - **Read-only by default.** The example configurations grant read-only
   access. Atlas Explorer can be set up to write, with your approval for each
   write tool. Atlas Query Insights can't write.
