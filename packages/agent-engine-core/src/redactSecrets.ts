@@ -139,6 +139,9 @@ function redactToolMessage(message: ToolMessage): {
       content: redacted.content,
       tool_call_id: message.tool_call_id,
       status: message.status,
+      // Passed through without deep traversal: none of our tools use
+      // responseFormat: "content_and_artifact", matching how AIMessage
+      // metadata fields (tool_calls, additional_kwargs) are handled above.
       artifact: message.artifact,
       additional_kwargs: message.additional_kwargs,
       response_metadata: message.response_metadata,
