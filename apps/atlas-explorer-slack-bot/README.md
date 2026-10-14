@@ -20,12 +20,6 @@ thin configuration and deployment wrapper around
   in [`src/loadConfig.ts`](./src/loadConfig.ts), Socket Mode startup, and the
   Vercel webhook.
 
-To put [Atlas Query Insights](../../agents/atlas-query-insights) or another
-Agent Engine workspace in Slack, create a sibling app (such as
-`apps/query-insights-slack-bot`) that wraps `@repo/agent-engine-chat` with that
-agent's Slack manifest, prompts, and `AGENTIC_PROJECT_ID` /
-`AGENTIC_WORKSPACE_ID`.
-
 The bot does not run LangGraph, MCP, or Atlas credentials. It sends normalized
 chat messages to the Agent Engine invocation API, maps Chat SDK threads to
 Agent Engine sessions, and presents portable Approve/Reject cards when Atlas
