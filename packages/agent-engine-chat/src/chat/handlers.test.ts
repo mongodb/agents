@@ -381,6 +381,182 @@ describe("registerChatHandlers", () => {
     expect(adapter.postMessage).not.toHaveBeenCalled();
   });
 
+  describe("two bots tagged in the same message", () => {
+    const BOT_A_ID = "B123";
+    const BOT_B_ID = "B456";
+    const BOTH_MENTIONED = `<@${BOT_A_ID}> <@${BOT_B_ID}> check this deployment`;
+
+    async function twoBots(options: {
+      authorizedActorIds?: ReadonlySet<string>;
+    }) {
+      const logger = { error: vi.fn(), warn: vi.fn() };
+      const make = async (botUserId: string, name: string) => {
+        const botAdapter = createMockAdapter("slack", {
+          botUserId,
+          isDM: (threadId) => threadId.startsWith("slack:D"),
+        });
+        const botState = createMockState();
+        const botChat = new Chat({
+          adapters: { slack: botAdapter },
+          concurrency: "concurrent",
+          logger: "silent",
+          state: botState,
+          userName: name,
+        });
+        const botAgent = new FakeAgentGateway();
+        botAgent.invokeResult = completed;
+        registerChatHandlers(botChat, {
+          agent: botAgent,
+          botName: name,
+          logger,
+          store: new MemoryThreadStore(),
+          ...(options.authorizedActorIds
+            ? { authorizedActorIds: options.authorizedActorIds }
+            : {}),
+        });
+        await botChat.initialize();
+        return {
+          adapter: botAdapter,
+          agent: botAgent,
+          chat: botChat,
+          state: botState,
+        };
+      };
+      return {
+        a: await make(BOT_A_ID, "BotA"),
+        b: await make(BOT_B_ID, "BotB"),
+        logger,
+      };
+    }
+
+    function botReply(
+      botUserId: string,
+      text = "Here is what I found",
+      isMention = false,
+    ) {
+      return testMessage(`reply-${botUserId}`, CHANNEL_THREAD_ID, text, {
+        isMention,
+        author: {
+          ...author(),
+          userId: botUserId,
+          userName: botUserId,
+          isBot: true,
+        },
+        raw: { type: "message", text, bot_id: `BOT_${botUserId}` },
+      });
+    }
+
+    async function tagBoth(
+      bots: Awaited<ReturnType<typeof twoBots>>,
+    ) {
+      for (const bot of [bots.a, bots.b]) {
+        await bot.chat.processMessage(
+          bot.adapter,
+          CHANNEL_THREAD_ID,
+          testMessage("tag-both", CHANNEL_THREAD_ID, BOTH_MENTIONED, {
+            isMention: true,
+            raw: { type: "message", text: BOTH_MENTIONED },
+          }),
+        );
+      }
+    }
+
+    async function exchangeReplies(
+      bots: Awaited<ReturnType<typeof twoBots>>,
+    ) {
+      await bots.b.chat.processMessage(
+        bots.b.adapter,
+        CHANNEL_THREAD_ID,
+        botReply(BOT_A_ID),
+      );
+      await bots.a.chat.processMessage(
+        bots.a.adapter,
+        CHANNEL_THREAD_ID,
+        botReply(BOT_B_ID),
+      );
+    }
+
+    it("answers once each without a loop or denial noise", async () => {
+      const bots = await twoBots({
+        authorizedActorIds: new Set(["slack:U123"]),
+      });
+
+      await tagBoth(bots);
+      await exchangeReplies(bots);
+
+      expect(await bots.a.state.isSubscribed(CHANNEL_THREAD_ID)).toBe(true);
+      expect(await bots.b.state.isSubscribed(CHANNEL_THREAD_ID)).toBe(true);
+      expect(bots.a.agent.invokeInputs).toHaveLength(1);
+      expect(bots.b.agent.invokeInputs).toHaveLength(1);
+      expect(bots.a.adapter.postMessage).not.toHaveBeenCalledWith(
+        CHANNEL_THREAD_ID,
+        expect.stringMatching(/not authorized/i),
+      );
+      expect(bots.b.adapter.postMessage).not.toHaveBeenCalledWith(
+        CHANNEL_THREAD_ID,
+        expect.stringMatching(/not authorized/i),
+      );
+      expect(bots.logger.warn).not.toHaveBeenCalled();
+    });
+
+    it("does not loop when no allowlist is configured", async () => {
+      const bots = await twoBots({});
+
+      await tagBoth(bots);
+      await exchangeReplies(bots);
+
+      expect(bots.a.agent.invokeInputs).toHaveLength(1);
+      expect(bots.b.agent.invokeInputs).toHaveLength(1);
+    });
+
+    it("does not loop when both bots are allowlisted", async () => {
+      const bots = await twoBots({
+        authorizedActorIds: new Set([
+          "slack:U123",
+          `slack:${BOT_A_ID}`,
+          `slack:${BOT_B_ID}`,
+        ]),
+      });
+
+      await tagBoth(bots);
+      await exchangeReplies(bots);
+
+      expect(bots.a.agent.invokeInputs).toHaveLength(1);
+      expect(bots.b.agent.invokeInputs).toHaveLength(1);
+    });
+
+    it("still routes an allowlisted bot that mentions this bot in a subscribed thread", async () => {
+      const bots = await twoBots({
+        authorizedActorIds: new Set(["slack:U123", `slack:${BOT_A_ID}`]),
+      });
+      await tagBoth(bots);
+      const text = `<@${BOT_B_ID}> please double-check`;
+
+      await bots.b.chat.processMessage(
+        bots.b.adapter,
+        CHANNEL_THREAD_ID,
+        botReply(BOT_A_ID, text, true),
+      );
+
+      expect(bots.b.agent.invokeInputs).toHaveLength(2);
+      expect(bots.b.agent.invokeInputs[1]?.message).toBe(text);
+    });
+
+    it("ignores a bot message that mentions only another bot", async () => {
+      const bots = await twoBots({});
+      await tagBoth(bots);
+      const text = `<@U999> FYI from ${BOT_A_ID}`;
+
+      await bots.b.chat.processMessage(
+        bots.b.adapter,
+        CHANNEL_THREAD_ID,
+        botReply(BOT_A_ID, text, true),
+      );
+
+      expect(bots.b.agent.invokeInputs).toHaveLength(1);
+    });
+  });
+
   it.each([
     [REVIEW_APPROVE_ACTION_ID, "approve"],
     [REVIEW_REJECT_ACTION_ID, "reject"],

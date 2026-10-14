@@ -130,6 +130,16 @@ export function registerChatHandlers(
   });
 
   chat.onSubscribedMessage(async (thread, message) => {
+    // Other bots' thread replies are only for us when they explicitly
+    // mention this bot. Otherwise two co-subscribed bots would answer each
+    // other's replies in a loop.
+    if (
+      message.author.isBot === true &&
+      (!message.isMention ||
+        shouldIgnoreUnstructuredSlackMention(thread.adapter, message))
+    ) {
+      return;
+    }
     if (
       shouldIgnoreSlackMessageAddressedToSomeoneElse(
         thread.adapter,
