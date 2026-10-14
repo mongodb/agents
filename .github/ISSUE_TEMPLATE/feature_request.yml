@@ -1,0 +1,52 @@
+name: Feature Request
+description: Suggest a new agent template, workflow, or improvement
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to suggest an idea! Please share the problem or workflow you're trying to solve so we can understand the use case.
+
+  - type: input
+    id: agent-or-component
+    attributes:
+      label: Agent or Component
+      description: Which existing agent or app does this apply to, or is this an idea for a new agent?
+      placeholder: e.g., New agent idea, atlas-explorer, atlas-query-insights, atlas-explorer-slack-bot
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem-or-use-case
+    attributes:
+      label: Problem or Use Case
+      description: What problem or MongoDB Atlas workflow are you trying to solve? Describe the situation and pain point before jumping to a specific solution.
+      placeholder: "When managing my Atlas clusters, I want to..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed Solution
+      description: What would you like the agent, tool, or repository to do? Include example prompts or expected outputs if helpful.
+      placeholder: "It would be helpful if an agent could..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives-considered
+    attributes:
+      label: Alternatives or Workarounds Considered
+      description: How are you handling this today (for example, custom prompts, Atlas CLI scripts, MCP tools, or manual steps)?
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add any other context, links, or examples that might be helpful (remove any credentials or sensitive data)
+    validations:
+      required: false
