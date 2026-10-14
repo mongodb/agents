@@ -32,6 +32,19 @@ export {
   type ClientUserExtras,
 } from "./clientUser.js";
 export {
+  INPUT_GUARD_BLOCK_PATTERNS,
+  INPUT_GUARD_JUDGE_LLM_ID,
+  INPUT_GUARD_PLACEHOLDER,
+  INPUT_GUARD_REFUSAL,
+  createInputGuardMiddleware,
+  createLlmInjectionJudge,
+  screenUserInput,
+  type InjectionJudge,
+  type InputGuardMode,
+  type InputGuardOptions,
+  type InputScreenResult,
+} from "./inputGuard.js";
+export {
   buildLLM,
   resolveOpenAIResponsesApi,
   type BuildLLMOptions,
