@@ -18,7 +18,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AgenticApiError } from "../agent-engine/client.js";
 import { MemoryThreadStore } from "../store/memoryThreadStore.js";
-import type { ThreadStore } from "../store/threadStore.js";
+import { CLAIM_LEASE_MS, type ThreadStore } from "../store/threadStore.js";
+import { handleConversationMessage } from "./conversation.js";
 import {
   completed,
   callingTool,
@@ -384,8 +385,57 @@ describe("handleReviewDecision", () => {
     expect(outcome).toBe("uncertain");
     expect(await store.get(THREAD_ID)).toMatchObject({
       pendingReviewState: "uncertain",
+      retentionState: "inactive",
     });
     expect(conversation.reviewStatuses).toEqual(["uncertain"]);
+  });
+
+  it("still delivers a resume that finishes after a message marked its review uncertain", async () => {
+    await seedPendingReview(store);
+    agent.resumeResult = completed;
+    let finishResume!: () => void;
+    agent.resumeGate = new Promise((resolve) => {
+      finishResume = resolve;
+    });
+    const approvedAt = new Date();
+    const dependencies = { agent, conversation, store, botName: BOT_NAME };
+
+    const decision = handleReviewDecision(
+      {
+        threadId: THREAD_ID,
+        interruptId: "interrupt-1",
+        actorId: ACTOR_ID,
+        decision: "approve",
+      },
+      { ...dependencies, now: () => approvedAt },
+    );
+    await vi.waitFor(() => expect(agent.resumeInputs).toHaveLength(1));
+
+    await handleConversationMessage(
+      {
+        threadId: THREAD_ID,
+        eventId: "event-1",
+        actorId: ACTOR_ID,
+        text: "Any update?",
+      },
+      {
+        ...dependencies,
+        now: () => new Date(approvedAt.getTime() + CLAIM_LEASE_MS + 1_000),
+      },
+    );
+    expect(await store.get(THREAD_ID)).toMatchObject({
+      pendingReviewState: "uncertain",
+      retentionState: "inactive",
+    });
+
+    finishResume();
+
+    await expect(decision).resolves.toBe("completed");
+    expect(conversation.agentResponses).toEqual([completed.response]);
+    const finished = await store.get(THREAD_ID);
+    expect(finished).toMatchObject({ agentSessionId: "session-1" });
+    expect(finished).not.toHaveProperty("pendingInterruptId");
+    expect(finished).not.toHaveProperty("pendingReviewState");
   });
 
   it("shows a leading directory listing when resuming an existing session", async () => {
