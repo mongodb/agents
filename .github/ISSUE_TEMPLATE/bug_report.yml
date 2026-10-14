@@ -1,5 +1,5 @@
 name: Bug Report
-description: Report an issue with a MongoDB Agent Skill
+description: Report an issue with a MongoDB Agent template or app
 title: "[Bug]: "
 labels: ["bug"]
 body:
@@ -9,11 +9,11 @@ body:
         Thanks for taking the time to report an issue! Please provide as much detail as possible to help us reproduce and fix the problem.
 
   - type: input
-    id: skill-name
+    id: agent-or-component
     attributes:
-      label: Skill Name
-      description: Which MongoDB Agent Skill is this issue related to?
-      placeholder: e.g., mongodb-query-optimization
+      label: Agent or Component
+      description: Which agent, app, or package is this issue related to?
+      placeholder: e.g., atlas-explorer, atlas-query-insights, atlas-explorer-slack-bot
     validations:
       required: true
 
@@ -21,7 +21,7 @@ body:
     id: task-description
     attributes:
       label: Task Description
-      description: What were you trying to accomplish? Please provide your prompt or describe the task, removing any sensitive information.
+      description: What were you trying to accomplish? Please provide your prompt or describe the workflow, removing any sensitive information.
       placeholder: "I was trying to..."
     validations:
       required: true
@@ -31,7 +31,7 @@ body:
     attributes:
       label: Expected Behavior
       description: What did you expect to happen?
-      placeholder: "I expected the skill to..."
+      placeholder: "I expected the agent to..."
     validations:
       required: true
 
@@ -40,7 +40,7 @@ body:
     attributes:
       label: Actual Behavior
       description: What actually happened?
-      placeholder: "Instead, the skill..."
+      placeholder: "Instead, the agent..."
     validations:
       required: true
 
@@ -57,38 +57,38 @@ body:
       required: true
 
   - type: input
-    id: agent-platform
+    id: runtime-environment
     attributes:
-      label: Agent Platform
-      description: Which AI agent or coding assistant are you using?
-      placeholder: e.g., Augment, Claude Code, Cursor, Cline, GitHub Copilot, etc.
+      label: Runtime Environment
+      description: Where and how were you running or invoking the agent?
+      placeholder: e.g., Local Playground (agentengine dev up), Deployed on Atlas Agent Engine (agentengine invoke), Slack bot, etc.
     validations:
       required: true
 
   - type: input
     id: llm-model
     attributes:
-      label: LLM Model
-      description: Which language model is your agent using?
-      placeholder: e.g., Claude 4.5 Sonnet, GPT-5.2, GPT-4o, Claude 4.6 Opus, etc.
+      label: Model Provider & Model
+      description: Which model provider and model is your agent configured to use?
+      placeholder: e.g., openai / gpt-5.4, anthropic / claude-sonnet-4-6, google-genai / gemini-2.5-pro, etc.
     validations:
       required: true
 
   - type: input
     id: mongodb-version
     attributes:
-      label: MongoDB Version
-      description: What version of MongoDB are you working with?
-      placeholder: e.g., 8.0.4, 7.0.12, 6.0.16
+      label: MongoDB Atlas Cluster Version & Tier
+      description: What MongoDB version and Atlas cluster tier are you working with, if applicable?
+      placeholder: e.g., MongoDB 8.0 (M10), MongoDB 7.0 (M30), M0 Free
     validations:
       required: false
 
   - type: input
-    id: skill-version
+    id: repo-version
     attributes:
-      label: Skill Version
-      description: Which version of the skill are you using? (commit hash, tag, or "latest from main")
-      placeholder: e.g., abc1234, v1.0.0, latest from main
+      label: Repository Revision
+      description: Which version of this repository are you using? (commit hash, tag, or "latest from main")
+      placeholder: e.g., abc1234, latest from main
     validations:
       required: false
 
@@ -96,11 +96,12 @@ body:
     id: environment-details
     attributes:
       label: Environment Details
-      description: Please provide relevant environment information
+      description: Please provide relevant environment and CLI version information
       placeholder: |
         - Operating System:
-        - Programming Language/Driver:
-        - Driver Version:
+        - agentengine CLI Version:
+        - Atlas CLI Version:
+        - Node.js / pnpm Version:
         - Other relevant details:
     validations:
       required: false
@@ -109,8 +110,8 @@ body:
     id: configuration-tools
     attributes:
       label: Configuration & Tools
-      description: Any relevant configuration details or tools that were invoked during skill execution?
-      placeholder: "e.g., MongoDB Atlas, specific mongosh version, deployment configuration, etc."
+      description: Any relevant agent configuration details or MCP tools/skills invoked during the run?
+      placeholder: "e.g., Atlas MCP roles (GROUP_DATA_ACCESS_READ_ONLY), ALLOW_WRITE_OPERATIONS setting, custom agent.yaml or config.ts settings, MCP tools called, etc."
     validations:
       required: false
 
@@ -118,7 +119,7 @@ body:
     id: error-messages
     attributes:
       label: Error Messages or Logs
-      description: Please include any error messages, stack traces, or relevant log output
+      description: Please include any error messages, stack traces, agentengine CLI output, or trace details (remove any credentials or sensitive data)
       render: shell
     validations:
       required: false
