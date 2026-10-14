@@ -65,13 +65,9 @@ config and the Atlas CLI steps are in each agent's README:
 [Atlas Explorer](agents/atlas-explorer/README.md#configure) or
 [Atlas Query Insights](agents/atlas-query-insights/README.md#configure).
 
-Atlas Explorer uses OpenAI by default. OpenAI and Anthropic Claude models are
-the verified providers. To use Anthropic instead, change the provider and
-model in `src/agent_atlas_explorer/config.ts`. Then update `agent.yaml` with
-that provider's API key name and API host, because the agent can reach only
-the hosts that `agent.yaml` allows. The
-[Atlas Explorer README](agents/atlas-explorer/README.md#model-and-persona) has
-the exact changes. Atlas Query Insights switches the same way.
+The agents use OpenAI by default. OpenAI and Anthropic Claude models are the
+verified providers. To switch provider, see the README for each agent in
+[`agents/`](agents/).
 
 ### 3. Test it locally
 
