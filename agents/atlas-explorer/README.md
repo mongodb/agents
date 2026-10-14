@@ -362,6 +362,12 @@ additional Chat SDK adapters or other Agent Engine workspaces.
   is bounded by the controls above and the egress policy in `agent.yaml`,
   which blocks outbound traffic to unlisted hosts so injected text can't send
   data elsewhere.
+- **Input guard.** The agent screens each user message before the model sees
+  it: it blocks common injection phrases and redacts pasted credentials.
+  `inputGuard` in `config.ts` sets `mode` (`enforce`, `monitor` or `off`) and
+  can turn on an optional LLM judge that reuses the agent's model provider.
+  The guard can be bypassed and doesn't screen tool output. See
+  [Input guard](../../docs/input-guard.md).
 - **Your data is in traces.** Conversations and traces in Agent Engine can
   include database names, collection names, and sampled documents. They are
   visible only inside your project, and you govern them. Your model provider
