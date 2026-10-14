@@ -188,7 +188,7 @@ Tool Pod calls, and `knowledge.mongodb.com` for the wrapped knowledge-base tools
    ```ts
    llm: {
      provider: "anthropic",
-     model: "claude-sonnet-4-5",
+     model: "claude-haiku-5-5",
    },
    ```
 

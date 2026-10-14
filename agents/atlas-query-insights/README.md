@@ -117,7 +117,7 @@ OpenAI and Anthropic Claude models are the verified providers.
    ```ts
    llm: {
      provider: "anthropic",
-     model: "claude-sonnet-4-5",
+     model: "claude-haiku-5-5",
    },
    ```
 
