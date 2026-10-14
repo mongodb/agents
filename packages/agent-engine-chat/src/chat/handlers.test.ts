@@ -524,7 +524,7 @@ describe("registerChatHandlers", () => {
       },
     );
 
-    it("still routes an allowlisted bot that mentions this bot in a subscribed thread", async () => {
+    it("still answers a thread reply from an allowlisted bot that @-mentions this bot", async () => {
       const bots = await twoBots({
         authorizedActorIds: new Set(["slack:U123", `slack:${BOT_A_ID}`]),
       });
