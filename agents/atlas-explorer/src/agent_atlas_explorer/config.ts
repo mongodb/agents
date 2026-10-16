@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import type { createInputGuardMiddleware } from "@repo/atlas-explorer-agent";
-
 /**
  * Non-secret Atlas Explorer settings.
  *
@@ -33,11 +31,7 @@ import type { createInputGuardMiddleware } from "@repo/atlas-explorer-agent";
  *
  * `inputGuard` screens each user message before the model sees it: it redacts
  * pasted secrets and refuses messages that are too long to screen. `mode` is
- * "enforce", "monitor" (log only) or "off". `judge.enabled` adds an LLM
- * prompt-injection check. It reuses the agent's provider and API key, so it
- * needs no new secret or egress rule. Set `judge.model` to use a different
- * model, or leave it out to use the agent's own. See
- * {@link createInputGuardMiddleware}.
+ * "enforce", "monitor" (log only) or "off".
  */
 
 export const atlasExplorerConfig = {
@@ -54,8 +48,5 @@ export const atlasExplorerConfig = {
   },
   inputGuard: {
     mode: "enforce",
-    judge: {
-      enabled: false,
-    },
   },
 } as const;
