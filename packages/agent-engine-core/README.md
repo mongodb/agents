@@ -3,8 +3,8 @@
 Shared Agent Engine runtime used by the agent templates: LLM selection, tool
 selection, requester metadata, and LangGraph middleware.
 `redactSecretsMiddleware` strips common credentials from model replies and tool
-messages before they are checkpointed. `createInputGuardMiddleware` screens
-each user message before the model sees it; see
+messages before they are checkpointed. `inputGuardFromConfig` builds the
+middleware that screens each user message before the model sees it; see
 [Input guard](../../docs/input-guard.md). `approveAggregateWritesMiddleware`
 requires HITL approval for `mongodb__aggregate` and `mongodb__aggregate_db` when the
 pipeline contains `$out` or `$merge`. `rejectAggregateWritesMiddleware`

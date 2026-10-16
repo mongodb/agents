@@ -155,8 +155,9 @@ limits from the start.
   `agent.yaml` doesn't list. Treat content from untrusted sources as
   untrusted, and review what an agent can reach before you deploy it.
 - **Input guard.** Each agent screens the user's message before the model sees
-  it. It blocks common injection phrases and redacts pasted credentials. This
-  is a speed bump, not a boundary, and it doesn't screen tool output. See
+  it. It blocks common injection phrases, redacts pasted credentials, and can
+  optionally ask a model to judge the message. This is a speed bump, not a
+  boundary, and it doesn't screen tool output. See
   [Input guard](docs/input-guard.md).
 
 ## Why Atlas Agent Engine

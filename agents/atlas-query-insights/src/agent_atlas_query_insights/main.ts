@@ -25,7 +25,8 @@ import {
   surfaceTokenMintFailures,
   buildLLM,
   buildSystemPrompt,
-  createInputGuardMiddleware,
+  INPUT_GUARD_JUDGE_LLM_ID,
+  inputGuardFromConfig,
   prepareAgentInput,
   recoverToolErrorsMiddleware,
   redactSecretsMiddleware,
@@ -59,6 +60,19 @@ export const buildAgent = app.entrypoint(() => {
   const saver =
     platformSaver === null ? null : withRequesterMetadata(platformSaver);
 
+  const inputGuard = inputGuardFromConfig(
+    atlasQueryInsightsConfig.inputGuard,
+    (judgeModel) =>
+      app.llm(
+        buildLLM({
+          provider: atlasQueryInsightsConfig.llm.provider,
+          model: judgeModel || atlasQueryInsightsConfig.llm.model,
+          logPrefix: "atlas-query-insights-input-judge",
+        }),
+        INPUT_GUARD_JUDGE_LLM_ID,
+      ),
+  );
+
   return app.deepAgent(
     buildLLM({
       provider: atlasQueryInsightsConfig.llm.provider,
@@ -77,9 +91,7 @@ export const buildAgent = app.entrypoint(() => {
       backend: withoutShellExecution(new AgentEngineToolSandboxBackend()) as never,
       checkpointer: (saver ?? false) as never,
       middleware: [
-        createInputGuardMiddleware({
-          mode: atlasQueryInsightsConfig.inputGuard.mode,
-        }),
+        inputGuard,
         stampResumeClientUserMiddleware,
         stripToolEchoMiddleware,
         redactSecretsMiddleware,

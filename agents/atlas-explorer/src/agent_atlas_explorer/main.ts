@@ -30,7 +30,8 @@ import {
   approveAggregateWritesMiddleware,
   buildLLM,
   buildSystemPrompt,
-  createInputGuardMiddleware,
+  INPUT_GUARD_JUDGE_LLM_ID,
+  inputGuardFromConfig,
   mutativeInterruptOn,
   prepareAtlasExplorerInput,
   recoverToolErrorsMiddleware,
@@ -97,6 +98,19 @@ export const buildAgent = app.entrypoint((): unknown => {
     descriptionPrefix: "MongoDB or Atlas operation pending approval",
   });
 
+  const inputGuard = inputGuardFromConfig(
+    atlasExplorerConfig.inputGuard,
+    (judgeModel) =>
+      app.llm(
+        buildLLM({
+          provider: atlasExplorerConfig.llm.provider,
+          model: judgeModel || atlasExplorerConfig.llm.model,
+          logPrefix: "atlas-explorer-input-judge",
+        }),
+        INPUT_GUARD_JUDGE_LLM_ID,
+      ),
+  );
+
   return app.deepAgent(
     buildLLM({
       provider: atlasExplorerConfig.llm.provider,
@@ -115,9 +129,7 @@ export const buildAgent = app.entrypoint((): unknown => {
       // types the saver as BaseCheckpointSaver<number>.
       checkpointer: (saver ?? false) as DeepAgentOptions["checkpointer"],
       middleware: [
-        createInputGuardMiddleware({
-          mode: atlasExplorerConfig.inputGuard.mode,
-        }),
+        inputGuard,
         stampResumeClientUserMiddleware,
         stripToolEchoMiddleware,
         redactSecretsMiddleware,

@@ -5,7 +5,7 @@ model sees it. This page covers what the guard does, how to configure it, and
 what it does not cover.
 
 The guard is a speed bump for obvious prompt injection, not a security
-boundary. Pattern filters can be bypassed. The controls that
+boundary. Pattern filters and model judges can be bypassed. The controls that
 bound the agents are structural: read-only roles, approval for writes, the
 egress policy in `agent.yaml`, and the untrusted-data rule in the system
 prompt.
@@ -28,6 +28,8 @@ For each message it runs these steps in order:
    runs in Tier 1 only: regex patterns plus Unicode, homoglyph and leet-speak
    normalization, about 1 ms. Zero-width and other invisible characters are
    stripped first. The ML tiers are never enabled, so nothing native loads.
+3. **LLM judge (opt-in).** If the regex tier passes and the judge is
+   enabled, a small model call classifies the message.
 
 A blocked message gets a fixed refusal reply. The model is never called, and
 the message in state is replaced with a placeholder so it isn't replayed on
@@ -66,14 +68,58 @@ injects secret env vars, so this is a config-file setting.
 ```ts
 inputGuard: {
   mode: "enforce",        // "enforce" | "monitor" | "off"
-  judge: { enabled: false, model: "" },  // not used yet
+  judge: { enabled: false, model: "" },
 },
 ```
 
-- `enforce` (default) blocks and redacts.
+- `enforce` (default) blocks, redacts and runs the judge when enabled.
 - `monitor` logs what it would do and changes nothing. Use it for a cautious
   rollout.
 - `off` disables the guard.
+
+## LLM judge
+
+The judge is off by default. It adds one small model call per user turn, and
+each call is a durable step on the platform.
+
+Enable it with `judge: { enabled: true, model: "" }`. An empty `model` uses
+the agent's own model. Set a cheaper model name from the same provider to
+reduce cost.
+
+How it is wired:
+
+- `main.ts` builds a second model with `buildLLM` and registers it with
+  `app.llm(model, "input-judge")`, next to the agent's own model. The call
+  goes through the platform's `invoke_llm` path and the tool pod, like the
+  main model's calls.
+- It reuses the provider, API key and egress rule the agent already has, so
+  it needs no new secret and no change to `agent.yaml`.
+- The judge reads the message as delimited data and answers through a forced
+  tool call with a single boolean. The verdict is tagged so it isn't streamed
+  to the client.
+- It fails open. On a timeout (8 seconds) or any model error the guard logs
+  `judge failed open` and lets the message through.
+
+The judge prompt treats instructions that shape the current request (reply
+language, length, "do not use tools") as normal. If you change the prompt or
+the model, check it against real prompts before enabling it in production.
+
+### If routing the judge through the platform fails
+
+Check the agent logs for `[inputGuard] judge failed open`. If calls from the
+agent process are being blocked, you have two options:
+
+- **Allow the model host from the agent process.** In `agent.yaml`, change
+  the model provider's `network.egress` entry from `component: tool` to
+  `component: all`. This lets the agent process, not only the tool pod, reach
+  that one model host. It slightly weakens the egress control, and the model
+  host is the only host affected.
+- **Use a separate judge provider.** This is supported if you document it
+  for your deployment. It needs three changes: a new secret under both
+  `required_secrets.aer` and `required_secrets.tools.invoke_llm`, a new
+  `network.egress` rule for the provider's host, and the provider and model
+  passed to the judge's `buildLLM` call in `main.ts`. See "Model and persona"
+  in the Atlas Explorer README for the existing change-provider steps.
 
 ## Limits
 
@@ -85,7 +131,8 @@ inputGuard: {
   and logs can still carry injected instructions (indirect injection). The
   structural controls and the untrusted-data prompt rule are the defense
   there.
-- The regex tier is English-centric.
+- The regex tier is English-centric. The judge covers other languages
+  better.
 
 ## Library choice
 
