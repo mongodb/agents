@@ -139,6 +139,31 @@ describe("createInputGuardMiddleware", () => {
     expect(logged(warn)).toContain("refused length=");
   });
 
+  it("refuses over-limit text in content blocks", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    const result = await buildAgent({}).invoke(
+      {
+        messages: [
+          new HumanMessage({
+            content: [
+              { type: "text", text: "find my clusters" },
+              {
+                type: "text",
+                text: "a".repeat(INPUT_GUARD_MAX_SCREEN_CHARS + 1),
+              },
+            ],
+          }),
+        ],
+      },
+      { configurable: { thread_id: "blocks-too-long" } },
+    );
+
+    expect(modelAnswers(result.messages)).toBe(0);
+    expect(lastText(result.messages)).toBe(INPUT_GUARD_TOO_LONG);
+    expect(logged(warn)).toContain("refused length=");
+  });
+
   it("only logs messages over the input limit in monitor mode", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 

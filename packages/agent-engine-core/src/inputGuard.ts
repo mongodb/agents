@@ -20,6 +20,7 @@ import {
   type MessageContent,
 } from "@langchain/core/messages";
 import { createMiddleware } from "langchain";
+import { z } from "zod";
 
 import { redactContent } from "./redactSecrets.js";
 import type { InputGuardMode } from "./inputGuardConfig.js";
@@ -47,12 +48,16 @@ export const INPUT_GUARD_TOO_LONG =
   `${INPUT_GUARD_MAX_SCREEN_CHARS.toLocaleString("en-US")} characters. ` +
   "Please split it into smaller parts and send them separately.";
 
+/** A content block that carries message text. */
+const textBlockSchema = z.object({ text: z.string() });
+
 function contentText(content: MessageContent): string {
   if (typeof content === "string") return content;
   return content
-    .map((block) =>
-      "text" in block && typeof block.text === "string" ? block.text : "",
-    )
+    .map((block) => {
+      const parsed = textBlockSchema.safeParse(block);
+      return parsed.success ? parsed.data.text : "";
+    })
     .filter((text) => text.length > 0)
     .join("\n");
 }
