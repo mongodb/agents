@@ -170,22 +170,19 @@ describe("Atlas Query Insights graph assembly", () => {
     await import("./main.js");
     const judge = atlasQueryInsightsConfig.inputGuard.judge as {
       enabled: boolean;
-      model?: string;
     };
     judge.enabled = true;
-    judge.model = "judge-model";
     try {
       harness.builder!();
     } finally {
       judge.enabled = false;
-      delete judge.model;
     }
 
     expect(harness.llm).toHaveBeenCalledTimes(1);
     expect(harness.llm).toHaveBeenCalledWith(harness.model, "input-judge");
     expect(harness.buildLLM).toHaveBeenCalledWith({
       provider: atlasQueryInsightsConfig.llm.provider,
-      model: "judge-model",
+      model: "gpt-6-luna",
       logPrefix: "atlas-query-insights-input-judge",
     });
   });
@@ -194,12 +191,16 @@ describe("Atlas Query Insights graph assembly", () => {
     await import("./main.js");
     const judge = atlasQueryInsightsConfig.inputGuard.judge as {
       enabled: boolean;
+      model?: string;
     };
+    const configured = judge.model;
     judge.enabled = true;
+    delete judge.model;
     try {
       harness.builder!();
     } finally {
       judge.enabled = false;
+      judge.model = configured;
     }
 
     expect(harness.buildLLM).toHaveBeenCalledWith({

@@ -287,36 +287,37 @@ describe("Atlas Explorer graph assembly", () => {
 
   it("registers a separate model for the input guard judge when enabled", async () => {
     const builder = await loadBuilder();
-    const judge = atlasExplorerConfig.inputGuard.judge as {
-      enabled: boolean;
-      model?: string;
-    };
-    judge.enabled = true;
-    judge.model = "judge-model";
-    try {
-      builder();
-    } finally {
-      judge.enabled = false;
-      delete judge.model;
-    }
-
-    expect(harness.llm).toHaveBeenCalledTimes(1);
-    expect(harness.llm).toHaveBeenCalledWith(harness.model, "input-judge");
-    expect(harness.buildLLM).toHaveBeenCalledWith({
-      provider: atlasExplorerConfig.llm.provider,
-      model: "judge-model",
-      logPrefix: "atlas-explorer-input-judge",
-    });
-  });
-
-  it("uses the agent's model for the judge when none is configured", async () => {
-    const builder = await loadBuilder();
     const judge = atlasExplorerConfig.inputGuard.judge as { enabled: boolean };
     judge.enabled = true;
     try {
       builder();
     } finally {
       judge.enabled = false;
+    }
+
+    expect(harness.llm).toHaveBeenCalledTimes(1);
+    expect(harness.llm).toHaveBeenCalledWith(harness.model, "input-judge");
+    expect(harness.buildLLM).toHaveBeenCalledWith({
+      provider: atlasExplorerConfig.llm.provider,
+      model: "gpt-6-luna",
+      logPrefix: "atlas-explorer-input-judge",
+    });
+  });
+
+  it("uses the agent's model for the judge when none is configured", async () => {
+    const builder = await loadBuilder();
+    const judge = atlasExplorerConfig.inputGuard.judge as {
+      enabled: boolean;
+      model?: string;
+    };
+    const configured = judge.model;
+    judge.enabled = true;
+    delete judge.model;
+    try {
+      builder();
+    } finally {
+      judge.enabled = false;
+      judge.model = configured;
     }
 
     expect(harness.buildLLM).toHaveBeenCalledWith({
