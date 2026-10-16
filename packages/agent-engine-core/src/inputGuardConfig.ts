@@ -15,20 +15,13 @@
  */
 
 /**
- * "enforce" applies the guard: it refuses over-long messages, redacts pasted
- * secrets, and blocks prompt injection when a judge is set. "monitor" logs
- * what enforce would do without changing the message. "off" disables the
- * guard.
+ * "enforce" applies the guard: it refuses over-long messages and redacts
+ * pasted secrets. "monitor" logs what enforce would do without changing the
+ * message. "off" disables the guard.
  */
 export type InputGuardMode = "enforce" | "monitor" | "off";
 
 /** The per-agent `inputGuard` block in `config.ts`. */
 export interface InputGuardConfig {
   readonly mode: InputGuardMode;
-  readonly judge: {
-    readonly enabled: boolean;
-    /** Judge model name. Omit it to use the agent's own model. */
-    readonly model?: string;
-    readonly timeoutMs?: number;
-  };
 }
