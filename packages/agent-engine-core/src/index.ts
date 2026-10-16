@@ -36,6 +36,7 @@ export {
   INPUT_GUARD_JUDGE_LLM_ID,
   INPUT_GUARD_PLACEHOLDER,
   INPUT_GUARD_REFUSAL,
+  INPUT_GUARD_TOO_LONG,
   createInputGuardMiddleware,
   createLlmInjectionJudge,
   inputGuardFromConfig,
