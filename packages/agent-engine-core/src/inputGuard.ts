@@ -135,8 +135,7 @@ function replacement(original: HumanMessage, content: MessageContent) {
  *   `$comment` values and logs is not covered.
  *
  * The structural controls (read-only roles, approval for writes, the egress
- * policy and the untrusted-data prompt rule) are what bound the agents. An
- * optional LLM judge can screen for prompt injection on top of this guard.
+ * policy and the untrusted-data prompt rule) are what bound the agents.
  */
 export function createInputGuardMiddleware(options: InputGuardOptions = {}) {
   const mode = options.mode ?? "enforce";
