@@ -32,20 +32,22 @@ export {
   type ClientUserExtras,
 } from "./clientUser.js";
 export {
-  INPUT_GUARD_JUDGE_LLM_ID,
   INPUT_GUARD_PLACEHOLDER,
   INPUT_GUARD_REFUSAL,
   INPUT_GUARD_TOO_LONG,
   createInputGuardMiddleware,
-  createLlmInjectionJudge,
   inputGuardFromConfig,
-  type InjectionJudge,
   type InputGuardOptions,
 } from "./inputGuard.js";
 export {
   type InputGuardConfig,
   type InputGuardMode,
 } from "./inputGuardConfig.js";
+export {
+  INPUT_GUARD_JUDGE_LLM_ID,
+  createLlmInjectionJudge,
+  type InjectionJudge,
+} from "./inputGuardJudge.js";
 export {
   buildLLM,
   resolveOpenAIResponsesApi,
