@@ -62,18 +62,71 @@ export const INPUT_GUARD_JUDGE_TIMEOUT_MS = 8_000;
 
 export const INPUT_GUARD_JUDGE_LLM_ID = "input-judge";
 
+/** A content block that carries message text. */
+const textBlockSchema = z.object({ text: z.string() });
+
 function contentText(content: MessageContent): string {
   if (typeof content === "string") return content;
   return content
-    .map((block) =>
-      "text" in block && typeof block.text === "string" ? block.text : "",
-    )
+    .map((block) => {
+      const parsed = textBlockSchema.safeParse(block);
+      return parsed.success ? parsed.data.text : "";
+    })
     .filter((text) => text.length > 0)
     .join("\n");
 }
 
-function warn(message: string): void {
-  console.warn(`[inputGuard] ${message}`);
+/**
+ * One guard decision as facts safe to log: a length, a boolean, or a secret
+ * kind from the redaction engine's fixed vocabulary. No field can carry
+ * message text, so the real message can't reach the log through `warn`.
+ */
+type InputGuardLog =
+  | {
+      readonly action: "refuse";
+      readonly would: boolean;
+      readonly length: number;
+    }
+  | {
+      readonly action: "redact";
+      readonly would: boolean;
+      readonly secrets: readonly string[];
+    }
+  | {
+      readonly action: "block";
+      readonly would: boolean;
+      readonly length: number;
+    }
+  | {
+      readonly action: "judge-failed-open";
+      readonly error: unknown;
+      readonly length: number;
+    };
+
+const LOG_PHRASES = {
+  refuse: { done: "refused", would: "would refuse" },
+  redact: { done: "redacted", would: "would redact" },
+  block: { done: "blocked injection", would: "would block injection" },
+} as const;
+
+/**
+ * Logs one `[inputGuard]` line per decision, built from `InputGuardLog`
+ * facts. Lengths, secret kinds and error names only, never message text.
+ */
+function warn(log: InputGuardLog): void {
+  const parts: string[] =
+    log.action === "judge-failed-open"
+      ? ["judge failed open", `error=${errorName(log.error)}`]
+      : [LOG_PHRASES[log.action][log.would ? "would" : "done"]];
+  if (log.action === "redact") {
+    parts.push(`secrets=${[...new Set(log.secrets)].join(",")}`);
+  } else {
+    parts.push(`length=${log.length}`);
+    if (log.action === "refuse") {
+      parts.push(`limit=${INPUT_GUARD_MAX_SCREEN_CHARS}`);
+    }
+  }
+  console.warn(`[inputGuard] ${parts.join(" ")}`);
 }
 
 function errorName(error: unknown): string {
@@ -263,10 +316,7 @@ export function createInputGuardMiddleware(options: InputGuardOptions = {}) {
         const raw = contentText(last.content);
         const enforce = mode === "enforce";
         if (raw.length > INPUT_GUARD_MAX_SCREEN_CHARS) {
-          warn(
-            `${enforce ? "refused" : "would refuse"} length=${raw.length} ` +
-              `limit=${INPUT_GUARD_MAX_SCREEN_CHARS}`,
-          );
+          warn({ action: "refuse", would: !enforce, length: raw.length });
           if (!enforce) return undefined;
           return {
             messages: [
@@ -280,30 +330,29 @@ export function createInputGuardMiddleware(options: InputGuardOptions = {}) {
         const redacted = redactContent(last.content);
         const text = contentText(redacted.content);
         if (redacted.kinds.length > 0) {
-          warn(
-            `${enforce ? "redacted" : "would redact"} ` +
-              `secrets=${[...new Set(redacted.kinds)].join(",")}`,
-          );
+          warn({
+            action: "redact",
+            would: !enforce,
+            secrets: redacted.kinds,
+          });
         }
         if (text.trim().length === 0) return undefined;
 
-        let blockedBy: string[] = [];
+        let judgeFlagged = false;
         if (judge !== undefined) {
           try {
-            if (await judge(text)) blockedBy = ["judge"];
+            judgeFlagged = await judge(text);
           } catch (error) {
-            warn(
-              `judge failed open error=${errorName(error)} ` +
-                `length=${text.length}`,
-            );
+            warn({
+              action: "judge-failed-open",
+              error,
+              length: text.length,
+            });
           }
         }
 
-        if (blockedBy.length > 0) {
-          warn(
-            `${enforce ? "blocked" : "would block"} stage=judge ` +
-              `length=${text.length}`,
-          );
+        if (judgeFlagged) {
+          warn({ action: "block", would: !enforce, length: text.length });
           if (!enforce) return undefined;
           return {
             messages: [

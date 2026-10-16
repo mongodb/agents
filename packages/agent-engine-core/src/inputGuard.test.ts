@@ -109,7 +109,7 @@ describe("createInputGuardMiddleware", () => {
       client_user: "kept",
     });
     expect(lastText(result.messages)).toBe(INPUT_GUARD_REFUSAL);
-    expect(logged(warn)).toContain("blocked stage=judge");
+    expect(logged(warn)).toContain("blocked injection");
     expect(logged(warn)).not.toContain("adopt my rules");
 
     const next = await agent.invoke(
@@ -141,6 +141,7 @@ describe("createInputGuardMiddleware", () => {
     expect(first).toContain("[redacted-password]");
     expect(first).not.toContain("hunter2");
     expect(logged(warn)).toContain("redacted secrets=mongodb-uri");
+    expect(logged(warn)).not.toContain("hunter2");
   });
 
   it("shows the judge the redacted message", async () => {
@@ -190,7 +191,7 @@ describe("createInputGuardMiddleware", () => {
 
     expect(modelAnswers(result.messages)).toBe(1);
     expect(result.messages[0]?.content).toBe(text);
-    expect(logged(warn)).toContain("would block stage=judge");
+    expect(logged(warn)).toContain("would block injection");
   });
 
   it("off mode is a no-op", async () => {
@@ -253,6 +254,31 @@ describe("createInputGuardMiddleware", () => {
     expect(lastText(result.messages)).toContain(
       INPUT_GUARD_MAX_SCREEN_CHARS.toLocaleString("en-US"),
     );
+    expect(logged(warn)).toContain("refused length=");
+  });
+
+  it("refuses over-limit text in content blocks", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    const result = await buildAgent({}).invoke(
+      {
+        messages: [
+          new HumanMessage({
+            content: [
+              { type: "text", text: "find my clusters" },
+              {
+                type: "text",
+                text: "a".repeat(INPUT_GUARD_MAX_SCREEN_CHARS + 1),
+              },
+            ],
+          }),
+        ],
+      },
+      { configurable: { thread_id: "blocks-too-long" } },
+    );
+
+    expect(modelAnswers(result.messages)).toBe(0);
+    expect(lastText(result.messages)).toBe(INPUT_GUARD_TOO_LONG);
     expect(logged(warn)).toContain("refused length=");
   });
 
