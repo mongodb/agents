@@ -71,8 +71,22 @@ export const INPUT_GUARD_BLOCK_PATTERNS: ReadonlySet<string> = new Set([
   "ignore_safety",
 ]);
 
-/** The regex tier screens at most this many characters, head and tail. */
-export const INPUT_GUARD_MAX_SCREEN_CHARS = 50_000;
+/**
+ * Messages longer than this many characters are refused instead of screened.
+ * The regex tier reads the full text in windows below this limit.
+ */
+export const INPUT_GUARD_MAX_SCREEN_CHARS = 100_000;
+
+/** The refusal reply for a message over `INPUT_GUARD_MAX_SCREEN_CHARS`. */
+export const INPUT_GUARD_TOO_LONG =
+  "I can't act on that message because it is too long for me to screen. " +
+  "Please split it into smaller parts and send them separately.";
+
+/** The library truncates analysis to its first 50,000 characters. */
+const LIBRARY_ANALYSIS_CHARS = 50_000;
+
+/** Windows overlap by this many characters so patterns spanning a boundary are caught. */
+const WINDOW_OVERLAP_CHARS = 1_000;
 
 type PromptDefense = ReturnType<typeof createPromptDefense>;
 
@@ -87,34 +101,41 @@ function getDefense(): PromptDefense {
   return defense;
 }
 
-function headAndTail(text: string, limit: number): string {
-  if (text.length <= limit) return text;
-  const half = Math.floor(limit / 2);
-  return `${text.slice(0, half)}\n${text.slice(text.length - half)}`;
-}
-
 // The library strips zero-width space, joiner and BOM, but not the word
 // joiner, invisible operators or soft hyphens.
 const INVISIBLE_CHARS = /[\u00AD\u200B-\u200F\u2060-\u2064\uFEFF]/g;
 
-/** Runs the regex tier. Synchronous, about a millisecond. */
+/**
+ * Runs the regex tier. Synchronous, a few milliseconds: the library reads at
+ * most `LIBRARY_ANALYSIS_CHARS` characters per call, so text above that is
+ * screened in overlapping windows. `text` must not exceed
+ * `INPUT_GUARD_MAX_SCREEN_CHARS`; the middleware refuses longer messages.
+ */
 export function screenUserInput(text: string): InputScreenResult {
   const visible = text.replace(INVISIBLE_CHARS, "");
-  const result = getDefense().analyze(
-    headAndTail(visible, INPUT_GUARD_MAX_SCREEN_CHARS),
-  );
   const blockedBy = new Set<string>();
   const flagged = new Set<string>();
   if (visible.length !== text.length) flagged.add("invisible_unicode");
-  for (const match of result.matches) {
-    if (INPUT_GUARD_BLOCK_PATTERNS.has(match.pattern)) {
-      blockedBy.add(match.pattern);
-    } else {
-      flagged.add(match.pattern);
+  const record = (result: ReturnType<PromptDefense["analyze"]>) => {
+    for (const match of result.matches) {
+      if (INPUT_GUARD_BLOCK_PATTERNS.has(match.pattern)) {
+        blockedBy.add(match.pattern);
+      } else {
+        flagged.add(match.pattern);
+      }
     }
-  }
-  for (const flag of result.structuralFlags) {
-    flagged.add(`structural:${flag.type}`);
+    for (const flag of result.structuralFlags) {
+      flagged.add(`structural:${flag.type}`);
+    }
+  };
+  for (
+    let start = 0;
+    start < visible.length;
+    start += LIBRARY_ANALYSIS_CHARS - WINDOW_OVERLAP_CHARS
+  ) {
+    record(
+      getDefense().analyze(visible.slice(start, start + LIBRARY_ANALYSIS_CHARS)),
+    );
   }
   return { blockedBy: [...blockedBy], flagged: [...flagged] };
 }
@@ -183,7 +204,7 @@ function replacement(original: HumanMessage, content: MessageContent) {
  * - It does not screen tool output, so indirect injection through documents,
  *   `$comment` values and logs is not covered.
  * - The patterns are English-centric, and messages over 50,000 characters are
- *   screened by head and tail.
+ *   screened in full; messages over 100,000 characters are refused.
  *
  * `@stackone/defender` is pinned to an exact version. `screenUserInput` wraps
  * it so a small in-repo rule list could replace it. The agents' esbuild
@@ -204,9 +225,25 @@ export function createInputGuardMiddleware(options: InputGuardOptions = {}) {
         const last = state.messages.at(-1);
         if (!HumanMessage.isInstance(last)) return undefined;
 
+        const raw = contentText(last.content);
+        const enforce = mode === "enforce";
+        if (raw.length > INPUT_GUARD_MAX_SCREEN_CHARS) {
+          warn(
+            `${enforce ? "refused" : "would refuse"} length=${raw.length} ` +
+              `limit=${INPUT_GUARD_MAX_SCREEN_CHARS}`,
+          );
+          if (!enforce) return undefined;
+          return {
+            messages: [
+              replacement(last, INPUT_GUARD_PLACEHOLDER),
+              new AIMessage(INPUT_GUARD_TOO_LONG),
+            ],
+            jumpTo: "end" as const,
+          };
+        }
+
         const redacted = redactContent(last.content);
         const text = contentText(redacted.content);
-        const enforce = mode === "enforce";
         if (redacted.kinds.length > 0) {
           warn(
             `${enforce ? "redacted" : "would redact"} ` +

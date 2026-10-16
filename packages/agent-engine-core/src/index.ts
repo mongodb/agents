@@ -35,6 +35,7 @@ export {
   INPUT_GUARD_BLOCK_PATTERNS,
   INPUT_GUARD_PLACEHOLDER,
   INPUT_GUARD_REFUSAL,
+  INPUT_GUARD_TOO_LONG,
   createInputGuardMiddleware,
   screenUserInput,
   type InputGuardOptions,
