@@ -366,7 +366,7 @@ additional Chat SDK adapters or other Agent Engine workspaces.
   it: it blocks common injection phrases and redacts pasted credentials.
   `inputGuard.mode` in `config.ts` is `enforce`, `monitor` or `off`. The guard
   can be bypassed and doesn't screen tool output. See
-  [Input guard](../../docs/input-guard.md).
+  [Input guard](../../packages/agent-engine-core/src/inputGuard.ts).
 - **Your data is in traces.** Conversations and traces in Agent Engine can
   include database names, collection names, and sampled documents. They are
   visible only inside your project, and you govern them. Your model provider

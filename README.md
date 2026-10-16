@@ -157,7 +157,7 @@ limits from the start.
 - **Input guard.** Each agent screens the user's message before the model sees
   it. It blocks common injection phrases and redacts pasted credentials. This
   is a speed bump, not a boundary, and it doesn't screen tool output. See
-  [Input guard](docs/input-guard.md).
+  [Input guard](packages/agent-engine-core/src/inputGuard.ts).
 
 ## Why Atlas Agent Engine
 

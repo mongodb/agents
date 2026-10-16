@@ -5,7 +5,7 @@ selection, requester metadata, and LangGraph middleware.
 `redactSecretsMiddleware` strips common credentials from model replies and tool
 messages before they are checkpointed. `createInputGuardMiddleware` screens
 each user message before the model sees it; see
-[Input guard](../../docs/input-guard.md). `approveAggregateWritesMiddleware`
+[Input guard](./src/inputGuard.ts). `approveAggregateWritesMiddleware`
 requires HITL approval for `mongodb__aggregate` and `mongodb__aggregate_db` when the
 pipeline contains `$out` or `$merge`. `rejectAggregateWritesMiddleware`
 rejects those calls for a read-only agent. `surfaceTokenMintFailures` wraps the

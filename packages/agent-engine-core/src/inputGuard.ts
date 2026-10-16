@@ -26,15 +26,6 @@ import { redactContent } from "./redactSecrets.js";
 import type { InputGuardMode } from "./inputGuardConfig.js";
 import { isAgentEngineResume } from "./stampResume.js";
 
-/**
- * Screens the user's message before the model sees it. This is a speed bump
- * for obvious prompt injection, not a security boundary: pattern filters are
- * bypassable. The structural controls (read-only roles, approval for writes,
- * the egress policy, the untrusted-data prompt rule) are what bound the
- * agents. PII is deliberately not handled, because emails, IPs and
- * timestamps are normal Atlas input.
- */
-
 export interface InputGuardOptions {
   /** Defaults to "enforce". "monitor" logs without blocking or modifying. */
   mode?: InputGuardMode;
@@ -152,6 +143,53 @@ function replacement(original: HumanMessage, content: MessageContent) {
   });
 }
 
+/**
+ * Screens the latest user message before the model sees it. This is a
+ * LangChain `beforeAgent` middleware, so it runs on the agent side and covers
+ * every client: Slack, the playground and direct API calls. It skips approval
+ * resumes and turns whose last message isn't from the user.
+ *
+ * For each message it runs these steps in order:
+ *
+ * 1. Redacts pasted secrets: connection strings with passwords, `mdb_sa_sk_`
+ *    and `sk-` keys, and private keys. It uses the same rules as the redaction
+ *    of model replies. The model and the checkpoint only see the redacted text.
+ * 2. Blocks known injection phrases with the Tier 1 regex patterns of
+ *    `@stackone/defender`, after stripping invisible characters. Tier 1 also
+ *    normalizes Unicode, homoglyphs and leet-speak. It blocks attempts to:
+ *    - ignore, disregard, forget or override earlier instructions;
+ *    - reassign the assistant's role ("you are now ...", DAN, developer mode);
+ *    - pose as a system, developer or admin message;
+ *    - bypass or disable security and safety rules.
+ *
+ * Step 2 blocks only on the pattern IDs in `INPUT_GUARD_BLOCK_PATTERNS`, not
+ * on the library's "high" severity, because several high-severity patterns
+ * match ordinary Atlas prompts. Other matches are logged and allowed. Set
+ * `regex: false` to skip step 2.
+ *
+ * A blocked message gets a fixed refusal. The model is not called, and the
+ * message in state becomes a placeholder so later turns don't replay it. Each
+ * decision logs one `[inputGuard]` line with rule IDs and the message length,
+ * never the text. `mode: "monitor"` logs what would happen and changes
+ * nothing. `mode: "off"` disables the guard.
+ *
+ * Limits:
+ * - It is a speed bump, not a security boundary, because pattern filters can
+ *   be bypassed. The structural controls (read-only roles, approval for
+ *   writes, the egress policy and the untrusted-data prompt rule) bound the
+ *   agents.
+ * - It does not redact PII. Emails, IPs, timestamps and ObjectIds are normal
+ *   Atlas input.
+ * - It does not screen tool output, so indirect injection through documents,
+ *   `$comment` values and logs is not covered.
+ * - The patterns are English-centric, and messages over 50,000 characters are
+ *   screened by head and tail.
+ *
+ * `@stackone/defender` is pinned to an exact version. `screenUserInput` wraps
+ * it so a small in-repo rule list could replace it. The agents' esbuild
+ * commands mark its optional ML peers external, because only the unused
+ * Tier 2 imports them.
+ */
 export function createInputGuardMiddleware(options: InputGuardOptions = {}) {
   const mode = options.mode ?? "enforce";
   const regex = options.regex ?? true;

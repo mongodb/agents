@@ -302,7 +302,7 @@ Things to know:
   common injection phrases and redacts pasted credentials. `inputGuard` in
   `config.ts` sets `mode` (`enforce`, `monitor` or `off`). The guard doesn't
   screen the slow query logs or Performance Advisor output above. See
-  [Input guard](../../docs/input-guard.md).
+  [Input guard](../../packages/agent-engine-core/src/inputGuard.ts).
 
 ### Roll back or shut down
 
