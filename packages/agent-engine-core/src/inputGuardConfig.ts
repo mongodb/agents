@@ -24,6 +24,13 @@ export type InputGuardMode = "enforce" | "monitor" | "off";
 /** The per-agent `inputGuard` block in `config.ts`. */
 export interface InputGuardConfig {
   readonly mode: InputGuardMode;
+  readonly regex: {
+    /**
+     * Blocks known injection phrases. Turn it off to rely on the judge
+     * alone. Secret redaction is not affected.
+     */
+    readonly enabled: boolean;
+  };
   readonly judge: {
     readonly enabled: boolean;
     /** Judge model name. Empty means the agent's own model. */
