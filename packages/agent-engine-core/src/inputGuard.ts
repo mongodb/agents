@@ -264,8 +264,9 @@ export function createLlmInjectionJudge(
 }
 
 /**
- * Builds the middleware from an agent's config. `buildJudgeModel` is only
- * called when the judge is enabled, and should return the model wrapped by
+ * Builds {@link createInputGuardMiddleware}, which describes what the guard
+ * blocks, from an agent's config. `buildJudgeModel` is only called when the
+ * judge is enabled, and should return the model wrapped by
  * `app.llm(model, INPUT_GUARD_JUDGE_LLM_ID)`. It must run inside the app's
  * entrypoint, because the SDK rejects `app.llm()` calls made outside it.
  */
