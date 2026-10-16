@@ -154,9 +154,9 @@ limits from the start.
   write needs approval, and the egress policy blocks traffic to hosts that
   `agent.yaml` doesn't list. Treat content from untrusted sources as
   untrusted, and review what an agent can reach before you deploy it.
-- **Input guard.** Each agent screens the user's message before the model sees
-  it. It blocks common injection phrases and redacts pasted credentials. This
-  is a speed bump, not a boundary, and it doesn't screen tool output. See
+- **Input guard.** Each agent redacts pasted credentials from the user's
+  message before the model sees it, and refuses messages that are too long to
+  screen. It doesn't screen tool output. See
   [Input guard](packages/agent-engine-core/src/inputGuard.ts).
 
 ## Why Atlas Agent Engine

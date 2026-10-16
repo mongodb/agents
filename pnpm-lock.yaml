@@ -226,9 +226,6 @@ importers:
       '@repo/agent-engine-chat':
         specifier: workspace:*
         version: link:../agent-engine-chat
-      '@stackone/defender':
-        specifier: 0.9.0
-        version: 0.9.0
       langchain:
         specifier: ^1.5.10
         version: 1.5.14(@langchain/core@1.2.12(@opentelemetry/api@1.9.1)(@opentelemetry/sdk-trace-base@2.11.0(@opentelemetry/api@1.9.1))(openai@7.25.0(undici@6.29.0)(ws@8.22.0)(zod@4.4.3))(ws@8.22.0))(@opentelemetry/api@1.9.1)(@opentelemetry/sdk-trace-base@2.11.0(@opentelemetry/api@1.9.1))(openai@7.25.0(undici@6.29.0)(ws@8.22.0)(zod@4.4.3))(ws@8.22.0)
@@ -1232,21 +1229,6 @@ packages:
 
   '@stablelib/base64@1.0.1':
     resolution: {integrity: sha512-1bnPQqSxSuc3Ii6MhBysoWCg58j97aUjuCSZrGSmDxNqtytIi0k8utUenAwTZN4V5mXXYGsVUI9zeBqy+jBOSQ==}
-
-  '@stackone/defender@0.9.0':
-    resolution: {integrity: sha512-GarSztfYtLHMvVeUO44p9J/phByAUOQtvgroy4qC4aLSDIjZZ2O4L1BYTryzmceYN0jowqPle/ZzRR2rC+wWUQ==}
-    engines: {node: '>=22'}
-    peerDependencies:
-      '@huggingface/transformers': ^3.0.0
-      fasttext.wasm: ^1.0.0
-      onnxruntime-node: '>=1.16.0'
-    peerDependenciesMeta:
-      '@huggingface/transformers':
-        optional: true
-      fasttext.wasm:
-        optional: true
-      onnxruntime-node:
-        optional: true
 
   '@standard-schema/spec@1.1.0':
     resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
@@ -2838,11 +2820,6 @@ packages:
 
   nan@2.29.0:
     resolution: {integrity: sha512-GlGk3HIvitbvs+LT3g6XUP1kpirKNvmDFwF/bmo6XNWSb/eYEs/O4bfgIEIXCZ+lIOTS5xNwDvSGMw6FJdAhtA==}
-
-  nanoid@3.3.18:
-    resolution: {integrity: sha512-DTg4MJbGMWkfi6VZFdNt2/caMbQy4Ou+Op/hJQvGEWcnVfoA1QA+xzRKAzw9jD6+GVOOeYr/mIcuDSdug6F6+w==}
-    engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
-    hasBin: true
 
   nanoid@3.3.19:
     resolution: {integrity: sha512-Y2tUNy4ouw6tq5oDSKeQYGOyhkUBhNOcGV/02KC+6kd9eDGqdZd++mjMiIDilrBYvjEnCYvVtsuHCuP+okSfug==}
@@ -4618,10 +4595,6 @@ snapshots:
       - supports-color
 
   '@stablelib/base64@1.0.1': {}
-
-  '@stackone/defender@0.9.0':
-    dependencies:
-      nanoid: 3.3.18
 
   '@standard-schema/spec@1.1.0': {}
 
@@ -6425,8 +6398,6 @@ snapshots:
 
   nan@2.29.0:
     optional: true
-
-  nanoid@3.3.18: {}
 
   nanoid@3.3.19: {}
 

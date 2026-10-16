@@ -79,7 +79,6 @@ export const buildAgent = app.entrypoint(() => {
       middleware: [
         createInputGuardMiddleware({
           mode: atlasQueryInsightsConfig.inputGuard.mode,
-          regex: atlasQueryInsightsConfig.inputGuard.regex.enabled,
         }),
         stampResumeClientUserMiddleware,
         stripToolEchoMiddleware,
