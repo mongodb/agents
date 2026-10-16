@@ -67,7 +67,7 @@ injects secret env vars, so this is a config-file setting.
 inputGuard: {
   mode: "enforce",        // "enforce" | "monitor" | "off"
   regex: { enabled: true },
-  judge: { enabled: false, model: "" },  // not used yet
+  judge: { enabled: false },  // not used yet
 },
 ```
 
