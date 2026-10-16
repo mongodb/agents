@@ -123,8 +123,9 @@ function replacement(original: HumanMessage, content: MessageContent) {
  *    and `sk-` keys, and private keys. It uses the same rules as the redaction
  *    of model replies. The model and the checkpoint only see the redacted text.
  *
- * Each decision logs one `[inputGuard]` line with the message length, never
- * the text. `mode: "monitor"` logs what would happen and changes nothing.
+ * Each decision logs one `[inputGuard]` line: the message length for a
+ * refusal and the secret kinds for a redaction, never the text.
+ * `mode: "monitor"` logs what would happen and changes nothing.
  * `mode: "off"` disables the guard.
  *
  * Limits:
