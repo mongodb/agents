@@ -38,6 +38,8 @@ import { isAgentEngineResume } from "./stampResume.js";
 export interface InputGuardOptions {
   /** Defaults to "enforce". "monitor" logs without blocking or modifying. */
   mode?: InputGuardMode;
+  /** Defaults to true. False skips the injection patterns. */
+  regex?: boolean;
 }
 
 export interface InputScreenResult {
@@ -152,6 +154,7 @@ function replacement(original: HumanMessage, content: MessageContent) {
 
 export function createInputGuardMiddleware(options: InputGuardOptions = {}) {
   const mode = options.mode ?? "enforce";
+  const regex = options.regex ?? true;
 
   return createMiddleware({
     name: "inputGuard",
@@ -174,12 +177,16 @@ export function createInputGuardMiddleware(options: InputGuardOptions = {}) {
         }
         if (text.trim().length === 0) return undefined;
 
-        const screen = screenUserInput(text);
-        if (screen.flagged.length > 0) {
-          warn(`flagged rules=${screen.flagged.join(",")} length=${text.length}`);
+        let blockedBy: string[] = [];
+        if (regex) {
+          const screen = screenUserInput(text);
+          if (screen.flagged.length > 0) {
+            warn(
+              `flagged rules=${screen.flagged.join(",")} length=${text.length}`,
+            );
+          }
+          blockedBy = screen.blockedBy;
         }
-
-        const blockedBy = screen.blockedBy;
 
         if (blockedBy.length > 0) {
           warn(
