@@ -30,10 +30,10 @@ import {
   INPUT_GUARD_PLACEHOLDER,
   INPUT_GUARD_REFUSAL,
   INPUT_GUARD_TOO_LONG,
-  createInputGuardMiddleware,
+  createInputRefusalMiddleware,
   createInputRedactor,
   formatInputGuardLog,
-  inputGuardFromConfig,
+  inputRefusalFromConfig,
 } from "./inputGuard.js";
 import { prepareAgentInput } from "./userRun.js";
 
@@ -43,11 +43,13 @@ const API_KEY = "sk-abcdefghijklmnopqrstuvwxyz123456";
 
 const MONGODB_URI = "mongodb://admin:hunter2@db.example.com/test";
 
-function buildAgent(options: Parameters<typeof createInputGuardMiddleware>[0]) {
+function buildAgent(
+  options: Parameters<typeof createInputRefusalMiddleware>[0],
+) {
   return createAgent({
     model: new FakeListChatModel({ responses: Array(10).fill(MODEL_REPLY) }),
     tools: [],
-    middleware: [createInputGuardMiddleware(options)],
+    middleware: [createInputRefusalMiddleware(options)],
     checkpointer: new MemorySaver(),
   });
 }
@@ -108,7 +110,7 @@ describe("formatInputGuardLog", () => {
   });
 });
 
-describe("createInputGuardMiddleware", () => {
+describe("createInputRefusalMiddleware", () => {
   afterEach(() => {
     vi.restoreAllMocks();
   });
@@ -165,108 +167,6 @@ describe("createInputGuardMiddleware", () => {
     ).not.toContain(attack);
   });
 
-  it("redacts pasted secrets and continues", async () => {
-    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
-
-    const result = await buildAgent({}).invoke(
-      {
-        messages: [
-          new HumanMessage(
-            "connect with mongodb+srv://ada:hunter2@cluster0.example.net/db",
-          ),
-        ],
-      },
-      { configurable: { thread_id: "redact" } },
-    );
-
-    expect(modelAnswers(result.messages)).toBe(1);
-    const first = String(result.messages[0]?.content);
-    expect(first).toContain("[redacted-password]");
-    expect(first).not.toContain("hunter2");
-    expect(logged(warn)).toContain("redacted secrets=mongodb-uri");
-    expect(logged(warn)).not.toContain("hunter2");
-  });
-
-  it("shows the judge the redacted message", async () => {
-    vi.spyOn(console, "warn").mockImplementation(() => {});
-    const seen: string[] = [];
-    const judge = vi.fn(async (text: string) => {
-      seen.push(text);
-      return false;
-    });
-
-    await buildAgent({ judge }).invoke(
-      {
-        messages: [
-          new HumanMessage("mongodb://ada:hunter2@host/db is my cluster"),
-        ],
-      },
-      { configurable: { thread_id: "judge-redacted" } },
-    );
-
-    expect(seen).toHaveLength(1);
-    expect(seen[0]).not.toContain("hunter2");
-  });
-
-  it("redacts secrets in content blocks and keeps the other blocks", async () => {
-    vi.spyOn(console, "warn").mockImplementation(() => {});
-    const image = {
-      type: "image_url",
-      image_url: { url: "https://example.com/plan.png" },
-    };
-
-    const result = await buildAgent({}).invoke(
-      {
-        messages: [
-          new HumanMessage({
-            content: [
-              { type: "text", text: `my key is ${API_KEY}` },
-              image,
-            ],
-          }),
-        ],
-      },
-      { configurable: { thread_id: "redact-blocks" } },
-    );
-
-    expect(modelAnswers(result.messages)).toBe(1);
-    expect(result.messages[0]?.content).toEqual([
-      { type: "text", text: "my key is sk-[redacted-api-key]" },
-      image,
-    ]);
-  });
-
-  it("redacts a secret in a block that has no text", async () => {
-    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
-
-    const result = await buildAgent({}).invoke(
-      {
-        messages: [
-          new HumanMessage({
-            content: [{ type: "reasoning", reasoning: API_KEY }],
-          }),
-        ],
-      },
-      { configurable: { thread_id: "redact-no-text" } },
-    );
-
-    expect(JSON.stringify(result.messages[0]?.content)).not.toContain(API_KEY);
-    expect(logged(warn)).toContain("redacted secrets=api-key");
-  });
-
-  it("passes a whitespace-only message through unchanged", async () => {
-    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
-
-    const result = await buildAgent({}).invoke(
-      { messages: [new HumanMessage("   \n ")] },
-      { configurable: { thread_id: "whitespace" } },
-    );
-
-    expect(modelAnswers(result.messages)).toBe(1);
-    expect(result.messages[0]?.content).toBe("   \n ");
-    expect(warn).not.toHaveBeenCalled();
-  });
-
   it("passes a message without text blocks through unchanged", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const content = [
@@ -283,18 +183,18 @@ describe("createInputGuardMiddleware", () => {
     expect(warn).not.toHaveBeenCalled();
   });
 
-  it("monitor mode logs redaction but does not modify", async () => {
+  it("leaves secrets to the redactor", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
-    const text = "use mongodb://ada:hunter2@host/db";
+    const text = `use ${MONGODB_URI}`;
 
-    const result = await buildAgent({ mode: "monitor" }).invoke(
+    const result = await buildAgent({}).invoke(
       { messages: [new HumanMessage(text)] },
-      { configurable: { thread_id: "monitor" } },
+      { configurable: { thread_id: "secrets" } },
     );
 
     expect(modelAnswers(result.messages)).toBe(1);
     expect(result.messages[0]?.content).toBe(text);
-    expect(logged(warn)).toContain("would redact");
+    expect(warn).not.toHaveBeenCalled();
   });
 
   it("monitor mode logs a judge block without blocking", async () => {
@@ -339,7 +239,7 @@ describe("createInputGuardMiddleware", () => {
     expect(modelAnswers(result.messages)).toBe(1);
   });
 
-  it("skips the judge when a message has no text but still redacts it", async () => {
+  it("skips the judge when a message has no text", async () => {
     vi.spyOn(console, "warn").mockImplementation(() => {});
     const judge = vi.fn(async () => true);
 
@@ -351,7 +251,9 @@ describe("createInputGuardMiddleware", () => {
       {
         messages: [
           new HumanMessage({
-            content: [{ type: "reasoning", reasoning: API_KEY }],
+            content: [
+              { type: "image_url", image_url: { url: "https://x.test/a.png" } },
+            ],
           }),
         ],
       },
@@ -360,7 +262,7 @@ describe("createInputGuardMiddleware", () => {
 
     expect(judge).not.toHaveBeenCalled();
     expect(modelAnswers(whitespace.messages)).toBe(1);
-    expect(JSON.stringify(noText.messages[0]?.content)).not.toContain(API_KEY);
+    expect(modelAnswers(noText.messages)).toBe(1);
   });
 
   it("fails open when the judge errors", async () => {
@@ -481,7 +383,7 @@ class ToolModel extends FakeListChatModel {
   }
 }
 
-describe("inputGuardFromConfig", () => {
+describe("inputRefusalFromConfig", () => {
   const config = (judge: { enabled: boolean; model?: string }) => ({
     mode: "enforce" as const,
     judge: { ...judge },
@@ -491,8 +393,8 @@ describe("inputGuardFromConfig", () => {
   it("does not build a judge model when the judge is disabled", () => {
     const build = vi.fn(judgeModel);
 
-    expect(inputGuardFromConfig(config({ enabled: false }), build).name).toBe(
-      "inputGuard",
+    expect(inputRefusalFromConfig(config({ enabled: false }), build).name).toBe(
+      "inputRefusal",
     );
     expect(build).not.toHaveBeenCalled();
   });
@@ -500,7 +402,7 @@ describe("inputGuardFromConfig", () => {
   it("does not build a judge model when the guard is off", () => {
     const build = vi.fn(judgeModel);
 
-    inputGuardFromConfig({ mode: "off", judge: { enabled: true } }, build);
+    inputRefusalFromConfig({ mode: "off", judge: { enabled: true } }, build);
 
     expect(build).not.toHaveBeenCalled();
   });
@@ -508,7 +410,7 @@ describe("inputGuardFromConfig", () => {
   it("builds the judge model with the configured model name", () => {
     const build = vi.fn(judgeModel);
 
-    inputGuardFromConfig(config({ enabled: true, model: "small" }), build);
+    inputRefusalFromConfig(config({ enabled: true, model: "small" }), build);
 
     expect(build).toHaveBeenCalledWith("small");
   });
@@ -516,7 +418,7 @@ describe("inputGuardFromConfig", () => {
   it("builds the judge model without a name when none is configured", () => {
     const build = vi.fn(judgeModel);
 
-    inputGuardFromConfig(config({ enabled: true }), build);
+    inputRefusalFromConfig(config({ enabled: true }), build);
 
     expect(build).toHaveBeenCalledWith(undefined);
   });
@@ -547,17 +449,29 @@ describe("createInputRedactor", () => {
     expect(warn).not.toHaveBeenCalled();
   });
 
-  it.each(["monitor", "off"] as const)(
-    "leaves the text alone in %s mode",
-    (mode) => {
-      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+  it("logs what it would redact in monitor mode and changes nothing", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 
-      expect(createInputRedactor(mode)(`key ${API_KEY}`)).toBe(
-        `key ${API_KEY}`,
-      );
-      expect(warn).not.toHaveBeenCalled();
-    },
-  );
+    expect(createInputRedactor("monitor")(`key ${API_KEY}`)).toBe(
+      `key ${API_KEY}`,
+    );
+    expect(logged(warn)).toBe("[inputGuard] would redact secrets=api-key");
+  });
+
+  it("does nothing in off mode", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    expect(createInputRedactor("off")(`key ${API_KEY}`)).toBe(`key ${API_KEY}`);
+    expect(warn).not.toHaveBeenCalled();
+  });
+
+  it("logs the secret kinds without the text", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    createInputRedactor("enforce")(`use ${MONGODB_URI}`);
+
+    expect(logged(warn)).not.toContain("hunter2");
+  });
 });
 
 describe("input redaction before the graph", () => {
@@ -571,7 +485,7 @@ describe("input redaction before the graph", () => {
     const agent = createAgent({
       model: new FakeListChatModel({ responses: [MODEL_REPLY] }),
       tools: [],
-      middleware: [createInputGuardMiddleware()],
+      middleware: [createInputRefusalMiddleware()],
       checkpointer: saver,
     });
     const config = { configurable: { thread_id: "thread-1" } };

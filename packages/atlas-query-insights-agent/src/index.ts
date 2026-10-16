@@ -34,7 +34,7 @@ export {
   rejectAggregateWritesMiddleware,
   buildLLM,
   INPUT_GUARD_JUDGE_LLM_ID,
-  inputGuardFromConfig,
+  inputRefusalFromConfig,
   createInputRedactor,
   prepareAgentInput,
   recoverToolErrorsMiddleware,

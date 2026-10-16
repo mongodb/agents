@@ -21,7 +21,7 @@ export {
   createInputRedactor,
   formatToolErrorForAgent,
   INPUT_GUARD_JUDGE_LLM_ID,
-  inputGuardFromConfig,
+  inputRefusalFromConfig,
   isAgentEngineResume,
   parseClientUserPayload,
   prepareAgentInput as prepareAtlasExplorerInput,

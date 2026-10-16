@@ -254,7 +254,7 @@ describe("Atlas Query Insights graph assembly", () => {
     );
     expect(options.skills).toEqual(["skills"]);
     expect(options.middleware?.map((middleware) => middleware.name)).toEqual([
-      "inputGuard",
+      "inputRefusal",
       stampResumeClientUserMiddleware.name,
       "stripOpenAIToolEcho",
       "redactSecrets",

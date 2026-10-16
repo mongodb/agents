@@ -26,7 +26,7 @@ import {
   buildLLM,
   buildSystemPrompt,
   INPUT_GUARD_JUDGE_LLM_ID,
-  inputGuardFromConfig,
+  inputRefusalFromConfig,
   createInputRedactor,
   prepareAgentInput,
   recoverToolErrorsMiddleware,
@@ -66,7 +66,7 @@ export const buildAgent = app.entrypoint(() => {
   const saver =
     platformSaver === null ? null : withRequesterMetadata(platformSaver);
 
-  const inputGuard = inputGuardFromConfig(
+  const inputRefusal = inputRefusalFromConfig(
     atlasQueryInsightsConfig.inputGuard,
     (judgeModel) =>
       app.llm(
@@ -97,7 +97,7 @@ export const buildAgent = app.entrypoint(() => {
       backend: withoutShellExecution(new AgentEngineToolSandboxBackend()) as never,
       checkpointer: (saver ?? false) as never,
       middleware: [
-        inputGuard,
+        inputRefusal,
         stampResumeClientUserMiddleware,
         stripToolEchoMiddleware,
         redactSecretsMiddleware,

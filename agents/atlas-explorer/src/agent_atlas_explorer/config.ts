@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import type { inputGuardFromConfig } from "@repo/atlas-explorer-agent";
+import type {
+  createInputRedactor,
+  inputRefusalFromConfig,
+} from "@repo/atlas-explorer-agent";
 
 /**
  * Non-secret Atlas Explorer settings.
@@ -37,7 +40,7 @@ import type { inputGuardFromConfig } from "@repo/atlas-explorer-agent";
  * prompt-injection check. It reuses the agent's provider and API key, so it
  * needs no new secret or egress rule. `judge.model` must be a model of
  * `llm.provider`. Leave it out to use the agent's own model. See
- * {@link inputGuardFromConfig}.
+ * {@link createInputRedactor} and {@link inputRefusalFromConfig}.
  */
 
 export const atlasExplorerConfig = {
