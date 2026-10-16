@@ -41,6 +41,7 @@ export {
   stripToolEchoMiddleware,
   withRequesterMetadata,
   withoutShellExecution,
+  type InputGuardConfig,
 } from "@repo/agent-engine-core";
 export {
   describeScope,

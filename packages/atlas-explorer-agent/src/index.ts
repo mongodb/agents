@@ -38,6 +38,7 @@ export {
   type BuildLLMOptions,
   type ClientUser,
   type ClientUserExtras,
+  type InputGuardConfig,
   type Requester,
 } from "@repo/agent-engine-core";
 export {

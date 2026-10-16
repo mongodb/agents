@@ -32,6 +32,10 @@ export {
   type ClientUserExtras,
 } from "./clientUser.js";
 export {
+  type InputGuardConfig,
+  type InputGuardMode,
+} from "./inputGuardConfig.js";
+export {
   buildLLM,
   resolveOpenAIResponsesApi,
   type BuildLLMOptions,
