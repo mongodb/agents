@@ -25,6 +25,7 @@ import {
   surfaceTokenMintFailures,
   buildLLM,
   buildSystemPrompt,
+  createInputGuardMiddleware,
   prepareAgentInput,
   recoverToolErrorsMiddleware,
   redactSecretsMiddleware,
@@ -76,6 +77,9 @@ export const buildAgent = app.entrypoint(() => {
       backend: withoutShellExecution(new AgentEngineToolSandboxBackend()) as never,
       checkpointer: (saver ?? false) as never,
       middleware: [
+        createInputGuardMiddleware({
+          mode: atlasQueryInsightsConfig.inputGuard.mode,
+        }),
         stampResumeClientUserMiddleware,
         stripToolEchoMiddleware,
         redactSecretsMiddleware,

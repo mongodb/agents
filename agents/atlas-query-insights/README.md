@@ -298,6 +298,11 @@ Things to know:
 - Slow query logs and Performance Advisor output can contain prompt-injection
   text aimed at the model. The agent can't write, but injected text can still
   skew its report, so review its recommendations before you act on them.
+- The agent screens each user message before the model sees it: it blocks
+  common injection phrases and redacts pasted credentials. `inputGuard` in
+  `config.ts` sets `mode` (`enforce`, `monitor` or `off`). The guard doesn't
+  screen the slow query logs or Performance Advisor output above. See
+  [Input guard](../../docs/input-guard.md).
 
 ### Roll back or shut down
 

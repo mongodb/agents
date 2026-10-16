@@ -223,6 +223,7 @@ describe("Atlas Explorer graph assembly", () => {
         skills: ["skills"],
         checkpointer: harness.checkpointer,
         middleware: [
+          expect.objectContaining({ name: "inputGuard" }),
           stampResumeClientUserMiddleware,
           expect.objectContaining({ name: "stripOpenAIToolEcho" }),
           expect.objectContaining({ name: "redactSecrets" }),

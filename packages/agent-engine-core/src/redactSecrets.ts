@@ -82,7 +82,7 @@ function redactBlockField(
   return { block: { ...block, [field]: result.text }, kinds: result.kinds };
 }
 
-function redactContent(content: MessageContent): {
+export function redactContent(content: MessageContent): {
   content: MessageContent;
   kinds: string[];
 } {

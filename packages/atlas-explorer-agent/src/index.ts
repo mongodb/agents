@@ -18,6 +18,7 @@ export {
   approveAggregateWritesMiddleware,
   buildLLM,
   clientUserSchema,
+  createInputGuardMiddleware,
   formatToolErrorForAgent,
   isAgentEngineResume,
   parseClientUserPayload,

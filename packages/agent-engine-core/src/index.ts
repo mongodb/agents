@@ -32,6 +32,15 @@ export {
   type ClientUserExtras,
 } from "./clientUser.js";
 export {
+  INPUT_GUARD_BLOCK_PATTERNS,
+  INPUT_GUARD_PLACEHOLDER,
+  INPUT_GUARD_REFUSAL,
+  createInputGuardMiddleware,
+  screenUserInput,
+  type InputGuardOptions,
+  type InputScreenResult,
+} from "./inputGuard.js";
+export {
   type InputGuardConfig,
   type InputGuardMode,
 } from "./inputGuardConfig.js";
