@@ -250,6 +250,9 @@ describe("createInputGuardMiddleware", () => {
 
     expect(modelAnswers(result.messages)).toBe(0);
     expect(lastText(result.messages)).toBe(INPUT_GUARD_TOO_LONG);
+    expect(lastText(result.messages)).toContain(
+      INPUT_GUARD_MAX_SCREEN_CHARS.toLocaleString("en-US"),
+    );
     expect(logged(warn)).toContain("refused length=");
   });
 
