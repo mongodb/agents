@@ -92,6 +92,7 @@ describe("createInputGuardMiddleware", () => {
     expect(first).toContain("[redacted-password]");
     expect(first).not.toContain("hunter2");
     expect(logged(warn)).toContain("redacted secrets=mongodb-uri");
+    expect(logged(warn)).not.toContain("hunter2");
   });
 
   it("monitor mode logs but does not modify", async () => {

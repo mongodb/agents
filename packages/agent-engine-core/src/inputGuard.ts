@@ -62,8 +62,43 @@ function contentText(content: MessageContent): string {
     .join("\n");
 }
 
-function warn(message: string): void {
-  console.warn(`[inputGuard] ${message}`);
+/**
+ * One guard decision as facts safe to log: a length, a boolean, or a secret
+ * kind from the redaction engine's fixed vocabulary. No field can carry
+ * message text, so the real message can't reach the log through `warn`.
+ */
+type InputGuardLog =
+  | {
+      readonly action: "refuse";
+      readonly would: boolean;
+      readonly length: number;
+    }
+  | {
+      readonly action: "redact";
+      readonly would: boolean;
+      readonly secrets: readonly string[];
+    };
+
+const LOG_PHRASES = {
+  refuse: { done: "refused", would: "would refuse" },
+  redact: { done: "redacted", would: "would redact" },
+} as const;
+
+/**
+ * Logs one `[inputGuard]` line per decision, built from `InputGuardLog`
+ * facts. Lengths and secret kinds only, never message text.
+ */
+function warn(log: InputGuardLog): void {
+  const parts: string[] = [
+    LOG_PHRASES[log.action][log.would ? "would" : "done"],
+  ];
+  if (log.action === "refuse") {
+    parts.push(`length=${log.length}`);
+    parts.push(`limit=${INPUT_GUARD_MAX_SCREEN_CHARS}`);
+  } else {
+    parts.push(`secrets=${[...new Set(log.secrets)].join(",")}`);
+  }
+  console.warn(`[inputGuard] ${parts.join(" ")}`);
 }
 
 function replacement(original: HumanMessage, content: MessageContent) {
@@ -121,10 +156,7 @@ export function createInputGuardMiddleware(options: InputGuardOptions = {}) {
         const raw = contentText(last.content);
         const enforce = mode === "enforce";
         if (raw.length > INPUT_GUARD_MAX_SCREEN_CHARS) {
-          warn(
-            `${enforce ? "refused" : "would refuse"} length=${raw.length} ` +
-              `limit=${INPUT_GUARD_MAX_SCREEN_CHARS}`,
-          );
+          warn({ action: "refuse", would: !enforce, length: raw.length });
           if (!enforce) return undefined;
           return {
             messages: [
@@ -138,10 +170,11 @@ export function createInputGuardMiddleware(options: InputGuardOptions = {}) {
         const redacted = redactContent(last.content);
         const text = contentText(redacted.content);
         if (redacted.kinds.length > 0) {
-          warn(
-            `${enforce ? "redacted" : "would redact"} ` +
-              `secrets=${[...new Set(redacted.kinds)].join(",")}`,
-          );
+          warn({
+            action: "redact",
+            would: !enforce,
+            secrets: redacted.kinds,
+          });
         }
         if (text.trim().length === 0) return undefined;
 
