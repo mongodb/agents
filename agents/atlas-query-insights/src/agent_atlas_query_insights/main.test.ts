@@ -190,6 +190,25 @@ describe("Atlas Query Insights graph assembly", () => {
     });
   });
 
+  it("uses the agent's model for the judge when none is configured", async () => {
+    await import("./main.js");
+    const judge = atlasQueryInsightsConfig.inputGuard.judge as {
+      enabled: boolean;
+    };
+    judge.enabled = true;
+    try {
+      harness.builder!();
+    } finally {
+      judge.enabled = false;
+    }
+
+    expect(harness.buildLLM).toHaveBeenCalledWith({
+      provider: atlasQueryInsightsConfig.llm.provider,
+      model: atlasQueryInsightsConfig.llm.model,
+      logPrefix: "atlas-query-insights-input-judge",
+    });
+  });
+
   it("builds a read-only deep agent with the evidence middleware and no write tools", async () => {
     delete process.env.AGENTIC_AGENT_WORKDIR;
     const { app } = await import("./main.js");

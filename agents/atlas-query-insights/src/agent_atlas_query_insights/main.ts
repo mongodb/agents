@@ -66,7 +66,7 @@ export const buildAgent = app.entrypoint(() => {
       app.llm(
         buildLLM({
           provider: atlasQueryInsightsConfig.llm.provider,
-          model: judgeModel || atlasQueryInsightsConfig.llm.model,
+          model: judgeModel ?? atlasQueryInsightsConfig.llm.model,
           logPrefix: "atlas-query-insights-input-judge",
         }),
         INPUT_GUARD_JUDGE_LLM_ID,

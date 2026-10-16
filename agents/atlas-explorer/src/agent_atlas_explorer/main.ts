@@ -104,7 +104,7 @@ export const buildAgent = app.entrypoint((): unknown => {
       app.llm(
         buildLLM({
           provider: atlasExplorerConfig.llm.provider,
-          model: judgeModel || atlasExplorerConfig.llm.model,
+          model: judgeModel ?? atlasExplorerConfig.llm.model,
           logPrefix: "atlas-explorer-input-judge",
         }),
         INPUT_GUARD_JUDGE_LLM_ID,

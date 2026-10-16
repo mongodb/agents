@@ -309,6 +309,23 @@ describe("Atlas Explorer graph assembly", () => {
     });
   });
 
+  it("uses the agent's model for the judge when none is configured", async () => {
+    const builder = await loadBuilder();
+    const judge = atlasExplorerConfig.inputGuard.judge as { enabled: boolean };
+    judge.enabled = true;
+    try {
+      builder();
+    } finally {
+      judge.enabled = false;
+    }
+
+    expect(harness.buildLLM).toHaveBeenCalledWith({
+      provider: atlasExplorerConfig.llm.provider,
+      model: atlasExplorerConfig.llm.model,
+      logPrefix: "atlas-explorer-input-judge",
+    });
+  });
+
   it("hands the deep agent a checkpointer that records the requester", async () => {
     const builder = await loadBuilder();
     builder();
