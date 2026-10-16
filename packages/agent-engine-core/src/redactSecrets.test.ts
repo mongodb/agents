@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import { AIMessage } from "@langchain/core/messages";
+import { AIMessage, ToolMessage } from "@langchain/core/messages";
+import { Command } from "@langchain/langgraph";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { redactSecretText, redactSecretsMiddleware } from "./redactSecrets.js";
@@ -116,10 +117,11 @@ describe("redactSecretsMiddleware", () => {
     vi.restoreAllMocks();
   });
 
-  it("redacts the assistant message and warns without the secret value", async () => {
+  it("redacts the assistant message without mutating the original and warns without the secret value", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const originalContent = `Use ${MONGO_URI} and ${ATLAS_SECRET}.`;
     const message = new AIMessage({
-      content: `Use ${MONGO_URI} and ${ATLAS_SECRET}.`,
+      content: originalContent,
     });
     const handler = vi.fn(async () => message);
 
@@ -128,8 +130,10 @@ describe("redactSecretsMiddleware", () => {
       handler,
     );
 
-    expect(result).toBe(message);
-    expect(message.content).toBe(
+    expect(result).not.toBe(message);
+    expect(message.content).toBe(originalContent);
+    expect(AIMessage.isInstance(result)).toBe(true);
+    expect((result as AIMessage).content).toBe(
       "Use mongodb+srv://[redacted-username]:[redacted-password]@cluster0.example.mongodb.net/admin and mdb_sa_sk_[redacted-api-key].",
     );
     expect(warn).toHaveBeenCalledOnce();
@@ -145,11 +149,12 @@ describe("redactSecretsMiddleware", () => {
     const secretMessage = new AIMessage({
       content: [{ type: "text", text: `Key ${OPENAI_KEY}` }],
     });
-    await redactSecretsMiddleware.wrapModelCall!(
+    const redactedMessage = await redactSecretsMiddleware.wrapModelCall!(
       { messages: [] } as never,
       async () => secretMessage,
     );
-    expect(secretMessage.content).toEqual([
+    expect(redactedMessage).not.toBe(secretMessage);
+    expect((redactedMessage as AIMessage).content).toEqual([
       { type: "text", text: "Key sk-[redacted-api-key]" },
     ]);
 
@@ -162,5 +167,116 @@ describe("redactSecretsMiddleware", () => {
     expect(returned).toBe(clean);
     expect(clean.content).toBe("Nothing sensitive here.");
     expect(warn).not.toHaveBeenCalled();
+  });
+
+  it("redacts ToolMessage content in wrapToolCall without mutating the original and warns without the secret value", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const originalContent = `Failed connecting to ${MONGO_URI} with ${ATLAS_SECRET}.`;
+    const toolMessage = new ToolMessage({
+      content: originalContent,
+      tool_call_id: "call-1",
+      name: "mongodb__find",
+      status: "error",
+    });
+    const handler = vi.fn(async () => toolMessage);
+
+    const result = await redactSecretsMiddleware.wrapToolCall!(
+      {} as never,
+      handler,
+    );
+
+    expect(result).not.toBe(toolMessage);
+    expect(toolMessage.content).toBe(originalContent);
+    expect(ToolMessage.isInstance(result)).toBe(true);
+    const redactedToolMessage = result as ToolMessage;
+    expect(redactedToolMessage.content).toBe(
+      "Failed connecting to mongodb+srv://[redacted-username]:[redacted-password]@cluster0.example.mongodb.net/admin with mdb_sa_sk_[redacted-api-key].",
+    );
+    expect(redactedToolMessage.tool_call_id).toBe("call-1");
+    expect(redactedToolMessage.name).toBe("mongodb__find");
+    expect(redactedToolMessage.status).toBe("error");
+    expect(warn).toHaveBeenCalledOnce();
+    const warning = String(warn.mock.calls[0]?.[0]);
+    expect(warning).toContain("mongodb-uri");
+    expect(warning).toContain("atlas-service-account");
+    expect(warning).toContain("from tool message");
+    expect(warning).not.toContain("s3cr3t-pass");
+    expect(warning).not.toContain(ATLAS_SECRET);
+  });
+
+  it("redacts ToolMessage content blocks and leaves clean ToolMessages untouched", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const secretToolMessage = new ToolMessage({
+      content: [{ type: "text", text: `Key ${OPENAI_KEY}\n${PEM}` }],
+      tool_call_id: "call-2",
+      name: "search_knowledge",
+    });
+    const redactedToolMessage = await redactSecretsMiddleware.wrapToolCall!(
+      {} as never,
+      async () => secretToolMessage,
+    );
+    expect(redactedToolMessage).not.toBe(secretToolMessage);
+    expect((redactedToolMessage as ToolMessage).content).toEqual([
+      { type: "text", text: "Key sk-[redacted-api-key]\n[redacted-private-key]" },
+    ]);
+
+    warn.mockClear();
+    const cleanToolMessage = new ToolMessage({
+      content: "Found 3 documents in sample_mflix.",
+      tool_call_id: "call-3",
+      name: "mongodb__find",
+    });
+    const returned = await redactSecretsMiddleware.wrapToolCall!(
+      {} as never,
+      async () => cleanToolMessage,
+    );
+    expect(returned).toBe(cleanToolMessage);
+    expect(cleanToolMessage.content).toBe("Found 3 documents in sample_mflix.");
+    expect(warn).not.toHaveBeenCalled();
+  });
+
+  it("redacts ToolMessage entries inside a Command update without mutating the original Command", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const originalContent = `Subagent failed connecting to ${MONGO_URI} using ${OPENAI_KEY}.`;
+    const taskMessage = new ToolMessage({
+      content: originalContent,
+      tool_call_id: "call-task-1",
+      name: "task",
+    });
+    const command = new Command({
+      update: {
+        messages: [taskMessage],
+        todos: [{ content: "check cluster", status: "in_progress" }],
+      },
+    });
+
+    const result = await redactSecretsMiddleware.wrapToolCall!(
+      {} as never,
+      async () => command,
+    );
+
+    expect(result).not.toBe(command);
+    expect(taskMessage.content).toBe(originalContent);
+    const updatedCommand = result as Command<
+      unknown,
+      { messages: ToolMessage[]; todos: unknown[] }
+    >;
+    const updatedMessages = (
+      updatedCommand.update as { messages: ToolMessage[]; todos: unknown[] }
+    ).messages;
+    expect(updatedMessages[0]).not.toBe(taskMessage);
+    expect(updatedMessages[0]?.content).toBe(
+      "Subagent failed connecting to mongodb+srv://[redacted-username]:[redacted-password]@cluster0.example.mongodb.net/admin using sk-[redacted-api-key].",
+    );
+    expect(
+      (updatedCommand.update as { todos: unknown[] }).todos,
+    ).toEqual([{ content: "check cluster", status: "in_progress" }]);
+    expect(warn).toHaveBeenCalledOnce();
+    const warning = String(warn.mock.calls[0]?.[0]);
+    expect(warning).toContain("mongodb-uri");
+    expect(warning).toContain("api-key");
+    expect(warning).toContain("from tool message");
+    expect(warning).not.toContain("s3cr3t-pass");
+    expect(warning).not.toContain(OPENAI_KEY);
   });
 });
