@@ -69,7 +69,7 @@ injects secret env vars, so this is a config-file setting.
 inputGuard: {
   mode: "enforce",        // "enforce" | "monitor" | "off"
   regex: { enabled: true },
-  judge: { enabled: false, model: "" },
+  judge: { enabled: false },
 },
 ```
 
@@ -87,8 +87,8 @@ prompts your users legitimately send, or to rely on the judge alone.
 The judge is off by default. It adds one small model call per user turn, and
 each call is a durable step on the platform.
 
-Enable it with `judge: { enabled: true, model: "" }`. An empty `model` uses
-the agent's own model. Set a cheaper model name from the same provider to
+Enable it with `judge: { enabled: true }`. It uses the agent's own model.
+Add `model: "..."` with a cheaper model name from the same provider to
 reduce cost.
 
 How it is wired:

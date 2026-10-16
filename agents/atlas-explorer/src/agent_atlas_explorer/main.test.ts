@@ -289,7 +289,7 @@ describe("Atlas Explorer graph assembly", () => {
     const builder = await loadBuilder();
     const judge = atlasExplorerConfig.inputGuard.judge as {
       enabled: boolean;
-      model: string;
+      model?: string;
     };
     judge.enabled = true;
     judge.model = "judge-model";
@@ -297,7 +297,7 @@ describe("Atlas Explorer graph assembly", () => {
       builder();
     } finally {
       judge.enabled = false;
-      judge.model = "";
+      delete judge.model;
     }
 
     expect(harness.llm).toHaveBeenCalledTimes(1);

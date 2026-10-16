@@ -259,7 +259,7 @@ export function createLlmInjectionJudge(
  */
 export function inputGuardFromConfig(
   config: InputGuardConfig,
-  buildJudgeModel: (modelName: string) => BaseChatModel,
+  buildJudgeModel: (modelName: string | undefined) => BaseChatModel,
 ) {
   const judge =
     config.mode !== "off" && config.judge.enabled

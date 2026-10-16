@@ -170,7 +170,7 @@ describe("Atlas Query Insights graph assembly", () => {
     await import("./main.js");
     const judge = atlasQueryInsightsConfig.inputGuard.judge as {
       enabled: boolean;
-      model: string;
+      model?: string;
     };
     judge.enabled = true;
     judge.model = "judge-model";
@@ -178,7 +178,7 @@ describe("Atlas Query Insights graph assembly", () => {
       harness.builder!();
     } finally {
       judge.enabled = false;
-      judge.model = "";
+      delete judge.model;
     }
 
     expect(harness.llm).toHaveBeenCalledTimes(1);

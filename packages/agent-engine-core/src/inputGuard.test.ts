@@ -469,7 +469,7 @@ describe("inputGuardFromConfig", () => {
   const config = (judge: { enabled: boolean; model?: string }) => ({
     mode: "enforce" as const,
     regex: { enabled: true },
-    judge: { model: "", ...judge },
+    judge,
   });
   const judgeModel = () =>
     new VerdictModel(async () => ({ injection: false }));
@@ -490,12 +490,20 @@ describe("inputGuardFromConfig", () => {
       {
         mode: "off",
         regex: { enabled: true },
-        judge: { enabled: true, model: "" },
+        judge: { enabled: true },
       },
       build,
     );
 
     expect(build).not.toHaveBeenCalled();
+  });
+
+  it("builds the judge model without a name when none is configured", () => {
+    const build = vi.fn(judgeModel);
+
+    inputGuardFromConfig(config({ enabled: true }), build);
+
+    expect(build).toHaveBeenCalledWith(undefined);
   });
 
   it("builds the judge model with the configured model name", () => {
