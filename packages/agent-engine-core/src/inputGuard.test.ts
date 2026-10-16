@@ -33,6 +33,8 @@ import {
 
 const MODEL_REPLY = "Here you go.";
 
+const API_KEY = "sk-abcdefghijklmnopqrstuvwxyz123456";
+
 function buildAgent(options: Parameters<typeof createInputGuardMiddleware>[0]) {
   return createAgent({
     model: new FakeListChatModel({ responses: Array(10).fill(MODEL_REPLY) }),
@@ -135,6 +137,81 @@ describe("createInputGuardMiddleware", () => {
     expect(first).not.toContain("hunter2");
     expect(logged(warn)).toContain("redacted secrets=mongodb-uri");
     expect(logged(warn)).not.toContain("hunter2");
+  });
+
+  it("redacts secrets in content blocks and keeps the other blocks", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    const image = {
+      type: "image_url",
+      image_url: { url: "https://example.com/plan.png" },
+    };
+
+    const result = await buildAgent({}).invoke(
+      {
+        messages: [
+          new HumanMessage({
+            content: [
+              { type: "text", text: `my key is ${API_KEY}` },
+              image,
+            ],
+          }),
+        ],
+      },
+      { configurable: { thread_id: "redact-blocks" } },
+    );
+
+    expect(modelAnswers(result.messages)).toBe(1);
+    expect(result.messages[0]?.content).toEqual([
+      { type: "text", text: "my key is sk-[redacted-api-key]" },
+      image,
+    ]);
+  });
+
+  it("redacts a secret in a block that has no text", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    const result = await buildAgent({}).invoke(
+      {
+        messages: [
+          new HumanMessage({
+            content: [{ type: "reasoning", reasoning: API_KEY }],
+          }),
+        ],
+      },
+      { configurable: { thread_id: "redact-no-text" } },
+    );
+
+    expect(JSON.stringify(result.messages[0]?.content)).not.toContain(API_KEY);
+    expect(logged(warn)).toContain("redacted secrets=api-key");
+  });
+
+  it("passes a whitespace-only message through unchanged", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    const result = await buildAgent({}).invoke(
+      { messages: [new HumanMessage("   \n ")] },
+      { configurable: { thread_id: "whitespace" } },
+    );
+
+    expect(modelAnswers(result.messages)).toBe(1);
+    expect(result.messages[0]?.content).toBe("   \n ");
+    expect(warn).not.toHaveBeenCalled();
+  });
+
+  it("passes a message without text blocks through unchanged", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const content = [
+      { type: "image_url", image_url: { url: "https://example.com/a.png" } },
+    ];
+
+    const result = await buildAgent({}).invoke(
+      { messages: [new HumanMessage({ content })] },
+      { configurable: { thread_id: "no-text" } },
+    );
+
+    expect(modelAnswers(result.messages)).toBe(1);
+    expect(result.messages[0]?.content).toEqual(content);
+    expect(warn).not.toHaveBeenCalled();
   });
 
   it("monitor mode logs but does not modify", async () => {

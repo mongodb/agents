@@ -170,7 +170,6 @@ export function createInputGuardMiddleware(options: InputGuardOptions = {}) {
         }
 
         const redacted = redactContent(last.content);
-        const text = contentText(redacted.content);
         if (redacted.kinds.length > 0) {
           warn({
             action: "redact",
@@ -178,7 +177,6 @@ export function createInputGuardMiddleware(options: InputGuardOptions = {}) {
             secrets: redacted.kinds,
           });
         }
-        if (text.trim().length === 0) return undefined;
 
         if (enforce && redacted.kinds.length > 0) {
           return { messages: [replacement(last, redacted.content)] };
