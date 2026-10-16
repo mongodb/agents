@@ -362,8 +362,8 @@ additional Chat SDK adapters or other Agent Engine workspaces.
   is bounded by the controls above and the egress policy in `agent.yaml`,
   which blocks outbound traffic to unlisted hosts so injected text can't send
   data elsewhere.
-- **Input guard.** The agent screens each user message before the model sees
-  it: it blocks common injection phrases and redacts pasted credentials.
+- **Input guard.** The agent redacts pasted credentials from each user message
+  before the model sees it, and refuses messages that are too long to screen.
   `inputGuard` in `config.ts` sets `mode` (`enforce`, `monitor` or `off`) and
   can turn on an optional LLM judge that reuses the agent's model provider.
   The guard can be bypassed and doesn't screen tool output. See

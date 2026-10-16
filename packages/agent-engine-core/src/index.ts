@@ -32,7 +32,6 @@ export {
   type ClientUserExtras,
 } from "./clientUser.js";
 export {
-  INPUT_GUARD_BLOCK_PATTERNS,
   INPUT_GUARD_JUDGE_LLM_ID,
   INPUT_GUARD_PLACEHOLDER,
   INPUT_GUARD_REFUSAL,
@@ -40,10 +39,8 @@ export {
   createInputGuardMiddleware,
   createLlmInjectionJudge,
   inputGuardFromConfig,
-  screenUserInput,
   type InjectionJudge,
   type InputGuardOptions,
-  type InputScreenResult,
 } from "./inputGuard.js";
 export {
   type InputGuardConfig,
