@@ -288,8 +288,10 @@ export function inputGuardFromConfig(
  *    the redacted message tries to override the assistant's instructions, and
  *    refuses the message when it says so. A judge error fails open.
  *
- * Each decision logs one `[inputGuard]` line with the message length, never
- * the text. `mode: "monitor"` logs what would happen and changes nothing.
+ * Each decision logs one `[inputGuard]` line: the message length for a
+ * refusal, block or judge failure, the secret kinds for a redaction, and the
+ * error name for a judge failure. Never the text.
+ * `mode: "monitor"` logs what would happen and changes nothing.
  * `mode: "off"` disables the guard.
  *
  * Limits:
@@ -334,7 +336,6 @@ export function createInputGuardMiddleware(options: InputGuardOptions = {}) {
         }
 
         const redacted = redactContent(last.content);
-        const text = contentText(redacted.content);
         if (redacted.kinds.length > 0) {
           warn({
             action: "redact",
@@ -342,10 +343,10 @@ export function createInputGuardMiddleware(options: InputGuardOptions = {}) {
             secrets: redacted.kinds,
           });
         }
-        if (text.trim().length === 0) return undefined;
 
+        const text = contentText(redacted.content);
         let judgeFlagged = false;
-        if (judge !== undefined) {
+        if (judge !== undefined && text.trim().length > 0) {
           try {
             judgeFlagged = await judge(text);
           } catch (error) {
