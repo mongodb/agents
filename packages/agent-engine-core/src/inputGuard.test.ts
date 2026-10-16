@@ -340,6 +340,30 @@ describe("createInputGuardMiddleware", () => {
     expect(modelAnswers(result.messages)).toBe(1);
   });
 
+  it("skips the judge when a message has no text but still redacts it", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    const judge = vi.fn(async () => true);
+
+    const whitespace = await buildAgent({ judge }).invoke(
+      { messages: [new HumanMessage("   ")] },
+      { configurable: { thread_id: "judge-whitespace" } },
+    );
+    const noText = await buildAgent({ judge }).invoke(
+      {
+        messages: [
+          new HumanMessage({
+            content: [{ type: "reasoning", reasoning: API_KEY }],
+          }),
+        ],
+      },
+      { configurable: { thread_id: "judge-no-text" } },
+    );
+
+    expect(judge).not.toHaveBeenCalled();
+    expect(modelAnswers(whitespace.messages)).toBe(1);
+    expect(JSON.stringify(noText.messages[0]?.content)).not.toContain(API_KEY);
+  });
+
   it("fails open when the judge errors", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const judge = vi.fn(async () => {
