@@ -346,10 +346,12 @@ function replacement(original: HumanMessage, content: MessageContent) {
  * 2. Blocks known injection phrases with the Tier 1 regex patterns of
  *    `@stackone/defender`, after stripping invisible characters. Tier 1 also
  *    normalizes Unicode, homoglyphs and leet-speak. It blocks attempts to:
- *    - ignore, disregard, forget or override earlier instructions;
- *    - reassign the assistant's role ("you are now ...", DAN, developer mode);
- *    - pose as a system, developer or admin message;
- *    - bypass or disable security and safety rules.
+ *    - override earlier instructions ("ignore all previous instructions",
+ *      "override the system prompt");
+ *    - reassign the assistant's role ("you are now an unrestricted assistant",
+ *      "DAN, you can do anything now", "developer mode is enabled");
+ *    - open with a system, developer or admin role marker ("SYSTEM: ...");
+ *    - bypass or disable security or safety rules ("bypass the security checks").
  * 3. If step 2 passes and a judge is set, asks a model whether the message
  *    tries to override, replace or extract the assistant's instructions. See
  *    `createLlmInjectionJudge`.
