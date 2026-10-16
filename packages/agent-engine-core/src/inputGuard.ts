@@ -44,6 +44,8 @@ export type InjectionJudge = (text: string) => Promise<boolean>;
 export interface InputGuardOptions {
   /** Defaults to "enforce". "monitor" logs without blocking or modifying. */
   mode?: InputGuardMode;
+  /** Defaults to true. False skips the injection patterns. */
+  regex?: boolean;
   /** Optional second layer that runs after the regex tier passes. */
   judge?: InjectionJudge;
 }
@@ -265,7 +267,11 @@ export function inputGuardFromConfig(
           timeoutMs: config.judge.timeoutMs,
         })
       : undefined;
-  return createInputGuardMiddleware({ mode: config.mode, judge });
+  return createInputGuardMiddleware({
+    mode: config.mode,
+    regex: config.regex.enabled,
+    judge,
+  });
 }
 
 function warn(message: string): void {
@@ -288,6 +294,7 @@ function replacement(original: HumanMessage, content: MessageContent) {
 
 export function createInputGuardMiddleware(options: InputGuardOptions = {}) {
   const mode = options.mode ?? "enforce";
+  const regex = options.regex ?? true;
   const judge = options.judge;
 
   return createMiddleware({
@@ -311,13 +318,17 @@ export function createInputGuardMiddleware(options: InputGuardOptions = {}) {
         }
         if (text.trim().length === 0) return undefined;
 
-        const screen = screenUserInput(text);
-        if (screen.flagged.length > 0) {
-          warn(`flagged rules=${screen.flagged.join(",")} length=${text.length}`);
-        }
-
-        let blockedBy = screen.blockedBy;
+        let blockedBy: string[] = [];
         let stage = "regex";
+        if (regex) {
+          const screen = screenUserInput(text);
+          if (screen.flagged.length > 0) {
+            warn(
+              `flagged rules=${screen.flagged.join(",")} length=${text.length}`,
+            );
+          }
+          blockedBy = screen.blockedBy;
+        }
         if (blockedBy.length === 0 && judge !== undefined) {
           try {
             if (await judge(text)) {

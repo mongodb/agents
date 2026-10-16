@@ -68,6 +68,7 @@ injects secret env vars, so this is a config-file setting.
 ```ts
 inputGuard: {
   mode: "enforce",        // "enforce" | "monitor" | "off"
+  regex: { enabled: true },
   judge: { enabled: false, model: "" },
 },
 ```
@@ -76,6 +77,10 @@ inputGuard: {
 - `monitor` logs what it would do and changes nothing. Use it for a cautious
   rollout.
 - `off` disables the guard.
+
+`regex.enabled` (default `true`) turns the injection-phrase patterns on or
+off. Secret redaction runs either way. Set it to `false` if the patterns block
+prompts your users legitimately send, or to rely on the judge alone.
 
 ## LLM judge
 
