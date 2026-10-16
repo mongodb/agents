@@ -79,9 +79,10 @@ function contentText(content: MessageContent): string {
 /**
  * One guard decision as facts safe to log: a length, a boolean, or a secret
  * kind from the redaction engine's fixed vocabulary. No field can carry
- * message text, so the real message can't reach the log through `warn`.
+ * message text, so the real message can't reach the log through
+ * {@link formatInputGuardLog}.
  */
-type InputGuardLog =
+export type InputGuardLog =
   | {
       readonly action: "refuse";
       readonly would: boolean;
@@ -110,10 +111,11 @@ const LOG_PHRASES = {
 } as const;
 
 /**
- * Logs one `[inputGuard]` line per decision, built from `InputGuardLog`
- * facts. Lengths, secret kinds and error names only, never message text.
+ * Formats the one `[inputGuard]` line for a decision. Pure, so it can be
+ * tested directly. Every part comes from `InputGuardLog` facts: lengths,
+ * secret kinds and error names only, never message text.
  */
-function warn(log: InputGuardLog): void {
+export function formatInputGuardLog(log: InputGuardLog): string {
   const parts: string[] =
     log.action === "judge-failed-open"
       ? ["judge failed open", `error=${errorName(log.error)}`]
@@ -126,7 +128,7 @@ function warn(log: InputGuardLog): void {
       parts.push(`limit=${INPUT_GUARD_MAX_SCREEN_CHARS}`);
     }
   }
-  console.warn(`[inputGuard] ${parts.join(" ")}`);
+  return `[inputGuard] ${parts.join(" ")}`;
 }
 
 function errorName(error: unknown): string {
@@ -302,6 +304,10 @@ export function inputGuardFromConfig(
 export function createInputGuardMiddleware(options: InputGuardOptions = {}) {
   const mode = options.mode ?? "enforce";
   const judge = options.judge;
+
+  const warn = (log: InputGuardLog): void => {
+    console.warn(formatInputGuardLog(log));
+  };
 
   return createMiddleware({
     name: "inputGuard",

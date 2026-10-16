@@ -36,6 +36,7 @@ import {
   INPUT_GUARD_TOO_LONG,
   createInputGuardMiddleware,
   createLlmInjectionJudge,
+  formatInputGuardLog,
   inputGuardFromConfig,
 } from "./inputGuard.js";
 
@@ -64,6 +65,47 @@ function modelAnswers(messages: BaseMessage[]): number {
 function logged(warn: { mock: { calls: unknown[][] } }): string {
   return warn.mock.calls.map((call) => String(call[0])).join("\n");
 }
+
+describe("formatInputGuardLog", () => {
+  it("formats an enforce-mode length refusal with the limit", () => {
+    expect(
+      formatInputGuardLog({
+        action: "refuse",
+        would: false,
+        length: 100_001,
+      }),
+    ).toBe(
+      `[inputGuard] refused length=100001 limit=` +
+        `${INPUT_GUARD_MAX_SCREEN_CHARS}`,
+    );
+  });
+
+  it("formats monitor-mode decisions as what would happen", () => {
+    expect(
+      formatInputGuardLog({ action: "refuse", would: true, length: 42 }),
+    ).toBe(
+      `[inputGuard] would refuse length=42 limit=` +
+        `${INPUT_GUARD_MAX_SCREEN_CHARS}`,
+    );
+    expect(
+      formatInputGuardLog({
+        action: "redact",
+        would: true,
+        secrets: ["api-key"],
+      }),
+    ).toBe("[inputGuard] would redact secrets=api-key");
+  });
+
+  it("deduplicates secret kinds and logs kinds only", () => {
+    expect(
+      formatInputGuardLog({
+        action: "redact",
+        would: false,
+        secrets: ["mongodb-uri", "mongodb-uri", "api-key"],
+      }),
+    ).toBe("[inputGuard] redacted secrets=mongodb-uri,api-key");
+  });
+});
 
 describe("createInputGuardMiddleware", () => {
   afterEach(() => {
