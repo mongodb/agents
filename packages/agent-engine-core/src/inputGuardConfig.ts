@@ -15,9 +15,10 @@
  */
 
 /**
- * "enforce" blocks prompt injection and redacts pasted secrets. "monitor"
- * logs what enforce would do without changing the message. "off" disables
- * the guard.
+ * "enforce" applies the guard: it refuses over-long messages, redacts pasted
+ * secrets, and blocks prompt injection when a judge is set. "monitor" logs
+ * what enforce would do without changing the message. "off" disables the
+ * guard.
  */
 export type InputGuardMode = "enforce" | "monitor" | "off";
 
