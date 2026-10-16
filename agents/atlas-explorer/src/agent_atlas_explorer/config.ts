@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import type { createInputGuardMiddleware } from "@repo/atlas-explorer-agent";
+
 /**
  * Non-secret Atlas Explorer settings.
  *
@@ -36,7 +38,7 @@
  * check after the regex tier. It reuses the agent's provider and API key, so
  * it needs no new secret or egress rule. Set `judge.model` to use a different
  * model, or leave it out to use the agent's own. See
- * packages/agent-engine-core/src/inputGuard.ts.
+ * {@link createInputGuardMiddleware}.
  */
 
 export const atlasExplorerConfig = {
