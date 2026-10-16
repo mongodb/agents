@@ -43,7 +43,8 @@ export const INPUT_GUARD_PLACEHOLDER =
 
 /** The refusal reply for a message over `INPUT_GUARD_MAX_SCREEN_CHARS`. */
 export const INPUT_GUARD_TOO_LONG =
-  "I can't act on that message because it is too long for me to screen. " +
+  "I can't act on that message because I can only screen messages up to " +
+  `${INPUT_GUARD_MAX_SCREEN_CHARS.toLocaleString("en-US")} characters. ` +
   "Please split it into smaller parts and send them separately.";
 
 function contentText(content: MessageContent): string {
