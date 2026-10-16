@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import type { createInputGuardMiddleware } from "@repo/atlas-explorer-agent";
+import type {
+  createInputRedactor,
+  createInputRefusalMiddleware,
+} from "@repo/atlas-explorer-agent";
 
 /**
  * Non-secret Atlas Explorer settings.
@@ -34,7 +37,7 @@ import type { createInputGuardMiddleware } from "@repo/atlas-explorer-agent";
  * `inputGuard` screens each user message before the model sees it: it redacts
  * pasted secrets and refuses messages that are too long to screen. `mode` is
  * "enforce", "monitor" (log only) or "off". See
- * {@link createInputGuardMiddleware}.
+ * {@link createInputRedactor} and {@link createInputRefusalMiddleware}.
  */
 
 export const atlasExplorerConfig = {

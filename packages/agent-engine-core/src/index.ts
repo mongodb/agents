@@ -34,9 +34,9 @@ export {
 export {
   INPUT_GUARD_PLACEHOLDER,
   INPUT_GUARD_TOO_LONG,
-  createInputGuardMiddleware,
+  createInputRefusalMiddleware,
   createInputRedactor,
-  type InputGuardOptions,
+  type InputRefusalOptions,
 } from "./inputGuard.js";
 export {
   type InputGuardConfig,

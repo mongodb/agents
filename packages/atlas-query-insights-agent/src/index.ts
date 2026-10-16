@@ -33,7 +33,7 @@ export {
   surfaceTokenMintFailures,
   rejectAggregateWritesMiddleware,
   buildLLM,
-  createInputGuardMiddleware,
+  createInputRefusalMiddleware,
   createInputRedactor,
   prepareAgentInput,
   recoverToolErrorsMiddleware,

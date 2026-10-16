@@ -30,7 +30,7 @@ import {
   approveAggregateWritesMiddleware,
   buildLLM,
   buildSystemPrompt,
-  createInputGuardMiddleware,
+  createInputRefusalMiddleware,
   createInputRedactor,
   mutativeInterruptOn,
   prepareAtlasExplorerInput,
@@ -117,7 +117,7 @@ export const buildAgent = app.entrypoint((): unknown => {
       // types the saver as BaseCheckpointSaver<number>.
       checkpointer: (saver ?? false) as DeepAgentOptions["checkpointer"],
       middleware: [
-        createInputGuardMiddleware({
+        createInputRefusalMiddleware({
           mode: atlasExplorerConfig.inputGuard.mode,
         }),
         stampResumeClientUserMiddleware,
