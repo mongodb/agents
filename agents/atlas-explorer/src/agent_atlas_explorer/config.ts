@@ -31,10 +31,11 @@ import type { inputGuardFromConfig } from "@repo/atlas-explorer-agent";
  * process serves each execution and when each process caches a new Atlas MCP
  * access token. Token values are never logged.
  *
- * `inputGuard` screens each user message before the model sees it. `mode` is
- * "enforce" (block prompt injection, redact pasted secrets), "monitor" (log
- * only) or "off". `judge.enabled` adds an LLM check. It reuses the agent's provider and API key, so
- * it needs no new secret or egress rule. Set `judge.model` to use a different
+* `inputGuard` screens each user message before the model sees it: it redacts
+ * pasted secrets and refuses messages that are too long to screen. `mode` is
+ * "enforce", "monitor" (log only) or "off". `judge.enabled` adds an LLM
+ * prompt-injection check. It reuses the agent's provider and API key, so it
+ * needs no new secret or egress rule. Set `judge.model` to use a different
  * model, or leave it out to use the agent's own. See
  * {@link inputGuardFromConfig}.
  */
