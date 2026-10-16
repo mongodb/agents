@@ -167,7 +167,7 @@ function replacement(original: HumanMessage, content: MessageContent) {
 /**
  * Screens the latest user message before the model sees it. This is a
  * LangChain `beforeAgent` middleware, so it runs on the agent side and covers
- * every client: Slack, the playground and direct API calls. It skips approval
+ * every client. It skips approval
  * resumes and turns whose last message isn't from the user.
  *
  * For each message it runs these steps in order:
