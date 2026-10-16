@@ -28,8 +28,8 @@
  * only) or "off". `regex.enabled` turns the injection-phrase patterns on or
  * off, and secret redaction stays on either way. `judge.enabled` adds an LLM
  * check after the regex tier. It reuses the agent's provider and API key, so
- * it needs no new secret or egress rule. Leave `judge.model` empty to use the
- * agent's own model.
+ * it needs no new secret or egress rule. Set `judge.model` to use a different
+ * model, or leave it out to use the agent's own.
  */
 
 export const atlasQueryInsightsConfig = {
@@ -53,7 +53,6 @@ export const atlasQueryInsightsConfig = {
     },
     judge: {
       enabled: false,
-      model: "",
     },
   },
 } as const;

@@ -33,8 +33,8 @@ export interface InputGuardConfig {
   };
   readonly judge: {
     readonly enabled: boolean;
-    /** Judge model name. Empty means the agent's own model. */
-    readonly model: string;
+    /** Judge model name. Omit it to use the agent's own model. */
+    readonly model?: string;
     readonly timeoutMs?: number;
   };
 }
