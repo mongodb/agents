@@ -78,11 +78,12 @@ function replacement(original: HumanMessage, content: MessageContent) {
  *
  * For each message it runs these steps in order:
  *
- * 1. Redacts pasted secrets: connection strings with passwords, `mdb_sa_sk_`
+ * 1. Refuses messages over `INPUT_GUARD_MAX_SCREEN_CHARS` with a fixed reply
+ *    before the model is called. Screening can't be trusted on inputs this
+ *    size, so the middle of the message never reaches the model.
+ * 2. Redacts pasted secrets: connection strings with passwords, `mdb_sa_sk_`
  *    and `sk-` keys, and private keys. It uses the same rules as the redaction
  *    of model replies. The model and the checkpoint only see the redacted text.
- * 2. Refuses messages over `INPUT_GUARD_MAX_SCREEN_CHARS` with a fixed reply
- *    before the model is called.
  *
  * Each decision logs one `[inputGuard]` line with the message length, never
  * the text. `mode: "monitor"` logs what would happen and changes nothing.
