@@ -17,9 +17,10 @@
 import {
   LIST_KNOWLEDGE_SOURCES_TOOL_NAME,
   SEARCH_KNOWLEDGE_TOOL_NAME,
+  type DataAccessConfig,
 } from "@repo/agent-engine-core";
 
-import { describeScope, resolveScope, type ScopeInput } from "./scope.js";
+import { describeScope } from "./scope.js";
 
 export const DEFAULT_AGENT_NAME = "Atlas Query Insights";
 export const DEFAULT_MAX_QUERY_SHAPES = 3;
@@ -101,7 +102,7 @@ const QUERY_SKILLS = [
 export interface SystemPromptOptions {
   name?: string;
   customInstructions?: string;
-  scope?: ScopeInput;
+  dataAccess?: DataAccessConfig;
   maxQueryShapes?: number;
 }
 
@@ -246,7 +247,7 @@ function resolveMaxQueryShapes(value: number | undefined): number {
 export function buildSystemPrompt(options: SystemPromptOptions = {}): string {
   const name = resolveAgentName(options.name);
   const maxQueryShapes = resolveMaxQueryShapes(options.maxQueryShapes);
-  const scope = describeScope(resolveScope(options.scope));
+  const scope = describeScope(options.dataAccess);
   const skills = QUERY_SKILLS.map((skill) => `- \`${skill}\``).join("\n");
   const custom = options.customInstructions?.trim();
 

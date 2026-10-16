@@ -15,15 +15,23 @@
  */
 
 export {
+  PARTIAL_LIST_NOTE,
   buildLLM,
   buildSystemPrompt,
+  clusterAllowlistMiddleware,
+  describeDataAccess,
+  guardClusterCall,
   prepareAgentInput,
   recoverToolErrorsMiddleware,
   redactSecretsMiddleware,
+  resolveDataAccess,
   selectAtlasQueryInsightsTools,
   stampResumeClientUserMiddleware,
   stripToolEchoMiddleware,
   withRequesterMetadata,
   withoutShellExecution,
+  type DataAccessConfig,
+  type DataAccessProjectConfig,
+  type ResolvedDataAccess,
 } from "@repo/atlas-query-insights-agent";
 export * from "./main.js";

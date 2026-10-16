@@ -19,10 +19,13 @@
  *
  * Leave `systemPrompt.name` empty to keep "Atlas Query Insights".
  * Leave `systemPrompt.customInstructions` empty to skip extra prompt text.
- * Leave `scope.projectId` and `scope.clusterName` empty to let the agent
- * resolve the target. A set field must be a 24-hex project id or an Atlas
- * cluster name. `maxQueryShapes` is how many shapes the report covers.
+ * Leave `dataAccess` empty (`{}`) to let the agent resolve the target across
+ * projects and clusters; otherwise map each allowed 24-hex `projectId` to `{}`
+ * (all clusters in that project) or `{ clusterNames: [...] }`.
+ * `maxQueryShapes` is how many shapes the report covers.
  */
+
+import type { DataAccessConfig } from "@repo/atlas-query-insights-agent";
 
 export const atlasQueryInsightsConfig = {
   llm: {
@@ -33,9 +36,6 @@ export const atlasQueryInsightsConfig = {
     name: "",
     customInstructions: "",
   },
-  scope: {
-    projectId: "",
-    clusterName: "",
-  },
+  dataAccess: {} as DataAccessConfig,
   maxQueryShapes: 3,
 } as const;

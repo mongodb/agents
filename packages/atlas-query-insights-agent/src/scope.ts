@@ -14,59 +14,26 @@
  * limitations under the License.
  */
 
-const PROJECT_ID = /^[a-f0-9]{24}$/i;
-const CLUSTER_NAME = /^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$/;
+import {
+  describeDataAccess,
+  resolveDataAccess,
+  type DataAccessConfig,
+  type ResolvedDataAccess,
+} from "@repo/agent-engine-core";
 
-export interface AtlasQueryInsightsScope {
-  projectId?: string;
-  clusterName?: string;
-}
-
-export interface ScopeInput {
-  projectId?: string;
-  clusterName?: string;
-}
-
-function blankToUndefined(value: string | undefined): string | undefined {
-  const trimmed = value?.trim();
-  return trimmed ? trimmed : undefined;
-}
+export const UNPINNED_SCOPE_DESCRIPTION =
+  "No project or cluster is pinned. Resolve the project and cluster before analyzing slow queries.";
 
 /**
- * Accepts the optional project and cluster pin from config.
- * Blank fields are unset. A present field must be a 24-hex project id
- * or an Atlas cluster name.
+ * Validates and normalizes the optional `dataAccess` map from config.
+ * Returns `undefined` when `dataAccess` is omitted or empty (`{}`).
  */
-export function resolveScope(input: ScopeInput = {}): AtlasQueryInsightsScope | undefined {
-  const projectId = blankToUndefined(input.projectId);
-  const clusterName = blankToUndefined(input.clusterName);
-
-  if (projectId && !PROJECT_ID.test(projectId)) {
-    throw new Error(
-      `projectId must be a 24-character hex string, received "${projectId}"`,
-    );
-  }
-  if (clusterName && !CLUSTER_NAME.test(clusterName)) {
-    throw new Error(
-      `clusterName must be 1-64 letters, numbers, underscores, or hyphens, received "${clusterName}"`,
-    );
-  }
-  if (!projectId && !clusterName) return undefined;
-  return {
-    ...(projectId ? { projectId } : {}),
-    ...(clusterName ? { clusterName } : {}),
-  };
+export function resolveScope(
+  input?: DataAccessConfig,
+): ResolvedDataAccess | undefined {
+  return resolveDataAccess(input);
 }
 
-export function describeScope(scope: AtlasQueryInsightsScope | undefined): string {
-  if (!scope) {
-    return "No project or cluster is pinned. Resolve the project and cluster before analyzing slow queries.";
-  }
-  if (scope.projectId && scope.clusterName) {
-    return `Analysis is limited to cluster ${scope.clusterName} in project ${scope.projectId}.`;
-  }
-  if (scope.projectId) {
-    return `Analysis is limited to project ${scope.projectId}.`;
-  }
-  return `Analysis is limited to cluster ${scope.clusterName}.`;
+export function describeScope(dataAccess?: DataAccessConfig): string {
+  return describeDataAccess(dataAccess) ?? UNPINNED_SCOPE_DESCRIPTION;
 }

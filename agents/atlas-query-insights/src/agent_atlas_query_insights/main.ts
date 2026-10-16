@@ -21,6 +21,7 @@ import "dotenv/config";
 import { App, AgentEngineToolSandboxBackend } from "@mongodb-js/agent-engine-sdk-langgraph";
 import { registerKnowledgeTools } from "@repo/agent-engine-core";
 import {
+  clusterAllowlistMiddleware,
   rejectAggregateWritesMiddleware,
   surfaceTokenMintFailures,
   buildLLM,
@@ -69,7 +70,7 @@ export const buildAgent = app.entrypoint(() => {
       systemPrompt: buildSystemPrompt({
         name: atlasQueryInsightsConfig.systemPrompt.name,
         customInstructions: atlasQueryInsightsConfig.systemPrompt.customInstructions,
-        scope: atlasQueryInsightsConfig.scope,
+        dataAccess: atlasQueryInsightsConfig.dataAccess,
         maxQueryShapes: atlasQueryInsightsConfig.maxQueryShapes,
       }),
       skills: ["skills"],
@@ -79,6 +80,7 @@ export const buildAgent = app.entrypoint(() => {
         stampResumeClientUserMiddleware,
         stripToolEchoMiddleware,
         redactSecretsMiddleware,
+        clusterAllowlistMiddleware(atlasQueryInsightsConfig.dataAccess),
         rejectAggregateWritesMiddleware,
         recoverToolErrorsMiddleware,
       ] as never,

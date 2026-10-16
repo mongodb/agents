@@ -21,7 +21,7 @@ agents/atlas-query-insights/
 ├── skills/                            # query optimizer, schema, search, querying, connection
 └── src/agent_atlas_query_insights/
     ├── main.ts                        # Agent Engine entrypoint
-    └── config.ts                      # LLM, prompt persona, scope, and shape limit
+    └── config.ts                      # LLM, prompt persona, dataAccess, and shape limit
 ```
 
 Project memory settings live in the repository root
@@ -50,8 +50,8 @@ Set these local secrets in `.env`:
 - `OPENAI_API_KEY`
 
 Non-secret settings live in `config.ts`: the model, how the agent
-introduces itself, optional custom instructions, and an optional project
-and cluster.
+introduces itself, optional custom instructions, and an optional
+`dataAccess` map of allowed projects and clusters.
 
 Create a **project-level** MongoDB MCP configuration before starting the
 agent. Atlas Admin API still calls a project a group, so this uses
@@ -280,10 +280,15 @@ Things to know:
   values; those values are sent to your model provider and appear in Agent
   Engine traces. You govern that data. See
   [Your data](../../README.md#your-data).
-- `scope.projectId` and `scope.clusterName` in `config.ts` pin the agent to
-  one project and cluster through its system prompt. Tool calls aren't
-  filtered by that pin. The hard boundary is the one Atlas project that the
-  MCP configuration belongs to.
+- `dataAccess` in `config.ts` restricts which projects and clusters the agent
+  can analyze. Leave it as `{}` to let the agent resolve the target across the
+  MCP configuration, or map each 24-hex `projectId` to `{}` (all clusters in
+  that project) or `{ clusterNames: [...] }`. When configured, the system
+  prompt states the allowed scope and `clusterAllowlistMiddleware` blocks tool
+  calls to unlisted projects or clusters and filters
+  `mongodb__atlas_list_clusters` and `mongodb__atlas_list_projects`.
+  `dataAccess` is an agent-side guardrail; the hard IAM boundary is the Atlas
+  project and roles assigned to the MCP configuration.
 
 ## Safety
 

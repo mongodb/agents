@@ -15,8 +15,13 @@
  */
 
 export {
+  PARTIAL_LIST_NOTE,
+  clusterAllowlistMiddleware,
+  describeDataAccess,
+  guardClusterCall,
   prepareAtlasExplorerInput,
   READ_ONLY_SYSTEM_PROMPT,
+  resolveDataAccess,
   stampClientUser,
   stampResumeClientUserMiddleware,
   WRITE_ENABLED_SYSTEM_PROMPT,
@@ -30,5 +35,8 @@ export {
   withRequesterMetadata,
   withoutShellExecution,
   writeOperationsAllowed,
+  type DataAccessConfig,
+  type DataAccessProjectConfig,
+  type ResolvedDataAccess,
 } from "@repo/atlas-explorer-agent";
 export * from "./main.js";

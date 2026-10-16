@@ -15,10 +15,14 @@
  */
 
 export {
+  PARTIAL_LIST_NOTE,
   approveAggregateWritesMiddleware,
   buildLLM,
   clientUserSchema,
+  clusterAllowlistMiddleware,
+  describeDataAccess,
   formatToolErrorForAgent,
+  guardClusterCall,
   isAgentEngineResume,
   parseClientUserPayload,
   prepareAgentInput as prepareAtlasExplorerInput,
@@ -26,6 +30,7 @@ export {
   recoverToolErrorsMiddleware,
   redactSecretsMiddleware,
   requesterFromCheckpoint,
+  resolveDataAccess,
   resolveOpenAIResponsesApi,
   stampClientUser,
   startRuntimeDiagnostics,
@@ -38,7 +43,10 @@ export {
   type BuildLLMOptions,
   type ClientUser,
   type ClientUserExtras,
+  type DataAccessConfig,
+  type DataAccessProjectConfig,
   type Requester,
+  type ResolvedDataAccess,
 } from "@repo/agent-engine-core";
 export {
   HIGH_RISK_MCP_TOOLS,

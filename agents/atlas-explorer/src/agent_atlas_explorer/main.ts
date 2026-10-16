@@ -30,6 +30,7 @@ import {
   approveAggregateWritesMiddleware,
   buildLLM,
   buildSystemPrompt,
+  clusterAllowlistMiddleware,
   mutativeInterruptOn,
   prepareAtlasExplorerInput,
   recoverToolErrorsMiddleware,
@@ -104,10 +105,10 @@ export const buildAgent = app.entrypoint((): unknown => {
     }),
     {
       tools: availableAtlasTools,
-      systemPrompt: buildSystemPrompt(
-        allowWriteOperations,
-        atlasExplorerConfig.systemPrompt,
-      ),
+      systemPrompt: buildSystemPrompt(allowWriteOperations, {
+        ...atlasExplorerConfig.systemPrompt,
+        dataAccess: atlasExplorerConfig.dataAccess,
+      }),
       skills: ["skills"],
       backend: withoutShellExecution(new AgentEngineToolSandboxBackend()),
       // PlatformCheckpointer versions checkpoints as string | number. deepAgent
@@ -117,6 +118,7 @@ export const buildAgent = app.entrypoint((): unknown => {
         stampResumeClientUserMiddleware,
         stripToolEchoMiddleware,
         redactSecretsMiddleware,
+        clusterAllowlistMiddleware(atlasExplorerConfig.dataAccess),
         mutativeToolReview,
         approveAggregateWritesMiddleware,
         recoverToolErrorsMiddleware,

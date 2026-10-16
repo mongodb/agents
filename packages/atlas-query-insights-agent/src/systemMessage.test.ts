@@ -114,19 +114,21 @@ describe("buildSystemPrompt", () => {
     }
   });
 
-  it("injects the agent name, scope, shape limit, and custom instructions", () => {
-    const scope = { projectId: "507f1f77bcf86cd799439011", clusterName: "Cluster-1" };
+  it("injects the agent name, dataAccess scope, shape limit, and custom instructions", () => {
+    const dataAccess = {
+      "507f1f77bcf86cd799439011": { clusterNames: ["Cluster-1"] },
+    };
     const custom = buildSystemPrompt({
       name: "Ada",
       customInstructions: "Prefer the orders collection.",
-      scope,
+      dataAccess,
       maxQueryShapes: 5,
     });
 
     expect(prompt.startsWith(`You are ${DEFAULT_AGENT_NAME},`)).toBe(true);
     expect(prompt).toContain(describeScope(undefined));
     expect(custom.startsWith("You are Ada,")).toBe(true);
-    expect(custom).toContain(describeScope(scope));
+    expect(custom).toContain(describeScope(dataAccess));
     expect(custom).toContain("top 5 shape(s)");
     expect(custom).toContain("## Custom instructions");
     expect(custom).toContain("Prefer the orders collection.");

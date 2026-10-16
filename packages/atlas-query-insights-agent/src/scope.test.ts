@@ -21,45 +21,47 @@ import { describeScope, resolveScope } from "./scope.js";
 const PROJECT = "507f1f77bcf86cd799439011";
 
 describe("resolveScope", () => {
-  it("treats blank fields as unpinned", () => {
+  it("treats undefined or an empty object as unpinned", () => {
     expect(resolveScope()).toBeUndefined();
-    expect(resolveScope({ projectId: "  ", clusterName: "" })).toBeUndefined();
+    expect(resolveScope({})).toBeUndefined();
   });
 
-  it("keeps a valid project, cluster, or both", () => {
-    expect(resolveScope({ projectId: ` ${PROJECT} ` })).toEqual({
-      projectId: PROJECT,
+  it("keeps a valid project with all clusters, no clusters, or specific clusters", () => {
+    expect(resolveScope({ [` ${PROJECT} `]: {} })).toEqual({
+      [PROJECT]: {},
     });
-    expect(resolveScope({ clusterName: "Cluster-1" })).toEqual({
-      clusterName: "Cluster-1",
+    expect(resolveScope({ [PROJECT]: { clusterNames: [] } })).toEqual({
+      [PROJECT]: { clusterNames: [] },
     });
     expect(
-      resolveScope({ projectId: PROJECT, clusterName: "analytics_0" }),
+      resolveScope({
+        [PROJECT]: { clusterNames: ["Cluster-1", "analytics_0"] },
+      }),
     ).toEqual({
-      projectId: PROJECT,
-      clusterName: "analytics_0",
+      [PROJECT]: { clusterNames: ["Cluster-1", "analytics_0"] },
     });
   });
 
   it("rejects an id or name Atlas would not accept", () => {
-    expect(() => resolveScope({ projectId: "cluster0" })).toThrow(/projectId/);
-    expect(() => resolveScope({ clusterName: "-leading" })).toThrow(
-      /clusterName/,
-    );
+    expect(() => resolveScope({ cluster0: {} })).toThrow(/projectId/);
+    expect(() =>
+      resolveScope({ [PROJECT]: { clusterNames: ["-leading"] } }),
+    ).toThrow(/clusterName/);
   });
 });
 
 describe("describeScope", () => {
-  it("describes each pin the prompt can quote", () => {
+  it("describes each dataAccess configuration the prompt can quote", () => {
     expect(describeScope(undefined)).toMatch(/No project or cluster is pinned/);
-    expect(describeScope({ projectId: PROJECT })).toBe(
-      `Analysis is limited to project ${PROJECT}.`,
+    expect(describeScope({})).toMatch(/No project or cluster is pinned/);
+    expect(describeScope({ [PROJECT]: {} })).toBe(
+      `Access is limited to project ${PROJECT} (all clusters).`,
     );
-    expect(describeScope({ clusterName: "Cluster-1" })).toBe(
-      "Analysis is limited to cluster Cluster-1.",
+    expect(describeScope({ [PROJECT]: { clusterNames: [] } })).toBe(
+      `Access is limited to project ${PROJECT} (no clusters allowed).`,
     );
     expect(
-      describeScope({ projectId: PROJECT, clusterName: "Cluster-1" }),
-    ).toBe(`Analysis is limited to cluster Cluster-1 in project ${PROJECT}.`);
+      describeScope({ [PROJECT]: { clusterNames: ["Cluster-1"] } }),
+    ).toBe(`Access is limited to cluster Cluster-1 in project ${PROJECT}.`);
   });
 });

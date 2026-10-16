@@ -22,7 +22,7 @@ agents/atlas-explorer/
 └── src/agent_atlas_explorer/
     ├── main.ts                        # Agent Engine App entrypoint
     ├── index.ts                       # re-exports library helpers and main.ts
-    └── config.ts                      # non-secret LLM, agent name, and custom instructions
+    └── config.ts                      # non-secret LLM, persona, and dataAccess allowlist
 ```
 
 Project memory settings live in the repository root
@@ -217,11 +217,37 @@ with `agentengine secret set ANTHROPIC_BASE_URL`.
 
 </details>
 
-`config.ts` also owns the system-prompt persona. Set
-`systemPrompt.name` to change how the agent introduces itself; leave it empty
-to keep **Atlas Explorer**. Set `systemPrompt.customInstructions` to append
-operator-specific guidance after the built-in operating rules. Leave that
-field empty to skip extra prompt text. Built-in safety rules still apply.
+`config.ts` also owns the system-prompt persona and optional project/cluster
+allowlist:
+
+- Set `systemPrompt.name` to change how the agent introduces itself; leave it
+  empty to keep **Atlas Explorer**.
+- Set `systemPrompt.customInstructions` to append operator-specific guidance
+  after the built-in operating rules. Leave that field empty to skip extra
+  prompt text. Built-in safety rules still apply.
+- Set `dataAccess` to restrict which Atlas projects and clusters the agent can
+  access. Leave it as `{}` for unrestricted access across the MCP
+  configuration's projects and clusters:
+
+  ```ts
+  dataAccess: {
+    // Allow all clusters in this project:
+    "648c61425116351907dba2db": {},
+    // Or allow only specific clusters in a project:
+    "6a982c0522ab3c3c953c5ead": {
+      clusterNames: ["docs-chatbot-test", "docs-chatbot-staging"],
+    },
+  },
+  ```
+
+  When `dataAccess` has entries, the agent adds a `## Scope` section to its
+  system prompt and `clusterAllowlistMiddleware` blocks tool calls targeting
+  unlisted projects or clusters, blocks raw-URI `mongodb__connect` and
+  `mongodb__switch_connection`, and filters `mongodb__atlas_list_clusters` and
+  `mongodb__atlas_list_projects` to the allowlist. Setting `clusterNames: []`
+  allows the project while disallowing all clusters in it. `dataAccess` is an
+  agent-side guardrail; the Atlas MCP configuration's roles and project
+  assignment remain the IAM boundary.
 
 ## MCP credential lifecycle
 

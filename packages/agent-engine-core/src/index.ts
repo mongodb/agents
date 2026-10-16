@@ -23,6 +23,16 @@ export {
   rejectAggregateWrite,
   rejectAggregateWritesMiddleware,
 } from "./aggregateWriteApproval.js";
+export {
+  PARTIAL_LIST_NOTE,
+  clusterAllowlistMiddleware,
+  describeDataAccess,
+  guardClusterCall,
+  resolveDataAccess,
+  type DataAccessConfig,
+  type DataAccessProjectConfig,
+  type ResolvedDataAccess,
+} from "./clusterAllowlist.js";
 export { withoutShellExecution } from "./agentBackend.js";
 export {
   parseClientUserPayload,

@@ -196,7 +196,7 @@ describe("Atlas Query Insights graph assembly", () => {
       buildSystemPrompt({
         name: atlasQueryInsightsConfig.systemPrompt.name,
         customInstructions: atlasQueryInsightsConfig.systemPrompt.customInstructions,
-        scope: atlasQueryInsightsConfig.scope,
+        dataAccess: atlasQueryInsightsConfig.dataAccess,
         maxQueryShapes: atlasQueryInsightsConfig.maxQueryShapes,
       }),
     );
@@ -205,6 +205,7 @@ describe("Atlas Query Insights graph assembly", () => {
       stampResumeClientUserMiddleware.name,
       "stripOpenAIToolEcho",
       "redactSecrets",
+      "clusterAllowlist",
       "rejectAggregateWrites",
       "recoverToolErrors",
     ]);

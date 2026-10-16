@@ -145,6 +145,23 @@ describe("system prompt modes", () => {
       WRITE_ENABLED_SYSTEM_PROMPT,
     );
   });
+
+  it("appends a Scope section when dataAccess is configured and omits it when empty", () => {
+    expect(buildSystemPrompt(false, { dataAccess: {} })).toBe(
+      READ_ONLY_SYSTEM_PROMPT,
+    );
+
+    const scoped = buildSystemPrompt(false, {
+      dataAccess: {
+        "648c61425116351907dba2db": {
+          clusterNames: ["chatbot-test", "chatbot-staging"],
+        },
+      },
+    });
+    expect(scoped).toContain(
+      "## Scope\n\nAccess is limited to clusters chatbot-test, chatbot-staging in project 648c61425116351907dba2db.\n",
+    );
+  });
 });
 
 const UNTRUSTED_TOOL_OUTPUT_RULE =

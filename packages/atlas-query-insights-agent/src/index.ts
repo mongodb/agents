@@ -30,6 +30,11 @@ export {
   type SystemPromptOptions,
 } from "./systemMessage.js";
 export {
+  PARTIAL_LIST_NOTE,
+  clusterAllowlistMiddleware,
+  describeDataAccess,
+  guardClusterCall,
+  resolveDataAccess,
   surfaceTokenMintFailures,
   rejectAggregateWritesMiddleware,
   buildLLM,
@@ -41,12 +46,14 @@ export {
   stripToolEchoMiddleware,
   withRequesterMetadata,
   withoutShellExecution,
+  type DataAccessConfig,
+  type DataAccessProjectConfig,
+  type ResolvedDataAccess,
 } from "@repo/agent-engine-core";
 export {
+  UNPINNED_SCOPE_DESCRIPTION,
   describeScope,
   resolveScope,
-  type AtlasQueryInsightsScope,
-  type ScopeInput,
 } from "./scope.js";
 export {
   ATLAS_QUERY_INSIGHTS_MCP_TOOLS,
