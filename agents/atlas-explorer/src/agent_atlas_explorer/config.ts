@@ -35,7 +35,7 @@
  * off, and secret redaction stays on either way. `judge.enabled` adds an LLM
  * check after the regex tier. It reuses the agent's provider and API key, so
  * it needs no new secret or egress rule. Leave `judge.model` empty to use the
- * agent's own model.
+ * agent's own model. See docs/input-guard.md.
  */
 
 export const atlasExplorerConfig = {
