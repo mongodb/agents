@@ -27,6 +27,7 @@ import {
   buildSystemPrompt,
   INPUT_GUARD_JUDGE_LLM_ID,
   inputGuardFromConfig,
+  createInputRedactor,
   prepareAgentInput,
   recoverToolErrorsMiddleware,
   redactSecretsMiddleware,
@@ -49,7 +50,12 @@ process.env.AGENTIC_AGENT_WORKDIR ||= process.cwd();
 export const app = new App({ appName: "atlas-query-insights" });
 surfaceTokenMintFailures(app);
 registerKnowledgeTools(app);
-app.prepareAgentInput(prepareAgentInput);
+const redactMessage = createInputRedactor(
+  atlasQueryInsightsConfig.inputGuard.mode,
+);
+app.prepareAgentInput((input, ctx) =>
+  prepareAgentInput(input, ctx, { redactMessage }),
+);
 log("INFO", "App created; Atlas MCP tools will be discovered from agent.yaml");
 
 export const buildAgent = app.entrypoint(() => {

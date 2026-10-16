@@ -28,7 +28,7 @@ import {
   createLlmInjectionJudge,
   type InjectionJudge,
 } from "./inputGuardJudge.js";
-import { redactContent } from "./redactSecrets.js";
+import { redactContent, redactSecretText } from "./redactSecrets.js";
 import { isAgentEngineResume } from "./stampResume.js";
 
 export interface InputGuardOptions {
@@ -128,6 +128,33 @@ function errorName(error: unknown): string {
   return error instanceof Error ? error.name : typeof error;
 }
 
+function warn(log: InputGuardLog): void {
+  console.warn(formatInputGuardLog(log));
+}
+
+/**
+ * Returns a function that redacts secrets from the user's message text before
+ * it enters the graph. Pass it to `prepareAgentInput`. LangGraph checkpoints
+ * the raw input before any middleware runs, so redacting inside the graph
+ * would leave the secret in a thread's first checkpoints.
+ *
+ * Only "enforce" redacts. Other modes return the text unchanged and leave
+ * logging to the middleware. A redaction logs one `[inputGuard]` line with the
+ * secret kinds, never the text.
+ */
+export function createInputRedactor(
+  mode: InputGuardMode,
+): (text: string) => string {
+  if (mode !== "enforce") return (text) => text;
+  return (text) => {
+    const redacted = redactSecretText(text);
+    if (redacted.kinds.length > 0) {
+      warn({ action: "redact", would: false, secrets: redacted.kinds });
+    }
+    return redacted.text;
+  };
+}
+
 function replacement(original: HumanMessage, content: MessageContent) {
   return new HumanMessage({
     id: original.id,
@@ -172,7 +199,9 @@ export function inputGuardFromConfig(
  *    size, so the middle of the message never reaches the model.
  * 2. Redacts pasted secrets: connection strings with passwords, `mdb_sa_sk_`
  *    and `sk-` keys, and private keys. It uses the same rules as the redaction
- *    of model replies. The model and the checkpoint only see the redacted text.
+ *    of model replies. The model only sees the redacted text. The checkpoint
+ *    does too only if the input was redacted before it entered the graph; see
+ *    {@link createInputRedactor}.
  * 3. When a judge is set with {@link createLlmInjectionJudge}, asks it whether
  *    the redacted message tries to override the assistant's instructions, and
  *    refuses the message when it says so. A judge error fails open.
@@ -195,10 +224,6 @@ export function inputGuardFromConfig(
 export function createInputGuardMiddleware(options: InputGuardOptions = {}) {
   const mode = options.mode ?? "enforce";
   const judge = options.judge;
-
-  const warn = (log: InputGuardLog): void => {
-    console.warn(formatInputGuardLog(log));
-  };
 
   return createMiddleware({
     name: "inputGuard",

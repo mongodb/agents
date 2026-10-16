@@ -35,6 +35,7 @@ export {
   buildLLM,
   INPUT_GUARD_JUDGE_LLM_ID,
   inputGuardFromConfig,
+  createInputRedactor,
   prepareAgentInput,
   recoverToolErrorsMiddleware,
   redactSecretsMiddleware,

@@ -18,6 +18,7 @@ export {
   approveAggregateWritesMiddleware,
   buildLLM,
   clientUserSchema,
+  createInputRedactor,
   formatToolErrorForAgent,
   INPUT_GUARD_JUDGE_LLM_ID,
   inputGuardFromConfig,

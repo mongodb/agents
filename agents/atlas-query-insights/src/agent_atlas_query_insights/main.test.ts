@@ -262,7 +262,14 @@ describe("Atlas Query Insights graph assembly", () => {
       "recoverToolErrors",
     ]);
     expect(harness.llm).not.toHaveBeenCalled();
-    expect(harness.prepareAgentInput).toBe(prepareAgentInput);
+    const hook = harness.prepareAgentInput as typeof prepareAgentInput;
+    const clean = { payload: { message: "List slow queries" } };
+    expect(hook(clean, {})).toEqual(prepareAgentInput(clean, {}));
+    const secret = {
+      payload: { message: "use mongodb://admin:hunter2@db.example.com/test" },
+    };
+    const [message] = hook(secret, {}).messages as HumanMessage[];
+    expect(message?.content).not.toContain("hunter2");
     expect(options.backend?.id).toBe("agent-engine-toolpod");
     expect(options.backend?.execute).toBeUndefined();
     expect(harness.deepAgent.mock.calls[0]?.[1]).not.toHaveProperty("subagents");

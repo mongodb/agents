@@ -245,6 +245,13 @@ describe("Atlas Explorer graph assembly", () => {
         requestContext,
       ),
     ).toEqual(prepareAtlasExplorerInput(agentInput, requestContext));
+    const withSecret = {
+      payload: { message: "use mongodb://admin:hunter2@db.example.com/test" },
+    };
+    const [message] = (
+      harness.prepareAgentInput as typeof prepareAtlasExplorerInput
+    )(withSecret, requestContext).messages as HumanMessage[];
+    expect(message?.content).not.toContain("hunter2");
     expect(harness.deepAgent.mock.calls[0]?.[1]).not.toHaveProperty(
       "subagents",
     );

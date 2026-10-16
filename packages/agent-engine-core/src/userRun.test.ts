@@ -82,4 +82,15 @@ describe("prepareAgentInput", () => {
     expect(message.additional_kwargs).toEqual({});
     expect(input.user_id).toBe("playground-user");
   });
+
+  it("passes the message through redactMessage before building it", () => {
+    const input = prepareAgentInput(
+      { payload: { message: "token abc123" } },
+      {},
+      { redactMessage: (text) => text.replace("abc123", "[redacted]") },
+    );
+
+    const [message] = input.messages as HumanMessage[];
+    expect(message.content).toBe("token [redacted]");
+  });
 });
