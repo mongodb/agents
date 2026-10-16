@@ -33,7 +33,6 @@ export {
 } from "./clientUser.js";
 export {
   INPUT_GUARD_PLACEHOLDER,
-  INPUT_GUARD_REFUSAL,
   INPUT_GUARD_TOO_LONG,
   createInputGuardMiddleware,
   type InputGuardOptions,

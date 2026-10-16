@@ -31,11 +31,6 @@ export interface InputGuardOptions {
   mode?: InputGuardMode;
 }
 
-export const INPUT_GUARD_REFUSAL =
-  "I can't act on that message because it looks like an attempt to change " +
-  "my instructions. Please rephrase your question about your MongoDB or " +
-  "Atlas deployment.";
-
 /** Messages longer than this many characters are refused. */
 export const INPUT_GUARD_MAX_SCREEN_CHARS = 100_000;
 
