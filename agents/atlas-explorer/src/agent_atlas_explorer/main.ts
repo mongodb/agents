@@ -31,6 +31,7 @@ import {
   buildLLM,
   buildSystemPrompt,
   createInputGuardMiddleware,
+  createInputRedactor,
   mutativeInterruptOn,
   prepareAtlasExplorerInput,
   recoverToolErrorsMiddleware,
@@ -63,9 +64,10 @@ const diagnostics = atlasExplorerConfig.diagnostics.logRuntimeLifecycle
       log: (msg) => log("INFO", msg),
     })
   : undefined;
+const redactMessage = createInputRedactor(atlasExplorerConfig.inputGuard.mode);
 app.prepareAgentInput((input, ctx) => {
   diagnostics?.recordExecution(ctx.sessionId);
-  return prepareAtlasExplorerInput(input, ctx);
+  return prepareAtlasExplorerInput(input, ctx, { redactMessage });
 });
 log("INFO", "App created; Atlas MCP tools will be discovered from agent.yaml");
 

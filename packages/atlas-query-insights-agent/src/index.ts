@@ -34,6 +34,7 @@ export {
   rejectAggregateWritesMiddleware,
   buildLLM,
   createInputGuardMiddleware,
+  createInputRedactor,
   prepareAgentInput,
   recoverToolErrorsMiddleware,
   redactSecretsMiddleware,

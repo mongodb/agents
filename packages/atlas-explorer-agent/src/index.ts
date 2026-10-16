@@ -19,6 +19,7 @@ export {
   buildLLM,
   clientUserSchema,
   createInputGuardMiddleware,
+  createInputRedactor,
   formatToolErrorForAgent,
   isAgentEngineResume,
   parseClientUserPayload,

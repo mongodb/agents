@@ -28,12 +28,16 @@ import {
   INPUT_GUARD_MAX_SCREEN_CHARS,
   INPUT_GUARD_TOO_LONG,
   createInputGuardMiddleware,
+  createInputRedactor,
   formatInputGuardLog,
 } from "./inputGuard.js";
+import { prepareAgentInput } from "./userRun.js";
 
 const MODEL_REPLY = "Here you go.";
 
 const API_KEY = "sk-abcdefghijklmnopqrstuvwxyz123456";
+
+const MONGODB_URI = "mongodb://admin:hunter2@db.example.com/test";
 
 function buildAgent(options: Parameters<typeof createInputGuardMiddleware>[0]) {
   return createAgent({
@@ -332,5 +336,95 @@ describe("createInputGuardMiddleware", () => {
 
     expect(warn).not.toHaveBeenCalled();
     expect(modelAnswers(result.messages)).toBe(1);
+  });
+});
+
+describe("createInputRedactor", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("redacts secrets in enforce mode and logs only the kinds", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    const text = createInputRedactor("enforce")(`connect to ${MONGODB_URI}`);
+
+    expect(text).toBe(
+      "connect to mongodb://[redacted-username]:[redacted-password]@db.example.com/test",
+    );
+    expect(logged(warn)).toBe("[inputGuard] redacted secrets=mongodb-uri");
+  });
+
+  it("returns clean text unchanged without logging", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    expect(createInputRedactor("enforce")("list my projects")).toBe(
+      "list my projects",
+    );
+    expect(warn).not.toHaveBeenCalled();
+  });
+
+  it.each(["monitor", "off"] as const)(
+    "leaves the text alone in %s mode",
+    (mode) => {
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+      expect(createInputRedactor(mode)(`key ${API_KEY}`)).toBe(
+        `key ${API_KEY}`,
+      );
+      expect(warn).not.toHaveBeenCalled();
+    },
+  );
+});
+
+describe("input redaction before the graph", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  async function checkpointedText(redactMessage?: (text: string) => string) {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    const saver = new MemorySaver();
+    const agent = createAgent({
+      model: new FakeListChatModel({ responses: [MODEL_REPLY] }),
+      tools: [],
+      middleware: [createInputGuardMiddleware()],
+      checkpointer: saver,
+    });
+    const config = { configurable: { thread_id: "thread-1" } };
+
+    const input = prepareAgentInput(
+      { payload: { message: `use ${API_KEY} and ${MONGODB_URI}` } },
+      {},
+      { redactMessage },
+    );
+    await agent.invoke(input as never, config);
+
+    const checkpoints: string[] = [];
+    for await (const tuple of saver.list(config)) {
+      checkpoints.push(
+        JSON.stringify({
+          values: tuple.checkpoint.channel_values,
+          pendingWrites: tuple.pendingWrites,
+        }),
+      );
+    }
+    return checkpoints;
+  }
+
+  it("keeps secrets out of every checkpoint of the thread", async () => {
+    const checkpoints = await checkpointedText(createInputRedactor("enforce"));
+
+    expect(checkpoints.length).toBeGreaterThanOrEqual(4);
+    for (const checkpoint of checkpoints) {
+      expect(checkpoint).not.toContain(API_KEY);
+      expect(checkpoint).not.toContain("hunter2");
+    }
+  });
+
+  it("leaves the secret in the first checkpoints without the redactor", async () => {
+    const checkpoints = await checkpointedText();
+
+    expect(checkpoints.some((c) => c.includes(API_KEY))).toBe(true);
   });
 });

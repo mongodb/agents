@@ -22,7 +22,7 @@ import {
 import { createMiddleware } from "langchain";
 import { z } from "zod";
 
-import { redactContent } from "./redactSecrets.js";
+import { redactContent, redactSecretText } from "./redactSecrets.js";
 import type { InputGuardMode } from "./inputGuardConfig.js";
 import { isAgentEngineResume } from "./stampResume.js";
 
@@ -98,6 +98,33 @@ export function formatInputGuardLog(log: InputGuardLog): string {
   return `[inputGuard] ${parts.join(" ")}`;
 }
 
+function warn(log: InputGuardLog): void {
+  console.warn(formatInputGuardLog(log));
+}
+
+/**
+ * Returns a function that redacts secrets from the user's message text before
+ * it enters the graph. Pass it to `prepareAgentInput`. LangGraph checkpoints
+ * the raw input before any middleware runs, so redacting inside the graph
+ * would leave the secret in a thread's first checkpoints.
+ *
+ * Only "enforce" redacts. Other modes return the text unchanged and leave
+ * logging to the middleware. A redaction logs one `[inputGuard]` line with the
+ * secret kinds, never the text.
+ */
+export function createInputRedactor(
+  mode: InputGuardMode,
+): (text: string) => string {
+  if (mode !== "enforce") return (text) => text;
+  return (text) => {
+    const redacted = redactSecretText(text);
+    if (redacted.kinds.length > 0) {
+      warn({ action: "redact", would: false, secrets: redacted.kinds });
+    }
+    return redacted.text;
+  };
+}
+
 function replacement(original: HumanMessage, content: MessageContent) {
   return new HumanMessage({
     id: original.id,
@@ -121,7 +148,9 @@ function replacement(original: HumanMessage, content: MessageContent) {
  *    size, so the middle of the message never reaches the model.
  * 2. Redacts pasted secrets: connection strings with passwords, `mdb_sa_sk_`
  *    and `sk-` keys, and private keys. It uses the same rules as the redaction
- *    of model replies. The model and the checkpoint only see the redacted text.
+ *    of model replies. The model only sees the redacted text. The checkpoint
+ *    does too only if the input was redacted before it entered the graph; see
+ *    {@link createInputRedactor}.
  *
  * Each decision logs one `[inputGuard]` line: the message length for a
  * refusal and the secret kinds for a redaction, never the text.
@@ -139,10 +168,6 @@ function replacement(original: HumanMessage, content: MessageContent) {
  */
 export function createInputGuardMiddleware(options: InputGuardOptions = {}) {
   const mode = options.mode ?? "enforce";
-
-  const warn = (log: InputGuardLog): void => {
-    console.warn(formatInputGuardLog(log));
-  };
 
   return createMiddleware({
     name: "inputGuard",

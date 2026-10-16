@@ -27,6 +27,15 @@ function payloadRecord(input: AgentInput): Record<string, unknown> {
   return payload as Record<string, unknown>;
 }
 
+export interface PrepareAgentInputOptions {
+  /**
+   * Rewrites the message text before it enters the graph. LangGraph
+   * checkpoints the input as given, so this is the only place to keep a
+   * secret out of a thread's first checkpoints.
+   */
+  redactMessage?: (text: string) => string;
+}
+
 /**
  * Agent Engine graph input for a fresh invoke: the default HumanMessage, plus
  * client/user on that message when the payload includes them. Resume is
@@ -35,11 +44,13 @@ function payloadRecord(input: AgentInput): Record<string, unknown> {
 export function prepareAgentInput(
   input: AgentInput,
   ctx: Pick<RequestContext, "userId" | "sessionId">,
+  options: PrepareAgentInputOptions = {},
 ): Record<string, unknown> {
   const payload = payloadRecord(input);
   const extras = parseClientUserPayload(payload);
+  const text = String(payload["message"] ?? "");
   const human = new HumanMessage({
-    content: String(payload["message"] ?? ""),
+    content: options.redactMessage ? options.redactMessage(text) : text,
   });
   const graphInput: Record<string, unknown> = {
     messages: [extras ? stampClientUser(human, extras) : human],

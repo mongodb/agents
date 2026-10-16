@@ -35,6 +35,7 @@ export {
   INPUT_GUARD_PLACEHOLDER,
   INPUT_GUARD_TOO_LONG,
   createInputGuardMiddleware,
+  createInputRedactor,
   type InputGuardOptions,
 } from "./inputGuard.js";
 export {
@@ -97,4 +98,7 @@ export {
   type KnowledgeToolHost,
   type WrappedKnowledgeTool,
 } from "./knowledgeTools.js";
-export { prepareAgentInput } from "./userRun.js";
+export {
+  prepareAgentInput,
+  type PrepareAgentInputOptions,
+} from "./userRun.js";
