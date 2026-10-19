@@ -229,10 +229,10 @@ reach:
 
 ```ts
 dataAccess: {
-  // Every cluster in this project.
-  "aaaaaaaaaaaaaaaaaaaaaaaa": {},
   // Only these clusters in this project.
-  "bbbbbbbbbbbbbbbbbbbbbbbb": { clusterNames: ["example-test"] },
+  "aaaaaaaaaaaaaaaaaaaaaaaa": { clusterNames: ["example-test"] },
+  // Every cluster in this project.
+  "bbbbbbbbbbbbbbbbbbbbbbbb": {},
 },
 ```
 
