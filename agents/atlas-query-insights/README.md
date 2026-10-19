@@ -319,8 +319,8 @@ Things to know:
   Engine traces. You govern that data. See
   [Your data](../../README.md#your-data).
 - `dataAccess` in `config.ts` limits the agent to the listed projects and
-  clusters. Leave it as `{}` to let the agent resolve the target. Otherwise
-  map each 24-hex project id to `{}` (all its clusters) or
+  clusters. Leave it as `{}` and the agent asks the user which cluster to
+  analyze. Otherwise map each 24-hex project id to `{}` (all its clusters) or
   `{ clusterNames: [...] }`. The system prompt names the allowed projects
   and clusters. Tool calls aren't filtered by it. The hard boundary is the
   one Atlas project that the MCP configuration belongs to.
