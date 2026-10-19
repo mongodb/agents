@@ -10,7 +10,7 @@ templates are built on the
 [MongoDB Agent Skills](https://www.mongodb.com/docs/agent-skills). You bring a
 model API key, choose what the agent can access, and deploy it.
 
-![From template to running agent: pick a template from mongodb/agents, set your Atlas credential, model, and agent.yaml, deploy with the agentengine CLI, and run on Atlas Agent Engine, which connects to Atlas and to the Playground, CLI, and Slack.](docs/images/architecture.svg)
+![From template to running agent: open templates from mongodb/agents, your settings (Atlas credential, model provider, secrets and hosts), deploy with the agentengine CLI, and run on Atlas Agent Engine, which connects to Atlas MCP tools and to user surfaces such as the Playground, CLI, and Slack.](docs/images/architecture.png)
 
 > [!NOTE]
 > Atlas Agent Engine is in Public Preview. Review the
