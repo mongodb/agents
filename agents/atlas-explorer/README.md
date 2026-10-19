@@ -230,9 +230,9 @@ reach:
 ```ts
 dataAccess: {
   // Every cluster in this project.
-  "648c61425116351907dba2db": {},
+  "aaaaaaaaaaaaaaaaaaaaaaaa": {},
   // Only these clusters in this project.
-  "6a982c0522ab3c3c953c5ead": { clusterNames: ["docs-chatbot-test"] },
+  "bbbbbbbbbbbbbbbbbbbbbbbb": { clusterNames: ["example-test"] },
 },
 ```
 

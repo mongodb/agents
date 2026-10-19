@@ -18,8 +18,8 @@ import { describe, expect, it } from "vitest";
 
 import { describeDataAccess, resolveDataAccess } from "./dataAccess.js";
 
-const PROJECT = "648c61425116351907dba2db";
-const OTHER_PROJECT = "6a982c0522ab3c3c953c5ead";
+const PROJECT = "aaaaaaaaaaaaaaaaaaaaaaaa";
+const OTHER_PROJECT = "bbbbbbbbbbbbbbbbbbbbbbbb";
 
 describe("resolveDataAccess", () => {
   it("treats an omitted or empty map as unrestricted", () => {
@@ -31,12 +31,12 @@ describe("resolveDataAccess", () => {
     expect(
       resolveDataAccess({
         [` ${PROJECT} `]: {
-          clusterNames: [" docs-chatbot-test ", "docs-chatbot-test"],
+          clusterNames: [" example-test ", "example-test"],
         },
         [OTHER_PROJECT]: {},
       }),
     ).toEqual({
-      [PROJECT]: { clusterNames: ["docs-chatbot-test"] },
+      [PROJECT]: { clusterNames: ["example-test"] },
       [OTHER_PROJECT]: {},
     });
     expect(resolveDataAccess({ [PROJECT]: { clusterNames: [] } })).toEqual({
@@ -60,14 +60,14 @@ describe("describeDataAccess", () => {
   it("lists each project with its allowed clusters", () => {
     expect(
       describeDataAccess({
-        [PROJECT]: { clusterNames: ["docs-chatbot-test", "docs-chatbot-staging"] },
+        [PROJECT]: { clusterNames: ["example-test", "example-staging"] },
         [OTHER_PROJECT]: {},
         "507f1f77bcf86cd799439011": { clusterNames: [] },
       }),
     ).toBe(
       [
         "Access is limited to these Atlas projects and clusters. Do not use any other project or cluster:",
-        `- Project ${PROJECT}: clusters docs-chatbot-test, docs-chatbot-staging`,
+        `- Project ${PROJECT}: clusters example-test, example-staging`,
         `- Project ${OTHER_PROJECT}: all clusters`,
         "- Project 507f1f77bcf86cd799439011: no clusters allowed",
       ].join("\n"),
