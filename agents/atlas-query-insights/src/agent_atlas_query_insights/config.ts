@@ -46,7 +46,7 @@ export const atlasQueryInsightsConfig = {
     name: "",
     customInstructions: "",
   },
-  dataAccess: {} as DataAccessConfig,
+  dataAccess: {} satisfies DataAccessConfig,
   maxQueryShapes: 3,
   inputGuard: {
     mode: "enforce",

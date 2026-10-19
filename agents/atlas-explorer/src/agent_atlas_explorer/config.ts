@@ -54,7 +54,7 @@ export const atlasExplorerConfig = {
     name: "",
     customInstructions: "",
   },
-  dataAccess: {} as DataAccessConfig,
+  dataAccess: {} satisfies DataAccessConfig,
   diagnostics: {
     logRuntimeLifecycle: true,
   },
