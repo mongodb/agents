@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
+import { ToolMessage } from "@langchain/core/messages";
 import { describe, expect, it, vi } from "vitest";
 
 import {
   clusterAllowlistMiddleware,
   guardClusterCall,
 } from "./clusterAllowlist.js";
+import { PARTIAL_LIST_NOTE } from "./clusterListFilter.js";
 import type { DataAccessConfig } from "./dataAccess.js";
 
 const PROJECT = "64a1f3c2e8b94d0012c7a5e1";
@@ -184,6 +186,90 @@ describe("guardClusterCall", () => {
     expect(find.result).toMatchObject({
       content: "No clusters are allowed by dataAccess, so mongodb__find is unavailable.",
     });
+  });
+});
+
+describe("guardClusterCall list results", () => {
+  const tag = "untrusted-user-data-1";
+  const listClusters = call("mongodb__atlas_list_clusters", { projectId: PROJECT });
+
+  function toolMessage(content: unknown, status?: "error") {
+    return new ToolMessage({
+      content: content as string,
+      name: "mongodb__atlas_list_clusters",
+      tool_call_id: "call-1",
+      artifact: { raw: "unfiltered" },
+      ...(status ? { status } : {}),
+    });
+  }
+
+  it("replaces the tool message with the filtered list", async () => {
+    const original = toolMessage(
+      `Found 2 clusters:<${tag}>${JSON.stringify({
+        clusters: [{ name: "docs-chatbot-test" }, { name: "docs-chatbot-prod" }],
+      })}</${tag}>`,
+    );
+
+    const result = (await guardClusterCall({
+      allowedDataAccess: {
+        [PROJECT]: { clusterNames: ["docs-chatbot-test", "docs-chatbot-staging"] },
+      },
+      request: listClusters,
+      handler: async () => original,
+    })) as ToolMessage;
+
+    expect(result).not.toBe(original);
+    expect(result.content).toContain("Found 1 cluster:");
+    expect(result.content).not.toContain("docs-chatbot-prod");
+    expect(result.content).toContain(PARTIAL_LIST_NOTE);
+    expect(result.tool_call_id).toBe("call-1");
+    expect(result.artifact).toBeUndefined();
+  });
+
+  it("passes tool errors through", async () => {
+    const error = toolMessage("Atlas API error", "error");
+    await expect(
+      guardClusterCall({
+        allowedDataAccess: {
+          [PROJECT]: { clusterNames: ["docs-chatbot-test", "docs-chatbot-staging"] },
+        },
+        request: listClusters,
+        handler: async () => error,
+      }),
+    ).resolves.toBe(error);
+  });
+
+  it.each([
+    ["unreadable text", toolMessage("Clusters: docs-chatbot-prod")],
+    ["content blocks", toolMessage([{ type: "text", text: "docs-chatbot-prod" }])],
+    ["a non-message result", { update: { messages: [] } }],
+  ])("withholds %s", async (_label, original) => {
+    const result = await guardClusterCall({
+      allowedDataAccess: {
+        [PROJECT]: { clusterNames: ["docs-chatbot-test", "docs-chatbot-staging"] },
+      },
+      request: listClusters,
+      handler: async () => original,
+    });
+    expect(result).toMatchObject({
+      status: "error",
+      content: expect.stringContaining("was withheld"),
+    });
+    expect(JSON.stringify(result)).not.toContain("docs-chatbot-prod");
+  });
+
+  it("leaves other tool results alone", async () => {
+    const users = new ToolMessage({
+      content: "docs-chatbot-prod (CLUSTER)",
+      tool_call_id: "call-1",
+    });
+    await expect(
+      guardClusterCall({
+        allowedDataAccess,
+        request: call("mongodb__atlas_list_db_users", { projectId: PROJECT }),
+        handler: async () => users,
+      }),
+    ).resolves.toBe(users);
   });
 });
 

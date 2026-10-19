@@ -17,6 +17,7 @@
 import { ToolMessage } from "@langchain/core/messages";
 import { createMiddleware } from "langchain";
 
+import { LIST_TOOLS, filterListContent } from "./clusterListFilter.js";
 import {
   isUnrestricted,
   validateDataAccess,
@@ -168,7 +169,47 @@ export async function guardClusterCall<
   }
   const violation = findDataAccessViolation({ allowedDataAccess, toolCall });
   if (violation) return rejectToolCall({ toolCall, reason: violation });
-  return handler(request);
+  const result = await handler(request);
+  return LIST_TOOLS.has(toolCall.name)
+    ? filterListResult(allowedDataAccess, toolCall, result)
+    : result;
+}
+
+function filterListResult<TResult>(
+  allowedDataAccess: DataAccessConfig,
+  toolCall: ClusterToolCall,
+  result: TResult,
+): TResult | ToolMessage {
+  if (ToolMessage.isInstance(result) && result.status === "error") {
+    return result;
+  }
+  const content =
+    ToolMessage.isInstance(result) && typeof result.content === "string"
+      ? filterListContent(
+          toolCall.name,
+          allowedDataAccess,
+          stringArg(toolArgs(toolCall.args).projectId),
+          result.content,
+        )
+      : undefined;
+  if (content === undefined) {
+    return rejectToolCall({
+      toolCall,
+      reason: `${toolCall.name} returned a result the dataAccess filter cannot read, so it was withheld.`,
+    });
+  }
+  const message = result as ToolMessage;
+  if (content === message.content) return result;
+  // Drop the artifact: it can hold the unfiltered list.
+  return new ToolMessage({
+    id: message.id,
+    name: message.name,
+    content,
+    tool_call_id: message.tool_call_id,
+    status: message.status,
+    additional_kwargs: message.additional_kwargs,
+    response_metadata: message.response_metadata,
+  });
 }
 
 /**
