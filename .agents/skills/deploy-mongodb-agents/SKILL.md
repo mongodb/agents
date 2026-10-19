@@ -121,7 +121,19 @@ Ask the user to type the answers. Don't look them up and don't read their cluste
 Then edit `config.ts` and show the user the diff before saving:
 
 - **Atlas Explorer** (`src/agent_atlas_explorer/config.ts`): put the answers in `systemPrompt.customInstructions`, for example `Default cluster: prod-orders. The orders database holds customer orders. Ignore databases that start with test_.` The text is appended to the system prompt after the built-in rules, and the built-in safety rules still apply.
-- **Either agent** (`config.ts`): to limit the agent to a cluster, set `dataAccess`, for example `{ "<projectId>": { clusterNames: ["prod-orders"] } }`. Use `{ "<projectId>": {} }` for every cluster in a project. The project ID must be a 24-character hex ID. Leave `dataAccess` as `{}` to let the agent work it out.
+- **Either agent** (`config.ts`): to limit the agent to a cluster, set
+  `dataAccess`. The project ID must be a 24-character hex ID.
+
+  ```ts
+  dataAccess: {
+    // Only the prod-orders cluster in this project.
+    "<projectId>": { clusterNames: ["prod-orders"] },
+    // Every cluster in this project.
+    "<otherProjectId>": {},
+  } satisfies DataAccessConfig,
+  ```
+
+  Leave `dataAccess` as `{}` to let the agent work it out.
 
 Atlas Explorer users can also add a data map: a list of databases, collections and fields so the agent can skip exploring. It goes stale, so offer it only if the user asks or says they'd like it, and only if this coding agent already has the MongoDB MCP connected. Then follow [references/data-map.md](references/data-map.md).
 
