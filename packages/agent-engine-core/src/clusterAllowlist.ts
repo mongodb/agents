@@ -17,6 +17,7 @@
 import { ToolMessage } from "@langchain/core/messages";
 import { createMiddleware } from "langchain";
 
+import { LIST_TOOLS, filterListContent } from "./clusterListFilter.js";
 import {
   resolveDataAccess,
   type DataAccessConfig,
@@ -121,7 +122,47 @@ export async function guardClusterCall<
   }
   const reason = checkClusterToolCall(resolved, toolCall);
   if (reason) return rejectToolCall(toolCall, reason);
-  return handler(request);
+  const result = await handler(request);
+  return LIST_TOOLS.has(toolCall.name)
+    ? filterListResult(resolved, toolCall, result)
+    : result;
+}
+
+function filterListResult<TResult>(
+  resolved: ResolvedDataAccess,
+  toolCall: ClusterToolCall,
+  result: TResult,
+): TResult | ToolMessage {
+  if (ToolMessage.isInstance(result) && result.status === "error") {
+    return result;
+  }
+  const content =
+    ToolMessage.isInstance(result) && typeof result.content === "string"
+      ? filterListContent(
+          toolCall.name,
+          resolved,
+          stringArg(toolArgs(toolCall.args).projectId),
+          result.content,
+        )
+      : undefined;
+  if (content === undefined) {
+    return rejectToolCall(
+      toolCall,
+      `${toolCall.name} returned a result the dataAccess filter cannot read, so it was withheld.`,
+    );
+  }
+  const message = result as ToolMessage;
+  if (content === message.content) return result;
+  // Drop the artifact: it can hold the unfiltered list.
+  return new ToolMessage({
+    id: message.id,
+    name: message.name,
+    content,
+    tool_call_id: message.tool_call_id,
+    status: message.status,
+    additional_kwargs: message.additional_kwargs,
+    response_metadata: message.response_metadata,
+  });
 }
 
 /**

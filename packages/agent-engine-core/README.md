@@ -5,7 +5,8 @@ selection, requester metadata, and LangGraph middleware.
 `redactSecretsMiddleware` strips common credentials from model replies and tool
 messages before they are checkpointed. `clusterAllowlistMiddleware` rejects
 MongoDB MCP calls that name a project or cluster outside the agent's
-`dataAccess` config. `approveAggregateWritesMiddleware` requires HITL
+`dataAccess` config, and filters `list_clusters` and `list_projects`
+results to it. `approveAggregateWritesMiddleware` requires HITL
 approval for `mongodb__aggregate` and `mongodb__aggregate_db` when the
 pipeline contains `$out` or `$merge`. `rejectAggregateWritesMiddleware`
 rejects those calls for a read-only agent. `surfaceTokenMintFailures` wraps the

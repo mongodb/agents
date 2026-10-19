@@ -286,7 +286,8 @@ Things to know:
   `{ clusterNames: [...] }`. The system prompt names the allowed projects
   and clusters, and `clusterAllowlistMiddleware` rejects tool calls that
   name any other project or cluster. It also disables raw connection
-  strings (`mongodb__connect`). This is a guardrail in the agent. The hard
+  strings (`mongodb__connect`) and shows only allowed entries in project
+  and cluster lists. This is a guardrail in the agent. The hard
   boundary is the one Atlas project that the MCP configuration belongs to.
 
 ## Safety
