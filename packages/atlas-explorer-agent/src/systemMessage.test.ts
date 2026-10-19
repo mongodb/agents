@@ -167,7 +167,7 @@ describe("system prompt modes", () => {
 
     const prompt = buildSystemPrompt(false, {
       dataAccess: {
-        "648c61425116351907dba2db": { clusterNames: ["docs-chatbot-test"] },
+        "aaaaaaaaaaaaaaaaaaaaaaaa": { clusterNames: ["example-test"] },
       },
       customInstructions: "Be brief.",
     });
@@ -176,7 +176,7 @@ describe("system prompt modes", () => {
       "## Scope\n\nAccess is limited to these Atlas projects and clusters.",
     );
     expect(prompt).toContain(
-      "- Project 648c61425116351907dba2db: cluster docs-chatbot-test",
+      "- Project aaaaaaaaaaaaaaaaaaaaaaaa: cluster example-test",
     );
     expect(prompt.indexOf("## Scope")).toBeLessThan(
       prompt.indexOf("## Custom instructions"),
