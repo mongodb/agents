@@ -114,6 +114,12 @@ function warn(log: InputGuardLog): void {
  * "enforce" redacts. "monitor" logs what it would redact and returns the text
  * unchanged. "off" returns the text unchanged. Each decision logs one
  * `[inputGuard]` line with the secret kinds, never the text.
+ *
+ * This runs on unbounded user input, so it scans at most
+ * `INPUT_GUARD_MAX_SCREEN_CHARS + 1` characters. In "enforce" the rest is
+ * dropped, so it never reaches a checkpoint. The message is still over the
+ * limit, so {@link createInputRefusalMiddleware} refuses it. In "monitor" the
+ * returned text is the original, and only the log reflects the truncated scan.
  */
 export function createInputRedactor(
   mode: InputGuardMode,
@@ -121,7 +127,8 @@ export function createInputRedactor(
   if (mode === "off") return (text) => text;
   const enforce = mode === "enforce";
   return (text) => {
-    const redacted = redactSecretText(text);
+    const scanned = text.slice(0, INPUT_GUARD_MAX_SCREEN_CHARS + 1);
+    const redacted = redactSecretText(scanned);
     if (redacted.kinds.length > 0) {
       warn({ action: "redact", would: !enforce, secrets: redacted.kinds });
     }

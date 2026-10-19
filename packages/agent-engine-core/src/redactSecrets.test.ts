@@ -280,3 +280,53 @@ describe("redactSecretsMiddleware", () => {
     expect(warning).not.toContain(OPENAI_KEY);
   });
 });
+
+describe("redactSecretText on adversarial input", () => {
+  const BUDGET_MS = 500;
+
+  function timed(text: string) {
+    const started = performance.now();
+    const result = redactSecretText(text);
+    return { result, elapsed: performance.now() - started };
+  }
+
+  it("scans repeated unmatched private key headers in linear time", () => {
+    const { result, elapsed } = timed(
+      "-----BEGIN PRIVATE KEY-----".repeat(40_000),
+    );
+
+    expect(result.kinds).toEqual([]);
+    expect(elapsed).toBeLessThan(BUDGET_MS);
+  });
+
+  it("scans repeated credential-less MongoDB URI starts in linear time", () => {
+    const { result, elapsed } = timed("mongodb://a:".repeat(100_000));
+
+    expect(result.kinds).toEqual([]);
+    expect(elapsed).toBeLessThan(BUDGET_MS);
+  });
+
+  it("redacts a key that follows an unmatched header, as the old rule did", () => {
+    const { result } = timed(`-----BEGIN PRIVATE KEY-----\nnote\n${PEM}`);
+
+    expect(result.kinds).toEqual(["private-key"]);
+    expect(result.text).toBe("[redacted-private-key]");
+  });
+
+  it("redacts credentials that follow a URI without a password", () => {
+    const { result } = timed(
+      "mongodb://a: then mongodb://admin:hunter2@db.example.com/test",
+    );
+
+    expect(result.text).toBe(
+      "mongodb://a: then mongodb://[redacted-username]:[redacted-password]@db.example.com/test",
+    );
+  });
+
+  it("leaves a URI without credentials unchanged", () => {
+    const { result } = timed("mongodb://db.example.com/test");
+
+    expect(result.text).toBe("mongodb://db.example.com/test");
+    expect(result.kinds).toEqual([]);
+  });
+});

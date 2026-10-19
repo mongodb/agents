@@ -301,6 +301,31 @@ describe("createInputRedactor", () => {
     expect(warn).not.toHaveBeenCalled();
   });
 
+  it("drops everything past the limit in enforce mode", () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    const long = `${"a".repeat(INPUT_GUARD_MAX_SCREEN_CHARS)}${API_KEY}`;
+
+    const text = createInputRedactor("enforce")(long);
+
+    expect(text).toHaveLength(INPUT_GUARD_MAX_SCREEN_CHARS + 1);
+    expect(text).not.toContain("sk-");
+  });
+
+  it("returns the original over-limit text in monitor mode", () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    const long = "a".repeat(INPUT_GUARD_MAX_SCREEN_CHARS * 2);
+
+    expect(createInputRedactor("monitor")(long)).toBe(long);
+  });
+
+  it("scans an over-limit adversarial message in bounded time", () => {
+    const started = performance.now();
+
+    createInputRedactor("enforce")("-----BEGIN PRIVATE KEY-----".repeat(1e5));
+
+    expect(performance.now() - started).toBeLessThan(500);
+  });
+
   it("logs the secret kinds without the text", () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 
@@ -352,6 +377,36 @@ describe("input redaction before the graph", () => {
     for (const checkpoint of checkpoints) {
       expect(checkpoint).not.toContain(API_KEY);
       expect(checkpoint).not.toContain("hunter2");
+    }
+  });
+
+  it("refuses an over-limit message without checkpointing its tail", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    const saver = new MemorySaver();
+    const agent = createAgent({
+      model: new FakeListChatModel({ responses: [MODEL_REPLY] }),
+      tools: [],
+      middleware: [createInputRefusalMiddleware()],
+      checkpointer: saver,
+    });
+    const config = { configurable: { thread_id: "thread-long" } };
+    const message = `${"a".repeat(INPUT_GUARD_MAX_SCREEN_CHARS)} ${API_KEY}`;
+
+    const input = prepareAgentInput(
+      { payload: { message } },
+      {},
+      { redactMessage: createInputRedactor("enforce") },
+    );
+    const result = await agent.invoke(input as never, config);
+
+    expect(modelAnswers(result.messages)).toBe(0);
+    expect(lastText(result.messages)).toBe(INPUT_GUARD_TOO_LONG);
+    for await (const tuple of saver.list(config)) {
+      const saved = JSON.stringify({
+        values: tuple.checkpoint.channel_values,
+        pendingWrites: tuple.pendingWrites,
+      });
+      expect(saved).not.toContain(API_KEY);
     }
   });
 

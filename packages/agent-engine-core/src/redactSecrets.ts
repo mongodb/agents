@@ -26,32 +26,95 @@ import { z } from "zod";
 
 interface SecretRule {
   kind: string;
-  pattern: RegExp;
-  replace: string;
+  redact: (text: string) => string;
+}
+
+function regexRule(
+  kind: string,
+  pattern: RegExp,
+  replace: string,
+): SecretRule {
+  return { kind, redact: (text) => text.replace(pattern, replace) };
+}
+
+const PEM_KEY_LABEL = "(?:(?:RSA|EC|OPENSSH|ENCRYPTED|DSA) )?PRIVATE KEY";
+
+/**
+ * Redacts PEM private key blocks. One regex with a lazy `[\s\S]*?` body
+ * rescans to the end of the text for every BEGIN header that has no END, which
+ * is quadratic on repeated unmatched headers. Finding the headers and their
+ * END markers separately is linear. Once no END marker exists after a header,
+ * none exists after any later header either, so the scan stops.
+ */
+function redactPrivateKeys(text: string): string {
+  const begin = new RegExp(`-----BEGIN ${PEM_KEY_LABEL}-----`, "g");
+  const end = new RegExp(`-----END ${PEM_KEY_LABEL}-----`, "g");
+  let out = "";
+  let cursor = 0;
+  for (;;) {
+    const header = begin.exec(text);
+    if (header === null) break;
+    end.lastIndex = header.index + header[0].length;
+    const footer = end.exec(text);
+    if (footer === null) break;
+    out += text.slice(cursor, header.index) + "[redacted-private-key]";
+    cursor = footer.index + footer[0].length;
+    begin.lastIndex = cursor;
+  }
+  return out + text.slice(cursor);
+}
+
+/**
+ * Redacts the credentials in MongoDB URIs, keeping the scheme and host. The
+ * single-regex form (`mongodb://user:password@`) rescans a long password run
+ * for every `mongodb://` it contains, which is quadratic. Matching in steps
+ * is linear: when a user and colon match but no `@` follows before whitespace,
+ * no later start inside that run can match either, so the scan skips past it.
+ */
+function redactMongoDbUris(text: string): string {
+  const scheme = /mongodb(\+srv)?:\/\//gi;
+  const userAndColon = /[^:\s/@]+:/y;
+  const passwordAndAt = /[^@\s]+@/y;
+  const runEnd = /[\s@]/g;
+  let out = "";
+  let cursor = 0;
+  for (;;) {
+    const start = scheme.exec(text);
+    if (start === null) break;
+    const userStart = start.index + start[0].length;
+    userAndColon.lastIndex = userStart;
+    const user = userAndColon.exec(text);
+    if (user === null) continue;
+    const passwordStart = userStart + user[0].length;
+    passwordAndAt.lastIndex = passwordStart;
+    const password = passwordAndAt.exec(text);
+    if (password === null) {
+      runEnd.lastIndex = passwordStart;
+      scheme.lastIndex = runEnd.exec(text)?.index ?? text.length;
+      continue;
+    }
+    out +=
+      text.slice(cursor, start.index) +
+      `mongodb${start[1] ?? ""}://[redacted-username]:[redacted-password]@`;
+    cursor = passwordStart + password[0].length;
+    scheme.lastIndex = cursor;
+  }
+  return out + text.slice(cursor);
 }
 
 const SECRET_RULES: readonly SecretRule[] = [
-  {
-    kind: "private-key",
-    pattern:
-      /-----BEGIN (?:(?:RSA|EC|OPENSSH|ENCRYPTED|DSA) )?PRIVATE KEY-----[\s\S]*?-----END (?:(?:RSA|EC|OPENSSH|ENCRYPTED|DSA) )?PRIVATE KEY-----/g,
-    replace: "[redacted-private-key]",
-  },
-  {
-    kind: "mongodb-uri",
-    pattern: /mongodb(\+srv)?:\/\/([^:\s/@]+):([^@\s]+)@/gi,
-    replace: "mongodb$1://[redacted-username]:[redacted-password]@",
-  },
-  {
-    kind: "atlas-service-account",
-    pattern: /mdb_sa_sk_[A-Za-z0-9_-]+/g,
-    replace: "mdb_sa_sk_[redacted-api-key]",
-  },
-  {
-    kind: "api-key",
-    pattern: /\bsk-[A-Za-z0-9_-]{20,}(?![A-Za-z0-9_-])/g,
-    replace: "sk-[redacted-api-key]",
-  },
+  { kind: "private-key", redact: redactPrivateKeys },
+  { kind: "mongodb-uri", redact: redactMongoDbUris },
+  regexRule(
+    "atlas-service-account",
+    /mdb_sa_sk_[A-Za-z0-9_-]+/g,
+    "mdb_sa_sk_[redacted-api-key]",
+  ),
+  regexRule(
+    "api-key",
+    /\bsk-[A-Za-z0-9_-]{20,}(?![A-Za-z0-9_-])/g,
+    "sk-[redacted-api-key]",
+  ),
 ];
 
 export function redactSecretText(input: string): {
@@ -61,7 +124,7 @@ export function redactSecretText(input: string): {
   const kinds: string[] = [];
   let text = input;
   for (const rule of SECRET_RULES) {
-    const next = text.replace(rule.pattern, rule.replace);
+    const next = rule.redact(text);
     if (next !== text) {
       kinds.push(rule.kind);
       text = next;
