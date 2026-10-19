@@ -21,7 +21,7 @@ import {
   DEFAULT_MAX_QUERY_SHAPES,
   PA_INDEX_SUGGESTION_CTA,
   ATLAS_QUERY_INSIGHTS_RULE_IDS,
-  UNPINNED_SCOPE,
+  NO_CLUSTER_CONFIGURED,
   buildSystemPrompt,
 } from "./systemMessage.js";
 
@@ -125,9 +125,9 @@ describe("buildSystemPrompt", () => {
     });
 
     expect(prompt.startsWith(`You are ${DEFAULT_AGENT_NAME},`)).toBe(true);
-    expect(prompt).toContain(UNPINNED_SCOPE);
+    expect(prompt).toContain(NO_CLUSTER_CONFIGURED);
     expect(custom.startsWith("You are Ada,")).toBe(true);
-    expect(custom).not.toContain(UNPINNED_SCOPE);
+    expect(custom).not.toContain(NO_CLUSTER_CONFIGURED);
     expect(custom).toContain(
       "- Project aaaaaaaaaaaaaaaaaaaaaaaa: cluster example-test",
     );
