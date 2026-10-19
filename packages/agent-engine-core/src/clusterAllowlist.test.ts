@@ -22,12 +22,12 @@ import {
 } from "./clusterAllowlist.js";
 import { resolveDataAccess } from "./dataAccess.js";
 
-const PROJECT = "648c61425116351907dba2db";
-const OPEN_PROJECT = "6a982c0522ab3c3c953c5ead";
-const OTHER_PROJECT = "6091982e8e21a2564147eb86";
+const PROJECT = "aaaaaaaaaaaaaaaaaaaaaaaa";
+const OPEN_PROJECT = "bbbbbbbbbbbbbbbbbbbbbbbb";
+const OTHER_PROJECT = "cccccccccccccccccccccccc";
 
 const resolved = resolveDataAccess({
-  [PROJECT]: { clusterNames: ["docs-chatbot-test", "docs-chatbot-staging"] },
+  [PROJECT]: { clusterNames: ["example-test", "example-staging"] },
   [OPEN_PROJECT]: {},
 });
 
@@ -56,12 +56,12 @@ describe("guardClusterCall", () => {
   });
 
   it.each([
-    ["an allowed cluster", "mongodb__remote_atlas_connect", { projectId: PROJECT, clusterName: "docs-chatbot-test" }],
+    ["an allowed cluster", "mongodb__remote_atlas_connect", { projectId: PROJECT, clusterName: "example-test" }],
     ["any cluster in an open project", "mongodb__atlas_inspect_cluster", { projectId: OPEN_PROJECT, clusterName: "anything" }],
     ["a project-level tool on an allowed project", "mongodb__atlas_list_clusters", { projectId: PROJECT }],
     ["an org-level tool", "mongodb__atlas_list_projects", {}],
     ["a database tool", "mongodb__find", { database: "db", collection: "c" }],
-    ["stringified arguments", "mongodb__atlas_connect_cluster", JSON.stringify({ projectId: PROJECT, clusterName: "docs-chatbot-staging" })],
+    ["stringified arguments", "mongodb__atlas_connect_cluster", JSON.stringify({ projectId: PROJECT, clusterName: "example-staging" })],
     ["a non-MongoDB tool", "search_knowledge", { query: "indexes" }],
   ])("runs %s", async (_label, name, args) => {
     expect((await run(call(name, args))).ran).toBe(true);
@@ -73,7 +73,7 @@ describe("guardClusterCall", () => {
     ["mongodb__atlas_list_clusters", {}, "needs a projectId"],
     ["mongodb__atlas_create_project", { projectName: "new" }, "needs a projectId"],
     ["mongodb__atlas_list_clusters", { projectId: OTHER_PROJECT }, `Project ${OTHER_PROJECT} is not in the dataAccess allowlist.`],
-    ["mongodb__remote_atlas_connect", { projectId: PROJECT, clusterName: "docs-chatbot-prod" }, `Cluster docs-chatbot-prod in project ${PROJECT} is not in the dataAccess allowlist.`],
+    ["mongodb__remote_atlas_connect", { projectId: PROJECT, clusterName: "example-prod" }, `Cluster example-prod in project ${PROJECT} is not in the dataAccess allowlist.`],
     ["mongodb__atlas_get_performance_advisor", { projectId: PROJECT }, "needs a clusterName"],
   ])("rejects %s with %j", async (name, args, message) => {
     const { result, ran } = await run(call(name, args));
@@ -91,7 +91,7 @@ describe("guardClusterCall", () => {
     const noClusters = resolveDataAccess({ [PROJECT]: { clusterNames: [] } });
 
     const connect = await run(
-      call("mongodb__remote_atlas_connect", { projectId: PROJECT, clusterName: "docs-chatbot-test" }),
+      call("mongodb__remote_atlas_connect", { projectId: PROJECT, clusterName: "example-test" }),
       noClusters,
     );
     expect(connect.ran).toBe(false);
@@ -110,7 +110,7 @@ describe("guardClusterCall", () => {
 describe("clusterAllowlistMiddleware", () => {
   it("routes wrapped tool calls through the guard", async () => {
     const middleware = clusterAllowlistMiddleware({
-      [PROJECT]: { clusterNames: ["docs-chatbot-test"] },
+      [PROJECT]: { clusterNames: ["example-test"] },
     });
     const handler = vi.fn(async () => "ran");
 
