@@ -57,10 +57,10 @@ export function resolveDataAccess(
       continue;
     }
     const clusterNames = project.clusterNames.map((raw) => {
-      const name = typeof raw === "string" ? raw.trim() : "";
+      const name = raw.trim();
       if (!CLUSTER_NAME.test(name)) {
         throw new Error(
-          `clusterName must be 1-64 letters, numbers, underscores, or hyphens, received "${String(raw)}"`,
+          `clusterName must be 1-64 letters, numbers, underscores, or hyphens, received "${raw}"`,
         );
       }
       return name;
