@@ -19,17 +19,17 @@ import { describe, expect, it } from "vitest";
 import { PARTIAL_LIST_NOTE, filterListContent } from "./clusterListFilter.js";
 import type { DataAccessConfig } from "./dataAccess.js";
 
-const PROJECT = "648c61425116351907dba2db";
-const OPEN_PROJECT = "6a982c0522ab3c3c953c5ead";
-const OTHER_PROJECT = "6091982e8e21a2564147eb86";
-const TAG = "untrusted-user-data-a4f0f2c2-67c2-4a53-a0a0-abb5b45391f0";
+const PROJECT = "aaaaaaaaaaaaaaaaaaaaaaaa";
+const OPEN_PROJECT = "bbbbbbbbbbbbbbbbbbbbbbbb";
+const OTHER_PROJECT = "cccccccccccccccccccccccc";
+const TAG = "untrusted-user-data-00000000-0000-0000-0000-000000000000";
 
 const resolved = {
-  [PROJECT]: { clusterNames: ["docs-chatbot-test", "docs-chatbot-staging"] },
+  [PROJECT]: { clusterNames: ["example-test", "example-staging"] },
   [OPEN_PROJECT]: {},
 } satisfies DataAccessConfig;
 
-// Shape of the live doc-chatbot responses from the Atlas MCP server,
+// Shape of live Atlas MCP server responses,
 // trimmed to the fields the filter reads.
 function wrap(payload: string): string {
   return [
@@ -44,18 +44,18 @@ function wrap(payload: string): string {
 }
 
 const CLUSTER_NAMES = [
-  "docs-chatbot-prod",
-  "docs-chatbot-staging",
-  "sample-data",
-  "docs-chatbot-test",
-  "prod-analysis",
-  "docs-chatbot-dev",
-  "synthetic-data",
+  "example-prod",
+  "example-staging",
+  "example-sample",
+  "example-test",
+  "example-analytics",
+  "example-dev",
+  "example-synthetic",
 ];
 
 function listClustersResult(names = CLUSTER_NAMES): string {
   const payload = JSON.stringify({
-    projectName: "doc-chatbot",
+    projectName: "example-project",
     clusters: names.map((name) => ({ name, state: "IDLE" })),
   });
   return JSON.stringify({
@@ -69,8 +69,8 @@ function listClustersResult(names = CLUSTER_NAMES): string {
 }
 
 const PROJECTS = [
-  { name: "atlas-explorer", id: OPEN_PROJECT },
-  { name: "doc-chatbot", id: PROJECT },
+  { name: "example-open", id: OPEN_PROJECT },
+  { name: "example-project", id: PROJECT },
   { name: "unlisted", id: OTHER_PROJECT },
 ];
 const LIST_PROJECTS_TEXT = `Found 3 projects.${wrap(JSON.stringify(PROJECTS, null, 2))}`;
@@ -92,8 +92,8 @@ describe("filterListContent", () => {
     expect(blocks[0]!.text).toBe(`Found 2 clusters in project ${PROJECT}:`);
     const payload = blocks[1]!.text.match(/\{.*\}/)![0];
     expect(JSON.parse(payload).clusters).toEqual([
-      { name: "docs-chatbot-staging", state: "IDLE" },
-      { name: "docs-chatbot-test", state: "IDLE" },
+      { name: "example-staging", state: "IDLE" },
+      { name: "example-test", state: "IDLE" },
     ]);
     expect(blocks[1]!.text.endsWith(`\n\n${PARTIAL_LIST_NOTE}`)).toBe(true);
   });
@@ -113,7 +113,7 @@ describe("filterListContent", () => {
   });
 
   it("returns the content unchanged when nothing is removed", () => {
-    const allowed = listClustersResult(["docs-chatbot-test"]);
+    const allowed = listClustersResult(["example-test"]);
     expect(
       filterListContent("mongodb__atlas_list_clusters", resolved, PROJECT, allowed),
     ).toBe(allowed);
@@ -130,7 +130,7 @@ describe("filterListContent", () => {
   });
 
   it.each([
-    ["unwrapped text", "Clusters: docs-chatbot-prod"],
+    ["unwrapped text", "Clusters: example-prod"],
     ["a result object with a non-text block", JSON.stringify({ content: [{ type: "image" }] })],
     ["a payload without a clusters array", wrap(JSON.stringify({ items: [] }))],
     ["a cluster entry without a name", wrap(JSON.stringify({ clusters: [{ id: 1 }] }))],

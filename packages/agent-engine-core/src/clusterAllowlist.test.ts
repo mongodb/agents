@@ -206,7 +206,7 @@ describe("guardClusterCall list results", () => {
   it("replaces the tool message with the filtered list", async () => {
     const original = toolMessage(
       `Found 2 clusters:<${tag}>${JSON.stringify({
-        clusters: [{ name: "docs-chatbot-test" }, { name: "docs-chatbot-prod" }],
+        clusters: [{ name: "example-test" }, { name: "example-prod" }],
       })}</${tag}>`,
     );
 
@@ -220,7 +220,7 @@ describe("guardClusterCall list results", () => {
 
     expect(result).not.toBe(original);
     expect(result.content).toContain("Found 1 cluster:");
-    expect(result.content).not.toContain("docs-chatbot-prod");
+    expect(result.content).not.toContain("example-prod");
     expect(result.content).toContain(PARTIAL_LIST_NOTE);
     expect(result.tool_call_id).toBe("call-1");
     expect(result.artifact).toBeUndefined();
@@ -240,8 +240,8 @@ describe("guardClusterCall list results", () => {
   });
 
   it.each([
-    ["unreadable text", toolMessage("Clusters: docs-chatbot-prod")],
-    ["content blocks", toolMessage([{ type: "text", text: "docs-chatbot-prod" }])],
+    ["unreadable text", toolMessage("Clusters: example-prod")],
+    ["content blocks", toolMessage([{ type: "text", text: "example-prod" }])],
     ["a non-message result", { update: { messages: [] } }],
   ])("withholds %s", async (_label, original) => {
     const result = await guardClusterCall({
@@ -255,12 +255,12 @@ describe("guardClusterCall list results", () => {
       status: "error",
       content: expect.stringContaining("was withheld"),
     });
-    expect(JSON.stringify(result)).not.toContain("docs-chatbot-prod");
+    expect(JSON.stringify(result)).not.toContain("example-prod");
   });
 
   it("leaves other tool results alone", async () => {
     const users = new ToolMessage({
-      content: "docs-chatbot-prod (CLUSTER)",
+      content: "example-prod (CLUSTER)",
       tool_call_id: "call-1",
     });
     await expect(
