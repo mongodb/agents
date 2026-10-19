@@ -102,6 +102,13 @@ function redactMongoDbUris(text: string): string {
   return out + text.slice(cursor);
 }
 
+/**
+ * The private key and MongoDB URI rules are hand-written scanners, not
+ * regexes, so they run in linear time on crafted input (see the comments on
+ * each). That matters because they run on unbounded user messages in
+ * `createInputRedactor`, as well as on model replies and tool results. The
+ * input redactor also caps its scan length as a second bound.
+ */
 const SECRET_RULES: readonly SecretRule[] = [
   { kind: "private-key", redact: redactPrivateKeys },
   { kind: "mongodb-uri", redact: redactMongoDbUris },

@@ -127,6 +127,12 @@ export function createInputRedactor(
   if (mode === "off") return (text) => text;
   const enforce = mode === "enforce";
   return (text) => {
+    // This runs before the length check in the refusal middleware, on input
+    // of any size, and the secret rules do work proportional to the text.
+    // Capping the scan keeps that work bounded. One character past the limit
+    // is enough: the refusal middleware still sees an over-limit message and
+    // refuses it. In enforce mode the dropped tail is never returned, so it
+    // never reaches a checkpoint.
     const scanned = text.slice(0, INPUT_GUARD_MAX_SCREEN_CHARS + 1);
     const redacted = redactSecretText(scanned);
     if (redacted.kinds.length > 0) {
