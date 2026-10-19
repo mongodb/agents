@@ -19,10 +19,10 @@
  *
  * Leave `systemPrompt.name` empty to keep "Atlas Query Insights".
  * Leave `systemPrompt.customInstructions` empty to skip extra prompt text.
- * Leave `dataAccess` as `{}` to let the agent resolve the target. Otherwise
- * map each allowed 24-hex project id to `{}` (all its clusters) or
- * `{ clusterNames: [...] }`. `maxQueryShapes` is how many shapes the report
- * covers.
+ * Leave `dataAccess` as `{}` and the agent asks the user which cluster to
+ * analyze. Otherwise map each allowed 24-hex project id to `{}` (all its
+ * clusters) or `{ clusterNames: [...] }`. `maxQueryShapes` is how many
+ * shapes the report covers.
  */
 
 import type { DataAccessConfig } from "@repo/atlas-query-insights-agent";
