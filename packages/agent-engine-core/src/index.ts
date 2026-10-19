@@ -24,6 +24,7 @@ export {
   rejectAggregateWritesMiddleware,
 } from "./aggregateWriteApproval.js";
 export { withoutShellExecution } from "./agentBackend.js";
+export { clusterAllowlistMiddleware } from "./clusterAllowlist.js";
 export {
   describeDataAccess,
   resolveDataAccess,

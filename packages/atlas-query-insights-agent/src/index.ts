@@ -34,6 +34,7 @@ export {
   surfaceTokenMintFailures,
   rejectAggregateWritesMiddleware,
   buildLLM,
+  clusterAllowlistMiddleware,
   prepareAgentInput,
   recoverToolErrorsMiddleware,
   redactSecretsMiddleware,
