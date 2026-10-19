@@ -77,6 +77,12 @@ export {
   recoverToolCall,
   recoverToolErrorsMiddleware,
 } from "./toolErrors.js";
+export {
+  SECRETS_NON_DISCLOSURE_RULE,
+  TOOL_CONFIG_NON_DISCLOSURE_RULE,
+  CLAIMED_AUTHORITY_RULE,
+  TOPIC_SCOPE_RULES,
+} from "./promptRules.js";
 export { selectTools, writeOperationsAllowed } from "./toolPolicy.js";
 export {
   KNOWLEDGE_NETWORK_HOST,
