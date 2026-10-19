@@ -21,7 +21,7 @@ agents/atlas-query-insights/
 ├── skills/                            # query optimizer, schema, search, querying, connection
 └── src/agent_atlas_query_insights/
     ├── main.ts                        # Agent Engine entrypoint
-    └── config.ts                      # LLM, prompt persona, scope, and shape limit
+    └── config.ts                      # LLM, prompt persona, dataAccess, and shape limit
 ```
 
 Project memory settings live in the repository root
@@ -50,8 +50,8 @@ Set these local secrets in `.env`:
 - `OPENAI_API_KEY`
 
 Non-secret settings live in `config.ts`: the model, how the agent
-introduces itself, optional custom instructions, and an optional project
-and cluster.
+introduces itself, optional custom instructions, and an optional
+`dataAccess` map of allowed projects and clusters.
 
 Create a **project-level** MongoDB MCP configuration before starting the
 agent. Atlas Admin API still calls a project a group, so this uses
@@ -280,10 +280,12 @@ Things to know:
   values; those values are sent to your model provider and appear in Agent
   Engine traces. You govern that data. See
   [Your data](../../README.md#your-data).
-- `scope.projectId` and `scope.clusterName` in `config.ts` pin the agent to
-  one project and cluster through its system prompt. Tool calls aren't
-  filtered by that pin. The hard boundary is the one Atlas project that the
-  MCP configuration belongs to.
+- `dataAccess` in `config.ts` limits the agent to the listed projects and
+  clusters. Leave it as `{}` to let the agent resolve the target. Otherwise
+  map each 24-hex project id to `{}` (all its clusters) or
+  `{ clusterNames: [...] }`. The system prompt names the allowed projects
+  and clusters. Tool calls aren't filtered by it. The hard boundary is the
+  one Atlas project that the MCP configuration belongs to.
 
 ## Safety
 

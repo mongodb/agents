@@ -17,11 +17,13 @@
 import {
   LIST_KNOWLEDGE_SOURCES_TOOL_NAME,
   SEARCH_KNOWLEDGE_TOOL_NAME,
+  describeDataAccess,
+  type DataAccessConfig,
 } from "@repo/agent-engine-core";
 
-import { describeScope, resolveScope, type ScopeInput } from "./scope.js";
-
 export const DEFAULT_AGENT_NAME = "Atlas Query Insights";
+export const UNPINNED_SCOPE =
+  "No project or cluster is pinned. Resolve the project and cluster before analyzing slow queries.";
 export const DEFAULT_MAX_QUERY_SHAPES = 3;
 export const PA_INDEX_SUGGESTION_CTA =
   "Show the suggested index definition and the mongosh command that would create it.";
@@ -101,7 +103,7 @@ const QUERY_SKILLS = [
 export interface SystemPromptOptions {
   name?: string;
   customInstructions?: string;
-  scope?: ScopeInput;
+  dataAccess?: DataAccessConfig;
   maxQueryShapes?: number;
 }
 
@@ -246,7 +248,7 @@ function resolveMaxQueryShapes(value: number | undefined): number {
 export function buildSystemPrompt(options: SystemPromptOptions = {}): string {
   const name = resolveAgentName(options.name);
   const maxQueryShapes = resolveMaxQueryShapes(options.maxQueryShapes);
-  const scope = describeScope(resolveScope(options.scope));
+  const scope = describeDataAccess(options.dataAccess) ?? UNPINNED_SCOPE;
   const skills = QUERY_SKILLS.map((skill) => `- \`${skill}\``).join("\n");
   const custom = options.customInstructions?.trim();
 

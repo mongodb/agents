@@ -24,11 +24,16 @@
  *
  * Leave `systemPrompt.name` empty to keep the default "Atlas Explorer".
  * Leave `systemPrompt.customInstructions` empty to skip extra prompt text.
+ * Leave `dataAccess` as `{}` for every project and cluster the MCP
+ * configuration can reach. Otherwise map each allowed 24-hex project id to
+ * `{}` (all its clusters) or `{ clusterNames: [...] }`.
  *
  * `diagnostics.logRuntimeLifecycle` logs `[runtime-diag]` lines showing which
  * process serves each execution and when each process caches a new Atlas MCP
  * access token. Token values are never logged.
  */
+
+import type { DataAccessConfig } from "@repo/atlas-explorer-agent";
 
 export const atlasExplorerConfig = {
   llm: {
@@ -39,6 +44,7 @@ export const atlasExplorerConfig = {
     name: "",
     customInstructions: "",
   },
+  dataAccess: {} as DataAccessConfig,
   diagnostics: {
     logRuntimeLifecycle: true,
   },

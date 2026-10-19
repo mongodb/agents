@@ -17,6 +17,8 @@
 import {
   LIST_KNOWLEDGE_SOURCES_TOOL_NAME,
   SEARCH_KNOWLEDGE_TOOL_NAME,
+  describeDataAccess,
+  type DataAccessConfig,
 } from "@repo/agent-engine-core";
 
 const DEFAULT_AGENT_NAME = "Atlas Explorer";
@@ -61,6 +63,7 @@ const DROP_RULE =
 export type SystemPromptOptions = {
   name?: string;
   customInstructions?: string;
+  dataAccess?: DataAccessConfig;
 };
 
 function resolveAgentName(name?: string): string {
@@ -133,5 +136,7 @@ export function buildSystemPrompt(
 ): string {
   const name = resolveAgentName(options.name);
   const base = writeEnabled ? writeEnabledPrompt(name) : readOnlyPrompt(name);
-  return appendCustomInstructions(base, options.customInstructions);
+  const scope = describeDataAccess(options.dataAccess);
+  const scoped = scope ? `${base}\n## Scope\n\n${scope}\n` : base;
+  return appendCustomInstructions(scoped, options.customInstructions);
 }

@@ -25,6 +25,7 @@ export {
   PA_NO_SUGGESTION_RULE_IDS,
   PA_PRESENT_RULE_IDS,
   ATLAS_QUERY_INSIGHTS_RULE_IDS,
+  UNPINNED_SCOPE,
   WRITING_STYLE_RULE_IDS,
   buildSystemPrompt,
   type SystemPromptOptions,
@@ -41,13 +42,8 @@ export {
   stripToolEchoMiddleware,
   withRequesterMetadata,
   withoutShellExecution,
+  type DataAccessConfig,
 } from "@repo/agent-engine-core";
-export {
-  describeScope,
-  resolveScope,
-  type AtlasQueryInsightsScope,
-  type ScopeInput,
-} from "./scope.js";
 export {
   ATLAS_QUERY_INSIGHTS_MCP_TOOLS,
   selectAtlasQueryInsightsTools,
