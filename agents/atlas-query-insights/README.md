@@ -323,9 +323,10 @@ Things to know:
   the MCP configuration can reach. Otherwise map each 24-hex project id to
   `{}` (all its clusters) or
   `{ clusterNames: [...] }`. The system prompt names the allowed projects
-  and clusters. Tool calls aren't filtered by it. Atlas still limits the
-  agent to the one project and the roles of its MCP configuration, whatever
-  `dataAccess` says.
+  and clusters, and `clusterAllowlistMiddleware` rejects tool calls that
+  name any other project or cluster. It also disables raw connection
+  strings (`mongodb__connect`). This is a guardrail in the agent. The hard
+  boundary is the one Atlas project that the MCP configuration belongs to.
 
 ## Safety
 

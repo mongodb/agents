@@ -206,6 +206,7 @@ describe("Atlas Query Insights graph assembly", () => {
       stampResumeClientUserMiddleware.name,
       "stripOpenAIToolEcho",
       "redactSecrets",
+      "clusterAllowlist",
       "rejectAggregateWrites",
       "recoverToolErrors",
     ]);

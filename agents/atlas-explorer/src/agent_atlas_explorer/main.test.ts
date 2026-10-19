@@ -227,6 +227,7 @@ describe("Atlas Explorer graph assembly", () => {
           stampResumeClientUserMiddleware,
           expect.objectContaining({ name: "stripOpenAIToolEcho" }),
           expect.objectContaining({ name: "redactSecrets" }),
+          expect.objectContaining({ name: "clusterAllowlist" }),
           harness.hitlMiddleware,
           approveAggregateWritesMiddleware,
           expect.objectContaining({ name: "recoverToolErrors" }),

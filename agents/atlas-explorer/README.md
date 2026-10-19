@@ -237,10 +237,12 @@ dataAccess: {
 ```
 
 `clusterNames: []` allows the project but none of its clusters. The system
-prompt lists the allowed projects and clusters in a `## Scope` section. For
-now this only changes the prompt. Tool calls aren't filtered. Atlas still
-limits the agent to the one project and the roles of its MCP configuration,
-whatever `dataAccess` says.
+prompt lists the allowed projects and clusters in a `## Scope` section, and
+`clusterAllowlistMiddleware` rejects tool calls that name any other project
+or cluster. It also disables raw connection strings (`mongodb__connect`), so
+the agent connects only through `mongodb__remote_atlas_connect`. This is a
+guardrail in the agent. The MCP configuration's project and roles stay the
+hard boundary.
 
 ## MCP credential lifecycle
 

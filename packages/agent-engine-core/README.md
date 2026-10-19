@@ -6,8 +6,10 @@ selection, requester metadata, and LangGraph middleware.
 messages before they are checkpointed. `createInputRedactor` redacts secrets from
 the user's message in `prepareAgentInput`, and `createInputRefusalMiddleware`
 refuses messages that are too long to screen; see
-[Input guard](./src/inputGuard.ts). `approveAggregateWritesMiddleware`
-requires HITL approval for `mongodb__aggregate` and `mongodb__aggregate_db` when the
+[Input guard](./src/inputGuard.ts). `clusterAllowlistMiddleware` rejects
+MongoDB MCP calls that name a project or cluster outside the agent's
+`dataAccess` config. `approveAggregateWritesMiddleware` requires HITL
+approval for `mongodb__aggregate` and `mongodb__aggregate_db` when the
 pipeline contains `$out` or `$merge`. `rejectAggregateWritesMiddleware`
 rejects those calls for a read-only agent. `surfaceTokenMintFailures` wraps the
 app's `ready()`, where each agent and tool process mints its Atlas MCP access
