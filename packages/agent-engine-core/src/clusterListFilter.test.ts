@@ -69,9 +69,9 @@ function listClustersResult(names = CLUSTER_NAMES): string {
 }
 
 const PROJECTS = [
-  { name: "example-open", id: OPEN_PROJECT },
+  { name: "example-open-project", id: OPEN_PROJECT },
   { name: "example-project", id: PROJECT },
-  { name: "unlisted", id: OTHER_PROJECT },
+  { name: "example-other-project", id: OTHER_PROJECT },
 ];
 const LIST_PROJECTS_TEXT = `Found 3 projects.${wrap(JSON.stringify(PROJECTS, null, 2))}`;
 
