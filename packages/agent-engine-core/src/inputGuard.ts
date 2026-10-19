@@ -14,26 +14,25 @@
  * limitations under the License.
  */
 
-import {
-  AIMessage,
-  HumanMessage,
-  type MessageContent,
-} from "@langchain/core/messages";
+import { AIMessage, HumanMessage } from "@langchain/core/messages";
 import { createMiddleware } from "langchain";
-import { z } from "zod";
 
 import { redactSecretText } from "./redactSecrets.js";
 import type { InputGuardMode } from "./inputGuardConfig.js";
 import { isAgentEngineResume } from "./stampResume.js";
 
 export interface InputRefusalOptions {
-  /** Defaults to "enforce". "monitor" logs without blocking or modifying. */
+  /** Defaults to "enforce". "monitor" and "off" never refuse. */
   mode?: InputGuardMode;
 }
 
 /** Messages longer than this many characters are refused. */
 export const INPUT_GUARD_MAX_SCREEN_CHARS = 100_000;
 
+/**
+ * What {@link createInputRedactor} puts in place of an over-limit message.
+ * {@link createInputRefusalMiddleware} refuses a message with this text.
+ */
 export const INPUT_GUARD_PLACEHOLDER =
   "[Message removed by the input guard]";
 
@@ -42,20 +41,6 @@ export const INPUT_GUARD_TOO_LONG =
   "I can't act on that message because I can only screen messages up to " +
   `${INPUT_GUARD_MAX_SCREEN_CHARS.toLocaleString("en-US")} characters. ` +
   "Please split it into smaller parts and send them separately.";
-
-/** A content block that carries message text. */
-const textBlockSchema = z.object({ text: z.string() });
-
-function contentText(content: MessageContent): string {
-  if (typeof content === "string") return content;
-  return content
-    .map((block) => {
-      const parsed = textBlockSchema.safeParse(block);
-      return parsed.success ? parsed.data.text : "";
-    })
-    .filter((text) => text.length > 0)
-    .join("\n");
-}
 
 /**
  * One guard decision as facts safe to log: a length, a boolean, or a secret
@@ -111,15 +96,16 @@ function warn(log: InputGuardLog): void {
  * any middleware runs, so this is the only place to keep a secret out of a
  * thread's first checkpoints.
  *
- * "enforce" redacts. "monitor" logs what it would redact and returns the text
- * unchanged. "off" returns the text unchanged. Each decision logs one
- * `[inputGuard]` line with the secret kinds, never the text.
+ * It also decides whether a message is too long. A message over
+ * `INPUT_GUARD_MAX_SCREEN_CHARS` is replaced whole with
+ * `INPUT_GUARD_PLACEHOLDER`, without scanning it, and
+ * {@link createInputRefusalMiddleware} refuses it. Keeping none of the text
+ * means no part of a secret can reach a checkpoint, and the scan cost stays
+ * bounded.
  *
- * This runs on unbounded user input, so it scans at most
- * `INPUT_GUARD_MAX_SCREEN_CHARS + 1` characters. In "enforce" the rest is
- * dropped, so it never reaches a checkpoint. The message is still over the
- * limit, so {@link createInputRefusalMiddleware} refuses it. In "monitor" the
- * returned text is the original, and only the log reflects the truncated scan.
+ * "enforce" redacts and replaces. "monitor" logs what it would do and returns
+ * the text unchanged. "off" returns the text unchanged. Each decision logs one
+ * `[inputGuard]` line with the secret kinds or the length, never the text.
  */
 export function createInputRedactor(
   mode: InputGuardMode,
@@ -127,29 +113,16 @@ export function createInputRedactor(
   if (mode === "off") return (text) => text;
   const enforce = mode === "enforce";
   return (text) => {
-    // This runs before the length check in the refusal middleware, on input
-    // of any size, and the secret rules do work proportional to the text.
-    // Capping the scan keeps that work bounded. One character past the limit
-    // is enough: the refusal middleware still sees an over-limit message and
-    // refuses it. In enforce mode the dropped tail is never returned, so it
-    // never reaches a checkpoint.
-    const scanned = text.slice(0, INPUT_GUARD_MAX_SCREEN_CHARS + 1);
-    const redacted = redactSecretText(scanned);
+    if (text.length > INPUT_GUARD_MAX_SCREEN_CHARS) {
+      warn({ action: "refuse", would: !enforce, length: text.length });
+      return enforce ? INPUT_GUARD_PLACEHOLDER : text;
+    }
+    const redacted = redactSecretText(text);
     if (redacted.kinds.length > 0) {
       warn({ action: "redact", would: !enforce, secrets: redacted.kinds });
     }
     return enforce ? redacted.text : text;
   };
-}
-
-function replacement(original: HumanMessage, content: MessageContent) {
-  return new HumanMessage({
-    id: original.id,
-    content,
-    name: original.name,
-    additional_kwargs: original.additional_kwargs,
-    response_metadata: original.response_metadata,
-  });
 }
 
 /**
@@ -158,17 +131,15 @@ function replacement(original: HumanMessage, content: MessageContent) {
  * and covers every client. It skips approval resumes and turns whose last
  * message isn't from the user.
  *
- * It refuses messages over `INPUT_GUARD_MAX_SCREEN_CHARS` with a fixed reply
- * and ends the turn. The model is not called, and the message in state is
- * replaced with a placeholder so it isn't resent on later turns.
+ * It refuses a message that is `INPUT_GUARD_PLACEHOLDER` with a fixed reply
+ * and ends the turn, so the model is not called. {@link createInputRedactor}
+ * puts the placeholder in place of an over-limit message before the graph,
+ * because LangGraph saves the input to its first checkpoints before any
+ * middleware runs. That is also where the refusal is logged, with the real
+ * length. Use the two together.
  *
- * It does not redact secrets. That happens before the graph, in
- * {@link createInputRedactor}, because LangGraph saves the input to its first
- * checkpoints before any middleware runs.
- *
- * Each refusal logs one `[inputGuard]` line with the message length, never
- * the text. `mode: "monitor"` logs what would happen and changes nothing.
- * `mode: "off"` disables it.
+ * Only `mode: "enforce"` refuses. "monitor" and "off" do nothing, since the
+ * redactor only writes the placeholder in "enforce".
  *
  * Limits:
  * - Nothing redacts PII. Emails, IPs, timestamps and ObjectIds are normal
@@ -189,22 +160,16 @@ export function createInputRefusalMiddleware(
     beforeAgent: {
       canJumpTo: ["end"],
       hook: (state, runtime) => {
-        if (mode === "off" || isAgentEngineResume(runtime)) return undefined;
+        if (mode !== "enforce" || isAgentEngineResume(runtime)) {
+          return undefined;
+        }
 
         const last = state.messages.at(-1);
         if (!HumanMessage.isInstance(last)) return undefined;
+        if (last.content !== INPUT_GUARD_PLACEHOLDER) return undefined;
 
-        const length = contentText(last.content).length;
-        if (length <= INPUT_GUARD_MAX_SCREEN_CHARS) return undefined;
-
-        const enforce = mode === "enforce";
-        warn({ action: "refuse", would: !enforce, length });
-        if (!enforce) return undefined;
         return {
-          messages: [
-            replacement(last, INPUT_GUARD_PLACEHOLDER),
-            new AIMessage(INPUT_GUARD_TOO_LONG),
-          ],
+          messages: [new AIMessage(INPUT_GUARD_TOO_LONG)],
           jumpTo: "end" as const,
         };
       },

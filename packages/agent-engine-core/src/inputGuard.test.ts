@@ -26,6 +26,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   INPUT_GUARD_MAX_SCREEN_CHARS,
+  INPUT_GUARD_PLACEHOLDER,
   INPUT_GUARD_TOO_LONG,
   createInputRefusalMiddleware,
   createInputRedactor,
@@ -164,15 +165,11 @@ describe("createInputRefusalMiddleware", () => {
     expect(warn).not.toHaveBeenCalled();
   });
 
-  it("refuses messages over the input limit", async () => {
+  it("refuses the placeholder the redactor leaves for a long message", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 
     const result = await buildAgent({}).invoke(
-      {
-        messages: [
-          new HumanMessage("a".repeat(INPUT_GUARD_MAX_SCREEN_CHARS + 1)),
-        ],
-      },
+      { messages: [new HumanMessage(INPUT_GUARD_PLACEHOLDER)] },
       { configurable: { thread_id: "too-long" } },
     );
 
@@ -181,48 +178,16 @@ describe("createInputRefusalMiddleware", () => {
     expect(lastText(result.messages)).toContain(
       INPUT_GUARD_MAX_SCREEN_CHARS.toLocaleString("en-US"),
     );
-    expect(logged(warn)).toContain("refused length=");
+    expect(warn).not.toHaveBeenCalled();
   });
 
-  it("refuses over-limit text in content blocks", async () => {
-    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
-
-    const result = await buildAgent({}).invoke(
-      {
-        messages: [
-          new HumanMessage({
-            content: [
-              { type: "text", text: "find my clusters" },
-              {
-                type: "text",
-                text: "a".repeat(INPUT_GUARD_MAX_SCREEN_CHARS + 1),
-              },
-            ],
-          }),
-        ],
-      },
-      { configurable: { thread_id: "blocks-too-long" } },
-    );
-
-    expect(modelAnswers(result.messages)).toBe(0);
-    expect(lastText(result.messages)).toBe(INPUT_GUARD_TOO_LONG);
-    expect(logged(warn)).toContain("refused length=");
-  });
-
-  it("only logs messages over the input limit in monitor mode", async () => {
-    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
-
+  it("does not refuse the placeholder in monitor mode", async () => {
     const result = await buildAgent({ mode: "monitor" }).invoke(
-      {
-        messages: [
-          new HumanMessage("a".repeat(INPUT_GUARD_MAX_SCREEN_CHARS + 1)),
-        ],
-      },
+      { messages: [new HumanMessage(INPUT_GUARD_PLACEHOLDER)] },
       { configurable: { thread_id: "too-long-monitor" } },
     );
 
     expect(modelAnswers(result.messages)).toBe(1);
-    expect(logged(warn)).toContain("would refuse length=");
   });
 
   it("does not re-screen a resumed turn", async () => {
@@ -301,24 +266,27 @@ describe("createInputRedactor", () => {
     expect(warn).not.toHaveBeenCalled();
   });
 
-  it("drops everything past the limit in enforce mode", () => {
-    vi.spyOn(console, "warn").mockImplementation(() => {});
+  it("replaces an over-limit message and logs its real length", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const long = `${"a".repeat(INPUT_GUARD_MAX_SCREEN_CHARS)}${API_KEY}`;
 
-    const text = createInputRedactor("enforce")(long);
-
-    expect(text).toHaveLength(INPUT_GUARD_MAX_SCREEN_CHARS + 1);
-    expect(text).not.toContain("sk-");
+    expect(createInputRedactor("enforce")(long)).toBe(INPUT_GUARD_PLACEHOLDER);
+    expect(logged(warn)).toBe(
+      `[inputGuard] refused length=${long.length} ` +
+        `limit=${INPUT_GUARD_MAX_SCREEN_CHARS}`,
+    );
   });
 
-  it("returns the original over-limit text in monitor mode", () => {
-    vi.spyOn(console, "warn").mockImplementation(() => {});
-    const long = "a".repeat(INPUT_GUARD_MAX_SCREEN_CHARS * 2);
+  it("logs that it would refuse an over-limit message in monitor mode", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const long = "a".repeat(INPUT_GUARD_MAX_SCREEN_CHARS + 1);
 
     expect(createInputRedactor("monitor")(long)).toBe(long);
+    expect(logged(warn)).toContain("would refuse length=");
   });
 
-  it("scans an over-limit adversarial message in bounded time", () => {
+  it("handles an over-limit adversarial message in bounded time", () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
     const started = performance.now();
 
     createInputRedactor("enforce")("-----BEGIN PRIVATE KEY-----".repeat(1e5));
@@ -340,7 +308,10 @@ describe("input redaction before the graph", () => {
     vi.restoreAllMocks();
   });
 
-  async function checkpointedText(redactMessage?: (text: string) => string) {
+  async function runAndCheckpoint(
+    message: string,
+    redactMessage?: (text: string) => string,
+  ) {
     vi.spyOn(console, "warn").mockImplementation(() => {});
     const saver = new MemorySaver();
     const agent = createAgent({
@@ -352,11 +323,11 @@ describe("input redaction before the graph", () => {
     const config = { configurable: { thread_id: "thread-1" } };
 
     const input = prepareAgentInput(
-      { payload: { message: `use ${API_KEY} and ${MONGODB_URI}` } },
+      { payload: { message } },
       {},
       { redactMessage },
     );
-    await agent.invoke(input as never, config);
+    const result = await agent.invoke(input as never, config);
 
     const checkpoints: string[] = [];
     for await (const tuple of saver.list(config)) {
@@ -367,11 +338,16 @@ describe("input redaction before the graph", () => {
         }),
       );
     }
-    return checkpoints;
+    return { messages: result.messages, checkpoints };
   }
 
+  const SECRETS_MESSAGE = `use ${API_KEY} and ${MONGODB_URI}`;
+
   it("keeps secrets out of every checkpoint of the thread", async () => {
-    const checkpoints = await checkpointedText(createInputRedactor("enforce"));
+    const { checkpoints } = await runAndCheckpoint(
+      SECRETS_MESSAGE,
+      createInputRedactor("enforce"),
+    );
 
     expect(checkpoints.length).toBeGreaterThanOrEqual(4);
     for (const checkpoint of checkpoints) {
@@ -380,38 +356,60 @@ describe("input redaction before the graph", () => {
     }
   });
 
-  it("refuses an over-limit message without checkpointing its tail", async () => {
-    vi.spyOn(console, "warn").mockImplementation(() => {});
-    const saver = new MemorySaver();
-    const agent = createAgent({
-      model: new FakeListChatModel({ responses: [MODEL_REPLY] }),
-      tools: [],
-      middleware: [createInputRefusalMiddleware()],
-      checkpointer: saver,
-    });
-    const config = { configurable: { thread_id: "thread-long" } };
-    const message = `${"a".repeat(INPUT_GUARD_MAX_SCREEN_CHARS)} ${API_KEY}`;
+  // Each secret straddles the limit, so cutting the message at the limit
+  // would drop the part a redaction rule needs to match.
+  it.each([
+    [
+      "a MongoDB URI's @",
+      "mongodb://admin:hunter2",
+      "@db.example.com",
+      "hunter2",
+    ],
+    [
+      "a private key's END line",
+      "-----BEGIN PRIVATE KEY-----\nMIIEkeymaterial",
+      "\n-----END PRIVATE KEY-----",
+      "MIIEkeymaterial",
+    ],
+  ])(
+    "refuses a long message whose limit falls before %s",
+    async (_, head, tail, secret) => {
+      const padding = "a".repeat(
+        INPUT_GUARD_MAX_SCREEN_CHARS + 1 - head.length,
+      );
 
-    const input = prepareAgentInput(
-      { payload: { message } },
-      {},
-      { redactMessage: createInputRedactor("enforce") },
+      const { messages, checkpoints } = await runAndCheckpoint(
+        `${padding}${head}${tail}`,
+        createInputRedactor("enforce"),
+      );
+
+      expect(modelAnswers(messages)).toBe(0);
+      expect(lastText(messages)).toBe(INPUT_GUARD_TOO_LONG);
+      for (const checkpoint of checkpoints) {
+        expect(checkpoint).not.toContain(secret);
+      }
+    },
+  );
+
+  it("refuses a long message that redaction would shrink under the limit", async () => {
+    const key = [
+      "-----BEGIN PRIVATE KEY-----",
+      "k".repeat(INPUT_GUARD_MAX_SCREEN_CHARS / 2),
+      "-----END PRIVATE KEY-----",
+    ].join("\n");
+    const padding = "a".repeat(INPUT_GUARD_MAX_SCREEN_CHARS);
+
+    const { messages } = await runAndCheckpoint(
+      `${key}${padding}`,
+      createInputRedactor("enforce"),
     );
-    const result = await agent.invoke(input as never, config);
 
-    expect(modelAnswers(result.messages)).toBe(0);
-    expect(lastText(result.messages)).toBe(INPUT_GUARD_TOO_LONG);
-    for await (const tuple of saver.list(config)) {
-      const saved = JSON.stringify({
-        values: tuple.checkpoint.channel_values,
-        pendingWrites: tuple.pendingWrites,
-      });
-      expect(saved).not.toContain(API_KEY);
-    }
+    expect(modelAnswers(messages)).toBe(0);
+    expect(lastText(messages)).toBe(INPUT_GUARD_TOO_LONG);
   });
 
   it("leaves the secret in the first checkpoints without the redactor", async () => {
-    const checkpoints = await checkpointedText();
+    const { checkpoints } = await runAndCheckpoint(SECRETS_MESSAGE);
 
     expect(checkpoints.some((c) => c.includes(API_KEY))).toBe(true);
   });
