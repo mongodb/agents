@@ -261,7 +261,7 @@ export async function resolveMongodbUri(
     return fromCompose;
   }
   throw new LocalStackError(
-    "Could not resolve the local Magenta MongoDB URI. Set AGENTENGINE_MONGODB_URI or start the stack with `agentengine dev up --headless`.",
+    "Could not resolve the local Atlas Agent Engine MongoDB URI. Set AGENTENGINE_MONGODB_URI or start the stack with `agentengine dev up --headless`.",
   );
 }
 
