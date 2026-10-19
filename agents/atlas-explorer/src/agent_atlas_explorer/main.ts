@@ -107,10 +107,10 @@ export const buildAgent = app.entrypoint((): unknown => {
     }),
     {
       tools: availableAtlasTools,
-      systemPrompt: buildSystemPrompt(
-        allowWriteOperations,
-        atlasExplorerConfig.systemPrompt,
-      ),
+      systemPrompt: buildSystemPrompt(allowWriteOperations, {
+        ...atlasExplorerConfig.systemPrompt,
+        dataAccess: atlasExplorerConfig.dataAccess,
+      }),
       skills: ["skills"],
       backend: withoutShellExecution(new AgentEngineToolSandboxBackend()),
       // PlatformCheckpointer versions checkpoints as string | number. deepAgent

@@ -76,7 +76,7 @@ export const buildAgent = app.entrypoint(() => {
       systemPrompt: buildSystemPrompt({
         name: atlasQueryInsightsConfig.systemPrompt.name,
         customInstructions: atlasQueryInsightsConfig.systemPrompt.customInstructions,
-        scope: atlasQueryInsightsConfig.scope,
+        dataAccess: atlasQueryInsightsConfig.dataAccess,
         maxQueryShapes: atlasQueryInsightsConfig.maxQueryShapes,
       }),
       skills: ["skills"],

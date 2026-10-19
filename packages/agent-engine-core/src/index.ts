@@ -25,6 +25,13 @@ export {
 } from "./aggregateWriteApproval.js";
 export { withoutShellExecution } from "./agentBackend.js";
 export {
+  describeDataAccess,
+  resolveDataAccess,
+  type DataAccessConfig,
+  type DataAccessProjectConfig,
+  type ResolvedDataAccess,
+} from "./dataAccess.js";
+export {
   parseClientUserPayload,
   stampClientUser,
   clientUserSchema,

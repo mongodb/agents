@@ -223,6 +223,22 @@ to keep **Atlas Explorer**. Set `systemPrompt.customInstructions` to append
 operator-specific guidance after the built-in operating rules. Leave that
 field empty to skip extra prompt text. Built-in safety rules still apply.
 
+Set `dataAccess` to limit the agent to specific Atlas projects and clusters.
+Leave it as `{}` for every project and cluster the MCP configuration can
+reach:
+
+```ts
+dataAccess: {
+  // Every cluster in this project.
+  "648c61425116351907dba2db": {},
+  // Only these clusters in this project.
+  "6a982c0522ab3c3c953c5ead": { clusterNames: ["docs-chatbot-test"] },
+},
+```
+
+`clusterNames: []` allows the project but none of its clusters. The system
+prompt lists the allowed projects and clusters in a `## Scope` section.
+
 ## MCP credential lifecycle
 
 The MCP configuration is provisioned once in Atlas, scoped to one project:

@@ -24,15 +24,18 @@ import type {
  *
  * Leave `systemPrompt.name` empty to keep "Atlas Query Insights".
  * Leave `systemPrompt.customInstructions` empty to skip extra prompt text.
- * Leave `scope.projectId` and `scope.clusterName` empty to let the agent
- * resolve the target. A set field must be a 24-hex project id or an Atlas
- * cluster name. `maxQueryShapes` is how many shapes the report covers.
+ * Leave `dataAccess` as `{}` to let the agent resolve the target. Otherwise
+ * map each allowed 24-hex project id to `{}` (all its clusters) or
+ * `{ clusterNames: [...] }`. `maxQueryShapes` is how many shapes the report
+ * covers.
  *
  * `inputGuard` screens each user message before the model sees it: it redacts
  * pasted secrets and refuses messages that are too long to screen. `mode` is
  * "enforce", "monitor" (log only) or "off". See
  * {@link createInputRedactor} and {@link createInputRefusalMiddleware}.
  */
+
+import type { DataAccessConfig } from "@repo/atlas-query-insights-agent";
 
 export const atlasQueryInsightsConfig = {
   llm: {
@@ -43,10 +46,7 @@ export const atlasQueryInsightsConfig = {
     name: "",
     customInstructions: "",
   },
-  scope: {
-    projectId: "",
-    clusterName: "",
-  },
+  dataAccess: {} as DataAccessConfig,
   maxQueryShapes: 3,
   inputGuard: {
     mode: "enforce",
