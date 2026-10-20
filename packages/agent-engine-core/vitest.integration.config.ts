@@ -19,7 +19,7 @@ import { definePackageVitestConfig } from "../../vitest.shared.mts";
 
 export default defineConfig(
   definePackageVitestConfig({
-    include: ["src/**/*.integration.test.ts"],
+    include: ["tests/integration/**/*.integration.test.ts"],
     testTimeout: 30_000,
   }),
 );

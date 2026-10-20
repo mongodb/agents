@@ -25,7 +25,6 @@ const packageConfig = definePackageVitestConfig({
   exclude: [
     "**/node_modules/**",
     "**/.git/**",
-    "src/**/*.integration.test.ts",
     // Support module aliased over @mongodb-js/mcp-fetch. The .test.ts suffix
     // marks it as test-only; it is not a suite.
     "src/knowledgeFetchStub.test.ts",

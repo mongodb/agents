@@ -23,7 +23,6 @@ export default defineConfig(
     exclude: [
       "**/node_modules/**",
       "**/.git/**",
-      "src/**/*.integration.test.ts",
     ],
   }),
 );

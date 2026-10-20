@@ -20,7 +20,7 @@ import {
   LIST_KNOWLEDGE_SOURCES_TOOL_NAME,
   SEARCH_KNOWLEDGE_TOOL_NAME,
   createKnowledgeTools,
-} from "./knowledgeTools.js";
+} from "../../src/knowledgeTools.js";
 
 function knowledgeTool(name: string) {
   const tool = createKnowledgeTools().find((entry) => entry.name === name);

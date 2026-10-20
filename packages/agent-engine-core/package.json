@@ -15,7 +15,7 @@
     "build": "tsc -p tsconfig.json",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:knowledge": "vitest run --config vitest.integration.config.ts src/knowledgeTools.integration.test.ts",
+    "test:knowledge": "vitest run --config vitest.integration.config.ts tests/integration/knowledgeTools.integration.test.ts",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json --noEmit"
   },
   "dependencies": {
