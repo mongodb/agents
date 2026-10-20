@@ -28,7 +28,7 @@ import {
   isWriteMcpTool,
   readCheckpoints,
   waitForHealthy,
-} from "@repo/agent-engine-core/testing";
+} from "@repo/testing";
 
 describe("Atlas Query Insights local stack (read-only)", () => {
   beforeAll(async () => {

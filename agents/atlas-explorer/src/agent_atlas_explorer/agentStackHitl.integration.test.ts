@@ -32,7 +32,7 @@ import {
   resume,
   waitForHealthy,
   type InvocationResult,
-} from "@repo/agent-engine-core/testing";
+} from "@repo/testing";
 
 const writesEnabled = writeOperationsAllowed();
 

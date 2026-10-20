@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { defineAgentManifestTests } from "@repo/agent-engine-core/testing";
+import { defineAgentManifestTests } from "@repo/testing";
 
 import { atlasExplorerConfig } from "./config.js";
 

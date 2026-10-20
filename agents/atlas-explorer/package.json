@@ -12,12 +12,12 @@
   },
   "scripts": {
     "build": "if command -v pnpm >/dev/null 2>&1 && test -d ../../packages/atlas-explorer-agent; then pnpm --filter @repo/atlas-explorer-agent build && esbuild src/agent_atlas_explorer/main.ts --bundle --platform=node --format=esm --banner:js=\"import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);\" --outfile=dist/agent_atlas_explorer/main.js --sourcemap --external:@langchain/core --external:@langchain/langgraph --external:@mongodb-js/* --external:langchain --external:zod --external:dotenv && cp dist/agent_atlas_explorer/main.js src/agent_atlas_explorer/main.bundle.js && cp dist/agent_atlas_explorer/main.js.map src/agent_atlas_explorer/main.bundle.js.map; else mkdir -p dist/agent_atlas_explorer && cp src/agent_atlas_explorer/main.bundle.js dist/agent_atlas_explorer/main.js && cp src/agent_atlas_explorer/main.bundle.js.map dist/agent_atlas_explorer/main.js.map; fi",
-    "pretest": "pnpm --filter @repo/atlas-explorer-agent build",
+    "pretest": "pnpm --filter @repo/atlas-explorer-agent build && pnpm --filter @repo/testing build",
     "test": "vitest run",
     "test:watch": "vitest",
-    "pretest:integration": "pnpm --filter @repo/atlas-explorer-agent build",
+    "pretest:integration": "pnpm --filter @repo/atlas-explorer-agent build && pnpm --filter @repo/testing build",
     "test:integration": "vitest run --config vitest.integration.config.ts",
-    "pretypecheck": "pnpm --filter @repo/atlas-explorer-agent build",
+    "pretypecheck": "pnpm --filter @repo/atlas-explorer-agent build && pnpm --filter @repo/testing build",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json --noEmit",
     "prestart": "pnpm run build",
     "start": "node --enable-source-maps dist/agent_atlas_explorer/main.js",
@@ -40,6 +40,7 @@
   },
   "devDependencies": {
     "@repo/agent-engine-core": "file:../../packages/agent-engine-core",
+    "@repo/testing": "file:../../packages/testing",
     "@types/node": "^25.0.0",
     "esbuild": "^0.25.0",
     "tsx": "^4.16.0",
