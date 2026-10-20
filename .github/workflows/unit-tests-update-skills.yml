@@ -10,7 +10,7 @@ on:
       - "tsconfig.base.json"
       - "tsconfig.test.base.json"
       - "vitest.shared.mts"
-      - ".github/actions/unit-test/**"
+      - ".github/actions/**"
       - ".github/workflows/unit-tests-update-skills.yml"
   push:
     branches:
@@ -23,7 +23,7 @@ on:
       - "tsconfig.base.json"
       - "tsconfig.test.base.json"
       - "vitest.shared.mts"
-      - ".github/actions/unit-test/**"
+      - ".github/actions/**"
       - ".github/workflows/unit-tests-update-skills.yml"
 
 concurrency:
