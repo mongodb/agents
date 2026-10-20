@@ -1,0 +1,21 @@
+name: Install agentengine CLI
+description: Download the agentengine CLI release binary onto PATH
+
+inputs:
+  version:
+    description: agentengine release version, without a leading v
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Install agentengine CLI
+      shell: bash
+      env:
+        AGENTENGINE_VERSION: ${{ inputs.version }}
+      run: |
+        mkdir -p "$HOME/.local/bin"
+        curl -fsSL -o "$HOME/.local/bin/agentengine" \
+          "https://github.com/mongodb/agent-engine-client-libraries/releases/download/v${AGENTENGINE_VERSION}/agentengine_${AGENTENGINE_VERSION}_linux_x86_64"
+        chmod +x "$HOME/.local/bin/agentengine"
+        echo "$HOME/.local/bin" >> "$GITHUB_PATH"

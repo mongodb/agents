@@ -1,0 +1,96 @@
+name: Start agent local stack
+description: >-
+  Write dummy local secrets, clear the agent's MCP servers, start
+  agentengine dev, and wait until the Orchestration Engine is healthy
+
+inputs:
+  directory:
+    description: Agent directory that contains agent.yaml
+    required: true
+  store-db:
+    description: Value for MDB_AGENTIC_STORE_DB in the dummy .env
+    required: true
+  extra-env:
+    description: Extra KEY=value lines appended to the dummy .env
+    required: false
+    default: ""
+  start-args:
+    description: Arguments passed to agentengine dev up
+    required: false
+    default: "--headless"
+
+runs:
+  using: composite
+  steps:
+    - name: Write dummy local secrets
+      shell: bash
+      working-directory: ${{ inputs.directory }}
+      env:
+        STORE_DB: ${{ inputs.store-db }}
+        EXTRA_ENV: ${{ inputs.extra-env }}
+      run: |
+        python3 - <<'PY'
+        import os
+        from pathlib import Path
+        lines = [
+            "MONGODB_URI=",
+            f"MDB_AGENTIC_STORE_DB={os.environ['STORE_DB']}",
+            "ATLAS_MCP_CLIENT_ID=ci-dummy-client-id",
+            "ATLAS_MCP_CLIENT_SECRET=ci-dummy-client-secret",
+            "ALLOW_WRITE_OPERATIONS=",
+            "OPENAI_API_KEY=sk-ci-dummy",
+            *[line for line in os.environ["EXTRA_ENV"].splitlines() if line.strip()],
+            "",
+        ]
+        Path(".env").write_text("\n".join(lines))
+        PY
+
+    # Dummy Atlas credentials fail tools/list and AER exits before the app
+    # is ready. Empty servers is valid config and skips discovery.
+    - name: Clear MCP servers for local stack
+      shell: bash
+      working-directory: ${{ inputs.directory }}
+      run: |
+        python3 - <<'PY'
+        import re
+        from pathlib import Path
+        path = Path("agent.yaml")
+        text = path.read_text()
+        updated, count = re.subn(
+            r"^mcp:\n(?:[ \t].*\n)*",
+            "mcp:\n    servers: {}\n",
+            text,
+            count=1,
+            flags=re.M,
+        )
+        if count != 1:
+            raise SystemExit("expected an mcp: block in agent.yaml")
+        path.write_text(updated)
+        if "servers: {}" not in path.read_text():
+            raise SystemExit("mcp.servers was not cleared")
+        print("cleared mcp.servers in", path)
+        PY
+
+    - name: Start local stack
+      shell: bash
+      working-directory: ${{ inputs.directory }}
+      env:
+        START_ARGS: ${{ inputs.start-args }}
+      run: |
+        read -r -a start_args <<< "$START_ARGS"
+        agentengine --no-log dev up "${start_args[@]}"
+
+    - name: Smoke-check Orchestration Engine health
+      shell: bash
+      working-directory: ${{ inputs.directory }}
+      run: |
+        for _ in $(seq 1 30); do
+          if curl -fsS http://127.0.0.1:8000/health; then
+            echo
+            echo "Orchestration Engine is healthy"
+            exit 0
+          fi
+          sleep 2
+        done
+        echo "::error::agentengine dev up finished but OE on port 8000 is not healthy"
+        exit 1
