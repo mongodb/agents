@@ -71,11 +71,11 @@ jobs:
       - name: Build agent bundle
         run: pnpm --filter ${{ matrix.name }} build
 
-      - uses: ./.github/actions/agentengine-cli
+      - uses: ./.github/actions/install-agentengine-cli
         with:
           version: ${{ env.AGENTENGINE_VERSION }}
 
-      - uses: ./.github/actions/agent-stack-up
+      - uses: ./.github/actions/start-agent-engine-local-stack
         with:
           directory: ${{ matrix.directory }}
           store-db: ${{ matrix.store_db }}
