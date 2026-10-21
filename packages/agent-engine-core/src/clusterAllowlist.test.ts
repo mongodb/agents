@@ -22,9 +22,9 @@ import {
 } from "./clusterAllowlist.js";
 import { resolveDataAccess } from "./dataAccess.js";
 
-const PROJECT = "aaaaaaaaaaaaaaaaaaaaaaaa";
-const OPEN_PROJECT = "bbbbbbbbbbbbbbbbbbbbbbbb";
-const OTHER_PROJECT = "cccccccccccccccccccccccc";
+const PROJECT = "64a1f3c2e8b94d0012c7a5e1";
+const OPEN_PROJECT = "65c3d9e07f21ab4408d6e3f2";
+const OTHER_PROJECT = "66e7b4a1c5d38f2290a1b7c4";
 
 const resolved = resolveDataAccess({
   [PROJECT]: { clusterNames: ["example-test", "example-staging"] },
