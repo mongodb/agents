@@ -49,7 +49,7 @@ const CLUSTER_TOOLS: ReadonlySet<string> = new Set([
  * when it may run. Arguments are never rewritten.
  */
 export function checkClusterToolCall(
-  resolved: ResolvedDataAccess,
+  allowedDataAccess: ResolvedDataAccess,
   toolCall: ClusterToolCall,
 ): string | undefined {
   const { name } = toolCall;
@@ -57,7 +57,7 @@ export function checkClusterToolCall(
   // mongodb__atlas_connect_cluster opened, and those only open allowed
   // clusters.
   if (!name.startsWith("mongodb__atlas_") && !CLUSTER_TOOLS.has(name)) {
-    const noClusters = Object.values(resolved).every(
+    const noClusters = Object.values(allowedDataAccess).every(
       (project) => project.clusterNames?.length === 0,
     );
     return noClusters
@@ -71,8 +71,8 @@ export function checkClusterToolCall(
   if (!projectId) {
     return `${name} needs a projectId from the dataAccess allowlist.`;
   }
-  const project = Object.hasOwn(resolved, projectId)
-    ? resolved[projectId]
+  const project = Object.hasOwn(allowedDataAccess, projectId)
+    ? allowedDataAccess[projectId]
     : undefined;
   if (!project) {
     return `Project ${projectId} is not in the dataAccess allowlist.`;
@@ -103,15 +103,15 @@ export async function guardClusterCall<
   TRequest extends { toolCall?: ClusterToolCall },
   TResult,
 >(
-  resolved: ResolvedDataAccess | undefined,
+  allowedDataAccess: ResolvedDataAccess | undefined,
   request: TRequest,
   handler: (request: TRequest) => TResult | Promise<TResult>,
 ): Promise<TResult | ToolMessage> {
   const toolCall = request.toolCall;
-  if (!resolved || !toolCall?.name.startsWith("mongodb__")) {
+  if (!allowedDataAccess || !toolCall?.name.startsWith("mongodb__")) {
     return handler(request);
   }
-  const reason = checkClusterToolCall(resolved, toolCall);
+  const reason = checkClusterToolCall(allowedDataAccess, toolCall);
   if (reason) return rejectToolCall(toolCall, reason);
   const result = await handler(request);
   return LIST_TOOLS.has(toolCall.name)
@@ -161,11 +161,11 @@ function filterListResult<TResult>(
  * every call runs unchanged.
  */
 export function clusterAllowlistMiddleware(dataAccess?: DataAccessConfig) {
-  const resolved = resolveDataAccess(dataAccess);
+  const allowedDataAccess = resolveDataAccess(dataAccess);
   return createMiddleware({
     name: "clusterAllowlist",
     wrapToolCall: (request, handler) =>
-      guardClusterCall(resolved, request, handler),
+      guardClusterCall(allowedDataAccess, request, handler),
   });
 }
 
