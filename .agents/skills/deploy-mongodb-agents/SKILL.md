@@ -169,7 +169,8 @@ Then edit `config.ts` and show the user the diff before saving:
   } satisfies DataAccessConfig,
   ```
 
-  Leave `dataAccess` as `{}` to let the agent work it out.
+  Leave `dataAccess` as `{}` for no restriction. The agent can then use
+  every project and cluster that the MCP configuration can reach.
 
 Atlas Explorer users can also add a data map: a list of databases, collections and fields so the agent can skip exploring. It goes stale, so offer it only if the user asks or says they'd like it, and only if this coding agent already has the MongoDB MCP connected. Then follow [references/data-map.md](references/data-map.md).
 
