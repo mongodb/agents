@@ -47,11 +47,6 @@ const CLUSTER_TOOLS: ReadonlySet<string> = new Set([
   "mongodb__atlas_upgrade_cluster",
 ]);
 
-const STREAMS_TOOLS: ReadonlySet<string> = new Set([
-  "mongodb__atlas_streams_build",
-  "mongodb__atlas_streams_manage",
-]);
-
 const MAX_ARGUMENT_DEPTH = 20;
 
 class ArgumentsTooDeepError extends Error {
@@ -121,7 +116,7 @@ export function findDataAccessViolation({
   }
   if (
     clusterNames.length === 0 &&
-    STREAMS_TOOLS.has(name) &&
+    name === "mongodb__atlas_streams_build" &&
     args.connectionType === "Cluster"
   ) {
     return `${name} needs connectionConfig.clusterName from the dataAccess allowlist.`;
