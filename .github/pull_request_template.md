@@ -1,5 +1,5 @@
 <!--
-Formatting the title: is "EAI-1234: Short description" (Jira key, colon, summary). If there is no Jira ticket, only include the summary in the titel.
+Title format: "EAI-1234: Short description" (Jira key, colon, summary). If there is no Jira ticket, only include the summary in the title.
 
 General authoring guidelines:
 - Keep Changes to a flat, scannable list of what changed
