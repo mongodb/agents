@@ -47,7 +47,7 @@ const CLUSTER_TOOLS: ReadonlySet<string> = new Set([
  * Returns why a MongoDB MCP call falls outside `dataAccess`, or `undefined`
  * when it may run. Arguments are never rewritten.
  */
-export function checkAllowedClusterToolCall(
+export function findDataAccessViolation(
   allowedDataAccess: ResolvedDataAccess,
   toolCall: ClusterToolCall,
 ): string | undefined {
@@ -79,8 +79,8 @@ export function checkAllowedClusterToolCall(
 
   const clusterNames = clusterNamesIn(args);
   for (const clusterName of clusterNames) {
-    const reason = checkCluster(projectId, project, clusterName);
-    if (reason) return reason;
+    const violation = findClusterViolation(projectId, project, clusterName);
+    if (violation) return violation;
   }
   if (clusterNames.length === 0 && CLUSTER_TOOLS.has(name)) {
     return `${name} needs a clusterName from the dataAccess allowlist.`;
@@ -100,7 +100,7 @@ function clusterNamesIn(value: unknown): string[] {
   });
 }
 
-function checkCluster(
+function findClusterViolation(
   projectId: string,
   project: DataAccessProjectConfig,
   clusterName: string,
@@ -125,8 +125,8 @@ export async function guardClusterCall<
   if (!allowedDataAccess || !toolCall?.name.startsWith("mongodb__")) {
     return handler(request);
   }
-  const reason = checkAllowedClusterToolCall(allowedDataAccess, toolCall);
-  if (reason) return rejectToolCall(toolCall, reason);
+  const violation = findDataAccessViolation(allowedDataAccess, toolCall);
+  if (violation) return rejectToolCall(toolCall, violation);
   return handler(request);
 }
 
