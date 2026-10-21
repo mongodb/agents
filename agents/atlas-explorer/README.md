@@ -68,10 +68,6 @@ see clusters in that one Atlas project; put it on the project that holds the
 data the agent should explore. Project roles such as
 `GROUP_DATA_ACCESS_READ_ONLY` are invalid on `createOrgMcpConfig`.
 
-To limit which Atlas MCP tools the agent can use, list them under
-`mcp.servers.mongodb.allowed_tools` in `agent.yaml`. See
-[Use Remote MCP Servers](https://www.mongodb.com/docs/agentengine/add-features/remote-mcp/).
-
 Assign Atlas roles on the MCP configuration itself. `createGroupMcpConfig`
 creates that identity; `createGroupMcpSecret` only mints a client secret that
 inherits the configuration's roles. The configuration has no separate
@@ -358,6 +354,10 @@ additional Chat SDK adapters or other Agent Engine workspaces.
   Everyone who can reach the agent has the same Atlas access. Grant only roles
   that all of them should have, and be cautious about giving any agent access
   to sensitive data.
+- **You can restrict the tool set.** To limit which Atlas MCP tools the agent
+  can use, list them under `mcp.servers.mongodb.allowed_tools` in
+  `agent.yaml`. See
+  [Use Remote MCP Servers](https://www.mongodb.com/docs/agentengine/add-features/remote-mcp/).
 - **No general-purpose shell access.** Deep-agent file operations run on Agent
   Engine's audited Tool Pod backend without shell execution that could read
   process credential files outside the filesystem sandbox.
