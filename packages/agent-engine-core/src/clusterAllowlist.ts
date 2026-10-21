@@ -18,10 +18,10 @@ import { ToolMessage } from "@langchain/core/messages";
 import { createMiddleware } from "langchain";
 
 import {
-  resolveDataAccess,
+  isUnrestricted,
+  validateDataAccess,
   type DataAccessConfig,
   type DataAccessProjectConfig,
-  type ResolvedDataAccess,
 } from "./dataAccess.js";
 
 export interface ClusterToolCall {
@@ -48,7 +48,7 @@ const CLUSTER_TOOLS: ReadonlySet<string> = new Set([
  * when it may run. Arguments are never rewritten.
  */
 export function findDataAccessViolation(
-  allowedDataAccess: ResolvedDataAccess,
+  allowedDataAccess: DataAccessConfig,
   toolCall: ClusterToolCall,
 ): string | undefined {
   const { name } = toolCall;
@@ -117,12 +117,15 @@ export async function guardClusterCall<
   TRequest extends { toolCall?: ClusterToolCall },
   TResult,
 >(
-  allowedDataAccess: ResolvedDataAccess | undefined,
+  allowedDataAccess: DataAccessConfig,
   request: TRequest,
   handler: (request: TRequest) => TResult | Promise<TResult>,
 ): Promise<TResult | ToolMessage> {
   const toolCall = request.toolCall;
-  if (!allowedDataAccess || !toolCall?.name.startsWith("mongodb__")) {
+  if (
+    isUnrestricted(allowedDataAccess) ||
+    !toolCall?.name.startsWith("mongodb__")
+  ) {
     return handler(request);
   }
   const violation = findDataAccessViolation(allowedDataAccess, toolCall);
@@ -134,12 +137,12 @@ export async function guardClusterCall<
  * Rejects MongoDB MCP calls outside `dataAccess`. With `{}` or no argument,
  * every call runs unchanged.
  */
-export function clusterAllowlistMiddleware(dataAccess?: DataAccessConfig) {
-  const allowedDataAccess = resolveDataAccess(dataAccess);
+export function clusterAllowlistMiddleware(dataAccess: DataAccessConfig = {}) {
+  validateDataAccess(dataAccess);
   return createMiddleware({
     name: "clusterAllowlist",
     wrapToolCall: (request, handler) =>
-      guardClusterCall(allowedDataAccess, request, handler),
+      guardClusterCall(dataAccess, request, handler),
   });
 }
 

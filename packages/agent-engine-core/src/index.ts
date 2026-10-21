@@ -27,10 +27,10 @@ export { withoutShellExecution } from "./agentBackend.js";
 export { clusterAllowlistMiddleware } from "./clusterAllowlist.js";
 export {
   describeDataAccess,
-  resolveDataAccess,
+  isUnrestricted,
+  validateDataAccess,
   type DataAccessConfig,
   type DataAccessProjectConfig,
-  type ResolvedDataAccess,
 } from "./dataAccess.js";
 export {
   parseClientUserPayload,

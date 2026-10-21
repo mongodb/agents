@@ -30,44 +30,27 @@ export type DataAccessConfig = {
   readonly [projectId: string]: DataAccessProjectConfig;
 };
 
-export type ResolvedDataAccess = Readonly<
-  Record<string, DataAccessProjectConfig>
->;
+/** Whether `dataAccess` is omitted or `{}`, so nothing is restricted. */
+export function isUnrestricted(dataAccess?: DataAccessConfig): boolean {
+  return Object.keys(dataAccess ?? {}).length === 0;
+}
 
-/**
- * Validates `dataAccess` from config. Returns `undefined` when it is omitted
- * or `{}`, meaning the agent is unrestricted.
- */
-export function resolveDataAccess(
-  input?: DataAccessConfig,
-): ResolvedDataAccess | undefined {
-  const entries = Object.entries(input ?? {});
-  if (entries.length === 0) return undefined;
-
-  const resolved: Record<string, DataAccessProjectConfig> = {};
-  for (const [rawProjectId, project] of entries) {
-    const projectId = rawProjectId.trim();
+/** Throws when `dataAccess` has an id or name Atlas would not accept. */
+export function validateDataAccess(dataAccess: DataAccessConfig = {}): void {
+  for (const [projectId, project] of Object.entries(dataAccess)) {
     if (!PROJECT_ID.test(projectId)) {
       throw new Error(
-        `projectId must be a 24-character hex string, received "${rawProjectId}"`,
+        `projectId must be a 24-character hex string, received "${projectId}"`,
       );
     }
-    if (project.clusterNames === undefined) {
-      resolved[projectId] = {};
-      continue;
-    }
-    const clusterNames = project.clusterNames.map((raw) => {
-      const name = raw.trim();
+    for (const name of project.clusterNames ?? []) {
       if (!CLUSTER_NAME.test(name)) {
         throw new Error(
-          `clusterName must be 1-64 letters, numbers, underscores, or hyphens, received "${raw}"`,
+          `clusterName must be 1-64 letters, numbers, underscores, or hyphens, received "${name}"`,
         );
       }
-      return name;
-    });
-    resolved[projectId] = { clusterNames: [...new Set(clusterNames)] };
+    }
   }
-  return resolved;
 }
 
 function describeProject(project: DataAccessProjectConfig): string {
@@ -84,9 +67,8 @@ function describeProject(project: DataAccessProjectConfig): string {
 export function describeDataAccess(
   dataAccess?: DataAccessConfig,
 ): string | undefined {
-  const resolved = resolveDataAccess(dataAccess);
-  if (!resolved) return undefined;
-  const lines = Object.entries(resolved).map(
+  if (!dataAccess || isUnrestricted(dataAccess)) return undefined;
+  const lines = Object.entries(dataAccess).map(
     ([projectId, project]) => `- Project ${projectId}: ${describeProject(project)}`,
   );
   return [
