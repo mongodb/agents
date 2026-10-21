@@ -48,7 +48,10 @@ async function run(
 
 describe("guardClusterCall", () => {
   it("runs every call when dataAccess is unrestricted", async () => {
-    const request = call("mongodb__connect", { connectionString: "mongodb://x" });
+    const request = call("mongodb__remote_atlas_connect", {
+      projectId: OTHER_PROJECT,
+      clusterName: "example-prod",
+    });
     const handler = vi.fn(async () => "ran");
 
     await expect(guardClusterCall(undefined, request, handler)).resolves.toBe(
@@ -70,8 +73,6 @@ describe("guardClusterCall", () => {
   });
 
   it.each([
-    ["mongodb__connect", { connectionString: "mongodb+srv://prod" }, "Use mongodb__remote_atlas_connect"],
-    ["mongodb__switch_connection", {}, "Use mongodb__remote_atlas_connect"],
     ["mongodb__atlas_list_clusters", {}, "needs a projectId"],
     ["mongodb__atlas_create_project", { projectName: "new" }, "needs a projectId"],
     ["mongodb__atlas_list_clusters", { projectId: OTHER_PROJECT }, `Project ${OTHER_PROJECT} is not in the dataAccess allowlist.`],
@@ -191,7 +192,7 @@ describe("clusterAllowlistMiddleware", () => {
     const handler = vi.fn(async () => "ran");
 
     const result = await middleware.wrapToolCall?.(
-      call("mongodb__connect") as never,
+      call("mongodb__atlas_list_clusters") as never,
       handler as never,
     );
 

@@ -31,11 +31,6 @@ export interface ClusterToolCall {
   args?: unknown;
 }
 
-const RAW_CONNECTION_TOOLS: ReadonlySet<string> = new Set([
-  "mongodb__connect",
-  "mongodb__switch_connection",
-]);
-
 const ORG_LEVEL_ATLAS_TOOLS: ReadonlySet<string> = new Set([
   "mongodb__atlas_get_regions",
   "mongodb__atlas_list_orgs",
@@ -58,10 +53,6 @@ export function checkClusterToolCall(
   toolCall: ClusterToolCall,
 ): string | undefined {
   const { name } = toolCall;
-  if (RAW_CONNECTION_TOOLS.has(name)) {
-    return `${name} is disabled because dataAccess limits this agent to specific Atlas clusters. Use mongodb__remote_atlas_connect with an allowed projectId and clusterName.`;
-  }
-
   // Database tools run on the connection mongodb__remote_atlas_connect or
   // mongodb__atlas_connect_cluster opened, and those only open allowed
   // clusters.

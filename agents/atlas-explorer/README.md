@@ -239,13 +239,10 @@ dataAccess: {
 `clusterNames: []` allows the project but none of its clusters. The system
 prompt lists the allowed projects and clusters in a `## Scope` section, and
 `clusterAllowlistMiddleware` rejects tool calls that name any other project
-or cluster. It also disables raw connection strings (`mongodb__connect`), so
-the agent connects only through `mongodb__remote_atlas_connect`. Project and
-cluster lists show only allowed entries, with a note that the list is
-limited. Database user lists are not filtered, so their scopes stay
-accurate. This is a
-guardrail in the agent. The MCP configuration's project and roles stay the
-hard boundary.
+or cluster. Project and cluster lists show only allowed entries, with a
+note that the list is limited. Database user lists are not filtered, so their
+scopes stay accurate. This is a guardrail in the agent. The MCP
+configuration's project and roles stay the hard boundary.
 
 ## MCP credential lifecycle
 
