@@ -27,7 +27,7 @@ import {
 
 export const DEFAULT_AGENT_NAME = "Atlas Query Insights";
 export const NO_CLUSTER_CONFIGURED =
-  "No project or cluster is configured. Before analyzing slow queries, list the projects and clusters and ask the user which cluster to analyze.";
+  "No project or cluster is configured.";
 export const DEFAULT_MAX_QUERY_SHAPES = 3;
 export const PA_INDEX_SUGGESTION_CTA =
   "Show the suggested index definition and the mongosh command that would create it.";
