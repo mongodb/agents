@@ -54,25 +54,56 @@ export GROUP_ID="<atlas-project-id>"
 
 read -r MCP_CONFIG_ID CLIENT_ID <<< "$(atlas api remoteMcpConfigurations createGroupMcpConfig \
   --groupId "$GROUP_ID" --file mcp-config.json -P mcp \
-  -o '{{.mcpConfigId}} {{.clientId}}')"
+  -o '{{.mcpConfigId}} {{.clientId}}' | awk 'NF && !/^warning:/' | tail -n 1)"
 
 echo "mcpConfigId: $MCP_CONFIG_ID"
 echo "clientId (ATLAS_MCP_CLIENT_ID): $CLIENT_ID"
-test -n "$MCP_CONFIG_ID" -a -n "$CLIENT_ID" || echo "create failed or response missing an ID"
+test -n "$MCP_CONFIG_ID" -a -n "$CLIENT_ID" || echo "IDs not found in the output; don't rerun"
 ```
 
-This uses the Atlas CLI's own output template, so `jq` isn't needed. Run it once. Creating the configuration again makes a duplicate.
+This uses the Atlas CLI's own output template, so `jq` isn't needed. The
+CLI can print a warning, such as `warning: using default API version`, and a
+blank line in the same output. The `awk` filter drops those lines, and
+`tail -n 1` keeps the last one left.
 
-7. **User runs:** mint the client secret. The command prints the secret, so the user runs it in their own terminal and sends the output to a private file outside the repo. Give them this, with `<atlas-project-id>` and `<mcpConfigId>` filled in. Your shell variables don't carry over to their terminal. Pass `mcpConfigId`, not `clientId`:
+Run it once. Creating the configuration again makes a duplicate that also
+grants access. If the IDs come back empty, the configuration may still have
+been created. Before any retry, look for it by its `mcpConfigName`:
 
 ```bash
-umask 077
-atlas api remoteMcpConfigurations createGroupMcpSecret \
-  --groupId "<atlas-project-id>" --mcpConfigId "<mcpConfigId>" \
-  --file mcp-secret-metadata.json -P mcp -o json > ~/atlas-mcp-secret.json
+atlas api remoteMcpConfigurations listGroupMcpConfigs \
+  --groupId "$GROUP_ID" -P mcp -o json
 ```
 
-The secret is returned once. Tell the user to open `~/atlas-mcp-secret.json` themselves, store the values in step 2, then delete the file. Don't read that file.
+If it's there, take `mcpConfigId` and `clientId` from that entry instead of
+creating another.
+
+7. **User runs:** mint the client secret. The command prints the secret, so the user runs it in their own terminal and sends the output to a private temporary file outside the repo. Give them this, with `<atlas-project-id>` and `<mcpConfigId>` filled in. Your shell variables don't carry over to their terminal. Pass `mcpConfigId`, not `clientId`:
+
+```bash
+SECRET_FILE="$(mktemp)"
+atlas api remoteMcpConfigurations createGroupMcpSecret \
+  --groupId "<atlas-project-id>" --mcpConfigId "<mcpConfigId>" \
+  --file mcp-secret-metadata.json -P mcp -o json > "$SECRET_FILE"
+echo "$SECRET_FILE"
+```
+
+`mktemp` creates an owner-only file with a random name in the system's
+temporary directory, so the secret isn't left in the home directory if the
+user forgets to delete it. A fixed name under `/tmp` would let another user
+on a shared machine create the file first.
+
+The secret is returned once. Tell the user to open the file themselves, store the values in step 2, then delete it. Don't read that file.
+
+When you hand this over, also tell them:
+
+- Keep the same terminal open for step 2. `$SECRET_FILE` holds the path, and
+  `echo` printed it in case they need it from another terminal. An editor's
+  file tree won't show the file. They can open it with `cat "$SECRET_FILE"`.
+- The value for `ATLAS_MCP_CLIENT_SECRET` is the `secret` field, which starts
+  with `mdb_sa_sk_`.
+- The `id` field is the secret's own ID, not the client ID. The client ID is
+  the `clientId` from step 6.
 
 ## 2. Store secrets on the platform
 
@@ -80,13 +111,18 @@ The secret is returned once. Tell the user to open `~/atlas-mcp-secret.json` the
 
 ```bash
 agentengine secret set ATLAS_MCP_CLIENT_ID --workspace-scope      # the clientId from step 1
-agentengine secret set ATLAS_MCP_CLIENT_SECRET --workspace-scope  # from ~/atlas-mcp-secret.json
+agentengine secret set ATLAS_MCP_CLIENT_SECRET --workspace-scope  # the secret field in $SECRET_FILE
 agentengine secret set OPENAI_API_KEY
 ```
 
-`secret set` writes a **project-scoped** secret by default, shared by every workspace in the Agent Engine project. Atlas Explorer and Atlas Query Insights use the same names (`ATLAS_MCP_CLIENT_ID`, `ATLAS_MCP_CLIENT_SECRET`) but should have different MCP configurations, so a project-wide value would be overwritten by whichever agent was set up last. The two Atlas secrets above therefore use `--workspace-scope`. Neither the help text nor the published docs say which scope wins when both exist, so check with `agentengine secret list` after setting them.
+`secret set` writes a **project-scoped** secret by default, shared by every workspace in the Agent Engine project. Atlas Explorer and Atlas Query Insights use the same names (`ATLAS_MCP_CLIENT_ID`, `ATLAS_MCP_CLIENT_SECRET`) but should have different MCP configurations, so a project-wide value would be overwritten by whichever agent was set up last. The two Atlas secrets above therefore use `--workspace-scope`. Neither the help text nor the published docs say which scope wins when both exist, so check after setting them. Run both commands below. `secret list` shows only project-scoped secrets by default, so the two Atlas secrets appear only with `--workspace-scope`. Neither command prints secret values.
 
-If the user uses another provider, they set that provider's key name instead of `OPENAI_API_KEY`. Secret names must match the names listed under `required_secrets` in `agent.yaml`. `MONGODB_URI` is injected, so don't set it. Afterwards the user deletes `~/atlas-mcp-secret.json`.
+```bash
+agentengine secret list
+agentengine secret list --workspace-scope
+```
+
+If the user uses another provider, they set that provider's key name instead of `OPENAI_API_KEY`. Secret names must match the names listed under `required_secrets` in `agent.yaml`. `MONGODB_URI` is injected, so don't set it. Afterwards the user deletes the file with `rm "$SECRET_FILE"`.
 
 ## 3. Enable writes (Atlas Explorer only, optional)
 

@@ -367,7 +367,7 @@ additional Chat SDK adapters or other Agent Engine workspaces.
   visible only inside your project, and you govern them. Your model provider
   also receives the prompts and tool results.
 
-See [Safe by default](../../README.md#safe-by-default) for the repo-wide view.
+See [Built-in guardrails](../../README.md#built-in-guardrails) for the repo-wide view.
 
 ### Roll back or shut down
 
