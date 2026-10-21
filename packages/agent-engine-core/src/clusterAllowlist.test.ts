@@ -112,6 +112,22 @@ describe("guardClusterCall", () => {
     expect(mixed.ran).toBe(false);
   });
 
+  it("rejects arguments nested deeper than 20 levels", async () => {
+    const nestedArgs = (levels: number) => {
+      let value: unknown = { clusterName: "example-test" };
+      for (let i = 1; i < levels; i++) value = { nested: value };
+      return { projectId: PROJECT, nested: value };
+    };
+
+    expect((await run(call("mongodb__atlas_inspect_cluster", nestedArgs(20)))).ran).toBe(true);
+
+    const tooDeep = await run(call("mongodb__atlas_inspect_cluster", nestedArgs(21)));
+    expect(tooDeep.ran).toBe(false);
+    expect(tooDeep.result).toMatchObject({
+      content: expect.stringContaining("deeper than 20 levels"),
+    });
+  });
+
   it("does not let a cluster allowed in one project through in another", async () => {
     const perProject = {
       [PROJECT]: { clusterNames: ["example-test"] },

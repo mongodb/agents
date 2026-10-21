@@ -43,6 +43,16 @@ const CLUSTER_TOOLS: ReadonlySet<string> = new Set([
   "mongodb__atlas_get_performance_advisor",
 ]);
 
+const MAX_ARGUMENT_DEPTH = 20;
+
+class ArgumentsTooDeepError extends Error {
+  constructor() {
+    super(
+      `Tool call arguments nest deeper than ${MAX_ARGUMENT_DEPTH} levels, so dataAccess cannot check them.`,
+    );
+  }
+}
+
 /**
  * Returns why a MongoDB MCP call falls outside `dataAccess`, or `undefined`
  * when it may run. Arguments are never rewritten.
@@ -77,7 +87,13 @@ export function findDataAccessViolation(
     return `Project ${projectId} is not in the dataAccess allowlist.`;
   }
 
-  const clusterNames = clusterNamesIn(args);
+  let clusterNames: string[];
+  try {
+    clusterNames = clusterNamesIn(args);
+  } catch (error) {
+    if (error instanceof ArgumentsTooDeepError) return error.message;
+    throw error;
+  }
   for (const clusterName of clusterNames) {
     const violation = findClusterViolation(projectId, project, clusterName);
     if (violation) return violation;
@@ -90,11 +106,14 @@ export function findDataAccessViolation(
 
 // Some tools nest the cluster, e.g. `connectionConfig.clusterName`, so every
 // `clusterName` key at any depth is checked.
-function clusterNamesIn(value: unknown): string[] {
-  if (Array.isArray(value)) return value.flatMap(clusterNamesIn);
-  if (!isRecord(value)) return [];
+function clusterNamesIn(value: unknown, depth = 0): string[] {
+  if (!Array.isArray(value) && !isRecord(value)) return [];
+  if (depth > MAX_ARGUMENT_DEPTH) throw new ArgumentsTooDeepError();
+  if (Array.isArray(value)) {
+    return value.flatMap((item) => clusterNamesIn(item, depth + 1));
+  }
   return Object.entries(value).flatMap(([key, child]) => {
-    const nested = clusterNamesIn(child);
+    const nested = clusterNamesIn(child, depth + 1);
     const name = key === "clusterName" ? stringArg(child) : undefined;
     return name ? [name, ...nested] : nested;
   });
