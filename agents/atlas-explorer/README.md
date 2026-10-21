@@ -68,6 +68,10 @@ see clusters in that one Atlas project; put it on the project that holds the
 data the agent should explore. Project roles such as
 `GROUP_DATA_ACCESS_READ_ONLY` are invalid on `createOrgMcpConfig`.
 
+To limit which Atlas MCP tools the agent can use, list them under
+`mcp.servers.mongodb.allowed_tools` in `agent.yaml`. See
+[Use Remote MCP Servers](https://www.mongodb.com/docs/agentengine/add-features/remote-mcp/).
+
 Assign Atlas roles on the MCP configuration itself. `createGroupMcpConfig`
 creates that identity; `createGroupMcpSecret` only mints a client secret that
 inherits the configuration's roles. The configuration has no separate

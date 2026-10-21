@@ -66,6 +66,10 @@ cluster to analyze.
 The example config grants `GROUP_DATA_ACCESS_READ_ONLY` only. Do not add
 a read-write role.
 
+To limit which Atlas MCP tools the agent can use, list them under
+`mcp.servers.mongodb.allowed_tools` in `agent.yaml`. See
+[Use Remote MCP Servers](https://www.mongodb.com/docs/agentengine/add-features/remote-mcp/).
+
 Copy `mcp-config.example.json` to ignored `mcp-config.json`. Replace
 `YOUR_LOCAL_PUBLIC_IP` with this machine's public IPv4. The example already
 lists the two
