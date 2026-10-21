@@ -40,7 +40,11 @@ async function run(
   dataAccess: DataAccessConfig = allowedDataAccess,
 ) {
   const handler = vi.fn(async () => "ran");
-  const result = await guardClusterCall(dataAccess, request, handler);
+  const result = await guardClusterCall({
+    allowedDataAccess: dataAccess,
+    request,
+    handler,
+  });
   return { result, ran: handler.mock.calls.length === 1 };
 }
 
@@ -52,7 +56,7 @@ describe("guardClusterCall", () => {
     });
     const handler = vi.fn(async () => "ran");
 
-    await expect(guardClusterCall({}, request, handler)).resolves.toBe(
+    await expect(guardClusterCall({ allowedDataAccess: {}, request, handler })).resolves.toBe(
       "ran",
     );
     expect(handler).toHaveBeenCalledWith(request);
