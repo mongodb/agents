@@ -163,6 +163,8 @@ describe("buildSystemPrompt", () => {
     expect(custom).toContain(
       "- Project 64a1f3c2e8b94d0012c7a5e1: cluster example-test",
     );
+    expect(custom).toContain("Project lists in tool results can include");
+    expect(custom).toContain("Cluster lists in tool results can include");
     expect(custom).toContain("top 5 shape(s)");
     expect(custom).toContain("## Custom instructions");
     expect(custom).toContain("Prefer the orders collection.");

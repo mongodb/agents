@@ -71,8 +71,18 @@ export function describeDataAccess(
   const lines = Object.entries(dataAccess).map(
     ([projectId, project]) => `- Project ${projectId}: ${describeProject(project)}`,
   );
+  const notes = [
+    "Project lists in tool results can include projects not listed above. Using one returns an error.",
+  ];
+  if (Object.values(dataAccess).some((project) => project.clusterNames)) {
+    notes.push(
+      "Cluster lists in tool results can include clusters not listed above. Using one returns an error.",
+    );
+  }
   return [
     "Access is limited to these Atlas projects and clusters. Do not use any other project or cluster:",
     ...lines,
+    "",
+    ...notes,
   ].join("\n");
 }

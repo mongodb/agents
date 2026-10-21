@@ -178,6 +178,8 @@ describe("system prompt modes", () => {
     expect(prompt).toContain(
       "- Project 64a1f3c2e8b94d0012c7a5e1: cluster example-test",
     );
+    expect(prompt).toContain("Project lists in tool results can include");
+    expect(prompt).toContain("Cluster lists in tool results can include");
     expect(prompt.indexOf("## Scope")).toBeLessThan(
       prompt.indexOf("## Custom instructions"),
     );
