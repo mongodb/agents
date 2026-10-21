@@ -223,9 +223,10 @@ to keep **Atlas Explorer**. Set `systemPrompt.customInstructions` to append
 operator-specific guidance after the built-in operating rules. Leave that
 field empty to skip extra prompt text. Built-in safety rules still apply.
 
-Set `dataAccess` to limit the agent to specific Atlas projects and clusters.
-Leave it as `{}` for every project and cluster the MCP configuration can
-reach:
+## Limit projects and clusters
+
+Set `dataAccess` in `config.ts` to limit the agent to specific Atlas projects
+and clusters:
 
 ```ts
 dataAccess: {
@@ -236,21 +237,41 @@ dataAccess: {
 },
 ```
 
-`clusterNames: []` allows the project but none of its clusters. The system
-prompt lists the allowed projects and clusters in a `## Scope` section, and
-`clusterAllowlistMiddleware` rejects tool calls that name any other project
-or cluster. The prompt also warns that project and cluster lists in tool
-results can include entries outside `dataAccess`, and that using one returns
-an error. With writes enabled, cluster creation, pause, upgrade, and Atlas
-Stream Processing cluster connections must also name an allowed cluster, and
-creating a project is rejected. The check runs in the agent and only reads
-each call's arguments, so it only sees clusters that a call names. Atlas
-Stream Processing connections and processors that already exist are outside
-what it can verify. An `update-connection` that omits `clusterName`, or a
-processor whose pipeline refers to a connection by name, can still reach a
-cluster outside `dataAccess`. Atlas still limits the agent to the project and
-roles of its MCP configuration. `dataAccess` can narrow that access but never
-widen it.
+- `clusterNames: ["a", "b"]` allows only those clusters in the project.
+- `{}` for a project allows every cluster in it.
+- `clusterNames: []` allows the project but none of its clusters.
+- `dataAccess: {}` limits nothing. The agent can use every project and
+  cluster the MCP configuration can reach.
+
+### What the agent enforces
+
+- The system prompt lists the allowed projects and clusters in a `## Scope`
+  section.
+- `clusterAllowlistMiddleware` rejects any tool call that names a project or
+  cluster outside `dataAccess`.
+- The prompt also warns that project and cluster lists in tool results can
+  include entries outside `dataAccess`. Using one returns an error.
+- With writes enabled, creating, pausing, or upgrading a cluster must name an
+  allowed cluster. Creating a project is rejected.
+
+### What it cannot enforce
+
+The check runs in the agent and only reads the arguments of each tool call.
+Atlas still limits the agent to the project and roles of its MCP
+configuration. `dataAccess` can narrow that access but never widen it.
+
+**Existing Atlas Stream Processing connections.** This applies only when
+writes are enabled. A connection is a saved link from a stream workspace to a
+data source, such as a cluster.
+
+- When the agent creates a connection to a cluster, it must name an allowed
+  cluster, so the check works.
+- When the agent updates or uses a connection that already exists, the call
+  names the connection, not its cluster. The check cannot tell where it
+  points.
+- If an existing connection points at a cluster outside `dataAccess`, the
+  agent can still change it, or start a processor that reads or writes
+  through it.
 
 ## MCP credential lifecycle
 
