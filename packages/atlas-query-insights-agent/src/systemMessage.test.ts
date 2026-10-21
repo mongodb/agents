@@ -119,7 +119,7 @@ describe("buildSystemPrompt", () => {
       name: "Ada",
       customInstructions: "Prefer the orders collection.",
       dataAccess: {
-        "aaaaaaaaaaaaaaaaaaaaaaaa": { clusterNames: ["example-test"] },
+        "64a1f3c2e8b94d0012c7a5e1": { clusterNames: ["example-test"] },
       },
       maxQueryShapes: 5,
     });
@@ -129,7 +129,7 @@ describe("buildSystemPrompt", () => {
     expect(custom.startsWith("You are Ada,")).toBe(true);
     expect(custom).not.toContain(NO_CLUSTER_CONFIGURED);
     expect(custom).toContain(
-      "- Project aaaaaaaaaaaaaaaaaaaaaaaa: cluster example-test",
+      "- Project 64a1f3c2e8b94d0012c7a5e1: cluster example-test",
     );
     expect(custom).toContain("top 5 shape(s)");
     expect(custom).toContain("## Custom instructions");
