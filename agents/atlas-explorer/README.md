@@ -241,8 +241,10 @@ prompt lists the allowed projects and clusters in a `## Scope` section, and
 `clusterAllowlistMiddleware` rejects tool calls that name any other project
 or cluster. Project and cluster lists show only allowed entries, with a
 note that the list is limited. Database user lists are not filtered, so their
-scopes stay accurate. This is a guardrail in the agent. The MCP
-configuration's project and roles stay the hard boundary.
+scopes stay accurate. The checks run in the agent and only read tool call
+arguments and list results. Atlas still limits the agent to the project and
+roles of its MCP configuration. `dataAccess` can narrow that access but never
+widen it.
 
 ## MCP credential lifecycle
 

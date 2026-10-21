@@ -287,8 +287,10 @@ Things to know:
   `{ clusterNames: [...] }`. The system prompt names the allowed projects
   and clusters, and `clusterAllowlistMiddleware` rejects tool calls that
   name any other project or cluster. It also shows only allowed entries in
-  project and cluster lists. This is a guardrail in the agent. The hard
-  boundary is the one Atlas project that the MCP configuration belongs to.
+  project and cluster lists. The checks run in the agent and only read tool
+  call arguments and list results. Atlas still limits the agent to the
+  project and roles of its MCP configuration. `dataAccess` can narrow that
+  access but never widen it.
 
 ## Safety
 
