@@ -323,8 +323,9 @@ Things to know:
   the MCP configuration can reach. Otherwise map each 24-hex project id to
   `{}` (all its clusters) or
   `{ clusterNames: [...] }`. The system prompt names the allowed projects
-  and clusters. Tool calls aren't filtered by it. The hard boundary is the
-  one Atlas project that the MCP configuration belongs to.
+  and clusters. Tool calls aren't filtered by it. Atlas still limits the
+  agent to the one project and the roles of its MCP configuration, whatever
+  `dataAccess` says.
 
 ## Safety
 
