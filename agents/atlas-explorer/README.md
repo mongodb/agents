@@ -238,8 +238,9 @@ dataAccess: {
 
 `clusterNames: []` allows the project but none of its clusters. The system
 prompt lists the allowed projects and clusters in a `## Scope` section. For
-now this only changes the prompt. Tool calls aren't filtered, and the MCP
-configuration's project and roles stay the hard boundary.
+now this only changes the prompt. Tool calls aren't filtered. Atlas still
+limits the agent to the one project and the roles of its MCP configuration,
+whatever `dataAccess` says.
 
 ## MCP credential lifecycle
 
