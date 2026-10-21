@@ -12,6 +12,7 @@ overrides:
   "@repo/atlas-explorer-agent": "workspace:*"
   "@repo/agent-engine-core": "workspace:*"
   "@repo/agent-engine-chat": "workspace:*"
+  "@repo/testing": "workspace:*"
 
 allowBuilds:
   esbuild: true

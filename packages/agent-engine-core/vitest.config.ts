@@ -22,14 +22,7 @@ import { definePackageVitestConfig } from "../../vitest.shared.mts";
 
 const packageRoot = path.dirname(fileURLToPath(import.meta.url));
 const packageConfig = definePackageVitestConfig({
-  exclude: [
-    "**/node_modules/**",
-    "**/.git/**",
-    "src/**/*.integration.test.ts",
-    // Support module aliased over @mongodb-js/mcp-fetch. The .test.ts suffix
-    // marks it as test-only; it is not a suite.
-    "src/knowledgeFetchStub.test.ts",
-  ],
+  exclude: ["**/node_modules/**", "**/.git/**"],
 });
 
 export default defineConfig({
@@ -37,7 +30,7 @@ export default defineConfig({
     alias: {
       "@mongodb-js/mcp-fetch": path.join(
         packageRoot,
-        "src/knowledgeFetchStub.test.ts",
+        "tests/support/knowledgeFetchStub.ts",
       ),
     },
   },

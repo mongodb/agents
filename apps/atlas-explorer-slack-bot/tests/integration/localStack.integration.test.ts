@@ -22,7 +22,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   startLocalWebhookServer,
   type LocalWebhookServer,
-} from "./localWebhookServer.js";
+} from "../../src/localWebhookServer.js";
 import {
   ALLOWED_USER,
   directMessageEvent,
@@ -30,7 +30,7 @@ import {
   startSlackApiStandIn,
   waitFor,
   type SlackApiStandIn,
-} from "./localSlackStandIn.test-helpers.js";
+} from "../../src/localSlackStandIn.test-helpers.js";
 
 const PROMPT = "Reply with the single word pong.";
 // Playground on port 3000 is the documented local target. Headless CI omits

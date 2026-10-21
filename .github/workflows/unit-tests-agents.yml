@@ -7,6 +7,7 @@ on:
       - "packages/agent-engine-core/**"
       - "packages/atlas-explorer-agent/**"
       - "packages/atlas-query-insights-agent/**"
+      - "packages/testing/**"
       - "package.json"
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
@@ -23,6 +24,7 @@ on:
       - "packages/agent-engine-core/**"
       - "packages/atlas-explorer-agent/**"
       - "packages/atlas-query-insights-agent/**"
+      - "packages/testing/**"
       - "package.json"
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
@@ -53,6 +55,8 @@ jobs:
         include:
           - name: agent-engine-core
             command: pnpm --filter @repo/agent-engine-core test
+          - name: testing
+            command: pnpm --filter @repo/testing test
           - name: atlas-explorer-agent
             command: pnpm --filter @repo/atlas-explorer-agent test
           - name: atlas-explorer

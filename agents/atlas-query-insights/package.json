@@ -12,12 +12,12 @@
   },
   "scripts": {
     "build": "if command -v pnpm >/dev/null 2>&1 && test -d ../../packages/atlas-query-insights-agent; then pnpm --filter @repo/atlas-query-insights-agent build && esbuild src/agent_atlas_query_insights/main.ts --bundle --platform=node --format=esm --banner:js=\"import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);\" --outfile=dist/agent_atlas_query_insights/main.js --sourcemap --external:@langchain/core --external:@langchain/langgraph --external:@mongodb-js/* --external:langchain --external:zod --external:dotenv && cp dist/agent_atlas_query_insights/main.js src/agent_atlas_query_insights/main.bundle.js && cp dist/agent_atlas_query_insights/main.js.map src/agent_atlas_query_insights/main.bundle.js.map; else mkdir -p dist/agent_atlas_query_insights && cp src/agent_atlas_query_insights/main.bundle.js dist/agent_atlas_query_insights/main.js && cp src/agent_atlas_query_insights/main.bundle.js.map dist/agent_atlas_query_insights/main.js.map; fi",
-    "pretest": "pnpm --filter @repo/atlas-query-insights-agent build",
+    "pretest": "pnpm --filter @repo/atlas-query-insights-agent build && pnpm --filter @repo/testing build",
     "test": "vitest run",
     "test:watch": "vitest",
-    "pretest:integration": "pnpm --filter @repo/atlas-query-insights-agent build",
+    "pretest:integration": "pnpm --filter @repo/atlas-query-insights-agent build && pnpm --filter @repo/testing build",
     "test:integration": "vitest run --config vitest.integration.config.ts",
-    "pretypecheck": "pnpm --filter @repo/atlas-query-insights-agent build",
+    "pretypecheck": "pnpm --filter @repo/atlas-query-insights-agent build && pnpm --filter @repo/testing build",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json --noEmit",
     "prestart": "pnpm run build",
     "start": "node --enable-source-maps dist/agent_atlas_query_insights/main.js",
@@ -39,6 +39,7 @@
   },
   "devDependencies": {
     "@repo/agent-engine-core": "file:../../packages/agent-engine-core",
+    "@repo/testing": "file:../../packages/testing",
     "@types/node": "^25.0.0",
     "esbuild": "^0.25.0",
     "tsx": "^4.16.0",

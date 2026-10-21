@@ -20,7 +20,7 @@ import { describe, expect, it } from "vitest";
 
 import { buildLLM } from "@repo/atlas-explorer-agent";
 
-import { atlasExplorerConfig } from "./config.js";
+import { atlasExplorerConfig } from "../../src/agent_atlas_explorer/config.js";
 
 const PROMPT = "Reply with the single word pong.";
 const TIMEOUT_MS = 120_000;

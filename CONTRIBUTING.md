@@ -71,7 +71,7 @@ Atlas Explorer and Atlas Query Insights each have an opt-in suite,
 `pnpm test:integration`, run from the agent directory. The tests call the
 local Orchestration Engine on port 8000 and check execution status, MCP tool
 calls recorded in checkpoints, and requester metadata. They do not grade the
-model's wording. The client is `@repo/agent-engine-core/testing`.
+model's wording. The client is `@repo/testing`.
 
 Run them against `agentengine dev up --headless` with real Atlas MCP and
 OpenAI credentials. When `CI` is unset, the suite also pings OpenAI and

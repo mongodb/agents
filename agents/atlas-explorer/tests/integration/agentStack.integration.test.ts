@@ -20,7 +20,10 @@ import { randomUUID } from "node:crypto";
 
 import { beforeAll, describe, expect, it } from "vitest";
 
-import { ATLAS_QUERY_INSIGHTS_MCP_TOOLS } from "@repo/atlas-query-insights-agent";
+import {
+  READ_ONLY_MCP_TOOLS,
+  writeOperationsAllowed,
+} from "@repo/atlas-explorer-agent";
 import {
   DROP_COLLECTION_TOOL,
   LIST_DATABASES_TOOL,
@@ -28,11 +31,13 @@ import {
   isWriteMcpTool,
   readCheckpoints,
   waitForHealthy,
-} from "@repo/agent-engine-core/testing";
+} from "@repo/testing";
 
-describe("Atlas Query Insights local stack (read-only)", () => {
+const writesEnabled = writeOperationsAllowed();
+
+describe.skipIf(writesEnabled)("Atlas Explorer local stack (read-only)", () => {
   beforeAll(async () => {
-    await waitForHealthy({ stackLabel: "agents/atlas-query-insights" });
+    await waitForHealthy({ stackLabel: "agents/atlas-explorer" });
   });
 
   it("completes a trivial invoke", async () => {
@@ -87,7 +92,7 @@ describe("Atlas Query Insights local stack (read-only)", () => {
     expect(new Set(humans).size).toBeGreaterThanOrEqual(2);
   });
 
-  it("never calls a write tool for a drop request", async () => {
+  it("hides write tools so a drop request does not suspend", async () => {
     const result = await invoke({
       message: dropCollectionPrompt(),
       sessionId: sessionId("hidden-write"),
@@ -100,7 +105,7 @@ describe("Atlas Query Insights local stack (read-only)", () => {
     );
     expect(
       checkpoints.toolCalls.filter((call) =>
-        isWriteMcpTool(call.name, ATLAS_QUERY_INSIGHTS_MCP_TOOLS),
+        isWriteMcpTool(call.name, READ_ONLY_MCP_TOOLS),
       ),
     ).toEqual([]);
   });
@@ -131,7 +136,7 @@ describe("Atlas Query Insights local stack (read-only)", () => {
 });
 
 function sessionId(label: string): string {
-  return `eai-2298-query-insights-${label}-${randomUUID()}`;
+  return `eai-2298-explorer-${label}-${randomUUID()}`;
 }
 
 function dropCollectionPrompt(): string {
