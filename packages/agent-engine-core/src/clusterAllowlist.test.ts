@@ -167,6 +167,41 @@ describe("guardClusterCall", () => {
     expect((await run(call("mongodb__find", {}), mixed)).ran).toBe(true);
   });
 
+  describe("write-mode cluster arguments", () => {
+    const streamsConnection = (clusterName?: string) => ({
+      projectId: PROJECT,
+      action: "create_connection",
+      workspaceName: "ws",
+      connectionName: "conn",
+      connectionType: "Cluster",
+      connectionConfig: clusterName ? { clusterName } : {},
+    });
+
+    it.each([
+      ["mongodb__atlas_create_free_cluster", { projectId: PROJECT, name: "example-prod", region: "US_EAST_1" }, "Cluster example-prod"],
+      ["mongodb__atlas_create_free_cluster", { projectId: PROJECT, region: "US_EAST_1" }, "needs a clusterName"],
+      ["mongodb__atlas_pause_resume_cluster", { projectId: PROJECT, clusterName: "example-prod" }, "Cluster example-prod"],
+      ["mongodb__atlas_upgrade_cluster", { projectId: PROJECT }, "needs a clusterName"],
+      ["mongodb__atlas_streams_build", streamsConnection("example-prod"), "Cluster example-prod"],
+      ["mongodb__atlas_streams_manage", streamsConnection(), "needs connectionConfig.clusterName"],
+    ])("rejects %s with %j", async (name, args, message) => {
+      const { result, ran } = await run(call(name, args));
+      expect(ran).toBe(false);
+      expect(result).toMatchObject({
+        status: "error",
+        content: expect.stringContaining(message),
+      });
+    });
+
+    it.each([
+      ["mongodb__atlas_create_free_cluster", { projectId: PROJECT, name: "example-test", region: "US_EAST_1" }],
+      ["mongodb__atlas_streams_build", streamsConnection("example-staging")],
+      ["mongodb__atlas_streams_build", { projectId: PROJECT, action: "create_workspace", workspaceName: "ws" }],
+    ])("runs %s with %j", async (name, args) => {
+      expect((await run(call(name, args))).ran).toBe(true);
+    });
+  });
+
   it("rejects cluster and database tools when no project allows a cluster", async () => {
     const noClusters = { [PROJECT]: { clusterNames: [] } } satisfies DataAccessConfig;
 
