@@ -39,7 +39,6 @@ export const ATLAS_QUERY_INSIGHTS_MCP_TOOLS: ReadonlySet<string> = new Set([
   "mongodb__collection_indexes",
   "mongodb__collection_schema",
   "mongodb__collection_storage_size",
-  "mongodb__connect",
   "mongodb__count",
   "mongodb__db_stats",
   "mongodb__explain",
