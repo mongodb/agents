@@ -1,4 +1,4 @@
-<!-- Formatting: Title is "EAI-1234: Short description" (Jira key, colon, summary). Keep Changes to a flat, scannable list of what changed (one line per item, bold the area, no implementation detail); put caveats and test results in Notes. See PR #164 for a model. -->
+<!-- Formatting: Title is "EAI-1234: Short description" (Jira key, colon, summary). If there is no Jira ticket, write "Jira: NA" and leave the key out of the title. Keep Changes to a flat, scannable list of what changed; put caveats and test results in Notes. See PR #164 for a model. -->
 
 Jira: https://jira.mongodb.org/browse/EAI-
 
@@ -10,7 +10,7 @@ Jira: https://jira.mongodb.org/browse/EAI-
 
 ## Changes
 
-<!-- A straightforward overview of what changed, not how. One short bullet per change; no dense paragraphs. -->
+<!-- A straightforward overview of what changed, not how. One short bullet per change. Use sub-bullets for supporting detail instead of long paragraphs or semicolon-chained sentences, and keep implementation details out. -->
 
 -
 -
