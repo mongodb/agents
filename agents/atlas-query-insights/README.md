@@ -35,7 +35,12 @@ Policy, prompts, and middleware live in
 
 ## Configure
 
-Requires Node.js 24 or newer.
+Requires:
+
+- Node.js 24 or newer.
+- An Atlas cluster on M10 or larger with recent slow queries. Performance
+  Advisor, which the agent reads from, needs both. To create slow queries on
+  a test cluster, see [Seed slow queries](#seed-slow-queries).
 
 ```bash
 cp .env.example .env
@@ -146,6 +151,21 @@ with `agentengine secret set ANTHROPIC_BASE_URL`.
 
 </details>
 
+### Set a default cluster
+
+You can configure the Atlas Query Insights Agent to create reports on a default project and cluster. This lets you work with the agent with less back and forth.
+
+If you leave the default config empty, the agent lists your projects
+and clusters and asks which one to use first.
+
+1. Set the cluster the agent reports on in
+   `src/agent_atlas_query_insights/config.ts`:
+
+   ```ts
+   scope: {
+     projectId: "<24-character Atlas project ID>",
+     clusterName: "<cluster name>",
+   },
 ### Access token limit
 
 The Atlas MCP server allows each service account at most 100 active access
@@ -241,8 +261,26 @@ from `pnpm build` instead of rebuilding. After source changes, run
 Open the playground at http://localhost:3000. Stop the stack with
 `agentengine dev stop`.
 
-Ask which slow queries matter on the cluster. The agent should explain
-the highest-impact shapes.
+## Get a report
+
+Ask a question about slow queries. There's no separate command. The examples
+assume you set a [default cluster](#set-a-default-cluster).
+
+- "Which slow queries matter most?"
+- "Which slow queries matter most since Monday?"
+- "Look at slow queries on the `orders` collection."
+
+To ask about a cluster other than the default, name it in the question.
+
+Where to ask:
+
+- **Playground (local):** http://localhost:3000 after `agentengine dev up`.
+- **Deployed agent:** from this directory, run
+  `agentengine invoke "Which slow queries matter most?"`.
+- **Slack:** DM the bot or mention it in a channel. See
+  [Talk from chat platforms](#talk-from-chat-platforms).
+- **On a schedule:** post the question with Slack Workflow Builder. See
+  [Authorize scheduled Workflow Builder messages](../../apps/atlas-explorer-slack-bot/README.md#authorize-scheduled-workflow-builder-messages).
 
 ## Talk from chat platforms
 

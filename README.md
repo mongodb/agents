@@ -1,7 +1,7 @@
 # MongoDB Agents
 
 Agent templates for MongoDB Atlas that you can deploy to
-[Atlas Agent Engine](https://www.mongodb.com/docs/agentengine/).
+[MongoDB Atlas Agent Engine](https://www.mongodb.com/docs/agentengine/).
 
 Each template already includes what an Atlas agent needs beyond a prompt:
 credential handling, access scoping, tool orchestration, and approval flows. The
@@ -10,7 +10,7 @@ templates are built on the
 [MongoDB Agent Skills](https://www.mongodb.com/docs/agent-skills). You bring a
 model API key, choose what the agent can access, and deploy it.
 
-![From template to running agent: pick a template from mongodb/agents, set your Atlas credential, model, and agent.yaml, deploy with the agentengine CLI, and run on Atlas Agent Engine, which connects to Atlas and to the Playground, CLI, and Slack.](docs/images/architecture.svg)
+![From template to running agent: open templates from mongodb/agents, your settings (Atlas credential, model provider, secrets and hosts), deploy with the agentengine CLI, and run on Atlas Agent Engine, which connects to Atlas MCP tools and to user surfaces such as the Playground, CLI, and Slack.](docs/images/architecture.png)
 
 > [!NOTE]
 > Atlas Agent Engine is in Public Preview. Review the
@@ -21,8 +21,8 @@ model API key, choose what the agent can access, and deploy it.
 
 | Agent | What it does | Status |
 | --- | --- | --- |
-| [Atlas Explorer](#atlas-explorer) | A conversational agent for questions and everyday workflows across your Atlas environment, such as clusters, alerts, schemas, and data. | Available |
-| [Atlas Query Insights](#atlas-query-insights) | A workflow agent that produces a slow-query report for an Atlas cluster, based on Performance Advisor. | Available |
+| [MongoDB Atlas Explorer](#mongodb-atlas-explorer) | A conversational agent for questions and everyday workflows across your Atlas environment, such as clusters, alerts, schemas, and data. | Available |
+| [MongoDB Atlas Query Insights](#mongodb-atlas-query-insights) | A workflow agent that produces a slow-query report for an Atlas cluster, based on Performance Advisor. | Available |
 
 ## Get started
 
@@ -104,7 +104,7 @@ and the [`agentengine` CLI reference](https://www.mongodb.com/docs/agentengine/c
 
 ## The agents
 
-### Atlas Explorer
+### MongoDB Atlas Explorer
 
 Atlas Explorer answers questions about your Atlas environment and helps with
 everyday Atlas tasks. It connects to Atlas through the MongoDB MCP Server. When
@@ -119,7 +119,7 @@ Try asking:
 
 See the [Atlas Explorer README](agents/atlas-explorer) for setup and configuration details.
 
-### Atlas Query Insights
+### MongoDB Atlas Query Insights
 
 Atlas Query Insights explains which slow queries on a cluster matter most and
 what to look at next. It reads slow query logs and index suggestions from
@@ -131,7 +131,7 @@ an M10 or larger cluster.
 For how the report is built, what it's based on, and how to configure it, see
 the [Atlas Query Insights README](agents/atlas-query-insights).
 
-### Safe by default
+### Built-in guardrails
 
 Agents that can see production data need clear limits. Both agents set those
 limits from the start.
@@ -140,26 +140,25 @@ limits from the start.
   programmatic identity for one Atlas project, and you choose its roles. Atlas
   authorizes that identity, not the person chatting with the agent, so anyone
   who can reach an agent can use everything its roles allow. Give the agent
-  only the roles that all of its users should have, and be cautious about
-  giving any agent access to sensitive data. The Atlas MCP Server doesn't
-  currently support per-user sign-in (OIDC) for custom clients like these
-  agents.
+  only the roles that all of its users should have. The Atlas MCP Server
+  doesn't currently support per-user sign-in (OIDC) for custom clients like
+  these agents.
 - **Read-only by default.** The example configurations grant read-only
   access. Atlas Explorer can be set up to write, with your approval for each
   write tool. Atlas Query Insights can't write.
 - **No shell access.** Neither agent can run shell commands in its sandbox.
 - **Prompt injection can't be fully prevented.** Text in your data or in chat
   messages can contain instructions aimed at the model. The templates limit
-  what such text can do. The agent reads only what its roles allow, every
+  what such text can do: the agent reads only what its roles allow, every
   write needs approval, and the egress policy blocks traffic to hosts that
-  `agent.yaml` doesn't list. Treat content from untrusted sources as
-  untrusted, and review what an agent can reach before you deploy it.
+  `agent.yaml` doesn't list. You decide what each agent can access, so review
+  its roles and allowed hosts before you deploy it.
 - **Input guard.** Each agent redacts pasted credentials from the user's
   message before the model sees it, and refuses messages that are too long to
   screen. It doesn't screen tool output. See
   [Input guard](packages/agent-engine-core/src/inputGuard.ts).
 
-## Why Atlas Agent Engine
+## Why MongoDB Atlas Agent Engine
 
 Atlas Agent Engine is the managed runtime for these agents. It handles the
 infrastructure you would otherwise build and maintain yourself:
@@ -180,7 +179,7 @@ a [policy engine](https://www.mongodb.com/docs/agentengine/manage/governance/pol
 and more. See the [Agent Engine documentation](https://www.mongodb.com/docs/agentengine/)
 for the full list.
 
-## Example: talk to Atlas Explorer from Slack
+## Example: talk to MongoDB Atlas Explorer from Slack
 
 [`apps/atlas-explorer-slack-bot`](apps/atlas-explorer-slack-bot) is an
 example of how to connect a deployed agent to the tools your team already
@@ -246,7 +245,7 @@ how they're set up.
   [`packages/agent-engine-chat`](packages/agent-engine-chat) and
   [Chat SDK](https://chat-sdk.dev), so you can connect other Agent Engine
   workspaces or adapt it to other chat platforms. See
-  [Example: talk to Atlas Explorer from Slack](#example-talk-to-atlas-explorer-from-slack).
+  [Example: talk to MongoDB Atlas Explorer from Slack](#example-talk-to-mongodb-atlas-explorer-from-slack).
 
 ### Your data
 
