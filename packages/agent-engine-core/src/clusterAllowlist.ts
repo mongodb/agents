@@ -47,7 +47,7 @@ const CLUSTER_TOOLS: ReadonlySet<string> = new Set([
  * Returns why a MongoDB MCP call falls outside `dataAccess`, or `undefined`
  * when it may run. Arguments are never rewritten.
  */
-export function checkClusterToolCall(
+export function checkAllowedClusterToolCall(
   allowedDataAccess: ResolvedDataAccess,
   toolCall: ClusterToolCall,
 ): string | undefined {
@@ -125,7 +125,7 @@ export async function guardClusterCall<
   if (!allowedDataAccess || !toolCall?.name.startsWith("mongodb__")) {
     return handler(request);
   }
-  const reason = checkClusterToolCall(allowedDataAccess, toolCall);
+  const reason = checkAllowedClusterToolCall(allowedDataAccess, toolCall);
   if (reason) return rejectToolCall(toolCall, reason);
   return handler(request);
 }
