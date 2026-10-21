@@ -16,7 +16,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { setKnowledgeFetch } from "./knowledgeFetchStub.test.js";
+import { setKnowledgeFetch } from "../tests/support/knowledgeFetchStub.js";
 
 import {
   KNOWLEDGE_NETWORK_HOST,
