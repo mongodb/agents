@@ -20,16 +20,16 @@ import {
   clusterAllowlistMiddleware,
   guardClusterCall,
 } from "./clusterAllowlist.js";
-import { resolveDataAccess } from "./dataAccess.js";
+import type { DataAccessConfig } from "./dataAccess.js";
 
 const PROJECT = "64a1f3c2e8b94d0012c7a5e1";
 const OPEN_PROJECT = "65c3d9e07f21ab4408d6e3f2";
 const OTHER_PROJECT = "66e7b4a1c5d38f2290a1b7c4";
 
-const allowedDataAccess = resolveDataAccess({
+const allowedDataAccess = {
   [PROJECT]: { clusterNames: ["example-test", "example-staging"] },
   [OPEN_PROJECT]: {},
-});
+} satisfies DataAccessConfig;
 
 function call(name: string, args: unknown = {}) {
   return { toolCall: { id: "call-1", name, args } };
@@ -37,7 +37,7 @@ function call(name: string, args: unknown = {}) {
 
 async function run(
   request: ReturnType<typeof call>,
-  dataAccess = allowedDataAccess,
+  dataAccess: DataAccessConfig = allowedDataAccess,
 ) {
   const handler = vi.fn(async () => "ran");
   const result = await guardClusterCall(dataAccess, request, handler);
@@ -52,7 +52,7 @@ describe("guardClusterCall", () => {
     });
     const handler = vi.fn(async () => "ran");
 
-    await expect(guardClusterCall(undefined, request, handler)).resolves.toBe(
+    await expect(guardClusterCall({}, request, handler)).resolves.toBe(
       "ran",
     );
     expect(handler).toHaveBeenCalledWith(request);
@@ -113,10 +113,10 @@ describe("guardClusterCall", () => {
   });
 
   it("does not let a cluster allowed in one project through in another", async () => {
-    const perProject = resolveDataAccess({
+    const perProject = {
       [PROJECT]: { clusterNames: ["example-test"] },
       [OTHER_PROJECT]: { clusterNames: ["example-prod"] },
-    });
+    } satisfies DataAccessConfig;
 
     const { ran, result } = await run(
       call("mongodb__remote_atlas_connect", { projectId: PROJECT, clusterName: "example-prod" }),
@@ -129,7 +129,7 @@ describe("guardClusterCall", () => {
   });
 
   it("rejects cluster and database tools when no project allows a cluster", async () => {
-    const noClusters = resolveDataAccess({ [PROJECT]: { clusterNames: [] } });
+    const noClusters = { [PROJECT]: { clusterNames: [] } } satisfies DataAccessConfig;
 
     const connect = await run(
       call("mongodb__remote_atlas_connect", { projectId: PROJECT, clusterName: "example-test" }),
