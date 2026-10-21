@@ -215,8 +215,7 @@ export function toolArgs(args: unknown): Record<string, unknown> {
 }
 
 export function stringArg(value: unknown): string | undefined {
-  const trimmed = typeof value === "string" ? value.trim() : "";
-  return trimmed || undefined;
+  return typeof value === "string" ? value.trim() : undefined;
 }
 
 export function isRecord(value: unknown): value is Record<string, unknown> {
