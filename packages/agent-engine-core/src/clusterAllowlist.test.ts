@@ -211,9 +211,7 @@ describe("guardClusterCall list results", () => {
     );
 
     const result = (await guardClusterCall({
-      allowedDataAccess: {
-        [PROJECT]: { clusterNames: ["docs-chatbot-test", "docs-chatbot-staging"] },
-      },
+      allowedDataAccess,
       request: listClusters,
       handler: async () => original,
     })) as ToolMessage;
@@ -230,9 +228,7 @@ describe("guardClusterCall list results", () => {
     const error = toolMessage("Atlas API error", "error");
     await expect(
       guardClusterCall({
-        allowedDataAccess: {
-          [PROJECT]: { clusterNames: ["docs-chatbot-test", "docs-chatbot-staging"] },
-        },
+        allowedDataAccess,
         request: listClusters,
         handler: async () => error,
       }),
@@ -245,9 +241,7 @@ describe("guardClusterCall list results", () => {
     ["a non-message result", { update: { messages: [] } }],
   ])("withholds %s", async (_label, original) => {
     const result = await guardClusterCall({
-      allowedDataAccess: {
-        [PROJECT]: { clusterNames: ["docs-chatbot-test", "docs-chatbot-staging"] },
-      },
+      allowedDataAccess,
       request: listClusters,
       handler: async () => original,
     });

@@ -39,13 +39,13 @@ const NO_RESULTS = /\bNo (clusters|projects) found\b/i;
  */
 export function filterListContent(
   toolName: string,
-  resolved: DataAccessConfig,
+  allowedDataAccess: DataAccessConfig,
   projectId: string | undefined,
   content: string,
 ): string | undefined {
   const envelope = parseResultObject(content);
   if (!envelope) {
-    return filterTexts(toolName, resolved, projectId, [content])?.[0];
+    return filterTexts(toolName, allowedDataAccess, projectId, [content])?.[0];
   }
 
   const blocks: Record<string, unknown>[] = [];
@@ -56,7 +56,7 @@ export function filterListContent(
     blocks.push(block);
     texts.push(block.text);
   }
-  const filtered = filterTexts(toolName, resolved, projectId, texts);
+  const filtered = filterTexts(toolName, allowedDataAccess, projectId, texts);
   if (!filtered) return undefined;
   if (filtered === texts) return content;
   return JSON.stringify({
@@ -81,7 +81,7 @@ function parseResultObject(
 
 function filterTexts(
   toolName: string,
-  resolved: DataAccessConfig,
+  allowedDataAccess: DataAccessConfig,
   projectId: string | undefined,
   texts: string[],
 ): string[] | undefined {
@@ -91,7 +91,7 @@ function filterTexts(
 
     const [whole, open, , inner, close] = block;
     const payload = inner!.trim();
-    const filtered = filterPayload(toolName, resolved, projectId, payload);
+    const filtered = filterPayload(toolName, allowedDataAccess, projectId, payload);
     if (!filtered) return undefined;
     if (!filtered.removed) return texts;
 
@@ -125,7 +125,7 @@ function findDataBlock(text: string): RegExpExecArray | undefined {
 
 function filterPayload(
   toolName: string,
-  resolved: DataAccessConfig,
+  allowedDataAccess: DataAccessConfig,
   projectId: string | undefined,
   json: string,
 ): { json: string; removed: boolean; remaining: number } | undefined {
@@ -138,13 +138,13 @@ function filterPayload(
   const indent = json.includes("\n") ? 2 : undefined;
 
   if (toolName === "mongodb__atlas_list_clusters") {
-    if (!projectId || !Object.hasOwn(resolved, projectId)) return undefined;
+    if (!projectId || !Object.hasOwn(allowedDataAccess, projectId)) return undefined;
     if (!isRecord(parsed) || !Array.isArray(parsed.clusters)) return undefined;
     const clusters: unknown[] = parsed.clusters;
     if (!clusters.every((c) => isRecord(c) && typeof c.name === "string")) {
       return undefined;
     }
-    const allowed = resolved[projectId]!.clusterNames;
+    const allowed = allowedDataAccess[projectId]!.clusterNames;
     const kept = clusters.filter(
       (c) => allowed === undefined || allowed.includes((c as { name: string }).name),
     );
@@ -161,7 +161,7 @@ function filterPayload(
     return undefined;
   }
   const kept = projects.filter((p) =>
-    Object.hasOwn(resolved, (p as { id: string }).id),
+    Object.hasOwn(allowedDataAccess, (p as { id: string }).id),
   );
   return {
     json: JSON.stringify(kept, null, indent),
