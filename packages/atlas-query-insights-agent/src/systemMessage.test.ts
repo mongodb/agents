@@ -170,6 +170,20 @@ describe("buildSystemPrompt", () => {
     expect(custom).toContain("Prefer the orders collection.");
   });
 
+  it("adds the allowed databases after the cluster scope only when databaseNames is set", () => {
+    expect(buildSystemPrompt({ databaseNames: undefined })).toBe(
+      buildSystemPrompt(),
+    );
+
+    const prompt = buildSystemPrompt({ databaseNames: ["orders"] });
+    expect(prompt).toContain(NO_CLUSTER_CONFIGURED);
+    expect(prompt).toContain("Access is limited to these databases.");
+    expect(prompt).toContain("- orders");
+    expect(prompt.indexOf(NO_CLUSTER_CONFIGURED)).toBeLessThan(
+      prompt.indexOf("Access is limited to these databases."),
+    );
+  });
+
   it("rejects a non-positive shape limit", () => {
     expect(() => buildSystemPrompt({ maxQueryShapes: 0 })).toThrow(/maxQueryShapes/);
   });

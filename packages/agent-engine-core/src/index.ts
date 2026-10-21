@@ -25,6 +25,12 @@ export {
 } from "./aggregateWriteApproval.js";
 export { withoutShellExecution } from "./agentBackend.js";
 export { clusterAllowlistMiddleware } from "./clusterAllowlist.js";
+export { databaseAllowlistMiddleware } from "./databaseAllowlist.js";
+export {
+  describeDatabaseNames,
+  validateDatabaseNames,
+  type DatabaseNamesConfig,
+} from "./databaseNames.js";
 export {
   describeDataAccess,
   isUnrestricted,

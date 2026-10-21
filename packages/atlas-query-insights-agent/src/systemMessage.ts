@@ -22,7 +22,9 @@ import {
   TOOL_CONFIG_NON_DISCLOSURE_RULE,
   TOPIC_SCOPE_RULES,
   describeDataAccess,
+  describeDatabaseNames,
   type DataAccessConfig,
+  type DatabaseNamesConfig,
 } from "@repo/agent-engine-core";
 
 export const DEFAULT_AGENT_NAME = "Atlas Query Insights";
@@ -108,6 +110,7 @@ export interface SystemPromptOptions {
   name?: string;
   customInstructions?: string;
   dataAccess?: DataAccessConfig;
+  databaseNames?: DatabaseNamesConfig;
   maxQueryShapes?: number;
 }
 
@@ -252,7 +255,12 @@ function resolveMaxQueryShapes(value: number | undefined): number {
 export function buildSystemPrompt(options: SystemPromptOptions = {}): string {
   const name = resolveAgentName(options.name);
   const maxQueryShapes = resolveMaxQueryShapes(options.maxQueryShapes);
-  const scope = describeDataAccess(options.dataAccess) ?? NO_CLUSTER_CONFIGURED;
+  const scope = [
+    describeDataAccess(options.dataAccess) ?? NO_CLUSTER_CONFIGURED,
+    describeDatabaseNames(options.databaseNames),
+  ]
+    .filter(Boolean)
+    .join("\n\n");
   const skills = QUERY_SKILLS.map((skill) => `- \`${skill}\``).join("\n");
   const custom = options.customInstructions?.trim();
 

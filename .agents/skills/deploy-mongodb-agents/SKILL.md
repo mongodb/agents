@@ -171,6 +171,17 @@ Then edit `config.ts` and show the user the diff before saving:
 
   Leave `dataAccess` as `{}` for no restriction. The agent can then use
   every project and cluster that the MCP configuration can reach.
+- **Either agent** (`config.ts`): to limit the agent to certain databases,
+  set `databaseNames` to database names and regular expressions. The list
+  applies to every allowed cluster.
+
+  ```ts
+  databaseNames: ["orders", /^tenant_\d+$/] satisfies DatabaseNamesConfig,
+  ```
+
+  A string must equal the database name. A regular expression must match
+  the whole name. Leave `databaseNames` as `undefined` to allow every
+  database. `[]` allows none.
 
 Atlas Explorer users can also add a data map: a list of databases, collections and fields so the agent can skip exploring. It goes stale, so offer it only if the user asks or says they'd like it, and only if this coding agent already has the MongoDB MCP connected. Then follow [references/data-map.md](references/data-map.md).
 
@@ -178,6 +189,7 @@ Rules:
 
 - The text goes into the system prompt and into git. Never include credentials, connection strings, or personal data. Keep it short and factual.
 - `dataAccess` is in the system prompt, and the agent rejects tool calls that name any other project or cluster. That is a guardrail in the agent. The hard boundary is still the Atlas project and roles on the MCP configuration.
+- `databaseNames` is in the system prompt, and the agent rejects tool calls whose `database` argument doesn't match. It also checks `$out` and `$merge` targets. It doesn't filter tool results, so the agent can still see other database names, and it doesn't inspect other parts of an aggregation pipeline. Say so if the user asks how strict it is: it's a guardrail, not a security boundary.
 - This is a code change, so the agent needs a rebuild (`pnpm build`) and a deploy to pick it up. It doesn't change what the agent is allowed to do.
 
 ## 6. Check before deploying

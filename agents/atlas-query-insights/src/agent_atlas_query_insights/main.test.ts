@@ -197,6 +197,7 @@ describe("Atlas Query Insights graph assembly", () => {
         name: atlasQueryInsightsConfig.systemPrompt.name,
         customInstructions: atlasQueryInsightsConfig.systemPrompt.customInstructions,
         dataAccess: atlasQueryInsightsConfig.dataAccess,
+        databaseNames: atlasQueryInsightsConfig.databaseNames,
         maxQueryShapes: atlasQueryInsightsConfig.maxQueryShapes,
       }),
     );
@@ -207,6 +208,7 @@ describe("Atlas Query Insights graph assembly", () => {
       "stripOpenAIToolEcho",
       "redactSecrets",
       "clusterAllowlist",
+      "databaseAllowlist",
       "rejectAggregateWrites",
       "recoverToolErrors",
     ]);

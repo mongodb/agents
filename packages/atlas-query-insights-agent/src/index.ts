@@ -37,6 +37,7 @@ export {
   clusterAllowlistMiddleware,
   createInputRefusalMiddleware,
   createInputRedactor,
+  databaseAllowlistMiddleware,
   prepareAgentInput,
   recoverToolErrorsMiddleware,
   redactSecretsMiddleware,
@@ -46,6 +47,7 @@ export {
   withRequesterMetadata,
   withoutShellExecution,
   type DataAccessConfig,
+  type DatabaseNamesConfig,
   type InputGuardConfig,
 } from "@repo/agent-engine-core";
 export {

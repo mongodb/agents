@@ -33,6 +33,21 @@ import type {
  * configuration can reach. Otherwise map each allowed 24-hex project id to
  * `{}` (all its clusters) or `{ clusterNames: [...] }`.
  *
+ * `databaseNames` limits the databases the agent may use, across every
+ * allowed cluster. Leave it `undefined` to allow every database, or list
+ * names (`"orders"`) and regular expressions (`/^tenant_\d+$/`). A name must
+ * match exactly and a regular expression must match the whole name. `[]`
+ * allows no databases. Only the `i` and `u` regular expression flags work.
+ * Each tool call's `database` argument and the target database of `$out` and
+ * `$merge` are checked. Other parts of an aggregation pipeline are not.
+ * `$lookup` and `$unionWith` read only from the same database in current
+ * MongoDB versions, but if a future version allows cross-database reads,
+ * this check will not catch them. `aggregate_db` stages such as `$currentOp`
+ * and `$queryStats` report activity on every database. Tool results are not
+ * filtered, so the agent can still see names of databases it may not use.
+ * Treat this as a guardrail on the agent, not a security boundary, and use
+ * Atlas roles and database users for hard limits.
+ *
  * `diagnostics.logRuntimeLifecycle` logs `[runtime-diag]` lines showing which
  * process serves each execution and when each process caches a new Atlas MCP
  * access token. Token values are never logged.
@@ -43,7 +58,10 @@ import type {
  * {@link createInputRedactor} and {@link createInputRefusalMiddleware}.
  */
 
-import type { DataAccessConfig } from "@repo/atlas-explorer-agent";
+import type {
+  DataAccessConfig,
+  DatabaseNamesConfig,
+} from "@repo/atlas-explorer-agent";
 
 export const atlasExplorerConfig = {
   llm: {
@@ -55,6 +73,7 @@ export const atlasExplorerConfig = {
     customInstructions: "",
   },
   dataAccess: {} satisfies DataAccessConfig,
+  databaseNames: undefined as DatabaseNamesConfig | undefined,
   diagnostics: {
     logRuntimeLifecycle: true,
   },

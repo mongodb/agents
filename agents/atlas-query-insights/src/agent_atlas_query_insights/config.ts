@@ -27,6 +27,21 @@ import type {
  * Leave `dataAccess` as `{}` for no restriction: every project and cluster
  * the MCP configuration can reach. Otherwise map each allowed 24-hex project
  * id to `{}` (all its clusters) or `{ clusterNames: [...] }`.
+ *
+ * `databaseNames` limits the databases the agent may use, across every
+ * allowed cluster. Leave it `undefined` to allow every database, or list
+ * names (`"orders"`) and regular expressions (`/^tenant_\d+$/`). A name must
+ * match exactly and a regular expression must match the whole name. `[]`
+ * allows no databases. Only the `i` and `u` regular expression flags work.
+ * Each tool call's `database` argument and the target database of `$out` and
+ * `$merge` are checked. Other parts of an aggregation pipeline are not.
+ * `$lookup` and `$unionWith` read only from the same database in current
+ * MongoDB versions, but if a future version allows cross-database reads,
+ * this check will not catch them. Tool results are not filtered, so the
+ * agent can still see names of databases it may not use. Treat this as a
+ * guardrail on the agent, not a security boundary, and use Atlas roles and
+ * database users for hard limits.
+ *
  * `maxQueryShapes` is how many shapes the report covers.
  *
  * `inputGuard` screens each user message before the model sees it: it redacts
@@ -35,7 +50,10 @@ import type {
  * {@link createInputRedactor} and {@link createInputRefusalMiddleware}.
  */
 
-import type { DataAccessConfig } from "@repo/atlas-query-insights-agent";
+import type {
+  DataAccessConfig,
+  DatabaseNamesConfig,
+} from "@repo/atlas-query-insights-agent";
 
 export const atlasQueryInsightsConfig = {
   llm: {
@@ -47,6 +65,7 @@ export const atlasQueryInsightsConfig = {
     customInstructions: "",
   },
   dataAccess: {} satisfies DataAccessConfig,
+  databaseNames: undefined as DatabaseNamesConfig | undefined,
   maxQueryShapes: 3,
   inputGuard: {
     mode: "enforce",

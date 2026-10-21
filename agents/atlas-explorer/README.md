@@ -273,6 +273,52 @@ data source, such as a cluster.
   agent can still change it, or start a processor that reads or writes
   through it.
 
+## Limit databases
+
+Set `databaseNames` in `config.ts` to limit the agent to specific databases.
+The list applies to every cluster the agent is allowed to use:
+
+```ts
+databaseNames: ["orders", /^tenant_\d+$/] satisfies DatabaseNamesConfig,
+```
+
+- A string must equal the database name.
+- A regular expression must match the whole name, so `/orders/` does not
+  allow `orders_archive`. Only the `i` and `u` flags are accepted.
+- Leave `databaseNames` as `undefined` to allow every database.
+- `databaseNames: []` allows no databases.
+- The list is not per cluster. Tools that read or write data carry a
+  connection ID and a database name, not a cluster name.
+- To keep control plane tools such as `atlas-upgrade-cluster` away from the
+  agent, also list only the tools it needs under
+  `mcp.servers.mongodb.allowed_tools` in `agent.yaml`. See
+  [Use Remote MCP Servers](https://www.mongodb.com/docs/agentengine/add-features/remote-mcp/).
+
+### What the agent enforces
+
+- The system prompt lists the allowed databases in the `## Scope` section.
+- `databaseAllowlistMiddleware` rejects any data tool call whose `database`
+  argument does not match `databaseNames`. It also checks the target database
+  of `$out` and `$merge` in `aggregate` and `aggregate_db`.
+- The prompt warns that database lists in tool results can include databases
+  outside `databaseNames`. Using one returns an error.
+
+### What it cannot enforce
+
+This is a guardrail on the agent, not a security boundary. Use Atlas roles
+and database users for hard limits.
+
+- Tool results are not filtered. The agent can still see the names of other
+  databases, for example from `list_databases`. It cannot read their data.
+- Only the `database` argument and `$out` and `$merge` targets are checked.
+  Other parts of an aggregation pipeline are not inspected. `$lookup` and
+  `$unionWith` read only from the same database in current MongoDB
+  versions. If a future version allows cross-database reads, this check
+  will not catch them.
+- `aggregate_db` accepts database-level stages such as `$currentOp` and
+  `$queryStats`. Their output covers activity on every database, not only the
+  one named in the `database` argument.
+
 ## MCP credential lifecycle
 
 The MCP configuration is provisioned once in Atlas, scoped to one project:

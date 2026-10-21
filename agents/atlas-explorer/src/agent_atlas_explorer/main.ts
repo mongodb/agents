@@ -33,6 +33,7 @@ import {
   clusterAllowlistMiddleware,
   createInputRefusalMiddleware,
   createInputRedactor,
+  databaseAllowlistMiddleware,
   mutativeInterruptOn,
   prepareAtlasExplorerInput,
   recoverToolErrorsMiddleware,
@@ -111,6 +112,7 @@ export const buildAgent = app.entrypoint((): unknown => {
       systemPrompt: buildSystemPrompt(allowWriteOperations, {
         ...atlasExplorerConfig.systemPrompt,
         dataAccess: atlasExplorerConfig.dataAccess,
+        databaseNames: atlasExplorerConfig.databaseNames,
       }),
       skills: ["skills"],
       backend: withoutShellExecution(new AgentEngineToolSandboxBackend()),
@@ -125,6 +127,7 @@ export const buildAgent = app.entrypoint((): unknown => {
         stripToolEchoMiddleware,
         redactSecretsMiddleware,
         clusterAllowlistMiddleware(atlasExplorerConfig.dataAccess),
+        databaseAllowlistMiddleware(atlasExplorerConfig.databaseNames),
         mutativeToolReview,
         approveAggregateWritesMiddleware,
         recoverToolErrorsMiddleware,
