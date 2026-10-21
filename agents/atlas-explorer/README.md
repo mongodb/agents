@@ -239,7 +239,9 @@ dataAccess: {
 `clusterNames: []` allows the project but none of its clusters. The system
 prompt lists the allowed projects and clusters in a `## Scope` section, and
 `clusterAllowlistMiddleware` rejects tool calls that name any other project
-or cluster. The check runs in the agent and only reads each call's arguments.
+or cluster. The prompt also warns that project and cluster lists in tool
+results can include entries outside `dataAccess`, and that using one returns
+an error. The check runs in the agent and only reads each call's arguments.
 Atlas still limits the agent to the project and roles of its MCP
 configuration. `dataAccess` can narrow that access but never widen it.
 
