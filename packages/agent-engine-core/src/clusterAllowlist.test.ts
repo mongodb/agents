@@ -132,7 +132,7 @@ describe("guardClusterCall list results", () => {
     );
 
     const result = (await guardClusterCall(
-      resolved,
+      allowedDataAccess,
       listClusters,
       async () => original,
     )) as ToolMessage;
@@ -148,7 +148,7 @@ describe("guardClusterCall list results", () => {
   it("passes tool errors through", async () => {
     const error = toolMessage("Atlas API error", "error");
     await expect(
-      guardClusterCall(resolved, listClusters, async () => error),
+      guardClusterCall(allowedDataAccess, listClusters, async () => error),
     ).resolves.toBe(error);
   });
 
@@ -158,7 +158,7 @@ describe("guardClusterCall list results", () => {
     ["a non-message result", { update: { messages: [] } }],
   ])("withholds %s", async (_label, original) => {
     const result = await guardClusterCall(
-      resolved,
+      allowedDataAccess,
       listClusters,
       async () => original,
     );
@@ -176,7 +176,7 @@ describe("guardClusterCall list results", () => {
     });
     await expect(
       guardClusterCall(
-        resolved,
+        allowedDataAccess,
         call("mongodb__atlas_list_db_users", { projectId: PROJECT }),
         async () => users,
       ),

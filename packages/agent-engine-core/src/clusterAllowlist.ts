@@ -115,12 +115,12 @@ export async function guardClusterCall<
   if (reason) return rejectToolCall(toolCall, reason);
   const result = await handler(request);
   return LIST_TOOLS.has(toolCall.name)
-    ? filterListResult(resolved, toolCall, result)
+    ? filterListResult(allowedDataAccess, toolCall, result)
     : result;
 }
 
 function filterListResult<TResult>(
-  resolved: ResolvedDataAccess,
+  allowedDataAccess: ResolvedDataAccess,
   toolCall: ClusterToolCall,
   result: TResult,
 ): TResult | ToolMessage {
@@ -131,7 +131,7 @@ function filterListResult<TResult>(
     ToolMessage.isInstance(result) && typeof result.content === "string"
       ? filterListContent(
           toolCall.name,
-          resolved,
+          allowedDataAccess,
           stringArg(toolArgs(toolCall.args).projectId),
           result.content,
         )

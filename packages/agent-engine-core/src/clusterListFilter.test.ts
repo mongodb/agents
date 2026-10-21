@@ -24,7 +24,7 @@ const OPEN_PROJECT = "65c3d9e07f21ab4408d6e3f2";
 const OTHER_PROJECT = "66e7b4a1c5d38f2290a1b7c4";
 const TAG = "untrusted-user-data-00000000-0000-0000-0000-000000000000";
 
-const resolved = resolveDataAccess({
+const allowedDataAccess = resolveDataAccess({
   [PROJECT]: { clusterNames: ["example-test", "example-staging"] },
   [OPEN_PROJECT]: {},
 })!;
@@ -79,7 +79,7 @@ describe("filterListContent", () => {
   it("filters list_clusters in the serialized result object", () => {
     const content = filterListContent(
       "mongodb__atlas_list_clusters",
-      resolved,
+      allowedDataAccess,
       PROJECT,
       listClustersResult(),
     )!;
@@ -101,7 +101,7 @@ describe("filterListContent", () => {
   it("filters list_projects in plain text and keeps pretty JSON", () => {
     const content = filterListContent(
       "mongodb__atlas_list_projects",
-      resolved,
+      allowedDataAccess,
       undefined,
       LIST_PROJECTS_TEXT,
     )!;
@@ -115,17 +115,17 @@ describe("filterListContent", () => {
   it("returns the content unchanged when nothing is removed", () => {
     const allowed = listClustersResult(["example-test"]);
     expect(
-      filterListContent("mongodb__atlas_list_clusters", resolved, PROJECT, allowed),
+      filterListContent("mongodb__atlas_list_clusters", allowedDataAccess, PROJECT, allowed),
     ).toBe(allowed);
 
     const open = listClustersResult();
     expect(
-      filterListContent("mongodb__atlas_list_clusters", resolved, OPEN_PROJECT, open),
+      filterListContent("mongodb__atlas_list_clusters", allowedDataAccess, OPEN_PROJECT, open),
     ).toBe(open);
 
     const empty = "No clusters found in project.";
     expect(
-      filterListContent("mongodb__atlas_list_clusters", resolved, PROJECT, empty),
+      filterListContent("mongodb__atlas_list_clusters", allowedDataAccess, PROJECT, empty),
     ).toBe(empty);
   });
 
@@ -136,7 +136,7 @@ describe("filterListContent", () => {
     ["a cluster entry without a name", wrap(JSON.stringify({ clusters: [{ id: 1 }] }))],
   ])("returns undefined for %s", (_label, content) => {
     expect(
-      filterListContent("mongodb__atlas_list_clusters", resolved, PROJECT, content),
+      filterListContent("mongodb__atlas_list_clusters", allowedDataAccess, PROJECT, content),
     ).toBeUndefined();
   });
 
@@ -144,7 +144,7 @@ describe("filterListContent", () => {
     expect(
       filterListContent(
         "mongodb__atlas_list_clusters",
-        resolved,
+        allowedDataAccess,
         OTHER_PROJECT,
         listClustersResult(),
       ),
