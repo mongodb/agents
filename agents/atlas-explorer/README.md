@@ -237,7 +237,9 @@ dataAccess: {
 ```
 
 `clusterNames: []` allows the project but none of its clusters. The system
-prompt lists the allowed projects and clusters in a `## Scope` section.
+prompt lists the allowed projects and clusters in a `## Scope` section. For
+now this only changes the prompt. Tool calls aren't filtered, and the MCP
+configuration's project and roles stay the hard boundary.
 
 ## MCP credential lifecycle
 
