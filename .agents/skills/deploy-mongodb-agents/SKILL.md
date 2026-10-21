@@ -141,7 +141,7 @@ Atlas Explorer users can also add a data map: a list of databases, collections a
 Rules:
 
 - The text goes into the system prompt and into git. Never include credentials, connection strings, or personal data. Keep it short and factual.
-- `dataAccess` is in the system prompt, and the agent rejects tool calls that name any other project or cluster. That is a guardrail in the agent. The hard boundary is still the Atlas project and roles on the MCP configuration.
+- `dataAccess` is in the system prompt, and the agent rejects tool calls that name any other project or cluster. The check runs in the agent and only reads each call's arguments. Atlas still limits the agent to the project and roles of its MCP configuration. `dataAccess` can narrow that access but never widen it.
 - This is a code change, so the agent needs a rebuild (`pnpm build`) and a deploy to pick it up. It doesn't change what the agent is allowed to do.
 
 ## 6. Check before deploying
