@@ -148,6 +148,25 @@ describe("guardClusterCall", () => {
     });
   });
 
+  it("allows a project with no clusters next to one that has clusters", async () => {
+    const mixed = {
+      [PROJECT]: { clusterNames: [] },
+      [OPEN_PROJECT]: {},
+    } satisfies DataAccessConfig;
+
+    const connect = await run(
+      call("mongodb__remote_atlas_connect", { projectId: PROJECT, clusterName: "example-test" }),
+      mixed,
+    );
+    expect(connect.ran).toBe(false);
+    expect(connect.result).toMatchObject({
+      content: `No clusters in project ${PROJECT} are allowed by dataAccess.`,
+    });
+
+    expect((await run(call("mongodb__atlas_list_clusters", { projectId: PROJECT }), mixed)).ran).toBe(true);
+    expect((await run(call("mongodb__find", {}), mixed)).ran).toBe(true);
+  });
+
   it("rejects cluster and database tools when no project allows a cluster", async () => {
     const noClusters = { [PROJECT]: { clusterNames: [] } } satisfies DataAccessConfig;
 
