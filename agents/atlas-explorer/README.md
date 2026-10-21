@@ -244,9 +244,13 @@ results can include entries outside `dataAccess`, and that using one returns
 an error. With writes enabled, cluster creation, pause, upgrade, and Atlas
 Stream Processing cluster connections must also name an allowed cluster, and
 creating a project is rejected. The check runs in the agent and only reads
-each call's arguments.
-Atlas still limits the agent to the project and roles of its MCP
-configuration. `dataAccess` can narrow that access but never widen it.
+each call's arguments, so it only sees clusters that a call names. Atlas
+Stream Processing connections and processors that already exist are outside
+what it can verify. An `update-connection` that omits `clusterName`, or a
+processor whose pipeline refers to a connection by name, can still reach a
+cluster outside `dataAccess`. Atlas still limits the agent to the project and
+roles of its MCP configuration. `dataAccess` can narrow that access but never
+widen it.
 
 ## MCP credential lifecycle
 
