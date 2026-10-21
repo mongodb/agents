@@ -77,12 +77,27 @@ export function checkClusterToolCall(
     return `Project ${projectId} is not in the dataAccess allowlist.`;
   }
 
-  const clusterName = stringArg(args.clusterName);
-  if (clusterName) return checkCluster(projectId, project, clusterName);
-  if (CLUSTER_TOOLS.has(name)) {
+  const clusterNames = clusterNamesIn(args);
+  for (const clusterName of clusterNames) {
+    const reason = checkCluster(projectId, project, clusterName);
+    if (reason) return reason;
+  }
+  if (clusterNames.length === 0 && CLUSTER_TOOLS.has(name)) {
     return `${name} needs a clusterName from the dataAccess allowlist.`;
   }
   return undefined;
+}
+
+// Some tools nest the cluster, e.g. `connectionConfig.clusterName`, so every
+// `clusterName` key at any depth is checked.
+function clusterNamesIn(value: unknown): string[] {
+  if (Array.isArray(value)) return value.flatMap(clusterNamesIn);
+  if (!isRecord(value)) return [];
+  return Object.entries(value).flatMap(([key, child]) => {
+    const nested = clusterNamesIn(child);
+    const name = key === "clusterName" ? stringArg(child) : undefined;
+    return name ? [name, ...nested] : nested;
+  });
 }
 
 function checkCluster(

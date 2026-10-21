@@ -88,6 +88,46 @@ describe("guardClusterCall", () => {
     });
   });
 
+  it("checks every nested clusterName against the call's project", async () => {
+    const nested = (clusterName: string) =>
+      call("mongodb__atlas_streams_build", {
+        projectId: PROJECT,
+        resource: "connection",
+        connectionType: "Cluster",
+        connectionConfig: { clusterName },
+      });
+
+    expect((await run(nested("example-test"))).ran).toBe(true);
+    expect((await run(nested("example-prod"))).result).toMatchObject({
+      content: `Cluster example-prod in project ${PROJECT} is not in the dataAccess allowlist.`,
+    });
+
+    const mixed = await run(
+      call("mongodb__atlas_upgrade_cluster", {
+        projectId: PROJECT,
+        clusterName: "example-test",
+        options: [{ clusterName: "example-prod" }],
+      }),
+    );
+    expect(mixed.ran).toBe(false);
+  });
+
+  it("does not let a cluster allowed in one project through in another", async () => {
+    const perProject = resolveDataAccess({
+      [PROJECT]: { clusterNames: ["example-test"] },
+      [OTHER_PROJECT]: { clusterNames: ["example-prod"] },
+    });
+
+    const { ran, result } = await run(
+      call("mongodb__remote_atlas_connect", { projectId: PROJECT, clusterName: "example-prod" }),
+      perProject,
+    );
+    expect(ran).toBe(false);
+    expect(result).toMatchObject({
+      content: `Cluster example-prod in project ${PROJECT} is not in the dataAccess allowlist.`,
+    });
+  });
+
   it("rejects cluster and database tools when no project allows a cluster", async () => {
     const noClusters = resolveDataAccess({ [PROJECT]: { clusterNames: [] } });
 
