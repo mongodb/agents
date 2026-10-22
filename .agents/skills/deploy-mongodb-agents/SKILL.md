@@ -169,11 +169,18 @@ Then edit `config.ts` and show the user the diff before saving:
 
   The strings go into the system prompt. They are not checked. A project or cluster outside `dataAccess.projects`, or a database outside `dataAccess.databaseNames`, still fails when the agent uses it.
 - **Either agent** (`config.ts`): put other notes in `systemPrompt.customInstructions`, for example `The orders database holds customer orders.` Leave it empty to skip extra prompt text. Built-in safety rules still apply.
-- **Either agent** (`config.ts`): to limit the agent, set `dataAccess`. It
-  has two optional keys, and you can set either or both:
-  - `projects` limits the clusters. Each project ID must be a 24-character
-    hex ID.
+- **Either agent** (`config.ts`): to limit the agent, set `dataAccess`.
+  Leave it as `{}` for no restriction, so the agent can use every project,
+  cluster, and database that the MCP configuration can reach. Otherwise
+  set either or both of its keys:
+  - `projects` limits the clusters.
+    - Each project ID must be a 24-character hex ID.
+    - Omit `projects` to allow every cluster.
   - `databaseNames` limits the databases, on every allowed cluster.
+    - A string must equal the database name.
+    - A regular expression is tested as written, so anchor it
+      (`/^orders$/`) to match the whole name.
+    - Omit `databaseNames` to allow every database. `[]` allows none.
 
   ```ts
   dataAccess: {
@@ -187,14 +194,6 @@ Then edit `config.ts` and show the user the diff before saving:
     databaseNames: ["orders", /^tenant_\d+$/],
   } satisfies DataAccessConfig,
   ```
-
-  Leave `dataAccess` as `{}` for no restriction. The agent can then use
-  every project, cluster, and database that the MCP configuration can
-  reach. Omit `projects` to allow every cluster, and omit `databaseNames`
-  to allow every database. `databaseNames: []` allows none.
-
-  A string must equal the database name. A regular expression is tested
-  as written, so anchor it (`/^orders$/`) to match the whole name.
 
 Atlas Explorer users can also add a data map: a list of databases, collections and fields so the agent can skip exploring. It goes stale, so offer it only if the user asks or says they'd like it, and only if this coding agent already has the MongoDB MCP connected. Then follow [references/data-map.md](references/data-map.md).
 
