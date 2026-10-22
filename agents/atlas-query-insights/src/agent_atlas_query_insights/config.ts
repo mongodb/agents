@@ -57,10 +57,7 @@ import type {
  * {@link createInputRedactor} and {@link createInputRefusalMiddleware}.
  */
 
-import type {
-  DataAccessConfig,
-  DatabaseNamesConfig,
-} from "@repo/atlas-query-insights-agent";
+import type { AtlasQueryInsightsConfig } from "@repo/atlas-query-insights-agent";
 
 export const atlasQueryInsightsConfig = {
   llm: {
@@ -71,10 +68,10 @@ export const atlasQueryInsightsConfig = {
     name: "",
     customInstructions: "",
   },
-  dataAccess: {} satisfies DataAccessConfig,
-  databaseNames: undefined satisfies DatabaseNamesConfig | undefined,
+  dataAccess: {},
+  databaseNames: undefined,
   maxQueryShapes: 3,
   inputGuard: {
     mode: "enforce",
   },
-} as const;
+} as const satisfies AtlasQueryInsightsConfig;

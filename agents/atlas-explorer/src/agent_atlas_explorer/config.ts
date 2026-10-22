@@ -66,10 +66,7 @@ import type {
  * {@link createInputRedactor} and {@link createInputRefusalMiddleware}.
  */
 
-import type {
-  DataAccessConfig,
-  DatabaseNamesConfig,
-} from "@repo/atlas-explorer-agent";
+import type { AtlasExplorerConfig } from "@repo/atlas-explorer-agent";
 
 export const atlasExplorerConfig = {
   llm: {
@@ -80,12 +77,12 @@ export const atlasExplorerConfig = {
     name: "",
     customInstructions: "",
   },
-  dataAccess: {} satisfies DataAccessConfig,
-  databaseNames: undefined satisfies DatabaseNamesConfig | undefined,
+  dataAccess: {},
+  databaseNames: undefined,
   diagnostics: {
     logRuntimeLifecycle: true,
   },
   inputGuard: {
     mode: "enforce",
   },
-} as const;
+} as const satisfies AtlasExplorerConfig;
