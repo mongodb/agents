@@ -286,7 +286,7 @@ dataAccess: {
 - The system prompt lists the allowed projects, clusters, and databases in a
   `## Scope` section.
 - `clusterAllowlistMiddleware` rejects tool calls that name a project or
-  cluster outside `dataAccess`. With writes enabled, creating, pausing, or
+  cluster outside `dataAccess.projects`. With writes enabled, creating, pausing, or
   upgrading a cluster must name an allowed cluster, and creating a project is
   rejected.
 - `databaseAllowlistMiddleware` rejects tool calls whose `database` argument
@@ -313,7 +313,7 @@ roles.
   connection is a saved link from a stream workspace to a data source, such
   as a cluster. Creating one must name an allowed cluster. Updating or using
   an existing one names only the connection, so if it points at a cluster
-  outside `dataAccess`, the agent can still change it or start a processor
+  outside `dataAccess.projects`, the agent can still change it or start a processor
   that reads or writes through it.
 
 ## MCP credential lifecycle
