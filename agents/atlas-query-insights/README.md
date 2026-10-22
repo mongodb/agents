@@ -329,7 +329,8 @@ Things to know:
   hard boundary is the one Atlas project that the MCP configuration belongs to.
 - `systemPrompt.defaultData` names a project, cluster, database, and
   collection for the agent to use when the reader does not. Each value is
-  a string. Leave a field as `""` to leave it unset. The prompt passes
+  a string. Leave a field `""` or `undefined` to leave it unset. The prompt
+  passes
   `projectId` and `clusterName` under those names, and passes
   `databaseName` and `collectionName` as `database` and `collection`.
   When both a database and a collection are set, the Performance Advisor

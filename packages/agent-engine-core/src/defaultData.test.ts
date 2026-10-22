@@ -33,6 +33,28 @@ describe("describeDefaultData", () => {
     expect(describeDefaultData()).toBeUndefined();
   });
 
+  it("treats undefined the same as an empty string", () => {
+    expect(
+      describeDefaultData({
+        projectId: undefined,
+        clusterName: undefined,
+        databaseName: undefined,
+        collectionName: undefined,
+      }),
+    ).toBeUndefined();
+
+    const text = describeDefaultData({
+      projectId: undefined,
+      clusterName: "",
+      databaseName: "orders",
+      collectionName: undefined,
+    });
+    expect(text).toContain("- database: orders");
+    expect(text).not.toContain("- projectId:");
+    expect(text).not.toContain("- clusterName:");
+    expect(text).not.toContain("- collection:");
+  });
+
   it("returns undefined when every field is empty or whitespace", () => {
     expect(describeDefaultData(EMPTY)).toBeUndefined();
     expect(
@@ -69,15 +91,8 @@ describe("describeDefaultData", () => {
     expect(text).toContain("- database: orders archive");
     expect(text).not.toContain("- clusterName:");
     expect(text).not.toContain("- collection:");
-    expect(text).toContain(
-      "A database without a collection is not a namespaces filter.",
-    );
-    expect(text).toContain(
-      "When dataAccess is set, it still rejects a project or cluster outside its list.",
-    );
-    expect(text).toContain(
-      "When databaseNames is set, it still rejects a database outside its list.",
-    );
+    expect(text).toContain("dataAccess and databaseNames still apply.");
+    expect(text).not.toContain("namespaces");
   });
 
   it("renders all four fields and the namespaces value", () => {
@@ -93,8 +108,7 @@ describe("describeDefaultData", () => {
     expect(text).toContain("- database: orders");
     expect(text).toContain("- collection: sales");
     expect(text).toContain(
-      'When calling mongodb__atlas_get_performance_advisor, pass namespaces: ["orders.sales"].',
+      'Pass namespaces ["orders.sales"] to mongodb__atlas_get_performance_advisor.',
     );
-    expect(text).not.toContain("is not a namespaces filter");
   });
 });

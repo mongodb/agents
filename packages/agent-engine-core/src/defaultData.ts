@@ -16,25 +16,25 @@
 
 /**
  * Strings the system prompt may use when the user does not name a project,
- * cluster, database, or collection. An empty string leaves that field unset.
- * The strings are not checked.
+ * cluster, database, or collection. `""` or `undefined` leaves that field
+ * unset. The strings are not checked.
  */
 export interface DefaultDataConfig {
-  readonly projectId: string;
-  readonly clusterName: string;
-  readonly databaseName: string;
-  readonly collectionName: string;
+  readonly projectId?: string;
+  readonly clusterName?: string;
+  readonly databaseName?: string;
+  readonly collectionName?: string;
 }
 
-function filled(value: string): string | undefined {
-  const trimmed = value.trim();
+function filled(value: string | undefined): string | undefined {
+  const trimmed = value?.trim();
   return trimmed ? trimmed : undefined;
 }
 
 /**
  * Describes the default strings for a system prompt. Returns `undefined`
- * when every string is empty. Tool arguments are `projectId`, `clusterName`,
- * `database`, and `collection`.
+ * when every field is `""` or `undefined`. Tool arguments are `projectId`,
+ * `clusterName`, `database`, and `collection`.
  */
 export function describeDefaultData(
   defaultData?: DefaultDataConfig,
@@ -54,20 +54,13 @@ export function describeDefaultData(
   if (lines.length === 0) return undefined;
 
   const notes = [
-    "When the user does not name a value listed below, pass that string as the tool argument and continue.",
-    "Do not call mongodb__atlas_list_projects, mongodb__atlas_list_clusters, mongodb__list_databases, or mongodb__list_collections to discover a value that is already set, and do not ask which one to use.",
-    "For a project, cluster, database, or collection that is not listed below, list it, then ask only when more than one match remains.",
-    "If the user names a different project, cluster, database, or collection, use what they named.",
-    "These strings are not checked. When dataAccess is set, it still rejects a project or cluster outside its list. When databaseNames is set, it still rejects a database outside its list.",
+    "Use these when the user does not name them. If the user names something else, use that.",
+    "These strings are not checked. dataAccess and databaseNames still apply.",
   ];
 
   if (databaseName && collectionName) {
     notes.push(
-      `When calling mongodb__atlas_get_performance_advisor, pass namespaces: ["${databaseName}.${collectionName}"].`,
-    );
-  } else if (databaseName) {
-    notes.push(
-      "A database without a collection is not a namespaces filter. Keep slow query logs whose namespace starts with that database.",
+      `Pass namespaces ["${databaseName}.${collectionName}"] to mongodb__atlas_get_performance_advisor.`,
     );
   }
 

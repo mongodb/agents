@@ -25,9 +25,10 @@ import type {
  * Leave `systemPrompt.name` empty to keep "Atlas Query Insights".
  * Leave `systemPrompt.customInstructions` empty to skip extra prompt text.
  * `systemPrompt.defaultData` is a prompt hint. Each string may be anything.
- * Leave a field `""` when it is unset. The prompt passes `projectId` and
- * `clusterName` as those arguments, and `databaseName` and `collectionName`
- * as `database` and `collection`. These strings are not checked. A project
+ * Leave a field `""` or `undefined` when it is unset. The prompt passes
+ * `projectId` and `clusterName` as those arguments, and `databaseName`
+ * and `collectionName` as `database` and `collection`. These strings are
+ * not checked. A project
  * or cluster outside `dataAccess`, or a database outside `databaseNames`,
  * still fails when the agent uses it.
  * Leave `dataAccess` as `{}` for no restriction: every project and cluster

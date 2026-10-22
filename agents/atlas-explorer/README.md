@@ -226,8 +226,9 @@ field empty to skip extra prompt text. Built-in safety rules still apply.
 ## Default project, cluster, database, and collection
 
 `systemPrompt.defaultData` names where the agent should look when the user
-does not. Each value is a string. Leave a field as `""` to leave it unset.
-The strings are copied into the system prompt. They are not checked against
+does not. Each value is a string. Leave a field `""` or `undefined` to
+leave it unset. The strings are copied into the system prompt. They are
+not checked against
 Atlas.
 
 ```ts

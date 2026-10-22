@@ -217,7 +217,7 @@ describe("buildSystemPrompt", () => {
     expect(prompt).toContain("- projectId: not-a-hex");
     expect(prompt).toContain("- clusterName: c 1");
     expect(prompt).toContain(
-      'pass namespaces: ["orders.sales"]',
+      'Pass namespaces ["orders.sales"] to mongodb__atlas_get_performance_advisor.',
     );
   });
 

@@ -156,7 +156,7 @@ Ask the user to type the answers. Don't look them up and don't read their cluste
 
 Then edit `config.ts` and show the user the diff before saving:
 
-- **Either agent** (`config.ts`): put the strings in `systemPrompt.defaultData`. Leave a field `""` when they did not give one.
+- **Either agent** (`config.ts`): put the strings in `systemPrompt.defaultData`. Leave a field `""` or `undefined` when they did not give one.
 
   ```ts
   defaultData: {
