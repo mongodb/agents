@@ -252,10 +252,6 @@ databaseNames: ["orders", /^tenant_\d+$/] satisfies DatabaseNamesConfig,
   connection ID.
 - These settings narrow what the MCP configuration can reach. They never
   widen it.
-- To stop control plane tools such as `atlas-upgrade-cluster` from being
-  registered at all, also list only the tools the agent needs under
-  `mcp.servers.mongodb.allowed_tools` in `agent.yaml`. See
-  [Use Remote MCP Servers](https://www.mongodb.com/docs/agentengine/add-features/remote-mcp/).
 
 ### What the agent enforces
 
