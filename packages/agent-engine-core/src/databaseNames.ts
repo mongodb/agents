@@ -21,17 +21,6 @@
  * A string must equal the database name. A `RegExp` must match the whole
  * name, so `/orders/` does not allow `orders_archive`. Only the `i` and `u`
  * flags are accepted.
- *
- * This is a guardrail in the agent. The hard boundary is the MCP access
- * token, which can't be limited to specific databases today, so a call this
- * check misses is not stopped.
- *
- * Tool calls are checked by `databaseAllowlistMiddleware`, which reads each
- * call's `database` argument and the target database of `$out` and `$merge`.
- * It does not inspect other parts of an aggregation pipeline. Database-level
- * stages such as `$currentOp` and `$queryStats` in `aggregate_db` report
- * activity on every database. Tool results are not filtered, so the agent can
- * still see names of databases it may not use.
  */
 export type DatabaseNamesConfig = readonly (string | RegExp)[];
 
