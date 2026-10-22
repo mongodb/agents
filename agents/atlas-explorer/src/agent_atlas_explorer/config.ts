@@ -45,8 +45,8 @@ import type {
  * this check will not catch them. `aggregate_db` stages such as `$currentOp`
  * and `$queryStats` report activity on every database. Tool results are not
  * filtered, so the agent can still see names of databases it may not use.
- * Treat this as a guardrail on the agent, not a security boundary, and use
- * Atlas roles and database users for hard limits.
+ * This is a guardrail in the agent. The hard boundary is the MCP access
+ * token, which can't be limited to specific databases today.
  *
  * `diagnostics.logRuntimeLifecycle` logs `[runtime-diag]` lines showing which
  * process serves each execution and when each process caches a new Atlas MCP

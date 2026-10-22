@@ -272,9 +272,11 @@ databaseNames: ["orders", /^tenant_\d+$/] satisfies DatabaseNamesConfig,
 
 ### What it cannot enforce
 
-These checks run in the agent and only read tool call arguments. Treat them
-as guardrails, not a security boundary. For hard limits, rely on the Atlas
-project and roles of the MCP configuration, and on database users.
+These checks run in the agent and only read tool call arguments, so they are
+guardrails. The hard boundary is the project and roles of the MCP
+configuration. Atlas can't limit that token to specific clusters or databases
+yet, so a call these checks miss is limited only by the token's project and
+roles.
 
 - **Tool results are not filtered.** List tools can still show projects,
   clusters, and databases the agent may not use. The prompt warns the agent

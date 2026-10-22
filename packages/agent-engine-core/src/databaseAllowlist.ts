@@ -50,8 +50,9 @@ class UncheckableArgumentsError extends Error {}
  * `$merge`. It does not inspect other parts of an aggregation pipeline.
  * `$lookup` and `$unionWith` read only from the same database in current
  * MongoDB versions, but if a future version allows cross-database reads,
- * this check will not catch them. It is a guardrail on the agent, not a
- * security boundary.
+ * this check will not catch them. It is a guardrail in the agent. The hard
+ * boundary is the MCP access token, which can't be limited to specific
+ * databases today.
  */
 export function findDatabaseViolation({
   databaseNames,

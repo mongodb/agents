@@ -38,9 +38,9 @@ import type {
  * `$lookup` and `$unionWith` read only from the same database in current
  * MongoDB versions, but if a future version allows cross-database reads,
  * this check will not catch them. Tool results are not filtered, so the
- * agent can still see names of databases it may not use. Treat this as a
- * guardrail on the agent, not a security boundary, and use Atlas roles and
- * database users for hard limits.
+ * agent can still see names of databases it may not use. This is a
+ * guardrail in the agent. The hard boundary is the MCP access token, which
+ * can't be limited to specific databases today.
  *
  * `maxQueryShapes` is how many shapes the report covers.
  *

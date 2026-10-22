@@ -333,8 +333,9 @@ Things to know:
   must match the whole name. Leave it as `undefined` to allow every
   database. `[]` allows none. The system prompt names the allowed databases,
   and `databaseAllowlistMiddleware` rejects tool calls whose `database`
-  argument does not match. This is a guardrail in the agent, not a security
-  boundary:
+  argument does not match. This is a guardrail in the agent. The hard
+  boundary is the MCP configuration's project and roles, and Atlas can't
+  limit that token to specific databases yet. Known gaps:
   - Tool results are not filtered. Slow query logs can still name other
     databases in their `db.collection` namespaces. The agent cannot read
     their data.
