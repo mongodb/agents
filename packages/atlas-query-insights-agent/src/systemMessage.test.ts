@@ -170,9 +170,9 @@ describe("buildSystemPrompt", () => {
     expect(custom).toContain("Prefer the orders collection.");
   });
 
-  it("adds the allowed databases after the cluster scope only when databaseNames is set", () => {
-    expect(buildSystemPrompt({ databaseNames: undefined })).toBe(
-      buildSystemPrompt(),
+  it("adds the allowed databases after the cluster scope", () => {
+    expect(buildSystemPrompt()).toContain(
+      `${NO_CLUSTER_CONFIGURED}\n\nYou can use all databases.`,
     );
 
     const prompt = buildSystemPrompt({ databaseNames: ["orders"] });

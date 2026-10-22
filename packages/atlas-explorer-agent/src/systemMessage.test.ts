@@ -202,6 +202,13 @@ describe("system prompt modes", () => {
     expect(prompt).toContain("/^tenant_\\d+$/");
     expect(prompt).toContain("Database lists in tool results can include");
 
+    const clustersOnly = buildSystemPrompt(false, {
+      dataAccess: {
+        "64a1f3c2e8b94d0012c7a5e1": { clusterNames: ["example-test"] },
+      },
+    });
+    expect(clustersOnly).toContain("You can use all databases.");
+
     const databasesOnly = buildSystemPrompt(false, { databaseNames: ["orders"] });
     expect(databasesOnly).toContain("## Scope\n\nAccess is limited to these databases.");
     expect(databasesOnly).not.toContain("Atlas projects and clusters");

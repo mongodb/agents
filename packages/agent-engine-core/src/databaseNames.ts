@@ -114,14 +114,11 @@ export function describeAllowedDatabases(
   return databaseNames.map(describeEntry).join(", ");
 }
 
-/**
- * Describes the allowed databases for a system prompt. Returns `undefined`
- * when `databaseNames` is omitted and every database is allowed.
- */
+/** Describes the allowed databases for a system prompt. */
 export function describeDatabaseNames(
   databaseNames?: DatabaseNamesConfig,
-): string | undefined {
-  if (databaseNames === undefined) return undefined;
+): string {
+  if (databaseNames === undefined) return "You can use all databases.";
   const note =
     "Database lists in tool results can include databases not listed above. Using one returns an error.";
   if (databaseNames.length === 0) {

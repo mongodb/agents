@@ -258,9 +258,7 @@ export function buildSystemPrompt(options: SystemPromptOptions = {}): string {
   const scope = [
     describeDataAccess(options.dataAccess) ?? NO_CLUSTER_CONFIGURED,
     describeDatabaseNames(options.databaseNames),
-  ]
-    .filter(Boolean)
-    .join("\n\n");
+  ].join("\n\n");
   const skills = QUERY_SKILLS.map((skill) => `- \`${skill}\``).join("\n");
   const custom = options.customInstructions?.trim();
 

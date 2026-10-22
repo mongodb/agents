@@ -106,8 +106,8 @@ describe("createDatabaseMatcher", () => {
 });
 
 describe("describeDatabaseNames", () => {
-  it("returns undefined when omitted", () => {
-    expect(describeDatabaseNames()).toBeUndefined();
+  it("says every database is allowed when omitted", () => {
+    expect(describeDatabaseNames()).toBe("You can use all databases.");
   });
 
   it("says no databases are allowed for an empty list", () => {

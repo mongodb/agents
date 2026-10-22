@@ -138,12 +138,14 @@ export function buildSystemPrompt(
 ): string {
   const name = resolveAgentName(options.name);
   const base = writeEnabled ? writeEnabledPrompt(name) : readOnlyPrompt(name);
-  const scope = [
-    describeDataAccess(options.dataAccess),
-    describeDatabaseNames(options.databaseNames),
-  ]
-    .filter(Boolean)
-    .join("\n\n");
+  const clusterScope = describeDataAccess(options.dataAccess);
+  // Leave out the Scope section when nothing is restricted.
+  const scope =
+    clusterScope || options.databaseNames
+      ? [clusterScope, describeDatabaseNames(options.databaseNames)]
+          .filter(Boolean)
+          .join("\n\n")
+      : undefined;
   const scoped = scope ? `${base}\n## Scope\n\n${scope}\n` : base;
   return appendCustomInstructions(scoped, options.customInstructions);
 }
