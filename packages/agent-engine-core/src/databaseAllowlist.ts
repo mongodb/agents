@@ -76,7 +76,7 @@ export function findDatabaseViolation({
 
   let writeTargets: string[];
   try {
-    writeTargets = aggregationWriteTargets({ value: args });
+    writeTargets = findAggregationWriteTargets({ value: args });
   } catch (error) {
     if (error instanceof UncheckableArgumentsError) return error.message;
     throw error;
@@ -112,7 +112,7 @@ function findNameViolation({
 // and `$merge: { into: { db } }` are the stages documented to write to another
 // database. Only those keys are read, so a filter on a field named `db` is
 // not mistaken for a target.
-function aggregationWriteTargets({
+function findAggregationWriteTargets({
   value,
   depth = 0,
 }: {
@@ -136,18 +136,26 @@ function aggregationWriteTargets({
   }
   if (Array.isArray(parsed)) {
     return parsed.flatMap((item) =>
-      aggregationWriteTargets({ value: item, depth: depth + 1 }),
+      findAggregationWriteTargets({ value: item, depth: depth + 1 }),
     );
   }
   return Object.entries(parsed).flatMap(([key, child]) => {
-    const nested = aggregationWriteTargets({ value: child, depth: depth + 1 });
+    const nested = findAggregationWriteTargets({
+      value: child,
+      depth: depth + 1,
+    });
     const own =
-      key === "$out" || key === "$merge" ? writeStageTarget(key, child) : [];
+      key === "$out" || key === "$merge"
+        ? findWriteStageTarget(key, child)
+        : [];
     return [...own, ...nested];
   });
 }
 
-function writeStageTarget(stage: "$out" | "$merge", value: unknown): string[] {
+function findWriteStageTarget(
+  stage: "$out" | "$merge",
+  value: unknown,
+): string[] {
   const config = parseJsonString(value);
   if (!isRecord(config)) return [];
   const target = stage === "$out" ? config : parseJsonString(config.into);
