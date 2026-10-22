@@ -43,12 +43,8 @@ class UncheckableArgumentsError extends Error {}
 
 /**
  * Returns why a MongoDB MCP call falls outside `databaseNames`, or
- * `undefined` when it may run. Arguments are never rewritten.
- *
- * Checks the `database` argument and the target database of `$out` and
- * `$merge`. It does not inspect other parts of an aggregation pipeline. It
- * is a guardrail in the agent. The hard boundary is the MCP access token,
- * which can't be limited to specific databases today.
+ * `undefined` when it may run. Checks the `database` argument and the
+ * database that `$out` or `$merge` writes to.
  */
 export function findDatabaseViolation({
   databaseNames,
@@ -71,8 +67,6 @@ export function findDatabaseViolation({
   if (!database) {
     return `${name} needs a database from the databaseNames allowlist.`;
   }
-  const violation = findNameViolation({ databaseNames, matches, database });
-  if (violation) return violation;
 
   let writeStageDatabases: string[];
   try {
@@ -81,18 +75,19 @@ export function findDatabaseViolation({
     if (error instanceof UncheckableArgumentsError) return error.message;
     throw error;
   }
-  for (const writeStageDatabase of writeStageDatabases) {
-    const writeStageViolation = findNameViolation({
+
+  for (const usedDatabase of [database, ...writeStageDatabases]) {
+    const violation = findDatabaseNameViolation({
       databaseNames,
       matches,
-      database: writeStageDatabase,
+      database: usedDatabase,
     });
-    if (writeStageViolation) return writeStageViolation;
+    if (violation) return violation;
   }
   return undefined;
 }
 
-function findNameViolation({
+function findDatabaseNameViolation({
   databaseNames,
   matches,
   database,
@@ -121,7 +116,8 @@ function findWriteStageDatabases({
 }): string[] {
   const parsed = parseJsonString(value);
   if (typeof parsed === "string") {
-    if (looksLikeBrokenJson(parsed) && mentionsWriteStage(parsed)) {
+    // Still a string after parsing, so it is either plain text or broken JSON.
+    if (looksLikeJson(parsed) && mentionsWriteStage(parsed)) {
       throw new UncheckableArgumentsError(
         "A pipeline with $out or $merge could not be parsed, so databaseNames cannot check its target database.",
       );
@@ -140,15 +136,15 @@ function findWriteStageDatabases({
     );
   }
   return Object.entries(parsed).flatMap(([key, child]) => {
-    const nested = findWriteStageDatabases({
+    const nestedDatabases = findWriteStageDatabases({
       value: child,
       depth: depth + 1,
     });
-    const own =
-      key === "$out" || key === "$merge"
-        ? readWriteStageDatabase(key, child)
-        : [];
-    return [...own, ...nested];
+    if (key !== "$out" && key !== "$merge") return nestedDatabases;
+    const stageDatabase = readWriteStageDatabase(key, child);
+    return stageDatabase
+      ? [stageDatabase, ...nestedDatabases]
+      : nestedDatabases;
   });
 }
 
@@ -157,9 +153,9 @@ function findWriteStageDatabases({
 function readWriteStageDatabase(
   stage: "$out" | "$merge",
   value: unknown,
-): string[] {
+): string | undefined {
   const options = parseJsonString(value);
-  if (!isRecord(options)) return [];
+  if (!isRecord(options)) return undefined;
   if (stage === "$merge") {
     // { $merge: { into: { db: "archive", coll: "c" } } }
     return readDbField(parseJsonString(options.into));
@@ -168,14 +164,12 @@ function readWriteStageDatabase(
   return readDbField(options);
 }
 
-function readDbField(value: unknown): string[] {
-  if (!isRecord(value)) return [];
-  const db = stringArg(value.db);
-  return db ? [db] : [];
+function readDbField(value: unknown): string | undefined {
+  if (!isRecord(value)) return undefined;
+  return stringArg(value.db);
 }
 
-// A string that starts like JSON but did not parse in `parseJsonString`.
-function looksLikeBrokenJson(value: string): boolean {
+function looksLikeJson(value: string): boolean {
   const trimmed = value.trim();
   return trimmed.startsWith("[") || trimmed.startsWith("{");
 }
@@ -185,11 +179,9 @@ function mentionsWriteStage(value: string): boolean {
 }
 
 function parseJsonString(value: unknown): unknown {
-  if (typeof value !== "string") return value;
-  const trimmed = value.trim();
-  if (!trimmed.startsWith("[") && !trimmed.startsWith("{")) return value;
+  if (typeof value !== "string" || !looksLikeJson(value)) return value;
   try {
-    return parseJsonString(JSON.parse(trimmed));
+    return parseJsonString(JSON.parse(value));
   } catch {
     return value;
   }
