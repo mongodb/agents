@@ -184,14 +184,12 @@ describe("buildSystemPrompt", () => {
     );
   });
 
-  it("points cluster choice and namespaces at Default data", () => {
+  it("points cluster choice at Default data", () => {
     const prompt = buildSystemPrompt();
     expect(prompt).toContain(
       "If Default data sets both projectId and clusterName",
     );
-    expect(prompt).toContain(
-      "If Default data sets both a database and a collection, pass `namespaces`",
-    );
+    expect(prompt).not.toContain("pass `namespaces`");
     expect(prompt).not.toContain("## Default data");
   });
 
@@ -216,9 +214,6 @@ describe("buildSystemPrompt", () => {
     );
     expect(prompt).toContain("- projectId: not-a-hex");
     expect(prompt).toContain("- clusterName: c 1");
-    expect(prompt).toContain(
-      'Pass namespaces ["orders.sales"] to mongodb__atlas_get_performance_advisor.',
-    );
   });
 
   it("rejects a non-positive shape limit", () => {

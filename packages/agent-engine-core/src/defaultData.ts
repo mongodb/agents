@@ -53,16 +53,10 @@ export function describeDefaultData(
   if (collectionName) lines.push(`- collection: ${collectionName}`);
   if (lines.length === 0) return undefined;
 
-  const notes = [
+  return [
     "Use these when the user does not name them. If the user names something else, use that.",
-    "These strings are not checked. dataAccess and databaseNames still apply.",
-  ];
-
-  if (databaseName && collectionName) {
-    notes.push(
-      `Pass namespaces ["${databaseName}.${collectionName}"] to mongodb__atlas_get_performance_advisor.`,
-    );
-  }
-
-  return [...notes, "", ...lines].join("\n");
+    "These strings are not checked. Access limits still apply.",
+    "",
+    ...lines,
+  ].join("\n");
 }

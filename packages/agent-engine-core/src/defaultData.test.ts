@@ -77,7 +77,6 @@ describe("describeDefaultData", () => {
     expect(text).not.toContain("- projectId:");
     expect(text).not.toContain("- database:");
     expect(text).not.toContain("- collection:");
-    expect(text).not.toContain("namespaces:");
   });
 
   it("copies a non-hex project id and a database name with spaces", () => {
@@ -91,11 +90,10 @@ describe("describeDefaultData", () => {
     expect(text).toContain("- database: orders archive");
     expect(text).not.toContain("- clusterName:");
     expect(text).not.toContain("- collection:");
-    expect(text).toContain("dataAccess and databaseNames still apply.");
-    expect(text).not.toContain("namespaces");
+    expect(text).toContain("Access limits still apply.");
   });
 
-  it("renders all four fields and the namespaces value", () => {
+  it("renders all four fields", () => {
     const text = describeDefaultData({
       projectId: "64a1",
       clusterName: "c 1",
@@ -107,8 +105,5 @@ describe("describeDefaultData", () => {
     expect(text).toContain("- clusterName: c 1");
     expect(text).toContain("- database: orders");
     expect(text).toContain("- collection: sales");
-    expect(text).toContain(
-      'Pass namespaces ["orders.sales"] to mongodb__atlas_get_performance_advisor.',
-    );
   });
 });
