@@ -242,9 +242,9 @@ databaseNames: ["orders", /^tenant_\d+$/] satisfies DatabaseNamesConfig,
 | --- | --- | --- | --- |
 | Projects | `dataAccess: {}` | Not available | One key per 24-hex project ID |
 | Clusters in a project | `{}` | `{ clusterNames: [] }` | `{ clusterNames: ["a"] }` |
-| Databases | `databaseNames: undefined` | `databaseNames: []` | Names and regular expressions |
+| Databases | `databaseNames: undefined` | `databaseNames: []` | Strings and regular expressions |
 
-- A database name string must match exactly. A regular expression is tested
+- A string must equal the database name. A regular expression is tested
   against the name as written, so `/orders/` also allows `orders_archive`.
   Anchor it (`/^orders$/`) to match the whole name. Only the `i` and `u`
   flags are accepted.
