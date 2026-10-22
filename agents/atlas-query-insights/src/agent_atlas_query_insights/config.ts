@@ -29,16 +29,22 @@ import type {
  * id to `{}` (all its clusters) or `{ clusterNames: [...] }`.
  *
  * `databaseNames` limits the databases the agent may use, across every
- * allowed cluster. Leave it `undefined` to allow every database, or list
- * names (`"orders"`) and regular expressions (`/^tenant_\d+$/`). A name must
- * match exactly and a regular expression must match the whole name. `[]`
- * allows no databases. Only the `i` and `u` regular expression flags work.
- * Each tool call's `database` argument and the target database of `$out` and
- * `$merge` are checked. Other parts of an aggregation pipeline are not.
- * Tool results are not filtered, so the agent can still see names of
- * databases it may not use. This is a guardrail in the agent. The hard
- * boundary is the MCP access token, which can't be limited to specific
- * databases today.
+ * allowed cluster:
+ *
+ * - Leave it `undefined` to allow every database.
+ * - `[]` allows no databases.
+ * - Otherwise list names (`"orders"`) and regular expressions
+ *   (`/^tenant_\d+$/`). A name must match exactly. A regular expression must
+ *   match the whole name and can only use the `i` and `u` flags.
+ *
+ * It is a guardrail in the agent. The hard boundary is the MCP access token,
+ * which can't be limited to specific databases today. What it covers:
+ *
+ * - Checked: each tool call's `database` argument, and the target database of
+ *   `$out` and `$merge`.
+ * - Not checked: other parts of an aggregation pipeline.
+ * - Not filtered: tool results, so the agent can still see names of
+ *   databases it may not use.
  *
  * `maxQueryShapes` is how many shapes the report covers.
  *
