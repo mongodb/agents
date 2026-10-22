@@ -87,7 +87,7 @@ describe("guardDatabaseCall", () => {
     );
     expect(ran).toBe(false);
     expect(result).toMatchObject({
-      content: "No databases are allowed by databaseNames, so database orders cannot be used.",
+      content: "No databases are allowed by databaseNames, so orders cannot be used.",
     });
   });
 
@@ -118,6 +118,25 @@ describe("guardDatabaseCall", () => {
       expect(ran).toBe(false);
       expect(result).toMatchObject({
         content: expect.stringContaining("Database admin is not in the databaseNames allowlist."),
+      });
+    });
+
+    it("lists every database outside the list in one error", async () => {
+      const { result, ran } = await run(
+        call("mongodb__aggregate", {
+          database: "secret",
+          collection: "c",
+          pipeline: [
+            { $out: { db: "admin", coll: "x" } },
+            { $merge: { into: { db: "admin", coll: "y" } } },
+          ],
+        }),
+      );
+      expect(ran).toBe(false);
+      expect(result).toMatchObject({
+        content: expect.stringContaining(
+          "Databases secret, admin are not in the databaseNames allowlist.",
+        ),
       });
     });
 

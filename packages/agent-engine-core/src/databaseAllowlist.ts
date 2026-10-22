@@ -76,31 +76,27 @@ export function findDatabaseViolation({
     throw error;
   }
 
-  for (const usedDatabase of [database, ...writeStageDatabases]) {
-    const violation = findDatabaseNameViolation({
-      databaseNames,
-      matches,
-      database: usedDatabase,
-    });
-    if (violation) return violation;
-  }
-  return undefined;
+  const disallowed = [...new Set([database, ...writeStageDatabases])].filter(
+    (usedDatabase) => !matches(usedDatabase),
+  );
+  if (disallowed.length === 0) return undefined;
+  return describeDisallowedDatabases({ databaseNames, disallowed });
 }
 
-function findDatabaseNameViolation({
+function describeDisallowedDatabases({
   databaseNames,
-  matches,
-  database,
+  disallowed,
 }: {
   databaseNames: DatabaseNamesConfig;
-  matches: DatabaseMatcher;
-  database: string;
-}): string | undefined {
-  if (matches(database)) return undefined;
+  disallowed: string[];
+}): string {
+  const names = disallowed.join(", ");
   if (databaseNames.length === 0) {
-    return `No databases are allowed by databaseNames, so database ${database} cannot be used.`;
+    return `No databases are allowed by databaseNames, so ${names} cannot be used.`;
   }
-  return `Database ${database} is not in the databaseNames allowlist. Allowed: ${describeAllowedDatabases(databaseNames)}.`;
+  const subject =
+    disallowed.length === 1 ? `Database ${names} is` : `Databases ${names} are`;
+  return `${subject} not in the databaseNames allowlist. Allowed: ${describeAllowedDatabases(databaseNames)}.`;
 }
 
 // Finds the databases that aggregation pipeline stages write to. `$out: { db }`
