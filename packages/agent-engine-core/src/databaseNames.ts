@@ -103,24 +103,25 @@ export function describeAllowedDatabases(
   return databaseNames.map(describeEntry).join(", ");
 }
 
+export const DATABASE_LIST_NOTE =
+  "Database lists in tool results can include databases not listed above. Using one returns an error.";
+
 /** Describes the allowed databases for a system prompt. */
 export function describeDatabaseNames(
   databaseNames?: DatabaseNamesConfig,
 ): string {
   if (databaseNames === undefined) return "You can use all databases.";
-  const note =
-    "Database lists in tool results can include databases not listed above. Using one returns an error.";
   if (databaseNames.length === 0) {
     return [
       "No databases are allowed. Do not run database tools.",
       "",
-      note,
+      DATABASE_LIST_NOTE,
     ].join("\n");
   }
   return [
     "Access is limited to these databases. Do not use any other database:",
     ...databaseNames.map((entry) => `- ${describeEntry(entry)}`),
     "",
-    note,
+    DATABASE_LIST_NOTE,
   ].join("\n");
 }

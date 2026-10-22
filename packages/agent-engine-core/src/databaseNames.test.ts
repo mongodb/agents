@@ -17,20 +17,36 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  DATABASE_LIST_NOTE,
   createDatabaseMatcher,
   describeDatabaseNames,
   validateDatabaseNames,
 } from "./databaseNames.js";
 
-const LIST_NOTE =
-  "Database lists in tool results can include databases not listed above. Using one returns an error.";
-
 describe("validateDatabaseNames", () => {
-  it("accepts omitted, empty, names, and regular expressions", () => {
+  it("accepts an omitted list", () => {
     expect(() => validateDatabaseNames()).not.toThrow();
+  });
+
+  it("accepts an empty list", () => {
     expect(() => validateDatabaseNames([])).not.toThrow();
+  });
+
+  it("accepts a database name", () => {
+    expect(() => validateDatabaseNames(["orders"])).not.toThrow();
+  });
+
+  it("accepts a regular expression", () => {
+    expect(() => validateDatabaseNames([/^tenant_\d+$/])).not.toThrow();
+  });
+
+  it("accepts the i and u flags", () => {
+    expect(() => validateDatabaseNames([/^Analytics$/iu])).not.toThrow();
+  });
+
+  it("accepts names and regular expressions together", () => {
     expect(() =>
-      validateDatabaseNames(["orders", /^tenant_\d+$/, /^Analytics$/iu]),
+      validateDatabaseNames(["orders", /^tenant_\d+$/]),
     ).not.toThrow();
   });
 
@@ -58,50 +74,94 @@ describe("createDatabaseMatcher", () => {
   });
 
   it("matches nothing for an empty list", () => {
-    const matches = createDatabaseMatcher([]);
-    expect(matches?.("orders")).toBe(false);
-  });
-
-  it("matches strings exactly", () => {
-    const matches = createDatabaseMatcher(["orders"]);
-    expect(matches?.("orders")).toBe(true);
-    expect(matches?.("orders_archive")).toBe(false);
-    expect(matches?.("my_orders")).toBe(false);
-    expect(matches?.("Orders")).toBe(false);
-  });
-
-  it("matches the whole name for a regular expression", () => {
-    const matches = createDatabaseMatcher([/orders/, /tenant_\d+/]);
-    expect(matches?.("orders")).toBe(true);
-    expect(matches?.("orders_archive")).toBe(false);
-    expect(matches?.("my_orders")).toBe(false);
-    expect(matches?.("tenant_12")).toBe(true);
-    expect(matches?.("tenant_12_secret")).toBe(false);
-  });
-
-  it("keeps alternation inside the whole-name match", () => {
-    const matches = createDatabaseMatcher([/a|b/]);
-    expect(matches?.("a")).toBe(true);
-    expect(matches?.("b")).toBe(true);
-    expect(matches?.("ab")).toBe(false);
-    expect(matches?.("xb")).toBe(false);
-  });
-
-  it("honors the i flag and gives the same answer on every call", () => {
-    const matches = createDatabaseMatcher([/orders/i]);
-    expect(matches?.("ORDERS")).toBe(true);
-    expect(matches?.("ORDERS")).toBe(true);
-  });
-
-  it("allows a database matched by any entry", () => {
-    const matches = createDatabaseMatcher(["orders", /^tenant_\d+$/]);
-    expect(matches?.("orders")).toBe(true);
-    expect(matches?.("tenant_7")).toBe(true);
-    expect(matches?.("admin")).toBe(false);
+    expect(createDatabaseMatcher([])?.("orders")).toBe(false);
   });
 
   it("throws on an invalid entry", () => {
     expect(() => createDatabaseMatcher(["a.b"])).toThrow(/databaseNames/);
+  });
+
+  describe("with a string entry", () => {
+    const matches = createDatabaseMatcher(["orders"]);
+
+    it("matches the exact name", () => {
+      expect(matches?.("orders")).toBe(true);
+    });
+
+    it("does not match a name that extends it", () => {
+      expect(matches?.("orders_archive")).toBe(false);
+    });
+
+    it("does not match a name that it extends", () => {
+      expect(matches?.("my_orders")).toBe(false);
+    });
+
+    it("is case-sensitive", () => {
+      expect(matches?.("Orders")).toBe(false);
+    });
+  });
+
+  describe("with a regular expression entry", () => {
+    const matches = createDatabaseMatcher([/orders/, /tenant_\d+/]);
+
+    it.each(["orders", "tenant_12"])(
+      "matches %s, which the expression covers entirely",
+      (name) => {
+        expect(matches?.(name)).toBe(true);
+      },
+    );
+
+    it.each(["orders_archive", "tenant_12_secret"])(
+      "does not match %s, which has extra text after the match",
+      (name) => {
+        expect(matches?.(name)).toBe(false);
+      },
+    );
+
+    it("does not match a name with extra text before the match", () => {
+      expect(matches?.("my_orders")).toBe(false);
+    });
+  });
+
+  describe("with alternation in a regular expression", () => {
+    const matches = createDatabaseMatcher([/a|b/]);
+
+    it.each(["a", "b"])("matches %s as a whole name", (name) => {
+      expect(matches?.(name)).toBe(true);
+    });
+
+    it.each(["ab", "xb"])(
+      "does not match %s, which only contains an alternative",
+      (name) => {
+        expect(matches?.(name)).toBe(false);
+      },
+    );
+  });
+
+  it("honors the i flag", () => {
+    expect(createDatabaseMatcher([/orders/i])?.("ORDERS")).toBe(true);
+  });
+
+  it("gives the same answer on a second call", () => {
+    const matches = createDatabaseMatcher([/orders/i]);
+    matches?.("ORDERS");
+    expect(matches?.("ORDERS")).toBe(true);
+  });
+
+  describe("with a string and a regular expression", () => {
+    const matches = createDatabaseMatcher(["orders", /^tenant_\d+$/]);
+
+    it("matches the string", () => {
+      expect(matches?.("orders")).toBe(true);
+    });
+
+    it("matches the regular expression", () => {
+      expect(matches?.("tenant_7")).toBe(true);
+    });
+
+    it("does not match a name neither covers", () => {
+      expect(matches?.("admin")).toBe(false);
+    });
   });
 });
 
@@ -112,9 +172,11 @@ describe("describeDatabaseNames", () => {
 
   it("says no databases are allowed for an empty list", () => {
     expect(describeDatabaseNames([])).toBe(
-      ["No databases are allowed. Do not run database tools.", "", LIST_NOTE].join(
-        "\n",
-      ),
+      [
+        "No databases are allowed. Do not run database tools.",
+        "",
+        DATABASE_LIST_NOTE,
+      ].join("\n"),
     );
   });
 
@@ -125,7 +187,7 @@ describe("describeDatabaseNames", () => {
         "- orders",
         "- names matching the whole regular expression /^tenant_\\d+$/",
         "",
-        LIST_NOTE,
+        DATABASE_LIST_NOTE,
       ].join("\n"),
     );
   });
