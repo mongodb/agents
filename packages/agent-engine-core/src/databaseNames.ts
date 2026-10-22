@@ -53,7 +53,8 @@ const ALLOWED_REGEXP_FLAGS = /^[iu]*$/;
 export function validateDatabaseNames(
   databaseNames?: DatabaseNamesConfig,
 ): void {
-  for (const entry of databaseNames ?? []) {
+  if (databaseNames === undefined) return;
+  for (const entry of databaseNames) {
     if (entry instanceof RegExp) {
       if (!ALLOWED_REGEXP_FLAGS.test(entry.flags)) {
         throw new Error(
@@ -88,7 +89,7 @@ export function createDatabaseMatcher(
 
   const exact = new Set<string>();
   const patterns: RegExp[] = [];
-  for (const entry of databaseNames ?? []) {
+  for (const entry of databaseNames) {
     if (typeof entry === "string") {
       exact.add(entry);
     } else {
