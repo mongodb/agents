@@ -50,9 +50,9 @@ import type {
  * is the MCP access token, which can't be limited to specific databases
  * today. What `dataAccess.databaseNames` covers:
  *
- * - Checked: each tool call's `database` argument, and the target database of
+ * - Checked: each tool call's `database` argument, the target database of
  *   `$out` and `$merge` in the pipeline of `aggregate`, `aggregate_db`, and
- *   `explain`.
+ *   `explain`, and `namespaces` in `atlas_get_performance_advisor`.
  * - Not checked: other parts of an aggregation pipeline.
  * - Not filtered: tool results, so the agent can still see names of
  *   databases it may not use.

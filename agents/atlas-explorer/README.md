@@ -289,10 +289,13 @@ dataAccess: {
   cluster outside `dataAccess.projects`. With writes enabled, creating, pausing, or
   upgrading a cluster must name an allowed cluster, and creating a project is
   rejected.
-- `databaseAllowlistMiddleware` rejects tool calls whose `database` argument
-  is outside `dataAccess.databaseNames`. For `aggregate`, `aggregate_db`, and
-  `explain`, it also checks the target database of `$out` and `$merge` in the
-  pipeline. It does not scan filters or documents.
+- `databaseAllowlistMiddleware` rejects tool calls outside
+  `dataAccess.databaseNames`:
+  - Each data tool call's `database` argument.
+  - `$out` and `$merge` target databases in `aggregate`, `aggregate_db`, and
+    `explain` pipelines.
+  - `namespaces` in `atlas_get_performance_advisor`.
+  - It does not scan filters or documents.
 - A rejected call returns an error to the agent, so it can correct itself.
 
 ### What it cannot enforce

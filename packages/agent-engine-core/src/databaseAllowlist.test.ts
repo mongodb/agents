@@ -261,6 +261,56 @@ describe("guardDatabaseCall", () => {
       });
     });
   });
+
+  describe("Performance Advisor namespaces", () => {
+    const advisor = (namespaces?: unknown) =>
+      call("mongodb__atlas_get_performance_advisor", {
+        projectId: "p",
+        clusterName: "c",
+        ...(namespaces === undefined ? {} : { namespaces }),
+      });
+
+    it.each([
+      ["omitted namespaces", undefined],
+      ["an empty namespaces list", []],
+      ["allowed db.collection namespaces", ["orders.items", "tenant_7.events"]],
+      ["a collection name containing a dot", ["orders.system.views"]],
+      ["stringified namespaces", JSON.stringify(["orders.items"])],
+    ])("runs with %s", async (_label, namespaces) => {
+      expect((await run(advisor(namespaces))).ran).toBe(true);
+    });
+
+    it("rejects a namespace whose database is outside the list", async () => {
+      const { result, ran } = await run(
+        advisor(["orders.items", "admin.users", "secret.logs"]),
+      );
+      expect(ran).toBe(false);
+      expect(result).toMatchObject({
+        content: expect.stringContaining(
+          "Databases admin, secret are not in the databaseNames allowlist.",
+        ),
+      });
+    });
+
+    it("rejects a namespace database with surrounding whitespace", async () => {
+      const { ran } = await run(advisor([" orders.items"]));
+      expect(ran).toBe(false);
+    });
+
+    it.each([
+      ["a non-array namespaces value", "orders.items"],
+      ["a non-string entry", [123]],
+      ["an entry without a dot", ["orders"]],
+      ["an entry with an empty database", [".items"]],
+      ["an entry with an empty collection", ["orders."]],
+    ])("rejects %s", async (_label, namespaces) => {
+      const { result, ran } = await run(advisor(namespaces));
+      expect(ran).toBe(false);
+      expect(result).toMatchObject({
+        content: expect.stringContaining("db.collection strings"),
+      });
+    });
+  });
 });
 
 describe("after an approval edit", () => {

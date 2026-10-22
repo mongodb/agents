@@ -43,8 +43,9 @@ class UncheckableArgumentsError extends Error {}
 
 /**
  * Returns why a MongoDB MCP call falls outside `databaseNames`, or
- * `undefined` when it may run. Checks the `database` argument and the
- * database that `$out` or `$merge` writes to.
+ * `undefined` when it may run. Checks the `database` argument, the
+ * database that `$out` or `$merge` writes to, and `namespaces` in
+ * `atlas_get_performance_advisor`.
  */
 export function findDatabaseViolation({
   databaseNames,
@@ -56,33 +57,77 @@ export function findDatabaseViolation({
   toolCall: ClusterToolCall;
 }): string | undefined {
   const { name } = toolCall;
-  // `mongodb__atlas_*` tools are control plane tools. The cluster allowlist
-  // handles them.
-  if (name.startsWith("mongodb__atlas_") || TOOLS_WITHOUT_DATABASE.has(name)) {
-    return undefined;
-  }
+  if (TOOLS_WITHOUT_DATABASE.has(name)) return undefined;
 
   const args = toolArgs(toolCall.args);
-  const database = readNonEmptyString(args.database);
-  if (!database) {
-    return `${name} needs a database from the databaseNames allowlist.`;
-  }
-
-  let writeStageDatabases: string[];
+  let usedDatabases: string[];
   try {
-    writeStageDatabases = findPipelines({ name, args }).flatMap((pipeline) =>
-      findWriteStageDatabases({ pipeline }),
-    );
+    if (name.startsWith("mongodb__atlas_")) {
+      usedDatabases = findAtlasToolDatabases({ name, args });
+    } else {
+      const database = readNonEmptyString(args.database);
+      if (!database) {
+        return `${name} needs a database from the databaseNames allowlist.`;
+      }
+      const writeStageDatabases = findPipelines({ name, args }).flatMap(
+        (pipeline) => findWriteStageDatabases({ pipeline }),
+      );
+      usedDatabases = [database, ...writeStageDatabases];
+    }
   } catch (error) {
     if (error instanceof UncheckableArgumentsError) return error.message;
     throw error;
   }
 
-  const disallowed = [...new Set([database, ...writeStageDatabases])].filter(
+  const disallowed = [...new Set(usedDatabases)].filter(
     (usedDatabase) => !matches(usedDatabase),
   );
   if (disallowed.length === 0) return undefined;
   return describeDisallowedDatabases({ databaseNames, disallowed });
+}
+
+// Most `mongodb__atlas_*` tools are control plane tools with no database
+// arguments. `atlas_get_performance_advisor` can filter slow query logs by
+// `db.collection` namespaces.
+function findAtlasToolDatabases({
+  name,
+  args,
+}: {
+  name: string;
+  args: Record<string, unknown>;
+}): string[] {
+  if (name === "mongodb__atlas_get_performance_advisor") {
+    return findPerformanceAdvisorDatabases(args);
+  }
+  return [];
+}
+
+function findPerformanceAdvisorDatabases(
+  args: Record<string, unknown>,
+): string[] {
+  if (args.namespaces === undefined) return [];
+  const namespaces = parseJsonString(args.namespaces);
+  if (!Array.isArray(namespaces)) {
+    throw new UncheckableArgumentsError(
+      "mongodb__atlas_get_performance_advisor namespaces must be an array of db.collection strings.",
+    );
+  }
+  return namespaces.map(readNamespaceDatabase);
+}
+
+function readNamespaceDatabase(namespace: unknown): string {
+  if (typeof namespace !== "string") {
+    throw new UncheckableArgumentsError(
+      "mongodb__atlas_get_performance_advisor namespaces must be db.collection strings.",
+    );
+  }
+  const dotIndex = namespace.indexOf(".");
+  if (dotIndex <= 0 || dotIndex === namespace.length - 1) {
+    throw new UncheckableArgumentsError(
+      "mongodb__atlas_get_performance_advisor namespaces must be db.collection strings.",
+    );
+  }
+  return namespace.slice(0, dotIndex);
 }
 
 function describeDisallowedDatabases({
