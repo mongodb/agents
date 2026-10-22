@@ -55,7 +55,7 @@ export function describeDefaultData(
 
   return [
     "Use these when the user does not name them. If the user names something else, use that.",
-    "These strings are not checked. Access limits still apply.",
+    "These strings are not checked. Defaults are not permissions. The allowed projects, clusters, and databases still apply.",
     "",
     ...lines,
   ].join("\n");

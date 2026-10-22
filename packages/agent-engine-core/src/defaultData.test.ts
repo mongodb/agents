@@ -90,7 +90,9 @@ describe("describeDefaultData", () => {
     expect(text).toContain("- database: orders archive");
     expect(text).not.toContain("- clusterName:");
     expect(text).not.toContain("- collection:");
-    expect(text).toContain("Access limits still apply.");
+    expect(text).toContain(
+      "Defaults are not permissions. The allowed projects, clusters, and databases still apply.",
+    );
   });
 
   it("renders all four fields", () => {
