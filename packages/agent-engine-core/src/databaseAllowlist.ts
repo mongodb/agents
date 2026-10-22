@@ -74,20 +74,20 @@ export function findDatabaseViolation({
   const violation = findNameViolation({ databaseNames, matches, database });
   if (violation) return violation;
 
-  let writeTargets: string[];
+  let writeStageDatabases: string[];
   try {
-    writeTargets = findAggregationWriteTargets({ value: args });
+    writeStageDatabases = findWriteStageDatabases({ value: args });
   } catch (error) {
     if (error instanceof UncheckableArgumentsError) return error.message;
     throw error;
   }
-  for (const writeTarget of writeTargets) {
-    const writeTargetViolation = findNameViolation({
+  for (const writeStageDatabase of writeStageDatabases) {
+    const writeStageViolation = findNameViolation({
       databaseNames,
       matches,
-      database: writeTarget,
+      database: writeStageDatabase,
     });
-    if (writeTargetViolation) return writeTargetViolation;
+    if (writeStageViolation) return writeStageViolation;
   }
   return undefined;
 }
@@ -111,8 +111,8 @@ function findNameViolation({
 // Finds the databases that aggregation pipeline stages write to. `$out: { db }`
 // and `$merge: { into: { db } }` are the stages documented to write to another
 // database. Only those keys are read, so a filter on a field named `db` is
-// not mistaken for a target.
-function findAggregationWriteTargets({
+// not mistaken for a write stage's database.
+function findWriteStageDatabases({
   value,
   depth = 0,
 }: {
@@ -121,7 +121,7 @@ function findAggregationWriteTargets({
 }): string[] {
   const parsed = parseJsonString(value);
   if (typeof parsed === "string") {
-    if (isBrokenJson(parsed) && mentionsWriteStage(parsed)) {
+    if (looksLikeBrokenJson(parsed) && mentionsWriteStage(parsed)) {
       throw new UncheckableArgumentsError(
         "A pipeline with $out or $merge could not be parsed, so databaseNames cannot check its target database.",
       );
@@ -136,23 +136,23 @@ function findAggregationWriteTargets({
   }
   if (Array.isArray(parsed)) {
     return parsed.flatMap((item) =>
-      findAggregationWriteTargets({ value: item, depth: depth + 1 }),
+      findWriteStageDatabases({ value: item, depth: depth + 1 }),
     );
   }
   return Object.entries(parsed).flatMap(([key, child]) => {
-    const nested = findAggregationWriteTargets({
+    const nested = findWriteStageDatabases({
       value: child,
       depth: depth + 1,
     });
     const own =
       key === "$out" || key === "$merge"
-        ? findWriteStageTarget(key, child)
+        ? readWriteStageDatabase(key, child)
         : [];
     return [...own, ...nested];
   });
 }
 
-function findWriteStageTarget(
+function readWriteStageDatabase(
   stage: "$out" | "$merge",
   value: unknown,
 ): string[] {
@@ -165,7 +165,7 @@ function findWriteStageTarget(
 }
 
 // A string that starts like JSON but did not parse in `parseJsonString`.
-function isBrokenJson(value: string): boolean {
+function looksLikeBrokenJson(value: string): boolean {
   const trimmed = value.trim();
   return trimmed.startsWith("[") || trimmed.startsWith("{");
 }
