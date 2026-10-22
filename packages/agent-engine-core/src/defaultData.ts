@@ -54,7 +54,7 @@ export function describeDefaultData(
   if (lines.length === 0) return undefined;
 
   return [
-    "Use these when the user does not name them. If the user names something else, use that.",
+    "Use these defaults when the user does not name values for them.",
     "Defaults are not permissions. The allowed projects, clusters, and databases still apply.",
     "",
     ...lines,
