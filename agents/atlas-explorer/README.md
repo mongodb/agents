@@ -246,8 +246,7 @@ databaseNames: ["orders", /^tenant_\d+$/] satisfies DatabaseNamesConfig,
 
 - A string must equal the database name. A regular expression is tested
   against the name as written, so `/orders/` also allows `orders_archive`.
-  Anchor it (`/^orders$/`) to match the whole name. Only the `i` and `u`
-  flags are accepted.
+  Only the `i` and `u` flags are accepted.
 - `databaseNames` applies to every allowed cluster. It can't be set per
   cluster, because tools that read data identify the cluster only by a
   connection ID.
