@@ -273,7 +273,7 @@ data source, such as a cluster.
   agent can still change it, or start a processor that reads or writes
   through it.
 
-## Limit databases
+### Limit databases
 
 Set `databaseNames` in `config.ts` to limit the agent to specific databases.
 The list applies to every cluster the agent is allowed to use:
@@ -294,7 +294,7 @@ databaseNames: ["orders", /^tenant_\d+$/] satisfies DatabaseNamesConfig,
   `mcp.servers.mongodb.allowed_tools` in `agent.yaml`. See
   [Use Remote MCP Servers](https://www.mongodb.com/docs/agentengine/add-features/remote-mcp/).
 
-### What the agent enforces
+#### What the agent enforces
 
 - The system prompt lists the allowed databases in the `## Scope` section.
 - `databaseAllowlistMiddleware` rejects any data tool call whose `database`
@@ -303,7 +303,7 @@ databaseNames: ["orders", /^tenant_\d+$/] satisfies DatabaseNamesConfig,
 - The prompt warns that database lists in tool results can include databases
   outside `databaseNames`. Using one returns an error.
 
-### What it cannot enforce
+#### What it cannot enforce
 
 This is a guardrail on the agent, not a security boundary. Use Atlas roles
 and database users for hard limits.
