@@ -65,7 +65,7 @@ export const atlasQueryInsightsConfig = {
     customInstructions: "",
   },
   dataAccess: {} satisfies DataAccessConfig,
-  databaseNames: undefined as DatabaseNamesConfig | undefined,
+  databaseNames: undefined satisfies DatabaseNamesConfig | undefined,
   maxQueryShapes: 3,
   inputGuard: {
     mode: "enforce",

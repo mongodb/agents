@@ -73,7 +73,7 @@ export const atlasExplorerConfig = {
     customInstructions: "",
   },
   dataAccess: {} satisfies DataAccessConfig,
-  databaseNames: undefined as DatabaseNamesConfig | undefined,
+  databaseNames: undefined satisfies DatabaseNamesConfig | undefined,
   diagnostics: {
     logRuntimeLifecycle: true,
   },
