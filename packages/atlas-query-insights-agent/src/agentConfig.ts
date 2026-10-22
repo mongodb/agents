@@ -14,18 +14,9 @@
  * limitations under the License.
  */
 
-import type {
-  DataAccessConfig,
-  InputGuardConfig,
-  LlmConfig,
-  SystemPromptConfig,
-} from "@repo/agent-engine-core";
+import type { SharedAgentConfig } from "@repo/agent-engine-core";
 
 /** The shape of `atlasQueryInsightsConfig` in the agent's `config.ts`. */
-export interface AtlasQueryInsightsConfig {
-  readonly llm: LlmConfig;
-  readonly systemPrompt: SystemPromptConfig;
-  readonly dataAccess: DataAccessConfig;
+export interface AtlasQueryInsightsConfig extends SharedAgentConfig {
   readonly maxQueryShapes: number;
-  readonly inputGuard: InputGuardConfig;
 }

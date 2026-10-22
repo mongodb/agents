@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
+import type { DataAccessConfig } from "./dataAccess.js";
 import type { DefaultDataConfig } from "./defaultData.js";
+import type { InputGuardConfig } from "./inputGuardConfig.js";
 
 /** The per-agent `llm` block in `config.ts`. */
 export interface LlmConfig {
@@ -27,4 +29,15 @@ export interface SystemPromptConfig {
   readonly name: string;
   readonly customInstructions: string;
   readonly defaultData: DefaultDataConfig;
+}
+
+/**
+ * The `config.ts` blocks every agent has. Each agent's config type extends
+ * this with its own settings.
+ */
+export interface SharedAgentConfig {
+  readonly llm: LlmConfig;
+  readonly systemPrompt: SystemPromptConfig;
+  readonly dataAccess: DataAccessConfig;
+  readonly inputGuard: InputGuardConfig;
 }

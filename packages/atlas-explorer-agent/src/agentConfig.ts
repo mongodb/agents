@@ -14,20 +14,11 @@
  * limitations under the License.
  */
 
-import type {
-  DataAccessConfig,
-  InputGuardConfig,
-  LlmConfig,
-  SystemPromptConfig,
-} from "@repo/agent-engine-core";
+import type { SharedAgentConfig } from "@repo/agent-engine-core";
 
 /** The shape of `atlasExplorerConfig` in the agent's `config.ts`. */
-export interface AtlasExplorerConfig {
-  readonly llm: LlmConfig;
-  readonly systemPrompt: SystemPromptConfig;
-  readonly dataAccess: DataAccessConfig;
+export interface AtlasExplorerConfig extends SharedAgentConfig {
   readonly diagnostics: {
     readonly logRuntimeLifecycle: boolean;
   };
-  readonly inputGuard: InputGuardConfig;
 }

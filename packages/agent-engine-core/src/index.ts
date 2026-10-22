@@ -44,6 +44,7 @@ export {
 } from "./dataAccess.js";
 export {
   type LlmConfig,
+  type SharedAgentConfig,
   type SystemPromptConfig,
 } from "./sharedAgentConfig.js";
 export {
