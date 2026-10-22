@@ -152,25 +152,25 @@ function findWriteStageDatabases({
   });
 }
 
-// `$out` and `$merge` keep the destination database in different places:
-//   { $out: { db: "archive", coll: "c" } }
-//   { $merge: { into: { db: "archive", coll: "c" } } }
-// Either stage can also be a plain string, as in `{ $out: "c" }`. That writes
-// to the database the call already names, so it yields no database here.
+// A plain string stage, as in `{ $out: "c" }`, writes to the database the
+// call already names, so it yields no database here.
 function readWriteStageDatabase(
   stage: "$out" | "$merge",
   value: unknown,
 ): string[] {
   const options = parseJsonString(value);
   if (!isRecord(options)) return [];
-  const destination =
-    stage === "$out" ? options : parseJsonString(options.into);
-  return readDestinationDatabase(destination);
+  if (stage === "$merge") {
+    // { $merge: { into: { db: "archive", coll: "c" } } }
+    return readDbField(parseJsonString(options.into));
+  }
+  // { $out: { db: "archive", coll: "c" } }
+  return readDbField(options);
 }
 
-function readDestinationDatabase(destination: unknown): string[] {
-  if (!isRecord(destination)) return [];
-  const db = stringArg(destination.db);
+function readDbField(value: unknown): string[] {
+  if (!isRecord(value)) return [];
+  const db = stringArg(value.db);
   return db ? [db] : [];
 }
 
