@@ -74,20 +74,20 @@ export function findDatabaseViolation({
   const violation = findNameViolation({ databaseNames, matches, database });
   if (violation) return violation;
 
-  let targets: string[];
+  let writeTargets: string[];
   try {
-    targets = writeTargetDatabases({ value: args });
+    writeTargets = aggregationWriteTargets({ value: args });
   } catch (error) {
     if (error instanceof UncheckableArgumentsError) return error.message;
     throw error;
   }
-  for (const target of targets) {
-    const targetViolation = findNameViolation({
+  for (const writeTarget of writeTargets) {
+    const writeTargetViolation = findNameViolation({
       databaseNames,
       matches,
-      database: target,
+      database: writeTarget,
     });
-    if (targetViolation) return targetViolation;
+    if (writeTargetViolation) return writeTargetViolation;
   }
   return undefined;
 }
@@ -108,10 +108,11 @@ function findNameViolation({
   return `Database ${database} is not in the databaseNames allowlist. Allowed: ${describeAllowedDatabases(databaseNames)}.`;
 }
 
-// `$out: { db }` and `$merge: { into: { db } }` are the stages documented to
-// write to another database. Only those keys are read, so a filter on a
-// field named `db` is not mistaken for a target.
-function writeTargetDatabases({
+// Finds the databases that aggregation pipeline stages write to. `$out: { db }`
+// and `$merge: { into: { db } }` are the stages documented to write to another
+// database. Only those keys are read, so a filter on a field named `db` is
+// not mistaken for a target.
+function aggregationWriteTargets({
   value,
   depth = 0,
 }: {
@@ -135,17 +136,18 @@ function writeTargetDatabases({
   }
   if (Array.isArray(parsed)) {
     return parsed.flatMap((item) =>
-      writeTargetDatabases({ value: item, depth: depth + 1 }),
+      aggregationWriteTargets({ value: item, depth: depth + 1 }),
     );
   }
   return Object.entries(parsed).flatMap(([key, child]) => {
-    const nested = writeTargetDatabases({ value: child, depth: depth + 1 });
-    const own = key === "$out" || key === "$merge" ? stageTarget(key, child) : [];
+    const nested = aggregationWriteTargets({ value: child, depth: depth + 1 });
+    const own =
+      key === "$out" || key === "$merge" ? writeStageTarget(key, child) : [];
     return [...own, ...nested];
   });
 }
 
-function stageTarget(stage: "$out" | "$merge", value: unknown): string[] {
+function writeStageTarget(stage: "$out" | "$merge", value: unknown): string[] {
   const config = parseJsonString(value);
   if (!isRecord(config)) return [];
   const target = stage === "$out" ? config : parseJsonString(config.into);
