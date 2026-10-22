@@ -33,27 +33,27 @@ import type {
  * Leave a field `""` or `undefined` when it is unset. The prompt passes
  * `projectId` and `clusterName` as those arguments, and `databaseName`
  * and `collectionName` as `database` and `collection`. These strings are
- * not checked. A project
- * or cluster outside `dataAccess`, or a database outside `databaseNames`,
- * still fails when the agent uses it.
- * Leave `dataAccess` as `{}` for every project and cluster the MCP
- * configuration can reach. Otherwise map each allowed 24-hex project id to
- * `{}` (all its clusters) or `{ clusterNames: [...] }`.
+ * not checked. A project or cluster outside `dataAccess.projects`, or a
+ * database outside `dataAccess.databaseNames`, still fails when the agent
+ * uses it.
  *
- * `databaseNames` limits the databases the agent may use, across every
- * allowed cluster:
+ * `dataAccess` limits what the agent can reach. Leave it as `{}` for no
+ * restriction. Otherwise set either or both of these keys:
  *
- * - Leave it `undefined` to allow every database.
- * - `[]` allows no databases.
- * - Otherwise list strings (`"orders"`) and regular expressions
+ * - `projects` limits clusters. Map each allowed 24-hex project id to `{}`
+ *   (all its clusters) or `{ clusterNames: [...] }`. Omit `projects` to allow
+ *   every cluster.
+ * - `databaseNames` limits the databases the agent may use, across every
+ *   allowed cluster. Omit it to allow every database. `[]` allows none.
+ *   Otherwise list strings (`"orders"`) and regular expressions
  *   (`/^tenant_\d+$/`).
  *   - A string must equal the database name.
  *   - A regular expression is tested against the name as written, so anchor
  *     it to match the whole name. It can only use the `i` and `u` flags.
  *
- * `databaseNames` is a guardrail in the agent. The hard boundary is the MCP
- * access token, which can't be limited to specific databases today. What
- * `databaseNames` covers:
+ * `dataAccess.databaseNames` is a guardrail in the agent. The hard boundary
+ * is the MCP access token, which can't be limited to specific databases
+ * today. What `dataAccess.databaseNames` covers:
  *
  * - Checked: each tool call's `database` argument, and the target database of
  *   `$out` and `$merge` in the pipeline of `aggregate`, `aggregate_db`, and
@@ -92,7 +92,6 @@ export const atlasExplorerConfig = {
     },
   },
   dataAccess: {},
-  databaseNames: undefined,
   diagnostics: {
     logRuntimeLifecycle: true,
   },

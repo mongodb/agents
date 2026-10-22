@@ -25,7 +25,6 @@ import {
   describeDatabaseNames,
   describeDefaultData,
   type DataAccessConfig,
-  type DatabaseNamesConfig,
   type DefaultDataConfig,
 } from "@repo/agent-engine-core";
 
@@ -67,7 +66,6 @@ export type SystemPromptOptions = {
   name?: string;
   customInstructions?: string;
   dataAccess?: DataAccessConfig;
-  databaseNames?: DatabaseNamesConfig;
   defaultData?: DefaultDataConfig;
 };
 
@@ -151,16 +149,17 @@ export function buildSystemPrompt(
   const name = resolveAgentName(options.name);
   const base = writeEnabled ? writeEnabledPrompt(name) : readOnlyPrompt(name);
   const clusterScope = describeDataAccess(options.dataAccess);
+  const databaseNames = options.dataAccess?.databaseNames;
   const withDefault = (prompt: string) =>
     appendDefaultData(prompt, options.defaultData);
-  if (!clusterScope && options.databaseNames === undefined) {
+  if (!clusterScope && databaseNames === undefined) {
     return appendCustomInstructions(
       withDefault(base),
       options.customInstructions,
     );
   }
 
-  const databaseScope = describeDatabaseNames(options.databaseNames);
+  const databaseScope = describeDatabaseNames(databaseNames);
   const scope = clusterScope
     ? `${clusterScope}\n\n${databaseScope}`
     : databaseScope;

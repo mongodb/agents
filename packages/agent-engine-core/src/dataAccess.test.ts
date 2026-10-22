@@ -20,6 +20,7 @@ import {
   describeDataAccess,
   isUnrestricted,
   validateDataAccess,
+  type DataAccessConfig,
 } from "./dataAccess.js";
 
 const PROJECT = "64a1f3c2e8b94d0012c7a5e1";
@@ -32,10 +33,18 @@ const CLUSTER_LIST_NOTE =
   "Cluster lists in tool results can include clusters not listed above. Using one returns an error.";
 
 describe("isUnrestricted", () => {
-  it("is true only for an omitted or empty map", () => {
+  it("is true when no project is listed", () => {
     expect(isUnrestricted()).toBe(true);
     expect(isUnrestricted({})).toBe(true);
-    expect(isUnrestricted({ [PROJECT]: {} })).toBe(false);
+    expect(isUnrestricted({ projects: {} })).toBe(true);
+  });
+
+  it("is false when a project is listed", () => {
+    expect(isUnrestricted({ projects: { [PROJECT]: {} } })).toBe(false);
+  });
+
+  it("ignores databaseNames, which never restricts clusters", () => {
+    expect(isUnrestricted({ databaseNames: ["orders"] })).toBe(true);
   });
 });
 
@@ -43,32 +52,54 @@ describe("validateDataAccess", () => {
   it("accepts omitted, empty, and listed clusterNames", () => {
     expect(() =>
       validateDataAccess({
-        [PROJECT]: { clusterNames: ["example-test"] },
-        [OPEN_PROJECT]: {},
-        [OTHER_PROJECT]: { clusterNames: [] },
+        projects: {
+          [PROJECT]: { clusterNames: ["example-test"] },
+          [OPEN_PROJECT]: {},
+          [OTHER_PROJECT]: { clusterNames: [] },
+        },
       }),
     ).not.toThrow();
   });
 
   it("rejects ids and names Atlas would not accept", () => {
-    expect(() => validateDataAccess({ cluster0: {} })).toThrow(/projectId/);
+    expect(() => validateDataAccess({ projects: { cluster0: {} } })).toThrow(
+      /projectId/,
+    );
     expect(() =>
-      validateDataAccess({ [PROJECT]: { clusterNames: ["-leading"] } }),
+      validateDataAccess({ projects: { [PROJECT]: { clusterNames: ["-leading"] } } }),
     ).toThrow(/clusterName/);
+  });
+
+  it("validates databaseNames", () => {
+    expect(() =>
+      validateDataAccess({ databaseNames: ["orders", /^tenant_\d+$/] }),
+    ).not.toThrow();
+    expect(() => validateDataAccess({ databaseNames: ["a.b"] })).toThrow(
+      /databaseNames entries/,
+    );
+  });
+
+  it("rejects keys other than projects and databaseNames", () => {
+    expect(() =>
+      validateDataAccess({ [PROJECT]: {} } as DataAccessConfig),
+    ).toThrow(/dataAccess accepts only projects and databaseNames/);
   });
 });
 
 describe("describeDataAccess", () => {
-  it("returns undefined when unrestricted", () => {
+  it("returns undefined when no project is listed", () => {
     expect(describeDataAccess({})).toBeUndefined();
+    expect(describeDataAccess({ databaseNames: ["orders"] })).toBeUndefined();
   });
 
   it("lists each project with its allowed clusters", () => {
     expect(
       describeDataAccess({
-        [PROJECT]: { clusterNames: ["example-test", "example-staging"] },
-        [OPEN_PROJECT]: {},
-        [OTHER_PROJECT]: { clusterNames: [] },
+        projects: {
+          [PROJECT]: { clusterNames: ["example-test", "example-staging"] },
+          [OPEN_PROJECT]: {},
+          [OTHER_PROJECT]: { clusterNames: [] },
+        },
       }),
     ).toBe(
       [
@@ -84,12 +115,12 @@ describe("describeDataAccess", () => {
   });
 
   it("adds the cluster note only when a project limits its clusters", () => {
-    const open = describeDataAccess({ [OPEN_PROJECT]: {} });
+    const open = describeDataAccess({ projects: { [OPEN_PROJECT]: {} } });
     expect(open).toContain(PROJECT_LIST_NOTE);
     expect(open).not.toContain(CLUSTER_LIST_NOTE);
 
     expect(
-      describeDataAccess({ [PROJECT]: { clusterNames: [] } }),
+      describeDataAccess({ projects: { [PROJECT]: { clusterNames: [] } } }),
     ).toContain(CLUSTER_LIST_NOTE);
   });
 });

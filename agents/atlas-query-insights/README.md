@@ -56,8 +56,8 @@ Set these local secrets in `.env`:
 
 Non-secret settings live in `config.ts`: the model, how the agent
 introduces itself, optional custom instructions, and an optional
-`dataAccess` map of allowed projects and clusters and an optional
-`databaseNames` list of allowed databases.
+`dataAccess` block with an optional `projects` map of allowed projects and
+clusters and an optional `databaseNames` list of allowed databases.
 
 Create a **project-level** MongoDB MCP configuration before starting the
 agent. Atlas Admin API still calls a project a group, so this uses
@@ -319,10 +319,10 @@ Things to know:
   values; those values are sent to your model provider and appear in Agent
   Engine traces. You govern that data. See
   [Your data](../../README.md#your-data).
-- `dataAccess` in `config.ts` limits the agent to the listed projects and
-  clusters. Leave it as `{}` for no restriction: every project and cluster
-  the MCP configuration can reach. Otherwise map each 24-hex project id to
-  `{}` (all its clusters) or
+- `dataAccess.projects` in `config.ts` limits the agent to the listed projects
+  and clusters. Omit it, or leave `dataAccess` as `{}`, for no cluster
+  restriction: every project and cluster the MCP configuration can reach.
+  Otherwise map each 24-hex project id to `{}` (all its clusters) or
   `{ clusterNames: [...] }`. The system prompt names the allowed projects
   and clusters, and `clusterAllowlistMiddleware` rejects tool calls that
   name any other project or cluster. This is a guardrail in the agent. The
@@ -332,15 +332,15 @@ Things to know:
   a string. Leave a field `""` or `undefined` to leave it unset. The prompt
   passes `projectId` and `clusterName` under those names, and passes
   `databaseName` and `collectionName` as `database` and `collection`.
-  The strings are not checked.
-  A project or cluster outside `dataAccess`, or a database outside
-  `databaseNames`, still fails when the agent uses it.
-- `databaseNames` in `config.ts` limits the agent to the listed databases on
-  every allowed cluster. List strings (`"orders"`) and regular expressions
-  (`/^tenant_\d+$/`). A string must equal the database name. A regular
-  expression is tested as written, so anchor it (`/^orders$/`) to match the
-  whole name. Leave it as `undefined` to allow every database. `[]` allows
-  none. The system prompt names the allowed databases, and
+  The strings are not checked. A project or cluster outside
+  `dataAccess.projects`, or a database outside `dataAccess.databaseNames`,
+  still fails when the agent uses it.
+- `dataAccess.databaseNames` in `config.ts` limits the agent to the listed
+  databases on every allowed cluster. List strings (`"orders"`) and regular
+  expressions (`/^tenant_\d+$/`). A string must equal the database name. A
+  regular expression is tested as written, so anchor it (`/^orders$/`) to
+  match the whole name. Omit it to allow every database. `[]` allows none.
+  The system prompt names the allowed databases, and
   `databaseAllowlistMiddleware` rejects tool calls whose `database` argument
   does not match. This is a guardrail in the agent. The hard
   boundary is the MCP configuration's project and roles, and Atlas can't

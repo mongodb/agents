@@ -14,8 +14,17 @@
  * limitations under the License.
  */
 
+import {
+  validateDatabaseNames,
+  type DatabaseNamesConfig,
+} from "./databaseNames.js";
+
 const PROJECT_ID = /^[a-f0-9]{24}$/i;
 const CLUSTER_NAME = /^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$/;
+const DATA_ACCESS_KEYS: ReadonlySet<string> = new Set([
+  "projects",
+  "databaseNames",
+]);
 
 export interface DataAccessProjectConfig {
   /**
@@ -25,19 +34,38 @@ export interface DataAccessProjectConfig {
   readonly clusterNames?: readonly string[];
 }
 
-/** Allowed Atlas projects, keyed by 24-hex project id. `{}` is unrestricted. */
+/**
+ * Atlas access rules for an agent. Omit a field, or leave `{}`, to leave it
+ * unrestricted. `projects` limits clusters by 24-hex project id.
+ * `databaseNames` limits databases across every allowed cluster.
+ */
 export type DataAccessConfig = {
-  readonly [projectId: string]: DataAccessProjectConfig;
+  readonly projects?: {
+    readonly [projectId: string]: DataAccessProjectConfig;
+  };
+  readonly databaseNames?: DatabaseNamesConfig;
 };
 
-/** Whether `dataAccess` is omitted or `{}`, so nothing is restricted. */
+/** Whether `projects` is omitted or empty, so no cluster is restricted. */
 export function isUnrestricted(dataAccess?: DataAccessConfig): boolean {
-  return Object.keys(dataAccess ?? {}).length === 0;
+  return Object.keys(dataAccess?.projects ?? {}).length === 0;
 }
 
-/** Throws when `dataAccess` has an id or name Atlas would not accept. */
+/**
+ * Throws when `dataAccess` has an unknown key, or an id, name, or database
+ * rule Atlas or the agent would not accept. Unknown keys are rejected so a
+ * setting that moved cannot silently drop a restriction.
+ */
 export function validateDataAccess(dataAccess: DataAccessConfig = {}): void {
-  for (const [projectId, project] of Object.entries(dataAccess)) {
+  for (const key of Object.keys(dataAccess)) {
+    if (!DATA_ACCESS_KEYS.has(key)) {
+      throw new Error(
+        `dataAccess accepts only projects and databaseNames, received "${key}"`,
+      );
+    }
+  }
+  const projects = dataAccess.projects ?? {};
+  for (const [projectId, project] of Object.entries(projects)) {
     if (!PROJECT_ID.test(projectId)) {
       throw new Error(
         `projectId must be a 24-character hex string, received "${projectId}"`,
@@ -51,6 +79,7 @@ export function validateDataAccess(dataAccess: DataAccessConfig = {}): void {
       }
     }
   }
+  validateDatabaseNames(dataAccess.databaseNames);
 }
 
 function describeProject(project: DataAccessProjectConfig): string {
@@ -68,13 +97,14 @@ export function describeDataAccess(
   dataAccess?: DataAccessConfig,
 ): string | undefined {
   if (!dataAccess || isUnrestricted(dataAccess)) return undefined;
-  const lines = Object.entries(dataAccess).map(
+  const projects = dataAccess.projects ?? {};
+  const lines = Object.entries(projects).map(
     ([projectId, project]) => `- Project ${projectId}: ${describeProject(project)}`,
   );
   const notes = [
     "Project lists in tool results can include projects not listed above. Using one returns an error.",
   ];
-  if (Object.values(dataAccess).some((project) => project.clusterNames)) {
+  if (Object.values(projects).some((project) => project.clusterNames)) {
     notes.push(
       "Cluster lists in tool results can include clusters not listed above. Using one returns an error.",
     );

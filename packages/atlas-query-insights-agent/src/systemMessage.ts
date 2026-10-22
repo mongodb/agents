@@ -25,7 +25,6 @@ import {
   describeDatabaseNames,
   describeDefaultData,
   type DataAccessConfig,
-  type DatabaseNamesConfig,
   type DefaultDataConfig,
 } from "@repo/agent-engine-core";
 
@@ -112,7 +111,6 @@ export interface SystemPromptOptions {
   name?: string;
   customInstructions?: string;
   dataAccess?: DataAccessConfig;
-  databaseNames?: DatabaseNamesConfig;
   defaultData?: DefaultDataConfig;
   maxQueryShapes?: number;
 }
@@ -260,7 +258,7 @@ export function buildSystemPrompt(options: SystemPromptOptions = {}): string {
   const maxQueryShapes = resolveMaxQueryShapes(options.maxQueryShapes);
   const scope = [
     describeDataAccess(options.dataAccess) ?? NO_CLUSTER_CONFIGURED,
-    describeDatabaseNames(options.databaseNames),
+    describeDatabaseNames(options.dataAccess?.databaseNames),
   ].join("\n\n");
   const defaultData = describeDefaultData(options.defaultData);
   const defaultSection = defaultData

@@ -167,33 +167,37 @@ Then edit `config.ts` and show the user the diff before saving:
   },
   ```
 
-  The strings go into the system prompt. They are not checked. A project or cluster outside `dataAccess`, or a database outside `databaseNames`, still fails when the agent uses it.
+  The strings go into the system prompt. They are not checked. A project or cluster outside `dataAccess.projects`, or a database outside `dataAccess.databaseNames`, still fails when the agent uses it.
 - **Either agent** (`config.ts`): put other notes in `systemPrompt.customInstructions`, for example `The orders database holds customer orders.` Leave it empty to skip extra prompt text. Built-in safety rules still apply.
-- **Either agent** (`config.ts`): to limit the agent to a cluster, set
-  `dataAccess`. The project ID must be a 24-character hex ID.
+- **Either agent** (`config.ts`): to limit the agent to clusters, set
+  `dataAccess.projects`. The project ID must be a 24-character hex ID.
 
   ```ts
   dataAccess: {
-    // Only the prod-orders cluster in this project.
-    "<projectId>": { clusterNames: ["prod-orders"] },
-    // Every cluster in this project.
-    "<otherProjectId>": {},
+    projects: {
+      // Only the prod-orders cluster in this project.
+      "<projectId>": { clusterNames: ["prod-orders"] },
+      // Every cluster in this project.
+      "<otherProjectId>": {},
+    },
   } satisfies DataAccessConfig,
   ```
 
   Leave `dataAccess` as `{}` for no restriction. The agent can then use
   every project and cluster that the MCP configuration can reach.
 - **Either agent** (`config.ts`): to limit the agent to certain databases,
-  set `databaseNames` to database names and regular expressions. The list
-  applies to every allowed cluster.
+  set `dataAccess.databaseNames` to database names and regular expressions.
+  The list applies to every allowed cluster.
 
   ```ts
-  databaseNames: ["orders", /^tenant_\d+$/] satisfies DatabaseNamesConfig,
+  dataAccess: {
+    databaseNames: ["orders", /^tenant_\d+$/],
+  } satisfies DataAccessConfig,
   ```
 
   A string must equal the database name. A regular expression is tested
-  as written, so anchor it (`/^orders$/`) to match the whole name. Leave
-  `databaseNames` as `undefined` to allow every database. `[]` allows none.
+  as written, so anchor it (`/^orders$/`) to match the whole name. Omit
+  `databaseNames` to allow every database. `[]` allows none.
 
 Atlas Explorer users can also add a data map: a list of databases, collections and fields so the agent can skip exploring. It goes stale, so offer it only if the user asks or says they'd like it, and only if this coding agent already has the MongoDB MCP connected. Then follow [references/data-map.md](references/data-map.md).
 
@@ -201,7 +205,7 @@ Rules:
 
 - The text goes into the system prompt and into git. Never include credentials, connection strings, or personal data. Keep it short and factual.
 - `dataAccess` is in the system prompt, and the agent rejects tool calls that name any other project or cluster. That is a guardrail in the agent. The hard boundary is still the Atlas project and roles on the MCP configuration.
-- `databaseNames` is in the system prompt, and the agent rejects tool calls whose `database` argument doesn't match. It also checks `$out` and `$merge` targets. It doesn't filter tool results, so the agent can still see other database names, and it doesn't inspect other parts of an aggregation pipeline. Say so if the user asks how strict it is: it's a guardrail in the agent. The hard boundary is the MCP configuration's project and roles, and Atlas can't limit that token to specific databases yet.
+- `dataAccess.databaseNames` is in the system prompt, and the agent rejects tool calls whose `database` argument doesn't match. It also checks `$out` and `$merge` targets. It doesn't filter tool results, so the agent can still see other database names, and it doesn't inspect other parts of an aggregation pipeline. Say so if the user asks how strict it is: it's a guardrail in the agent. The hard boundary is the MCP configuration's project and roles, and Atlas can't limit that token to specific databases yet.
 - This is a code change, so the agent needs a rebuild (`pnpm build`) and a deploy to pick it up. It doesn't change what the agent is allowed to do.
 
 ## 6. Check before deploying

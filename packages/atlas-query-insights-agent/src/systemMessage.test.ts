@@ -151,7 +151,9 @@ describe("buildSystemPrompt", () => {
       name: "Ada",
       customInstructions: "Prefer the orders collection.",
       dataAccess: {
-        "64a1f3c2e8b94d0012c7a5e1": { clusterNames: ["example-test"] },
+        projects: {
+          "64a1f3c2e8b94d0012c7a5e1": { clusterNames: ["example-test"] },
+        },
       },
       maxQueryShapes: 5,
     });
@@ -175,7 +177,9 @@ describe("buildSystemPrompt", () => {
       `${NO_CLUSTER_CONFIGURED}\n\nYou can use all databases.`,
     );
 
-    const prompt = buildSystemPrompt({ databaseNames: ["orders"] });
+    const prompt = buildSystemPrompt({
+      dataAccess: { databaseNames: ["orders"] },
+    });
     expect(prompt).toContain(NO_CLUSTER_CONFIGURED);
     expect(prompt).toContain("Access is limited to these databases.");
     expect(prompt).toContain("- orders");

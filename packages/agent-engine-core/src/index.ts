@@ -43,6 +43,10 @@ export {
   type DataAccessProjectConfig,
 } from "./dataAccess.js";
 export {
+  type LlmConfig,
+  type SystemPromptConfig,
+} from "./sharedAgentConfig.js";
+export {
   parseClientUserPayload,
   stampClientUser,
   clientUserSchema,

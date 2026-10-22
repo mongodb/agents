@@ -167,7 +167,9 @@ describe("system prompt modes", () => {
 
     const prompt = buildSystemPrompt(false, {
       dataAccess: {
-        "64a1f3c2e8b94d0012c7a5e1": { clusterNames: ["example-test"] },
+        projects: {
+          "64a1f3c2e8b94d0012c7a5e1": { clusterNames: ["example-test"] },
+        },
       },
       customInstructions: "Be brief.",
     });
@@ -185,16 +187,18 @@ describe("system prompt modes", () => {
     );
   });
 
-  it("adds the allowed databases to the Scope section only when databaseNames is set", () => {
-    expect(buildSystemPrompt(false, { databaseNames: undefined })).toBe(
+  it("adds the allowed databases to the Scope section only when dataAccess.databaseNames is set", () => {
+    expect(buildSystemPrompt(false, { dataAccess: {} })).toBe(
       READ_ONLY_SYSTEM_PROMPT,
     );
 
     const prompt = buildSystemPrompt(false, {
       dataAccess: {
-        "64a1f3c2e8b94d0012c7a5e1": { clusterNames: ["example-test"] },
+        projects: {
+          "64a1f3c2e8b94d0012c7a5e1": { clusterNames: ["example-test"] },
+        },
+        databaseNames: ["orders", /^tenant_\d+$/],
       },
-      databaseNames: ["orders", /^tenant_\d+$/],
     });
     expect(prompt).toContain("## Scope\n\nAccess is limited to these Atlas projects");
     expect(prompt).toContain("Access is limited to these databases.");
@@ -204,12 +208,16 @@ describe("system prompt modes", () => {
 
     const clustersOnly = buildSystemPrompt(false, {
       dataAccess: {
-        "64a1f3c2e8b94d0012c7a5e1": { clusterNames: ["example-test"] },
+        projects: {
+          "64a1f3c2e8b94d0012c7a5e1": { clusterNames: ["example-test"] },
+        },
       },
     });
     expect(clustersOnly).toContain("You can use all databases.");
 
-    const databasesOnly = buildSystemPrompt(false, { databaseNames: ["orders"] });
+    const databasesOnly = buildSystemPrompt(false, {
+      dataAccess: { databaseNames: ["orders"] },
+    });
     expect(databasesOnly).toContain("## Scope\n\nAccess is limited to these databases.");
     expect(databasesOnly).not.toContain("Atlas projects and clusters");
   });
@@ -228,7 +236,9 @@ describe("system prompt modes", () => {
 
     const prompt = buildSystemPrompt(false, {
       dataAccess: {
-        "64a1f3c2e8b94d0012c7a5e1": { clusterNames: ["example-test"] },
+        projects: {
+          "64a1f3c2e8b94d0012c7a5e1": { clusterNames: ["example-test"] },
+        },
       },
       defaultData: {
         projectId: "not-a-hex",
@@ -238,6 +248,7 @@ describe("system prompt modes", () => {
       },
       customInstructions: "Be brief.",
     });
+    expect(prompt).toContain("## Scope");
     expect(prompt.indexOf("## Scope")).toBeLessThan(
       prompt.indexOf("## Default data"),
     );

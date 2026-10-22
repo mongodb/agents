@@ -69,11 +69,12 @@ export function findDataAccessViolation({
   toolCall: ClusterToolCall;
 }): string | undefined {
   const { name } = toolCall;
+  const projects = allowedDataAccess.projects ?? {};
   // Database tools run on the connection mongodb__remote_atlas_connect or
   // mongodb__atlas_connect_cluster opened, and those only open allowed
   // clusters.
   if (!name.startsWith("mongodb__atlas_") && !CLUSTER_TOOLS.has(name)) {
-    const noClusters = Object.values(allowedDataAccess).every(
+    const noClusters = Object.values(projects).every(
       (project) => project.clusterNames?.length === 0,
     );
     return noClusters
@@ -87,8 +88,8 @@ export function findDataAccessViolation({
   if (!projectId) {
     return `${name} needs a projectId from the dataAccess allowlist.`;
   }
-  const project = Object.hasOwn(allowedDataAccess, projectId)
-    ? allowedDataAccess[projectId]
+  const project = Object.hasOwn(projects, projectId)
+    ? projects[projectId]
     : undefined;
   if (!project) {
     return `Project ${projectId} is not in the dataAccess allowlist.`;

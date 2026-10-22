@@ -198,7 +198,6 @@ describe("Atlas Query Insights graph assembly", () => {
         customInstructions: atlasQueryInsightsConfig.systemPrompt.customInstructions,
         defaultData: atlasQueryInsightsConfig.systemPrompt.defaultData,
         dataAccess: atlasQueryInsightsConfig.dataAccess,
-        databaseNames: atlasQueryInsightsConfig.databaseNames,
         maxQueryShapes: atlasQueryInsightsConfig.maxQueryShapes,
       }),
     );

@@ -19,7 +19,10 @@
 import "dotenv/config";
 
 import { App, AgentEngineToolSandboxBackend } from "@mongodb-js/agent-engine-sdk-langgraph";
-import { registerKnowledgeTools } from "@repo/agent-engine-core";
+import {
+  registerKnowledgeTools,
+  type DataAccessConfig,
+} from "@repo/agent-engine-core";
 import {
   clusterAllowlistMiddleware,
   rejectAggregateWritesMiddleware,
@@ -40,6 +43,9 @@ import {
 } from "@repo/atlas-query-insights-agent";
 
 import { atlasQueryInsightsConfig } from "./config.js";
+
+// Typed so `databaseNames` type-checks even when config.ts sets only `projects`.
+const dataAccess: DataAccessConfig = atlasQueryInsightsConfig.dataAccess;
 
 function log(level: "INFO" | "WARN" | "ERROR", msg: string): void {
   const t = new Date().toISOString().slice(11, 19);
@@ -79,8 +85,7 @@ export const buildAgent = app.entrypoint(() => {
         name: atlasQueryInsightsConfig.systemPrompt.name,
         customInstructions: atlasQueryInsightsConfig.systemPrompt.customInstructions,
         defaultData: atlasQueryInsightsConfig.systemPrompt.defaultData,
-        dataAccess: atlasQueryInsightsConfig.dataAccess,
-        databaseNames: atlasQueryInsightsConfig.databaseNames,
+        dataAccess,
         maxQueryShapes: atlasQueryInsightsConfig.maxQueryShapes,
       }),
       skills: ["skills"],
@@ -93,8 +98,8 @@ export const buildAgent = app.entrypoint(() => {
         stampResumeClientUserMiddleware,
         stripToolEchoMiddleware,
         redactSecretsMiddleware,
-        clusterAllowlistMiddleware(atlasQueryInsightsConfig.dataAccess),
-        databaseAllowlistMiddleware(atlasQueryInsightsConfig.databaseNames),
+        clusterAllowlistMiddleware(dataAccess),
+        databaseAllowlistMiddleware(dataAccess.databaseNames),
         rejectAggregateWritesMiddleware,
         recoverToolErrorsMiddleware,
       ] as never,

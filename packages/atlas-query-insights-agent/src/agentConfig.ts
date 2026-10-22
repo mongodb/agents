@@ -16,24 +16,16 @@
 
 import type {
   DataAccessConfig,
-  DatabaseNamesConfig,
-  DefaultDataConfig,
   InputGuardConfig,
+  LlmConfig,
+  SystemPromptConfig,
 } from "@repo/agent-engine-core";
 
 /** The shape of `atlasQueryInsightsConfig` in the agent's `config.ts`. */
 export interface AtlasQueryInsightsConfig {
-  readonly llm: {
-    readonly provider: string;
-    readonly model: string;
-  };
-  readonly systemPrompt: {
-    readonly name: string;
-    readonly customInstructions: string;
-    readonly defaultData: DefaultDataConfig;
-  };
+  readonly llm: LlmConfig;
+  readonly systemPrompt: SystemPromptConfig;
   readonly dataAccess: DataAccessConfig;
-  readonly databaseNames?: DatabaseNamesConfig;
   readonly maxQueryShapes: number;
   readonly inputGuard: InputGuardConfig;
 }
