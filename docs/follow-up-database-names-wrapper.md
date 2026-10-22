@@ -48,6 +48,15 @@ dataAccess: {
   the change breaking? Any deployer who sets it in this PR would need to
   move it.
 
+## Consolidate shared config types
+
+`AtlasExplorerConfig` and `AtlasQueryInsightsConfig` in `agentConfig.ts`
+repeat the same blocks: `llm`, `systemPrompt`, `dataAccess`,
+`databaseNames`, and `inputGuard`. Move the shared parts into one place
+in `agent-engine-core`, such as `LlmConfig` and `SystemPromptConfig`, and
+have each agent's root type compose them. `InputGuardConfig` already lives
+in core, so it is the pattern to follow.
+
 ## Acceptance criteria
 
 - A config with `dataAccess.databaseNames` restricts database tools the same
