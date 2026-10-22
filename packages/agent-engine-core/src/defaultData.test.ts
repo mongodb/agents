@@ -67,6 +67,11 @@ describe("describeDefaultData", () => {
     ).toBeUndefined();
   });
 
+  it("keeps surrounding spaces in a set value", () => {
+    const text = describeDefaultData({ ...EMPTY, collectionName: " sales " });
+    expect(text?.split("\n")).toContain("- collection:  sales ");
+  });
+
   it("renders one set field and leaves the others out", () => {
     const text = describeDefaultData({
       ...EMPTY,

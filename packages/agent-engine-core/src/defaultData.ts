@@ -27,8 +27,7 @@ export interface DefaultDataConfig {
 }
 
 function filled(value: string | undefined): string | undefined {
-  const trimmed = value?.trim();
-  return trimmed ? trimmed : undefined;
+  return value?.trim() ? value : undefined;
 }
 
 /**
