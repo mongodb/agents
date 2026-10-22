@@ -27,6 +27,7 @@ import {
 } from "@mongodb-js/agent-engine-sdk-langgraph";
 import {
   registerKnowledgeTools,
+  rejectTopLevelDatabaseNames,
   type DataAccessConfig,
 } from "@repo/agent-engine-core";
 import {
@@ -52,6 +53,8 @@ import {
 } from "@repo/atlas-explorer-agent";
 
 import { atlasExplorerConfig } from "./config.js";
+
+rejectTopLevelDatabaseNames(atlasExplorerConfig);
 
 // Typed so `databaseNames` type-checks even when config.ts sets only `projects`.
 const dataAccess: DataAccessConfig = atlasExplorerConfig.dataAccess;

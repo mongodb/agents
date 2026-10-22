@@ -82,6 +82,19 @@ export function validateDataAccess(dataAccess: DataAccessConfig = {}): void {
   validateDatabaseNames(dataAccess.databaseNames);
 }
 
+/**
+ * Throws when an agent config sets `databaseNames` at the top level instead
+ * of under `dataAccess`. The esbuild and tsx paths skip type-checking, so a
+ * misplaced key would otherwise be ignored and every database allowed.
+ */
+export function rejectTopLevelDatabaseNames(config: object): void {
+  if (Object.hasOwn(config, "databaseNames")) {
+    throw new Error(
+      "databaseNames must be set under dataAccess. Move it to dataAccess.databaseNames in config.ts.",
+    );
+  }
+}
+
 function describeProject(project: DataAccessProjectConfig): string {
   const names = project.clusterNames;
   if (names === undefined) return "all clusters";

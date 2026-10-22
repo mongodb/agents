@@ -19,6 +19,7 @@ import { describe, expect, it } from "vitest";
 import {
   describeDataAccess,
   isUnrestricted,
+  rejectTopLevelDatabaseNames,
   validateDataAccess,
   type DataAccessConfig,
 } from "./dataAccess.js";
@@ -83,6 +84,31 @@ describe("validateDataAccess", () => {
     expect(() =>
       validateDataAccess({ [PROJECT]: {} } as DataAccessConfig),
     ).toThrow(/dataAccess accepts only projects and databaseNames/);
+  });
+});
+
+describe("rejectTopLevelDatabaseNames", () => {
+  it("rejects a database-only config that sets databaseNames at the top level", () => {
+    expect(() =>
+      rejectTopLevelDatabaseNames({
+        dataAccess: {},
+        databaseNames: ["orders"],
+      }),
+    ).toThrow(/dataAccess\.databaseNames/);
+  });
+
+  it("rejects the top-level key even when it is undefined", () => {
+    expect(() =>
+      rejectTopLevelDatabaseNames({ dataAccess: {}, databaseNames: undefined }),
+    ).toThrow(/dataAccess\.databaseNames/);
+  });
+
+  it("accepts databaseNames under dataAccess", () => {
+    expect(() =>
+      rejectTopLevelDatabaseNames({
+        dataAccess: { databaseNames: ["orders"] },
+      }),
+    ).not.toThrow();
   });
 });
 
