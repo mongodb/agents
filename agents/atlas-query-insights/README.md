@@ -340,21 +340,25 @@ Things to know:
   `dataAccess.projects`, or a database outside `dataAccess.databaseNames`,
   still fails when the agent uses it.
 - `dataAccess.databaseNames` in `config.ts` limits the agent to the listed
-  databases on every allowed cluster. List strings (`"orders"`) and regular
-  expressions (`/^tenant_\d+$/`). A string must equal the database name. A
-  regular expression is tested as written, so anchor it (`/^orders$/`) to
-  match the whole name. Omit it to allow every database. `[]` allows none.
-  The system prompt names the allowed databases, and
-  `databaseAllowlistMiddleware` rejects tool calls whose `database` argument
-  does not match. This is a guardrail in the agent. The hard
-  boundary is the MCP configuration's project and roles, and Atlas can't
-  limit that token to specific databases yet. Known gaps:
-  - Tool results are not filtered. Slow query logs can still name other
-    databases in their `db.collection` namespaces. The agent cannot read
-    their data.
-  - Only the `database` argument and `$out` and `$merge` targets in
-    pipelines are checked. Other parts of an aggregation pipeline are not
-    inspected.
+  databases on every allowed cluster.
+  - List strings (`"orders"`) and regular expressions (`/^tenant_\d+$/`).
+  - A string must equal the database name.
+  - A regular expression is tested as written, so anchor it (`/^orders$/`)
+    to match the whole name.
+  - Omit it to allow every database. `[]` allows none.
+  - The system prompt names the allowed databases, and
+    `databaseAllowlistMiddleware` rejects tool calls whose `database`
+    argument does not match.
+  - This is a guardrail in the agent. The hard boundary is the MCP
+    configuration's project and roles, and Atlas can't limit that token to
+    specific databases yet.
+  - Known gaps:
+    - Tool results are not filtered. Slow query logs can still name other
+      databases in their `db.collection` namespaces. The agent cannot read
+      their data.
+    - Only the `database` argument and `$out` and `$merge` targets in
+      pipelines are checked. Other parts of an aggregation pipeline are not
+      inspected.
 
 ## Safety
 
