@@ -44,8 +44,9 @@ import type {
  *   - A regular expression is tested against the name as written, so anchor
  *     it to match the whole name. It can only use the `i` and `u` flags.
  *
- * It is a guardrail in the agent. The hard boundary is the MCP access token,
- * which can't be limited to specific databases today. What it covers:
+ * `databaseNames` is a guardrail in the agent. The hard boundary is the MCP
+ * access token, which can't be limited to specific databases today. What
+ * `databaseNames` covers:
  *
  * - Checked: each tool call's `database` argument, and the target database of
  *   `$out` and `$merge`.
