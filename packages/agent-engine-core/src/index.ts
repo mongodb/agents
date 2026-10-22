@@ -38,7 +38,6 @@ export {
 export {
   describeDataAccess,
   isUnrestricted,
-  rejectTopLevelDatabaseNames,
   validateDataAccess,
   type DataAccessConfig,
   type DataAccessProjectConfig,
