@@ -195,27 +195,66 @@ describe("guardDatabaseCall", () => {
       });
     });
 
-    it("runs a plain text value that mentions $out", async () => {
-      const { ran } = await run(
+    it.each([
+      [
+        "a find filter holding pipeline JSON text",
+        call("mongodb__find", {
+          database: "orders",
+          collection: "c",
+          filter: { note: '[{"$out":{"db":"admin","coll":"copy"}}]' },
+        }),
+      ],
+      [
+        "a find filter that mentions $out in plain text",
         call("mongodb__find", {
           database: "orders",
           collection: "c",
           filter: { note: "uses $out and $merge" },
         }),
-      );
-      expect(ran).toBe(true);
+      ],
+      [
+        "a stored document that contains a pipeline",
+        call("mongodb__insert_many", {
+          database: "orders",
+          collection: "c",
+          documents: [{ pipeline: [{ $out: { db: "admin", coll: "copy" } }] }],
+        }),
+      ],
+      [
+        "an explain of a find that holds pipeline JSON text",
+        call("mongodb__explain", {
+          database: "orders",
+          collection: "c",
+          method: [
+            {
+              name: "find",
+              arguments: {
+                filter: { note: '[{"$out":{"db":"admin","coll":"copy"}}]' },
+              },
+            },
+          ],
+        }),
+      ],
+      [
+        "a $match on pipeline JSON text inside an aggregate",
+        aggregate([
+          { $match: { note: '[{"$out":{"db":"admin","coll":"copy"}}]' } },
+        ]),
+      ],
+    ])("runs %s, since it is data and not a pipeline", async (_label, request) => {
+      expect((await run(request)).ran).toBe(true);
     });
 
-    it("rejects arguments nested deeper than 20 levels", async () => {
-      const nestedArgs = (levels: number) => {
+    it("rejects arguments nested deeper than 20 levels in a pipeline", async () => {
+      const nestedPipeline = (levels: number) => {
         let value: unknown = { ok: true };
         for (let i = 1; i < levels; i++) value = { nested: value };
-        return { database: "orders", collection: "c", nested: value };
+        return [value];
       };
 
-      expect((await run(call("mongodb__find", nestedArgs(20)))).ran).toBe(true);
+      expect((await run(aggregate(nestedPipeline(20)))).ran).toBe(true);
 
-      const tooDeep = await run(call("mongodb__find", nestedArgs(21)));
+      const tooDeep = await run(aggregate(nestedPipeline(21)));
       expect(tooDeep.ran).toBe(false);
       expect(tooDeep.result).toMatchObject({
         content: expect.stringContaining("deeper than 20 levels"),

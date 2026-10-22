@@ -262,8 +262,9 @@ databaseNames: ["orders", /^tenant_\d+$/] satisfies DatabaseNamesConfig,
   upgrading a cluster must name an allowed cluster, and creating a project is
   rejected.
 - `databaseAllowlistMiddleware` rejects tool calls whose `database` argument
-  is outside `databaseNames`. For `aggregate` and `aggregate_db`, it also
-  checks the target database of `$out` and `$merge`.
+  is outside `databaseNames`. For `aggregate`, `aggregate_db`, and `explain`,
+  it also checks the target database of `$out` and `$merge` in the pipeline.
+  It does not scan filters or documents.
 - A rejected call returns an error to the agent, so it can correct itself.
 
 ### What it cannot enforce

@@ -44,7 +44,8 @@ import type {
  * `databaseNames` covers:
  *
  * - Checked: each tool call's `database` argument, and the target database of
- *   `$out` and `$merge`.
+ *   `$out` and `$merge` in the pipeline of `aggregate`, `aggregate_db`, and
+ *   `explain`.
  * - Not checked: other parts of an aggregation pipeline.
  * - Not filtered: tool results, so the agent can still see names of
  *   databases it may not use.

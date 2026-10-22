@@ -17,6 +17,7 @@
 import { ToolMessage } from "@langchain/core/messages";
 import { createMiddleware } from "langchain";
 
+import { AGGREGATE_WRITE_TOOLS } from "./aggregateWriteApproval.js";
 import {
   isRecord,
   rejectToolCall,
@@ -36,7 +37,7 @@ const TOOLS_WITHOUT_DATABASE: ReadonlySet<string> = new Set([
   "mongodb__remote_atlas_connect",
 ]);
 
-const MAX_ARGUMENT_DEPTH = 20;
+const MAX_PIPELINE_DEPTH = 20;
 
 class UncheckableArgumentsError extends Error {}
 
@@ -69,7 +70,9 @@ export function findDatabaseViolation({
 
   let writeStageDatabases: string[];
   try {
-    writeStageDatabases = findWriteStageDatabases({ value: args });
+    writeStageDatabases = findPipelines({ name, args }).flatMap((pipeline) =>
+      findWriteStageDatabases({ pipeline }),
+    );
   } catch (error) {
     if (error instanceof UncheckableArgumentsError) return error.message;
     throw error;
@@ -98,40 +101,65 @@ function describeDisallowedDatabases({
   return `${subject} not in the databaseNames allowlist. Allowed: ${describeAllowedDatabases(databaseNames)}.`;
 }
 
-// Finds the databases that aggregation pipeline stages write to. `$out: { db }`
-// and `$merge: { into: { db } }` are the stages documented to write to another
-// database. Only those keys are read, so a filter on a field named `db` is
-// not mistaken for a write stage's database.
+// The only tool arguments that hold an aggregation pipeline. Every other
+// argument is data, such as a filter or a document, and is never read for
+// write stages.
+function findPipelines({
+  name,
+  args,
+}: {
+  name: string;
+  args: Record<string, unknown>;
+}): unknown[] {
+  if (AGGREGATE_WRITE_TOOLS.has(name)) return [args.pipeline];
+  if (name !== "mongodb__explain") return [];
+  const methods = parseJsonString(args.method);
+  if (!Array.isArray(methods)) return [];
+  return methods.flatMap((method) => {
+    if (!isRecord(method) || method.name !== "aggregate") return [];
+    const methodArguments = parseJsonString(method.arguments);
+    return isRecord(methodArguments) ? [methodArguments.pipeline] : [];
+  });
+}
+
+// Finds the databases that the stages of one aggregation pipeline write to.
+// `$out: { db }` and `$merge: { into: { db } }` are the stages documented to
+// write to another database. Strings inside the pipeline are values, so they
+// are not parsed.
 function findWriteStageDatabases({
+  pipeline,
+}: {
+  pipeline: unknown;
+}): string[] {
+  const parsed = parseJsonString(pipeline);
+  if (typeof parsed === "string" && mentionsWriteStage(parsed)) {
+    throw new UncheckableArgumentsError(
+      "A pipeline with $out or $merge could not be parsed, so databaseNames cannot check its target database.",
+    );
+  }
+  return collectWriteStageDatabases({ value: parsed, depth: 0 });
+}
+
+function collectWriteStageDatabases({
   value,
-  depth = 0,
+  depth,
 }: {
   value: unknown;
-  depth?: number;
+  depth: number;
 }): string[] {
-  const parsed = parseJsonString(value);
-  if (typeof parsed === "string") {
-    // Still a string after parsing, so it is either plain text or broken JSON.
-    if (looksLikeJson(parsed) && mentionsWriteStage(parsed)) {
-      throw new UncheckableArgumentsError(
-        "A pipeline with $out or $merge could not be parsed, so databaseNames cannot check its target database.",
-      );
-    }
-    return [];
-  }
-  if (!Array.isArray(parsed) && !isRecord(parsed)) return [];
-  if (depth > MAX_ARGUMENT_DEPTH) {
+  if (!Array.isArray(value) && !isRecord(value)) return [];
+  if (depth > MAX_PIPELINE_DEPTH) {
     throw new UncheckableArgumentsError(
-      `Tool call arguments nest deeper than ${MAX_ARGUMENT_DEPTH} levels, so databaseNames cannot check them.`,
+      `A pipeline nests deeper than ${MAX_PIPELINE_DEPTH} levels, so databaseNames cannot check it.`,
     );
   }
-  if (Array.isArray(parsed)) {
-    return parsed.flatMap((item) =>
-      findWriteStageDatabases({ value: item, depth: depth + 1 }),
+  if (Array.isArray(value)) {
+    return value.flatMap((item) =>
+      collectWriteStageDatabases({ value: item, depth: depth + 1 }),
     );
   }
-  return Object.entries(parsed).flatMap(([key, child]) => {
-    const nestedDatabases = findWriteStageDatabases({
+  return Object.entries(value).flatMap(([key, child]) => {
+    const nestedDatabases = collectWriteStageDatabases({
       value: child,
       depth: depth + 1,
     });
@@ -149,14 +177,13 @@ function readWriteStageDatabase(
   stage: "$out" | "$merge",
   value: unknown,
 ): string | undefined {
-  const options = parseJsonString(value);
-  if (!isRecord(options)) return undefined;
+  if (!isRecord(value)) return undefined;
   if (stage === "$merge") {
     // { $merge: { into: { db: "archive", coll: "c" } } }
-    return readDbField(parseJsonString(options.into));
+    return readDbField(value.into);
   }
   // { $out: { db: "archive", coll: "c" } }
-  return readDbField(options);
+  return readDbField(value);
 }
 
 function readDbField(value: unknown): string | undefined {

@@ -340,8 +340,9 @@ Things to know:
   - Tool results are not filtered. Slow query logs can still name other
     databases in their `db.collection` namespaces. The agent cannot read
     their data.
-  - Only the `database` argument and `$out` and `$merge` targets are
-    checked. Other parts of an aggregation pipeline are not inspected.
+  - Only the `database` argument and `$out` and `$merge` targets in
+    pipelines are checked. Other parts of an aggregation pipeline are not
+    inspected.
 
 ## Safety
 
