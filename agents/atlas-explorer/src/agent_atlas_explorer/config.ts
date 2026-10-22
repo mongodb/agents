@@ -52,8 +52,8 @@ import type {
  *   `$out` and `$merge` in the pipeline of `aggregate`, `aggregate_db`, and
  *   `explain`.
  * - Not checked: other parts of an aggregation pipeline.
- * - Not checked: `aggregate_db` stages such as `$currentOp` and
- *   `$queryStats`, which report activity on every database.
+ * - Not checked: cluster-level `aggregate_db` stages such as `$currentOp`
+ *   and `$queryStats`, which report activity on every database.
  * - Not filtered: tool results, so the agent can still see names of
  *   databases it may not use.
  *
