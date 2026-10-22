@@ -37,9 +37,16 @@ export type DatabaseNamesConfig = readonly (string | RegExp)[];
 
 export type DatabaseMatcher = (databaseName: string) => boolean;
 
-// MongoDB rejects these characters and names longer than 64 characters.
+// Matches any character MongoDB rejects in a database name: slash, backslash,
+// dot, space, double quote, dollar sign, `*`, `<`, `>`, `:`, `|`, `?`, or the
+// null character.
 const FORBIDDEN_NAME_CHARACTERS = /[/\\. "$*<>:|?\0]/;
+// MongoDB rejects database names longer than this.
 const MAX_NAME_LENGTH = 64;
+// Matches a flags string made only of `i` (case-insensitive) and `u`
+// (Unicode). Other flags change how matching works: `g` and `y` make
+// `.test()` remember its position between calls, and `m` and `s` change how
+// `^`, `$`, and `.` treat newlines.
 const ALLOWED_REGEXP_FLAGS = /^[iu]*$/;
 
 /** Throws when an entry is not a valid database name or a safe regex. */
