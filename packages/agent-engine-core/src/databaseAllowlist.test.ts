@@ -55,7 +55,7 @@ describe("guardDatabaseCall", () => {
     ["list_databases without a database", "mongodb__list_databases", {}],
     ["remote_atlas_connect", "mongodb__remote_atlas_connect", { projectId: "p", clusterName: "c" }],
     ["a control plane tool", "mongodb__atlas_list_clusters", { projectId: "p" }],
-    ["a non-MongoDB tool", "search_knowledge", { query: "indexes" }],
+    ["a MongoDB knowledge tool outside the Atlas MCP", "search_knowledge", { query: "indexes" }],
   ])("runs %s", async (_label, name, args) => {
     expect((await run(call(name, args))).ran).toBe(true);
   });
