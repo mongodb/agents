@@ -54,10 +54,14 @@ Set these local secrets in `.env`:
 - `ATLAS_MCP_CLIENT_SECRET`
 - `OPENAI_API_KEY`
 
-Non-secret settings live in `config.ts`: the model, how the agent
-introduces itself, optional custom instructions, and an optional
-`dataAccess` block with an optional `projects` map of allowed projects and
-clusters and an optional `databaseNames` list of allowed databases.
+Non-secret settings live in `config.ts`:
+
+- The model.
+- How the agent introduces itself.
+- Optional custom instructions.
+- An optional `dataAccess` block, with either or both of these keys:
+  - `projects`: a map of allowed projects and clusters.
+  - `databaseNames`: a list of allowed databases.
 
 Create a **project-level** MongoDB MCP configuration before starting the
 agent. Atlas Admin API still calls a project a group, so this uses
