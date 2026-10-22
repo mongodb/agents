@@ -31,7 +31,7 @@ export interface AtlasQueryInsightsConfig {
     readonly customInstructions: string;
   };
   readonly dataAccess: DataAccessConfig;
-  readonly databaseNames: DatabaseNamesConfig | undefined;
+  readonly databaseNames?: DatabaseNamesConfig;
   readonly maxQueryShapes: number;
   readonly inputGuard: InputGuardConfig;
 }

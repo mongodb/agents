@@ -31,7 +31,7 @@ export interface AtlasExplorerConfig {
     readonly customInstructions: string;
   };
   readonly dataAccess: DataAccessConfig;
-  readonly databaseNames: DatabaseNamesConfig | undefined;
+  readonly databaseNames?: DatabaseNamesConfig;
   readonly diagnostics: {
     readonly logRuntimeLifecycle: boolean;
   };
