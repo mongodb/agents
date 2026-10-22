@@ -329,9 +329,9 @@ Things to know:
   hard boundary is the one Atlas project that the MCP configuration belongs to.
 - `databaseNames` in `config.ts` limits the agent to the listed databases on
   every allowed cluster. List names (`"orders"`) and regular expressions
-  (`/^tenant_\d+$/`). A name must match exactly and a regular expression
-  must match the whole name. Leave it as `undefined` to allow every
-  database. `[]` allows none. The system prompt names the allowed databases,
+  (`/^tenant_\d+$/`). A name must match exactly. A regular expression is
+  tested as written, so anchor it (`/^orders$/`) to match the whole name.
+  Leave it as `undefined` to allow every database. `[]` allows none. The system prompt names the allowed databases,
   and `databaseAllowlistMiddleware` rejects tool calls whose `database`
   argument does not match. This is a guardrail in the agent. The hard
   boundary is the MCP configuration's project and roles, and Atlas can't

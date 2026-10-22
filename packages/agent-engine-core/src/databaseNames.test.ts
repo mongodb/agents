@@ -102,40 +102,23 @@ describe("createDatabaseMatcher", () => {
   });
 
   describe("with a regular expression entry", () => {
-    const matches = createDatabaseMatcher([/orders/, /tenant_\d+/]);
+    const matches = createDatabaseMatcher([/^orders$/, /tenant_\d+/]);
 
-    it.each(["orders", "tenant_12"])(
-      "matches %s, which the expression covers entirely",
-      (name) => {
-        expect(matches?.(name)).toBe(true);
-      },
-    );
-
-    it.each(["orders_archive", "tenant_12_secret"])(
-      "does not match %s, which has extra text after the match",
-      (name) => {
-        expect(matches?.(name)).toBe(false);
-      },
-    );
-
-    it("does not match a name with extra text before the match", () => {
-      expect(matches?.("my_orders")).toBe(false);
-    });
-  });
-
-  describe("with alternation in a regular expression", () => {
-    const matches = createDatabaseMatcher([/a|b/]);
-
-    it.each(["a", "b"])("matches %s as a whole name", (name) => {
-      expect(matches?.(name)).toBe(true);
+    it("matches a name the expression covers", () => {
+      expect(matches?.("orders")).toBe(true);
     });
 
-    it.each(["ab", "xb"])(
-      "does not match %s, which only contains an alternative",
-      (name) => {
-        expect(matches?.(name)).toBe(false);
-      },
-    );
+    it("tests the expression as written, so it can match part of a name", () => {
+      expect(matches?.("my_tenant_12_data")).toBe(true);
+    });
+
+    it("does not match when an anchored expression has extra text", () => {
+      expect(matches?.("orders_archive")).toBe(false);
+    });
+
+    it("does not match a name the expressions do not cover", () => {
+      expect(matches?.("admin")).toBe(false);
+    });
   });
 
   it("honors the i flag", () => {
@@ -185,7 +168,7 @@ describe("describeDatabaseNames", () => {
       [
         "Access is limited to these databases. Do not use any other database:",
         "- orders",
-        "- names matching the whole regular expression /^tenant_\\d+$/",
+        "- names matching the regular expression /^tenant_\\d+$/",
         "",
         DATABASE_LIST_NOTE,
       ].join("\n"),

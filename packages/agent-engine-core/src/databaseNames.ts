@@ -18,9 +18,9 @@
  * Databases an agent may use, across every allowed cluster. Omit to allow
  * every database. `[]` allows none.
  *
- * A string must equal the database name. A `RegExp` must match the whole
- * name, so `/orders/` does not allow `orders_archive`. Only the `i` and `u`
- * flags are accepted.
+ * A string must equal the database name. A `RegExp` is tested against the
+ * name as written, so anchor it (`/^orders$/`) to match the whole name. Only
+ * the `i` and `u` flags are accepted.
  */
 export type DatabaseNamesConfig = readonly (string | RegExp)[];
 
@@ -82,7 +82,7 @@ export function createDatabaseMatcher(
     if (typeof entry === "string") {
       exact.add(entry);
     } else {
-      patterns.push(new RegExp(`^(?:${entry.source})$`, entry.flags));
+      patterns.push(entry);
     }
   }
   return (databaseName) =>
@@ -92,7 +92,7 @@ export function createDatabaseMatcher(
 
 function describeEntry(entry: string | RegExp): string {
   return entry instanceof RegExp
-    ? `names matching the whole regular expression ${entry}`
+    ? `names matching the regular expression ${entry}`
     : entry;
 }
 

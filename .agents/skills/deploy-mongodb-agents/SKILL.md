@@ -179,9 +179,9 @@ Then edit `config.ts` and show the user the diff before saving:
   databaseNames: ["orders", /^tenant_\d+$/] satisfies DatabaseNamesConfig,
   ```
 
-  A string must equal the database name. A regular expression must match
-  the whole name. Leave `databaseNames` as `undefined` to allow every
-  database. `[]` allows none.
+  A string must equal the database name. A regular expression is tested
+  as written, so anchor it (`/^orders$/`) to match the whole name. Leave
+  `databaseNames` as `undefined` to allow every database. `[]` allows none.
 
 Atlas Explorer users can also add a data map: a list of databases, collections and fields so the agent can skip exploring. It goes stale, so offer it only if the user asks or says they'd like it, and only if this coding agent already has the MongoDB MCP connected. Then follow [references/data-map.md](references/data-map.md).
 

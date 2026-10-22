@@ -61,7 +61,7 @@ describe("guardDatabaseCall", () => {
   });
 
   it.each([
-    ["mongodb__find", { database: "admin", collection: "c" }, "Database admin is not in the databaseNames allowlist. Allowed: orders, names matching the whole regular expression /^tenant_\\d+$/."],
+    ["mongodb__find", { database: "admin", collection: "c" }, "Database admin is not in the databaseNames allowlist. Allowed: orders, names matching the regular expression /^tenant_\\d+$/."],
     ["mongodb__count", { database: "orders_archive", collection: "c" }, "Database orders_archive is not in"],
     ["mongodb__drop_database", { database: "tenant_1_secret" }, "Database tenant_1_secret is not in"],
     ["mongodb__db_stats", { database: "" }, "needs a database"],

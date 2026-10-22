@@ -39,8 +39,9 @@ import type {
  * - Leave it `undefined` to allow every database.
  * - `[]` allows no databases.
  * - Otherwise list names (`"orders"`) and regular expressions
- *   (`/^tenant_\d+$/`). A name must match exactly. A regular expression must
- *   match the whole name and can only use the `i` and `u` flags.
+ *   (`/^tenant_\d+$/`). A name must match exactly. A regular expression is
+ *   tested as written, so anchor it to match the whole name. It can only use
+ *   the `i` and `u` flags.
  *
  * It is a guardrail in the agent. The hard boundary is the MCP access token,
  * which can't be limited to specific databases today. What it covers:
