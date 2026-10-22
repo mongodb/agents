@@ -54,7 +54,7 @@ export function isUnrestricted(dataAccess?: DataAccessConfig): boolean {
 /**
  * Throws when `dataAccess` has an unknown key, or an id, name, or database
  * rule Atlas or the agent would not accept. Unknown keys are rejected so a
- * setting that moved cannot silently drop a restriction.
+ * misspelled setting cannot silently drop a restriction.
  */
 export function validateDataAccess(dataAccess: DataAccessConfig = {}): void {
   for (const key of Object.keys(dataAccess)) {
