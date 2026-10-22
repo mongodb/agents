@@ -278,7 +278,7 @@ roles.
 - **Tool results are not filtered.** List tools can still show projects,
   clusters, and databases the agent may not use. The prompt warns the agent
   that using one returns an error.
-- **`aggregate_db` reports on every database.** Database-level stages such as
+- **`aggregate_db` reports on every database.** Cluster-level stages such as
   `$currentOp` and `$queryStats` cover activity on every database, not only
   the one named in the `database` argument.
 - **Existing Atlas Stream Processing connections** (writes enabled only). A
