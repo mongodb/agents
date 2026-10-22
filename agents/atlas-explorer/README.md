@@ -295,6 +295,8 @@ dataAccess: {
   - `$out` and `$merge` target databases in `aggregate`, `aggregate_db`, and
     `explain` pipelines.
   - `namespaces` in `atlas_get_performance_advisor`.
+  - Processor databases (`$source`, `$lookup`, `$merge`, `$out`, and `dlq`)
+    in `atlas_streams_build` and `atlas_streams_manage`.
   - It does not scan filters or documents.
 - A rejected call returns an error to the agent, so it can correct itself.
 
@@ -312,12 +314,15 @@ roles.
 - **`aggregate_db` reports on every database.** Cluster-level stages such as
   `$currentOp` and `$queryStats` cover activity on every database, not only
   the one named in the `database` argument.
-- **Existing Atlas Stream Processing connections** (writes enabled only). A
-  connection is a saved link from a stream workspace to a data source, such
-  as a cluster. Creating one must name an allowed cluster. Updating or using
-  an existing one names only the connection, so if it points at a cluster
-  outside `dataAccess.projects`, the agent can still change it or start a processor
-  that reads or writes through it.
+- **Existing Atlas Stream Processing connections and processors** (writes
+  enabled only). A connection is a saved link from a stream workspace to a
+  data source, such as a cluster. Creating one must name an allowed cluster.
+  Updating or using an existing one names only the connection, so if it
+  points at a cluster outside `dataAccess.projects`, the agent can still
+  change it or start a processor that reads or writes through it. Starting
+  an existing processor (`start-processor`) or creating a cluster-wide
+  `$source` without `db` likewise does not name a database in the call
+  arguments.
 
 ## MCP credential lifecycle
 

@@ -311,6 +311,257 @@ describe("guardDatabaseCall", () => {
       });
     });
   });
+
+  describe("Stream Processing databases", () => {
+    const buildProcessor = (
+      pipeline: unknown,
+      dlq?: unknown,
+    ) =>
+      call("mongodb__atlas_streams_build", {
+        projectId: "p",
+        workspaceName: "ws",
+        resource: "processor",
+        processorName: "proc",
+        pipeline,
+        ...(dlq === undefined ? {} : { dlq }),
+      });
+
+    it.each([
+      [
+        "a workspace creation call",
+        call("mongodb__atlas_streams_build", {
+          projectId: "p",
+          resource: "workspace",
+          workspaceName: "ws",
+        }),
+      ],
+      [
+        "a start-processor call",
+        call("mongodb__atlas_streams_manage", {
+          projectId: "p",
+          workspaceName: "ws",
+          action: "start-processor",
+          resourceName: "proc",
+        }),
+      ],
+      [
+        "a Kafka source and emit pipeline",
+        buildProcessor([
+          { $source: { connectionName: "kafka", topic: "events" } },
+          { $emit: { connectionName: "kafka", topic: "out" } },
+        ]),
+      ],
+      [
+        "a cluster-wide change stream source without db",
+        buildProcessor([
+          { $source: { connectionName: "cluster" } },
+          { $emit: { connectionName: "kafka", topic: "out" } },
+        ]),
+      ],
+      [
+        "allowed $source, $lookup, $merge, and dlq databases",
+        buildProcessor(
+          [
+            {
+              $source: {
+                connectionName: "cluster",
+                db: "orders",
+                coll: "events",
+              },
+            },
+            {
+              $lookup: {
+                connectionName: "cluster",
+                from: { db: "orders", coll: "users" },
+                localField: "userId",
+                foreignField: "_id",
+                as: "user",
+              },
+            },
+            {
+              $merge: {
+                into: {
+                  connectionName: "cluster",
+                  db: "tenant_3",
+                  coll: "archive",
+                },
+              },
+            },
+          ],
+          { connectionName: "cluster", db: "orders", coll: "dlq" },
+        ),
+      ],
+      [
+        "stringified pipeline and dlq",
+        buildProcessor(
+          JSON.stringify([
+            {
+              $merge: {
+                into: { connectionName: "cluster", db: "orders", coll: "out" },
+              },
+            },
+          ]),
+          JSON.stringify({
+            connectionName: "cluster",
+            db: "orders",
+            coll: "dlq",
+          }),
+        ),
+      ],
+    ])("runs %s", async (_label, request) => {
+      expect((await run(request)).ran).toBe(true);
+    });
+
+    it.each([
+      [
+        "$source.db",
+        buildProcessor([
+          { $source: { connectionName: "c", db: "admin", coll: "events" } },
+        ]),
+      ],
+      [
+        "$lookup.from.db",
+        buildProcessor([
+          {
+            $lookup: {
+              connectionName: "c",
+              from: { db: "admin", coll: "users" },
+            },
+          },
+        ]),
+      ],
+      [
+        "$merge.into.db",
+        buildProcessor([
+          {
+            $merge: {
+              into: { connectionName: "c", db: "admin", coll: "out" },
+            },
+          },
+        ]),
+      ],
+      [
+        "$out.db",
+        buildProcessor([{ $out: { db: "admin", coll: "out" } }]),
+      ],
+      [
+        "dlq.db",
+        buildProcessor(
+          [{ $source: { connectionName: "k", topic: "t" } }],
+          { connectionName: "c", db: "admin", coll: "dlq" },
+        ),
+      ],
+      [
+        "modify-processor with a disallowed $merge.into.db",
+        call("mongodb__atlas_streams_manage", {
+          projectId: "p",
+          workspaceName: "ws",
+          action: "modify-processor",
+          resourceName: "proc",
+          pipeline: [
+            {
+              $merge: {
+                into: { connectionName: "c", db: "admin", coll: "out" },
+              },
+            },
+          ],
+        }),
+      ],
+    ])("rejects a disallowed %s", async (_label, request) => {
+      const { result, ran } = await run(request);
+      expect(ran).toBe(false);
+      expect(result).toMatchObject({
+        content: expect.stringContaining(
+          "Database admin is not in the databaseNames allowlist.",
+        ),
+      });
+    });
+
+    it("lists every disallowed database across pipeline stages and dlq in one error", async () => {
+      const { result, ran } = await run(
+        buildProcessor(
+          [
+            { $source: { connectionName: "c", db: "secret", coll: "in" } },
+            {
+              $lookup: {
+                connectionName: "c",
+                from: { db: "admin", coll: "users" },
+              },
+            },
+            {
+              $merge: {
+                into: { connectionName: "c", db: "audit", coll: "out" },
+              },
+            },
+          ],
+          { connectionName: "c", db: "dlq_db", coll: "errors" },
+        ),
+      );
+      expect(ran).toBe(false);
+      expect(result).toMatchObject({
+        content: expect.stringContaining(
+          "Databases dlq_db, secret, admin, audit are not in the databaseNames allowlist.",
+        ),
+      });
+    });
+
+    it("rejects a stream stage database with surrounding whitespace", async () => {
+      const { ran } = await run(
+        buildProcessor([
+          {
+            $merge: {
+              into: { connectionName: "c", db: "orders ", coll: "out" },
+            },
+          },
+        ]),
+      );
+      expect(ran).toBe(false);
+    });
+
+    it.each([
+      [
+        "a dlq without db",
+        buildProcessor(
+          [{ $source: { connectionName: "k", topic: "t" } }],
+          { connectionName: "c", coll: "dlq" },
+        ),
+        "dlq must include a database name",
+      ],
+      [
+        "a non-array pipeline",
+        buildProcessor("{ $merge: {} }"),
+        "pipeline must be an array of stages",
+      ],
+      [
+        "a collection $source without a string db",
+        buildProcessor([{ $source: { connectionName: "c", coll: "events" } }]),
+        "$source stage must include a string db",
+      ],
+      [
+        "a $lookup without from.db",
+        buildProcessor([
+          { $lookup: { connectionName: "c", from: "users" } },
+        ]),
+        "$lookup stage must include a string from.db",
+      ],
+      [
+        "a $merge without into.db",
+        buildProcessor([{ $merge: { into: { connectionName: "c", coll: "x" } } }]),
+        "$merge stage must include a string into.db",
+      ],
+      [
+        "a $out without db",
+        buildProcessor([{ $out: "copy" }]),
+        "$out stage must be an object, so databaseNames",
+      ],
+    ])("rejects %s", async (_label, request, expectedMessage) => {
+      const { result, ran } = await run(request);
+      expect(ran).toBe(false);
+      expect(result).toMatchObject({
+        content: expect.stringContaining(expectedMessage),
+      });
+    });
+  });
 });
 
 describe("after an approval edit", () => {

@@ -47,6 +47,8 @@ class UncheckableArgumentsError extends Error {}
  * - Each data tool call's `database` argument.
  * - The `$out` or `$merge` target database in aggregate pipelines.
  * - `namespaces` in `atlas_get_performance_advisor`.
+ * - Stream processor databases in `atlas_streams_build` and
+ *   `atlas_streams_manage`.
  */
 export function findDatabaseViolation({
   databaseNames,
@@ -89,7 +91,8 @@ export function findDatabaseViolation({
 
 // Most `mongodb__atlas_*` tools are control plane tools with no database
 // arguments. `atlas_get_performance_advisor` can filter slow query logs by
-// `db.collection` namespaces.
+// `db.collection` namespaces, and `atlas_streams_build` and
+// `atlas_streams_manage` can name databases in processor pipelines and DLQs.
 function findAtlasToolDatabases({
   name,
   args,
@@ -100,7 +103,136 @@ function findAtlasToolDatabases({
   if (name === "mongodb__atlas_get_performance_advisor") {
     return findPerformanceAdvisorDatabases(args);
   }
+  if (
+    name === "mongodb__atlas_streams_build" ||
+    name === "mongodb__atlas_streams_manage"
+  ) {
+    return findStreamProcessorDatabases(args);
+  }
   return [];
+}
+
+function findStreamProcessorDatabases(
+  args: Record<string, unknown>,
+): string[] {
+  const databases: string[] = [];
+  if (args.dlq !== undefined) {
+    databases.push(readStreamDlqDatabase(args.dlq));
+  }
+  if (args.pipeline !== undefined) {
+    databases.push(...findStreamPipelineDatabases(args.pipeline));
+  }
+  return databases;
+}
+
+function readStreamDlqDatabase(dlq: unknown): string {
+  const parsed = parseJsonString(dlq);
+  const database = isRecord(parsed) ? readNonEmptyString(parsed.db) : undefined;
+  if (!database) {
+    throw new UncheckableArgumentsError(
+      "Stream processor dlq must include a database name in db.",
+    );
+  }
+  return database;
+}
+
+function findStreamPipelineDatabases(pipeline: unknown): string[] {
+  const parsed = parseJsonString(pipeline);
+  if (!Array.isArray(parsed)) {
+    throw new UncheckableArgumentsError(
+      "A stream processor pipeline must be an array of stages, so databaseNames can check its databases.",
+    );
+  }
+  return collectStreamStageDatabases({ value: parsed, depth: 0 });
+}
+
+function collectStreamStageDatabases({
+  value,
+  depth,
+}: {
+  value: unknown;
+  depth: number;
+}): string[] {
+  if (!Array.isArray(value) && !isRecord(value)) return [];
+  if (depth > MAX_PIPELINE_DEPTH) {
+    throw new UncheckableArgumentsError(
+      `A pipeline nests deeper than ${MAX_PIPELINE_DEPTH} levels, so databaseNames cannot check it.`,
+    );
+  }
+  if (Array.isArray(value)) {
+    return value.flatMap((item) =>
+      collectStreamStageDatabases({ value: item, depth: depth + 1 }),
+    );
+  }
+  return Object.entries(value).flatMap(([key, child]) => {
+    const nestedDatabases = collectStreamStageDatabases({
+      value: child,
+      depth: depth + 1,
+    });
+    if (
+      key !== "$source" &&
+      key !== "$lookup" &&
+      key !== "$merge" &&
+      key !== "$out"
+    ) {
+      return nestedDatabases;
+    }
+    const stageDatabase = readStreamStageDatabase(key, child);
+    return stageDatabase
+      ? [stageDatabase, ...nestedDatabases]
+      : nestedDatabases;
+  });
+}
+
+function readStreamStageDatabase(
+  stage: "$source" | "$lookup" | "$merge" | "$out",
+  value: unknown,
+): string | undefined {
+  if (!isRecord(value)) {
+    throw new UncheckableArgumentsError(
+      `Stream processor ${stage} stage must be an object, so databaseNames can check its database.`,
+    );
+  }
+  if (stage === "$source") {
+    // Kafka, Kinesis, inline document, and cluster-wide change stream sources
+    // do not name a database. A collection source names `db` (and `coll`).
+    if (value.db === undefined && value.coll === undefined) return undefined;
+    const database = readNonEmptyString(value.db);
+    if (!database) {
+      throw new UncheckableArgumentsError(
+        "Stream processor $source stage must include a string db.",
+      );
+    }
+    return database;
+  }
+  if (stage === "$lookup") {
+    // { $lookup: { connectionName: "c", from: { db: "orders", coll: "users" } } }
+    const database = readDbField(value.from);
+    if (!database) {
+      throw new UncheckableArgumentsError(
+        "Stream processor $lookup stage must include a string from.db.",
+      );
+    }
+    return database;
+  }
+  if (stage === "$merge") {
+    // { $merge: { into: { connectionName: "c", db: "orders", coll: "out" } } }
+    const database = readDbField(value.into) ?? readDbField(value);
+    if (!database) {
+      throw new UncheckableArgumentsError(
+        "Stream processor $merge stage must include a string into.db.",
+      );
+    }
+    return database;
+  }
+  // { $out: { db: "orders", coll: "out" } }
+  const database = readDbField(value);
+  if (!database) {
+    throw new UncheckableArgumentsError(
+      "Stream processor $out stage must include a string db.",
+    );
+  }
+  return database;
 }
 
 function findPerformanceAdvisorDatabases(

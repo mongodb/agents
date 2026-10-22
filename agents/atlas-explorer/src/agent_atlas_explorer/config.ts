@@ -57,8 +57,12 @@ import type {
  *
  * - Checked: each tool call's `database` argument, the target database of
  *   `$out` and `$merge` in the pipeline of `aggregate`, `aggregate_db`, and
- *   `explain`, and `namespaces` in `atlas_get_performance_advisor`.
- * - Not checked: other parts of an aggregation pipeline.
+ *   `explain`, `namespaces` in `atlas_get_performance_advisor`, and
+ *   processor databases (`$source`, `$lookup`, `$merge`, `$out`, and `dlq`)
+ *   in `atlas_streams_build` and `atlas_streams_manage`.
+ * - Not checked: other parts of an aggregation pipeline, or starting an
+ *   existing stream processor (`start-processor`) and cluster-wide `$source`
+ *   stages that omit `db`.
  * - Not checked: cluster-level `aggregate_db` stages such as `$currentOp`
  *   and `$queryStats`, which report activity on every database.
  * - Not filtered: tool results, so the agent can still see names of
