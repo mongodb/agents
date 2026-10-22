@@ -67,8 +67,10 @@ export function validateDatabaseNames(
 
 /**
  * Compiles `databaseNames` into one matcher, or `undefined` when unrestricted.
- * Database names are at most 64 characters and the patterns come from the
- * deployer, so regular expression backtracking is not a concern.
+ *
+ * Regular expressions run as written and can backtrack, so the matcher
+ * rejects any name longer than MongoDB allows before testing a pattern.
+ * That keeps the input short but does not make every pattern fast.
  */
 export function createDatabaseMatcher(
   databaseNames?: DatabaseNamesConfig,
@@ -86,8 +88,9 @@ export function createDatabaseMatcher(
     }
   }
   return (databaseName) =>
-    exact.has(databaseName) ||
-    patterns.some((pattern) => pattern.test(databaseName));
+    databaseName.length <= MAX_NAME_LENGTH &&
+    (exact.has(databaseName) ||
+      patterns.some((pattern) => pattern.test(databaseName)));
 }
 
 function describeEntry(entry: string | RegExp): string {

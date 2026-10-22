@@ -121,6 +121,21 @@ describe("createDatabaseMatcher", () => {
     });
   });
 
+  describe("with a name longer than MongoDB allows", () => {
+    it("matches a 64 character name", () => {
+      expect(createDatabaseMatcher([/.*/])?.("a".repeat(64))).toBe(true);
+    });
+
+    it("rejects a 65 character name even when a pattern would match", () => {
+      expect(createDatabaseMatcher([/.*/])?.("a".repeat(65))).toBe(false);
+    });
+
+    it("rejects a long near-match without running a backtracking pattern", () => {
+      const matches = createDatabaseMatcher([/^(a+)+$/]);
+      expect(matches?.(`${"a".repeat(100)}b`)).toBe(false);
+    });
+  });
+
   it("honors the i flag", () => {
     expect(createDatabaseMatcher([/orders/i])?.("ORDERS")).toBe(true);
   });
