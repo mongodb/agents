@@ -16,6 +16,7 @@
 
 import { describe, expect, it, vi } from "vitest";
 
+import { guardAggregateWrite } from "./aggregateWriteApproval.js";
 import {
   databaseAllowlistMiddleware,
   guardDatabaseCall,
@@ -24,6 +25,13 @@ import {
   createDatabaseMatcher,
   type DatabaseNamesConfig,
 } from "./databaseNames.js";
+
+const interrupt = vi.hoisted(() => vi.fn());
+
+vi.mock("@langchain/langgraph", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@langchain/langgraph")>();
+  return { ...actual, interrupt };
+});
 
 const allowed = ["orders", /^tenant_\d+$/] satisfies DatabaseNamesConfig;
 
@@ -77,6 +85,20 @@ describe("guardDatabaseCall", () => {
       name,
       tool_call_id: "call-1",
       content: expect.stringContaining(message),
+    });
+  });
+
+  it.each([
+    ["a leading tab", "\torders"],
+    ["a trailing space", "orders "],
+    ["a leading space", " orders"],
+  ])("rejects a database argument with %s", async (_label, database) => {
+    const { result, ran } = await run(
+      call("mongodb__find", { database, collection: "c" }),
+    );
+    expect(ran).toBe(false);
+    expect(result).toMatchObject({
+      content: expect.stringContaining("not in the databaseNames allowlist"),
     });
   });
 
@@ -140,6 +162,13 @@ describe("guardDatabaseCall", () => {
       });
     });
 
+    it("rejects a write destination with surrounding whitespace", async () => {
+      const { ran } = await run(
+        aggregate([{ $out: { db: "orders ", coll: "copy" } }]),
+      );
+      expect(ran).toBe(false);
+    });
+
     it("checks aggregate_db and explain the same way", async () => {
       const pipeline = [{ $out: { db: "admin", coll: "copy" } }];
       expect(
@@ -191,6 +220,55 @@ describe("guardDatabaseCall", () => {
       expect(tooDeep.result).toMatchObject({
         content: expect.stringContaining("deeper than 20 levels"),
       });
+    });
+  });
+});
+
+describe("after an approval edit", () => {
+  it.each([
+    [
+      "a disallowed database",
+      { database: "admin", collection: "c", pipeline: [{ $out: "copy" }] },
+    ],
+    [
+      "a disallowed $out destination",
+      {
+        database: "orders",
+        collection: "c",
+        pipeline: [{ $out: { db: "admin", coll: "copy" } }],
+      },
+    ],
+  ])("rejects an edit to %s", async (_label, editedArgs) => {
+    interrupt.mockReturnValue({
+      decisions: [
+        {
+          type: "edit",
+          editedAction: { name: "mongodb__aggregate", args: editedArgs },
+        },
+      ],
+    });
+    const matches = createDatabaseMatcher(allowed);
+    if (!matches) throw new Error("test needs a restricted databaseNames");
+    const handler = vi.fn(async () => "ran");
+    const original = call("mongodb__aggregate", {
+      database: "orders",
+      collection: "c",
+      pipeline: [{ $out: "copy" }],
+    });
+
+    const result = await guardAggregateWrite(original, (edited) =>
+      guardDatabaseCall({
+        databaseNames: allowed,
+        matches,
+        request: edited,
+        handler,
+      }),
+    );
+
+    expect(handler).not.toHaveBeenCalled();
+    expect(result).toMatchObject({
+      status: "error",
+      content: expect.stringContaining("not in the databaseNames allowlist"),
     });
   });
 });

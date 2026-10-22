@@ -127,9 +127,10 @@ export const buildAgent = app.entrypoint((): unknown => {
         stripToolEchoMiddleware,
         redactSecretsMiddleware,
         clusterAllowlistMiddleware(atlasExplorerConfig.dataAccess),
-        databaseAllowlistMiddleware(atlasExplorerConfig.databaseNames),
         mutativeToolReview,
         approveAggregateWritesMiddleware,
+        // After approval, so it checks the arguments a reviewer edited.
+        databaseAllowlistMiddleware(atlasExplorerConfig.databaseNames),
         recoverToolErrorsMiddleware,
       ],
     },

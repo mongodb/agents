@@ -20,7 +20,6 @@ import { createMiddleware } from "langchain";
 import {
   isRecord,
   rejectToolCall,
-  stringArg,
   toolArgs,
   type ClusterToolCall,
 } from "./clusterAllowlist.js";
@@ -63,7 +62,7 @@ export function findDatabaseViolation({
   }
 
   const args = toolArgs(toolCall.args);
-  const database = stringArg(args.database);
+  const database = readNonEmptyString(args.database);
   if (!database) {
     return `${name} needs a database from the databaseNames allowlist.`;
   }
@@ -162,7 +161,13 @@ function readWriteStageDatabase(
 
 function readDbField(value: unknown): string | undefined {
   if (!isRecord(value)) return undefined;
-  return stringArg(value.db);
+  return readNonEmptyString(value.db);
+}
+
+// Database names are compared exactly as the MCP receives them. Trimming
+// here would let " orders" pass as "orders" while naming another database.
+function readNonEmptyString(value: unknown): string | undefined {
+  return typeof value === "string" && value.length > 0 ? value : undefined;
 }
 
 function looksLikeJson(value: string): boolean {
