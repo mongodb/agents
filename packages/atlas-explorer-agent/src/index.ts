@@ -44,6 +44,7 @@ export {
   type ClientUserExtras,
   type DataAccessConfig,
   type DatabaseNamesConfig,
+  type DefaultDataConfig,
   type InputGuardConfig,
   type Requester,
 } from "@repo/agent-engine-core";

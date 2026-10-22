@@ -151,12 +151,24 @@ Without this, the agent often has to ask which cluster to use before it can do a
 
 Ask the user to type the answers. Don't look them up and don't read their cluster to fill them in. You need:
 
-- The default cluster name, and the Atlas project ID if they know it.
+- Any of these they want to set: project id, cluster name, database name, collection name. Each one is a string. They can skip any of them.
 - Optional notes in plain words, such as what the data is for or which databases to ignore.
 
 Then edit `config.ts` and show the user the diff before saving:
 
-- **Atlas Explorer** (`src/agent_atlas_explorer/config.ts`): put the answers in `systemPrompt.customInstructions`, for example `Default cluster: prod-orders. The orders database holds customer orders. Ignore databases that start with test_.` The text is appended to the system prompt after the built-in rules, and the built-in safety rules still apply.
+- **Either agent** (`config.ts`): put the strings in `systemPrompt.defaultData`. Leave a field `""` when they did not give one.
+
+  ```ts
+  defaultData: {
+    projectId: "<project id>",
+    clusterName: "<cluster name>",
+    databaseName: "<database name>",
+    collectionName: "<collection name>",
+  },
+  ```
+
+  The strings go into the system prompt. They are not checked. A project or cluster outside `dataAccess`, or a database outside `databaseNames`, still fails when the agent uses it.
+- **Either agent** (`config.ts`): put other notes in `systemPrompt.customInstructions`, for example `The orders database holds customer orders.` Leave it empty to skip extra prompt text. Built-in safety rules still apply.
 - **Either agent** (`config.ts`): to limit the agent to a cluster, set
   `dataAccess`. The project ID must be a 24-character hex ID.
 

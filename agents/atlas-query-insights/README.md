@@ -21,7 +21,7 @@ agents/atlas-query-insights/
 ├── skills/                            # query optimizer, schema, search, querying, connection
 └── src/agent_atlas_query_insights/
     ├── main.ts                        # Agent Engine entrypoint
-    └── config.ts                      # LLM, prompt persona, dataAccess, databaseNames, and shape limit
+    └── config.ts                      # LLM, persona, default data, dataAccess, and shape limit
 ```
 
 Project memory settings live in the repository root
@@ -327,6 +327,15 @@ Things to know:
   and clusters, and `clusterAllowlistMiddleware` rejects tool calls that
   name any other project or cluster. This is a guardrail in the agent. The
   hard boundary is the one Atlas project that the MCP configuration belongs to.
+- `systemPrompt.defaultData` names a project, cluster, database, and
+  collection for the agent to use when the reader does not. Each value is
+  a string. Leave a field as `""` to leave it unset. The prompt passes
+  `projectId` and `clusterName` under those names, and passes
+  `databaseName` and `collectionName` as `database` and `collection`.
+  When both a database and a collection are set, the Performance Advisor
+  call uses them as one `db.coll` namespace. The strings are not checked.
+  A project or cluster outside `dataAccess`, or a database outside
+  `databaseNames`, still fails when the agent uses it.
 - `databaseNames` in `config.ts` limits the agent to the listed databases on
   every allowed cluster. List strings (`"orders"`) and regular expressions
   (`/^tenant_\d+$/`). A string must equal the database name. A regular

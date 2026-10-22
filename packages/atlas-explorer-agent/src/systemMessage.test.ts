@@ -213,6 +213,51 @@ describe("system prompt modes", () => {
     expect(databasesOnly).toContain("## Scope\n\nAccess is limited to these databases.");
     expect(databasesOnly).not.toContain("Atlas projects and clusters");
   });
+
+  it("adds a Default data section only when a default string is set", () => {
+    expect(
+      buildSystemPrompt(false, {
+        defaultData: {
+          projectId: "",
+          clusterName: "  ",
+          databaseName: "",
+          collectionName: "",
+        },
+      }),
+    ).toBe(READ_ONLY_SYSTEM_PROMPT);
+
+    const prompt = buildSystemPrompt(false, {
+      dataAccess: {
+        "64a1f3c2e8b94d0012c7a5e1": { clusterNames: ["example-test"] },
+      },
+      defaultData: {
+        projectId: "not-a-hex",
+        clusterName: "",
+        databaseName: "",
+        collectionName: "",
+      },
+      customInstructions: "Be brief.",
+    });
+    expect(prompt.indexOf("## Scope")).toBeLessThan(
+      prompt.indexOf("## Default data"),
+    );
+    expect(prompt.indexOf("## Default data")).toBeLessThan(
+      prompt.indexOf("## Custom instructions"),
+    );
+    expect(prompt).toContain("- projectId: not-a-hex");
+
+    const defaultsOnly = buildSystemPrompt(false, {
+      defaultData: {
+        projectId: "",
+        clusterName: "example test",
+        databaseName: "",
+        collectionName: "",
+      },
+    });
+    expect(defaultsOnly).toContain("## Default data");
+    expect(defaultsOnly).toContain("- clusterName: example test");
+    expect(defaultsOnly).not.toContain("## Scope");
+  });
 });
 
 const UNTRUSTED_TOOL_OUTPUT_RULE =

@@ -22,7 +22,7 @@ agents/atlas-explorer/
 └── src/agent_atlas_explorer/
     ├── main.ts                        # Agent Engine App entrypoint
     ├── index.ts                       # re-exports library helpers and main.ts
-    └── config.ts                      # non-secret LLM, agent name, and custom instructions
+    └── config.ts                      # non-secret LLM, persona, and default data
 ```
 
 Project memory settings live in the repository root
@@ -222,6 +222,28 @@ with `agentengine secret set ANTHROPIC_BASE_URL`.
 to keep **Atlas Explorer**. Set `systemPrompt.customInstructions` to append
 operator-specific guidance after the built-in operating rules. Leave that
 field empty to skip extra prompt text. Built-in safety rules still apply.
+
+## Default project, cluster, database, and collection
+
+`systemPrompt.defaultData` names where the agent should look when the user
+does not. Each value is a string. Leave a field as `""` to leave it unset.
+The strings are copied into the system prompt. They are not checked against
+Atlas.
+
+```ts
+defaultData: {
+  projectId: "",
+  clusterName: "",
+  databaseName: "",
+  collectionName: "",
+},
+```
+
+The prompt passes `projectId` and `clusterName` under those names, and
+passes `databaseName` and `collectionName` as the `database` and
+`collection` arguments. This is separate from `dataAccess` and
+`databaseNames`. A project or cluster outside `dataAccess`, or a database
+outside `databaseNames`, still fails when the agent uses it.
 
 ## Limit projects, clusters, and databases
 

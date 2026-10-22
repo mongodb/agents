@@ -23,8 +23,10 @@ import {
   TOPIC_SCOPE_RULES,
   describeDataAccess,
   describeDatabaseNames,
+  describeDefaultData,
   type DataAccessConfig,
   type DatabaseNamesConfig,
+  type DefaultDataConfig,
 } from "@repo/agent-engine-core";
 
 const DEFAULT_AGENT_NAME = "Atlas Explorer";
@@ -66,6 +68,7 @@ export type SystemPromptOptions = {
   customInstructions?: string;
   dataAccess?: DataAccessConfig;
   databaseNames?: DatabaseNamesConfig;
+  defaultData?: DefaultDataConfig;
 };
 
 function resolveAgentName(name?: string): string {
@@ -118,6 +121,15 @@ ${SHARED_RULES}
 `;
 }
 
+function appendDefaultData(
+  prompt: string,
+  defaultData?: DefaultDataConfig,
+): string {
+  const described = describeDefaultData(defaultData);
+  if (!described) return prompt;
+  return `${prompt}\n## Default data\n\n${described}\n`;
+}
+
 function appendCustomInstructions(
   prompt: string,
   customInstructions?: string,
@@ -139,8 +151,13 @@ export function buildSystemPrompt(
   const name = resolveAgentName(options.name);
   const base = writeEnabled ? writeEnabledPrompt(name) : readOnlyPrompt(name);
   const clusterScope = describeDataAccess(options.dataAccess);
+  const withDefault = (prompt: string) =>
+    appendDefaultData(prompt, options.defaultData);
   if (!clusterScope && options.databaseNames === undefined) {
-    return appendCustomInstructions(base, options.customInstructions);
+    return appendCustomInstructions(
+      withDefault(base),
+      options.customInstructions,
+    );
   }
 
   const databaseScope = describeDatabaseNames(options.databaseNames);
@@ -148,7 +165,7 @@ export function buildSystemPrompt(
     ? `${clusterScope}\n\n${databaseScope}`
     : databaseScope;
   return appendCustomInstructions(
-    `${base}\n## Scope\n\n${scope}\n`,
+    withDefault(`${base}\n## Scope\n\n${scope}\n`),
     options.customInstructions,
   );
 }

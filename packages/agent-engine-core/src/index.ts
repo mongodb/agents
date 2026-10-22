@@ -32,6 +32,10 @@ export {
   type DatabaseNamesConfig,
 } from "./databaseNames.js";
 export {
+  describeDefaultData,
+  type DefaultDataConfig,
+} from "./defaultData.js";
+export {
   describeDataAccess,
   isUnrestricted,
   validateDataAccess,

@@ -48,6 +48,7 @@ export {
   withoutShellExecution,
   type DataAccessConfig,
   type DatabaseNamesConfig,
+  type DefaultDataConfig,
   type InputGuardConfig,
 } from "@repo/agent-engine-core";
 export type { AtlasQueryInsightsConfig } from "./agentConfig.js";

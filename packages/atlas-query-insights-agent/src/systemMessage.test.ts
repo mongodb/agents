@@ -184,6 +184,43 @@ describe("buildSystemPrompt", () => {
     );
   });
 
+  it("points cluster choice and namespaces at Default data", () => {
+    const prompt = buildSystemPrompt();
+    expect(prompt).toContain(
+      "If Default data sets both projectId and clusterName",
+    );
+    expect(prompt).toContain(
+      "If Default data sets both a database and a collection, pass `namespaces`",
+    );
+    expect(prompt).not.toContain("## Default data");
+  });
+
+  it("adds Default data after Scope and before the workflow", () => {
+    const prompt = buildSystemPrompt({
+      defaultData: {
+        projectId: "not-a-hex",
+        clusterName: "c 1",
+        databaseName: "orders",
+        collectionName: "sales",
+      },
+      customInstructions: "Be brief.",
+    });
+    expect(prompt.indexOf("# Scope")).toBeLessThan(
+      prompt.indexOf("## Default data"),
+    );
+    expect(prompt.indexOf("## Default data")).toBeLessThan(
+      prompt.indexOf("# Investigation workflow"),
+    );
+    expect(prompt.indexOf("## Default data")).toBeLessThan(
+      prompt.indexOf("## Custom instructions"),
+    );
+    expect(prompt).toContain("- projectId: not-a-hex");
+    expect(prompt).toContain("- clusterName: c 1");
+    expect(prompt).toContain(
+      'pass namespaces: ["orders.sales"]',
+    );
+  });
+
   it("rejects a non-positive shape limit", () => {
     expect(() => buildSystemPrompt({ maxQueryShapes: 0 })).toThrow(/maxQueryShapes/);
   });

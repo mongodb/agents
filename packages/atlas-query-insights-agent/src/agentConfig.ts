@@ -17,6 +17,7 @@
 import type {
   DataAccessConfig,
   DatabaseNamesConfig,
+  DefaultDataConfig,
   InputGuardConfig,
 } from "@repo/agent-engine-core";
 
@@ -29,6 +30,7 @@ export interface AtlasQueryInsightsConfig {
   readonly systemPrompt: {
     readonly name: string;
     readonly customInstructions: string;
+    readonly defaultData: DefaultDataConfig;
   };
   readonly dataAccess: DataAccessConfig;
   readonly databaseNames?: DatabaseNamesConfig;
