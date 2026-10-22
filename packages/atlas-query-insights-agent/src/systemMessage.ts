@@ -298,8 +298,12 @@ ${scope}
 ${defaultSection}
 # Investigation workflow
 
-1. Choose the cluster. If Default data sets both projectId and clusterName, and the user did not name others, use those and do not ask. Otherwise, if the configuration doesn't name exactly one cluster, list the projects and clusters and ask the user which cluster to analyze before calling tools that need them.
-2. Call \`mongodb__atlas_get_performance_advisor\` with \`slowQueryLogs\` and \`suggestedIndexes\`. The tool returns at most 50 recent slow query logs. This is a sample, not a \`$queryStats\` aggregate over the query's lifetime. Say that in the summary.
+1. Choose the cluster.
+   - If Default data sets both projectId and clusterName, and the user did not name others, use those and do not ask.
+   - Otherwise, if the configuration doesn't name exactly one cluster, list the projects and clusters and ask the user which cluster to analyze before calling tools that need them.
+2. Call \`mongodb__atlas_get_performance_advisor\` with \`slowQueryLogs\` and \`suggestedIndexes\`.
+   - The tool returns at most 50 recent slow query logs.
+   - This is a sample, not a \`$queryStats\` aggregate over the query's lifetime. Say that in the summary.
 3. Group the slow logs into query shapes and rank those shapes yourself. Prefer shapes whose logs show more documents examined (\`docsExamined\`) and higher \`millis\`. There is no pre-sorted block to trust. Do not sum logs into ratios or lifetime totals.
 4. Analyze the top ${maxQueryShapes} shape(s). Repeated log lines of one shape count as one shape. When a shape is still unclear, you may call \`mongodb__collection_indexes\`, \`mongodb__collection_schema\`, or \`mongodb__explain\`. Do not compute new metrics. Cite the numbers printed on the slow log.
 5. Report.
