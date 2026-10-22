@@ -38,7 +38,6 @@ const TOOLS_WITHOUT_DATABASE: ReadonlySet<string> = new Set([
 ]);
 
 const MAX_ARGUMENT_DEPTH = 20;
-const WRITE_STAGE_WITH_UNREADABLE_TARGET = /\$(?:out|merge)\s*"?\s*:/;
 
 class UncheckableArgumentsError extends Error {}
 
@@ -121,7 +120,7 @@ function writeTargetDatabases({
 }): string[] {
   const parsed = parseJsonString(value);
   if (typeof parsed === "string") {
-    if (WRITE_STAGE_WITH_UNREADABLE_TARGET.test(parsed)) {
+    if (isBrokenJson(parsed) && mentionsWriteStage(parsed)) {
       throw new UncheckableArgumentsError(
         "A pipeline with $out or $merge could not be parsed, so databaseNames cannot check its target database.",
       );
@@ -153,6 +152,16 @@ function stageTarget(stage: "$out" | "$merge", value: unknown): string[] {
   if (!isRecord(target)) return [];
   const db = stringArg(target.db);
   return db ? [db] : [];
+}
+
+// A string that starts like JSON but did not parse in `parseJsonString`.
+function isBrokenJson(value: string): boolean {
+  const trimmed = value.trim();
+  return trimmed.startsWith("[") || trimmed.startsWith("{");
+}
+
+function mentionsWriteStage(value: string): boolean {
+  return value.includes("$out") || value.includes("$merge");
 }
 
 function parseJsonString(value: unknown): unknown {

@@ -147,6 +147,17 @@ describe("guardDatabaseCall", () => {
       });
     });
 
+    it("runs a plain text value that mentions $out", async () => {
+      const { ran } = await run(
+        call("mongodb__find", {
+          database: "orders",
+          collection: "c",
+          filter: { note: "uses $out and $merge" },
+        }),
+      );
+      expect(ran).toBe(true);
+    });
+
     it("rejects arguments nested deeper than 20 levels", async () => {
       const nestedArgs = (levels: number) => {
         let value: unknown = { ok: true };
