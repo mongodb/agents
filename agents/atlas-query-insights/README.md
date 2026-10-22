@@ -340,9 +340,7 @@ Things to know:
     databases in their `db.collection` namespaces. The agent cannot read
     their data.
   - Only the `database` argument and `$out` and `$merge` targets are
-    checked. `$lookup` and `$unionWith` read only from the same database in
-    current MongoDB versions. If a future version allows cross-database
-    reads, this check will not catch them.
+    checked. Other parts of an aggregation pipeline are not inspected.
 
 ## Safety
 

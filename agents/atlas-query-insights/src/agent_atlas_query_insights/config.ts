@@ -35,12 +35,10 @@ import type {
  * allows no databases. Only the `i` and `u` regular expression flags work.
  * Each tool call's `database` argument and the target database of `$out` and
  * `$merge` are checked. Other parts of an aggregation pipeline are not.
- * `$lookup` and `$unionWith` read only from the same database in current
- * MongoDB versions, but if a future version allows cross-database reads,
- * this check will not catch them. Tool results are not filtered, so the
- * agent can still see names of databases it may not use. This is a
- * guardrail in the agent. The hard boundary is the MCP access token, which
- * can't be limited to specific databases today.
+ * Tool results are not filtered, so the agent can still see names of
+ * databases it may not use. This is a guardrail in the agent. The hard
+ * boundary is the MCP access token, which can't be limited to specific
+ * databases today.
  *
  * `maxQueryShapes` is how many shapes the report covers.
  *

@@ -47,12 +47,9 @@ class UncheckableArgumentsError extends Error {}
  * `undefined` when it may run. Arguments are never rewritten.
  *
  * Checks the `database` argument and the target database of `$out` and
- * `$merge`. It does not inspect other parts of an aggregation pipeline.
- * `$lookup` and `$unionWith` read only from the same database in current
- * MongoDB versions, but if a future version allows cross-database reads,
- * this check will not catch them. It is a guardrail in the agent. The hard
- * boundary is the MCP access token, which can't be limited to specific
- * databases today.
+ * `$merge`. It does not inspect other parts of an aggregation pipeline. It
+ * is a guardrail in the agent. The hard boundary is the MCP access token,
+ * which can't be limited to specific databases today.
  */
 export function findDatabaseViolation({
   databaseNames,
