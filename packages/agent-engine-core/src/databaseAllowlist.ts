@@ -90,9 +90,10 @@ export function findDatabaseViolation({
 }
 
 // Most `mongodb__atlas_*` tools are control plane tools with no database
-// arguments. `atlas_get_performance_advisor` can filter slow query logs by
-// `db.collection` namespaces, and `atlas_streams_build` and
-// `atlas_streams_manage` can name databases in processor pipelines and DLQs.
+// arguments. `atlas_get_performance_advisor` can filter slow query logs
+// by `db.collection` namespaces. `atlas_streams_build` and
+// `atlas_streams_manage` can name databases in a processor pipeline and
+// in its `dlq`.
 function findAtlasToolDatabases({
   name,
   args,
