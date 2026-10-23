@@ -300,10 +300,11 @@ never start in production. One cached MongoDB client backs both Chat SDK state
 and Agent Engine workflow state across warm invocations.
 
 Completed inactive workflow mappings expire after 30 days, and an undelivered
-response is retained for up to 24 hours. Records with pending reviews or
-active work are excluded from expiration. Treat long-lived pending or
-uncertain reviews as operational alerts: verify Agent Engine and Atlas state
-before archiving those records.
+response is retained for up to 24 hours. A review whose outcome is uncertain
+also expires after 30 days. Records with pending reviews or active work are
+excluded from expiration. Treat long-lived pending reviews, and any uncertain
+review you see before it expires, as operational alerts: verify Agent Engine
+and Atlas state before archiving those records.
 
 Allow Vercel to reach the thread-store MongoDB deployment. Standard Vercel
 Functions use dynamic egress addresses, so you have two options:
