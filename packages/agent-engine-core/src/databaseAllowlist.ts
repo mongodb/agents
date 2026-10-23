@@ -48,7 +48,6 @@ class UncheckableArgumentsError extends Error {}
  * - The `$out` or `$merge` target database in aggregate pipelines.
  * - `namespaces` in `atlas_get_performance_advisor`.
  */
- */
 export function findDatabaseViolation({
   databaseNames,
   matches,
