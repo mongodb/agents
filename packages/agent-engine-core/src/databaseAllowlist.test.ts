@@ -408,6 +408,50 @@ describe("guardDatabaseCall", () => {
           }),
         ),
       ],
+      [
+        "a stage key that names a database stage inside literal data",
+        buildProcessor([
+          { $source: { connectionName: "kafka", topic: "events" } },
+          { $set: { spec: { $literal: { $lookup: "template" } } } },
+          { $emit: { connectionName: "kafka", topic: "out" } },
+        ]),
+      ],
+      [
+        "inline $source.documents holding stage-shaped data",
+        buildProcessor([
+          {
+            $source: {
+              documents: [
+                { $merge: { into: { db: "admin", coll: "x" } } },
+                { $lookup: "template" },
+              ],
+            },
+          },
+          { $emit: { connectionName: "kafka", topic: "out" } },
+        ]),
+      ],
+      [
+        "a $match filter on a field named pipeline",
+        buildProcessor([
+          { $source: { connectionName: "kafka", topic: "events" } },
+          { $match: { pipeline: [{ $merge: { into: { db: "admin" } } }] } },
+          { $emit: { connectionName: "kafka", topic: "out" } },
+        ]),
+      ],
+      [
+        "a change stream source with an allowed pushdown pipeline",
+        buildProcessor([
+          {
+            $source: {
+              connectionName: "cluster",
+              db: "orders",
+              coll: "events",
+              pipeline: [{ $match: { operationType: "insert" } }],
+            },
+          },
+          { $emit: { connectionName: "kafka", topic: "out" } },
+        ]),
+      ],
     ])("runs %s", async (_label, request) => {
       expect((await run(request)).ran).toBe(true);
     });
@@ -466,6 +510,37 @@ describe("guardDatabaseCall", () => {
             },
           ],
         }),
+      ],
+      [
+        "a disallowed database inside a window sub-pipeline",
+        buildProcessor([
+          { $source: { connectionName: "kafka", topic: "events" } },
+          {
+            $tumblingWindow: {
+              interval: { size: 5, unit: "minute" },
+              pipeline: [
+                {
+                  $merge: {
+                    into: { connectionName: "c", db: "admin", coll: "out" },
+                  },
+                },
+              ],
+            },
+          },
+        ]),
+      ],
+      [
+        "a pushdown pipeline on a disallowed collection source",
+        buildProcessor([
+          {
+            $source: {
+              connectionName: "c",
+              db: "admin",
+              coll: "events",
+              pipeline: [{ $match: { operationType: "insert" } }],
+            },
+          },
+        ]),
       ],
     ])("rejects a disallowed %s", async (_label, request) => {
       const { result, ran } = await run(request);

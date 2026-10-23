@@ -143,49 +143,76 @@ function findStreamPipelineDatabases(pipeline: unknown): string[] {
       "A stream processor pipeline must be an array of stages, so databaseNames can check its databases.",
     );
   }
-  return collectStreamStageDatabases({ value: parsed, depth: 0 });
+  return collectStreamStageDatabases({ stages: parsed, depth: 0 });
 }
 
+// Only the stage keys in STREAM_DATABASE_STAGES can name a database, and
+// only the `pipeline` field of STREAM_SUB_PIPELINE_STAGES stages holds
+// sub-pipelines of stages. Everything else in a stage is data, such as a
+// `$literal` payload or `$source.documents`, and is never read.
+const STREAM_DATABASE_STAGES = new Set([
+  "$source",
+  "$lookup",
+  "$merge",
+  "$out",
+]);
+const STREAM_SUB_PIPELINE_STAGES = new Set([
+  "$source",
+  "$tumblingWindow",
+  "$hoppingWindow",
+  "$sessionWindow",
+]);
+
 function collectStreamStageDatabases({
-  value,
+  stages,
   depth,
 }: {
-  value: unknown;
+  stages: unknown[];
   depth: number;
 }): string[] {
-  if (!Array.isArray(value) && !isRecord(value)) return [];
   if (depth > MAX_PIPELINE_DEPTH) {
     throw new UncheckableArgumentsError(
       `A pipeline nests deeper than ${MAX_PIPELINE_DEPTH} levels, so databaseNames cannot check it.`,
     );
   }
-  if (Array.isArray(value)) {
-    return value.flatMap((item) =>
-      collectStreamStageDatabases({ value: item, depth: depth + 1 }),
-    );
-  }
-  return Object.entries(value).flatMap(([key, child]) => {
-    const nestedDatabases = collectStreamStageDatabases({
-      value: child,
-      depth: depth + 1,
+  return stages.flatMap((stage) => {
+    if (!isRecord(stage)) return [];
+    return Object.entries(stage).flatMap(([key, value]) => {
+      const stageDatabases = STREAM_DATABASE_STAGES.has(key)
+        ? maybeDatabase(readStreamStageDatabase(key as StreamDatabaseStage, value))
+        : [];
+      const subPipelineDatabases =
+        STREAM_SUB_PIPELINE_STAGES.has(key) &&
+        isRecord(value) &&
+        value.pipeline !== undefined
+          ? collectStreamStageDatabases({
+              stages: readStreamSubPipeline(value.pipeline),
+              depth: depth + 1,
+            })
+          : [];
+      return [...stageDatabases, ...subPipelineDatabases];
     });
-    if (
-      key !== "$source" &&
-      key !== "$lookup" &&
-      key !== "$merge" &&
-      key !== "$out"
-    ) {
-      return nestedDatabases;
-    }
-    const stageDatabase = readStreamStageDatabase(key, child);
-    return stageDatabase
-      ? [stageDatabase, ...nestedDatabases]
-      : nestedDatabases;
   });
 }
 
+function readStreamSubPipeline(value: unknown): unknown[] {
+  const parsed = parseJsonString(value);
+  if (!Array.isArray(parsed)) {
+    throw new UncheckableArgumentsError(
+      "A stream processor sub-pipeline must be an array of stages, so databaseNames can check its databases.",
+    );
+  }
+  return parsed;
+}
+
+function maybeDatabase(database: string | undefined): string[] {
+  return database ? [database] : [];
+}
+
+type StreamDatabaseStage = "$source" | "$lookup" | "$merge" | "$out";
+
 function readStreamStageDatabase(
-  stage: "$source" | "$lookup" | "$merge" | "$out",
+  stage: StreamDatabaseStage,
   value: unknown,
 ): string | undefined {
   if (!isRecord(value)) {
