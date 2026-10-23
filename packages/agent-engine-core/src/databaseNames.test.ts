@@ -136,6 +136,25 @@ describe("createDatabaseMatcher", () => {
     });
   });
 
+  describe("with a name MongoDB rejects", () => {
+    const matches = createDatabaseMatcher([/tenant/]);
+
+    it("rejects a field path even when a pattern matches part of it", () => {
+      const fieldPathIsAllowed = matches?.("$tenant");
+      expect(fieldPathIsAllowed).toBe(false);
+    });
+
+    it("rejects a dotted name even when a pattern matches part of it", () => {
+      const dottedNameIsAllowed = matches?.("my.tenant");
+      expect(dottedNameIsAllowed).toBe(false);
+    });
+
+    it("still matches a legal name the pattern covers", () => {
+      const legalNameIsAllowed = matches?.("tenant_1");
+      expect(legalNameIsAllowed).toBe(true);
+    });
+  });
+
   it("honors the i flag", () => {
     expect(createDatabaseMatcher([/orders/i])?.("ORDERS")).toBe(true);
   });

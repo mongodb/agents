@@ -69,7 +69,9 @@ export function validateDatabaseNames(
  * Compiles `databaseNames` into one matcher, or `undefined` when unrestricted.
  *
  * Regular expressions run as written and can backtrack, so the matcher
- * rejects any name longer than MongoDB allows before testing a pattern.
+ * rejects a name MongoDB would reject before testing a pattern. That
+ * includes a name longer than 64 characters and a name containing `$` or
+ * another forbidden character, so a loose pattern cannot match `$tenant`.
  * That keeps the input short but does not make every pattern fast.
  */
 export function createDatabaseMatcher(
@@ -87,10 +89,20 @@ export function createDatabaseMatcher(
       patterns.push(entry);
     }
   }
-  return (databaseName) =>
-    databaseName.length <= MAX_NAME_LENGTH &&
-    (exact.has(databaseName) ||
-      patterns.some((pattern) => pattern.test(databaseName)));
+  return (databaseName) => {
+    const withinMaxLength = databaseName.length <= MAX_NAME_LENGTH;
+    const charactersAreAllowed =
+      !FORBIDDEN_NAME_CHARACTERS.test(databaseName);
+    if (!withinMaxLength || !charactersAreAllowed) return false;
+
+    const matchesExactName = exact.has(databaseName);
+    if (matchesExactName) return true;
+
+    const matchesPattern = patterns.some((pattern) =>
+      pattern.test(databaseName),
+    );
+    return matchesPattern;
+  };
 }
 
 function describeEntry(entry: string | RegExp): string {
