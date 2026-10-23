@@ -54,6 +54,16 @@ export function verifyAtlasSignature(
   );
 }
 
+/** Constant-time check of the `?token=` value against the configured token. */
+export function tokenMatches(provided: string | null, expected: string): boolean {
+  if (provided === null) {
+    return false;
+  }
+  const a = Buffer.from(provided);
+  const b = Buffer.from(expected);
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+
 export function parseAlert(rawBody: string): AtlasAlert | undefined {
   try {
     const parsed: unknown = JSON.parse(rawBody);

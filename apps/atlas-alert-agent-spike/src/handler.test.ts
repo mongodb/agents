@@ -129,12 +129,22 @@ describe("handleAlertWebhook", () => {
     deps.config.urlToken = "abc";
 
     const denied = await handleAlertWebhook(webhookRequest({}), deps);
+    const wrongLength = await handleAlertWebhook(
+      webhookRequest({ url: "https://example.com/hook?token=abcdef" }),
+      deps,
+    );
+    const wrongSameLength = await handleAlertWebhook(
+      webhookRequest({ url: "https://example.com/hook?token=abd" }),
+      deps,
+    );
     const allowed = await handleAlertWebhook(
       webhookRequest({ url: "https://example.com/hook?token=abc" }),
       deps,
     );
 
     expect(denied.status).toBe(401);
+    expect(wrongLength.status).toBe(401);
+    expect(wrongSameLength.status).toBe(401);
     expect(allowed.status).toBe(202);
   });
 

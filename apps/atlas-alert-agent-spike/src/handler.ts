@@ -23,6 +23,7 @@ import {
   buildPrompt,
   parseAlert,
   shouldInvestigate,
+  tokenMatches,
   verifyAtlasSignature,
   type AtlasAlert,
 } from "./alert.js";
@@ -70,7 +71,7 @@ export async function handleAlertWebhook(
 
   if (deps.config.urlToken) {
     const token = new URL(request.url).searchParams.get("token");
-    if (token !== deps.config.urlToken) {
+    if (!tokenMatches(token, deps.config.urlToken)) {
       return new Response("Unauthorized", { status: 401 });
     }
   }
