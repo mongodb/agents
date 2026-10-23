@@ -130,6 +130,25 @@ importers:
         specifier: workspace:*
         version: link:../../packages/atlas-query-insights-agent
 
+  apps/atlas-alert-agent-spike:
+    dependencies:
+      '@repo/agent-engine-chat':
+        specifier: workspace:*
+        version: link:../../packages/agent-engine-chat
+      '@vercel/functions':
+        specifier: ^3.9.5
+        version: 3.9.9(ws@8.22.0)
+    devDependencies:
+      '@types/node':
+        specifier: ^25.0.0
+        version: 25.9.8
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.0
+        version: 5.0.2(@opentelemetry/api@1.9.1)(@types/node@25.9.8)(vite@8.3.1(@types/node@25.9.8)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.1))
+
   apps/atlas-explorer-slack-bot:
     dependencies:
       '@chat-adapter/slack':
@@ -993,12 +1012,14 @@ packages:
   '@opentelemetry/sdk-trace-base@2.1.0':
     resolution: {integrity: sha512-uTX9FBlVQm4S2gVQO1sb5qyBLq/FPjbp+tmGoxu4tIgtYGmBYB44+KX/725RFDe30yBSaA9Ml9fqphe1hbUyLQ==}
     engines: {node: ^18.19.0 || >=20.6.0}
+    deprecated: Use @opentelemetry/sdk-trace package
     peerDependencies:
       '@opentelemetry/api': '>=1.3.0 <1.10.0'
 
   '@opentelemetry/sdk-trace-base@2.11.0':
     resolution: {integrity: sha512-H19x/TX/LZdqiYOjM7fqtSxwlplC5pgelavqbQdHbhdq0q/AI/TGkM2dfGuuynTXmJPeF2HoZVoPDu+TGoW78A==}
     engines: {node: ^18.19.0 || >=20.6.0}
+    deprecated: Use @opentelemetry/sdk-trace package
     peerDependencies:
       '@opentelemetry/api': '>=1.3.0 <1.10.0'
 
