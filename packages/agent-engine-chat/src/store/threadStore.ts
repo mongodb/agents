@@ -47,6 +47,26 @@ export interface PendingDelivery {
   claimedAt?: Date;
 }
 
+/** Every field that describes a review waiting on, or resuming from, a decision. */
+export const PENDING_REVIEW_FIELDS = [
+  "pendingExecutionId",
+  "pendingInterruptId",
+  "pendingInterrupts",
+  "pendingResumeSchema",
+  "pendingActionRequests",
+  "pendingRequestedByActorId",
+  "pendingReviewState",
+  "pendingReviewClaimedAt",
+] as const satisfies readonly (keyof ThreadRecord)[];
+
+export function withoutPendingReview(record: ThreadRecord): ThreadRecord {
+  const cleared = { ...record };
+  for (const field of PENDING_REVIEW_FIELDS) {
+    delete cleared[field];
+  }
+  return cleared;
+}
+
 export type TurnClaim =
   | {
       status: "claimed";
@@ -67,6 +87,11 @@ export type TurnClaimStatus = TurnClaim["status"];
 export interface ThreadStore {
   get(threadId: string): Promise<ThreadRecord | null>;
   put(record: ThreadRecord): Promise<void>;
+  /**
+   * Claims the thread for one turn. A review marked `uncertain` doesn't block
+   * the claim: the turn takes over the thread, drops the review's `pending*`
+   * fields, and keeps `agentSessionId` so the conversation continues.
+   */
   claimTurn(
     threadId: string,
     eventId: string,
