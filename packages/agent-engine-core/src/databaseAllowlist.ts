@@ -43,9 +43,11 @@ class UncheckableArgumentsError extends Error {}
 
 /**
  * Returns why a MongoDB MCP call falls outside `databaseNames`, or
- * `undefined` when it may run. Checks the `database` argument, the
- * database that `$out` or `$merge` writes to, and `namespaces` in
- * `atlas_get_performance_advisor`.
+ * `undefined` when it may run. Checks:
+ * - Each data tool call's `database` argument.
+ * - The `$out` or `$merge` target database in aggregate pipelines.
+ * - `namespaces` in `atlas_get_performance_advisor`.
+ */
  */
 export function findDatabaseViolation({
   databaseNames,
