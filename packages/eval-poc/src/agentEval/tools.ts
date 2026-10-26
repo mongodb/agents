@@ -17,8 +17,8 @@
 import { tool, type StructuredToolInterface } from "@langchain/core/tools";
 import { z } from "zod";
 import {
-  callMcpTool,
   discoverMcpTools,
+  makeMcpToolCallable,
   type MCPToolBinding,
 } from "@mongodb-js/agent-engine-runner-shared";
 import { makeMockAtlas, type MockAtlasState } from "../mockAtlasTools.js";
@@ -71,27 +71,25 @@ export function mockAdvisorTools(advisorOutput: string): CaseTools {
 }
 
 /**
- * Real MCP tools, same discovery code the platform runs (`registerMcpTools`),
- * minus the platform wrappers. Call once in `globalSetup` and share: each
- * process mints its own Atlas OAuth token (100 per service account).
+ * Real MCP tools, built the way `App.registerMcpTools` builds them: same
+ * discovery, same `<server>__<tool>` names, same result envelope
+ * (`{content, structuredContent, isError}`) the model sees in production.
+ * Call once in `globalSetup` and share across cases.
+ *
+ * `mcpConfig` is the `mcp` block of the agent's `agent.yaml`, e.g.
+ * `loadRuntimeAgentConfig(agentDir).mcp`, so the harness and prod read one
+ * source of truth.
  */
 export async function discoverRealMcpTools(mcpConfig: Parameters<typeof discoverMcpTools>[0]) {
   const bindings = await discoverMcpTools(mcpConfig);
-  const tools = bindings.map(
-    (b: MCPToolBinding) =>
-      tool(
-        async (args: Record<string, unknown>) => {
-          const result = await callMcpTool(b, args);
-          return JSON.stringify(result.structuredContent ?? result.content);
-        },
-        {
-          name: b.sdkToolName,
-          description: b.description,
-          schema: b.inputSchema as never,
-        },
-      ) as unknown as StructuredToolInterface,
-  );
-  return tools;
+  return bindings.map((b: MCPToolBinding) => {
+    const callable = makeMcpToolCallable(b);
+    return tool((args: Record<string, unknown>) => callable(args), {
+      name: b.sdkToolName,
+      description: b.description.trim(),
+      schema: b.inputSchema as never,
+    }) as unknown as StructuredToolInterface;
+  });
 }
 
 /** Wrap shared real tools so each case still gets its own executed-call log. */
