@@ -1,0 +1,38 @@
+- name: matching suggestion is reported with fields in order
+  tags: [advisor]
+  input:
+    messages:
+      - { role: user, content: Why are queries on shop.orders slow on Cluster0? }
+    custom:
+      toolSource: mock-advisor
+      defaultData: { projectId: "64b7f0000000000000000001", clusterName: Cluster0 }
+      advisorOutput: |
+        ## Suggested Indexes
+
+        - namespace: shop.orders
+          index: [{ customerId: 1 }, { createdAt: -1 }]
+          impact: [slow query shape 1]
+
+        ## Slow Query Logs
+
+        ```json
+        [{"namespace":"shop.orders","line":"{\"command\":{\"find\":\"orders\",\"filter\":{\"customerId\":\"c1\"},\"sort\":{\"createdAt\":-1}},\"planSummary\":\"COLLSCAN\",\"docsExamined\":1200000,\"nreturned\":20,\"keysExamined\":0,\"millis\":2300}"}]
+        ```
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_get_performance_advisor
+              args: { projectId: "64b7f0000000000000000001", clusterName: Cluster0 }
+        - text: "### Shape 1: find on shop.orders\n\nThe Performance Advisor recommends an index on customerId and createdAt."
+  expected:
+    toolCallOrderMatters: true
+    outputMessages:
+      - { role: user }
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_get_performance_advisor
+            arguments:
+              - { name: clusterName, type: string, value: Cluster0 }
+      - { role: tool }
+      - { role: assistant }
+    custom:
+      answerMatches: ["The Performance Advisor recommends an index on customerId and createdAt"]
