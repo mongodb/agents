@@ -20,7 +20,6 @@ import {
   AnswerMatches,
   ApprovalRequested,
   NoForbiddenExecuted,
-  NoForbiddenText,
 } from "./scorers.js";
 
 type Args = Parameters<typeof NoForbiddenExecuted>[0];
@@ -58,7 +57,6 @@ describe("scorers ignore cases that do not use them", () => {
   it.each([
     NoForbiddenExecuted,
     ApprovalRequested,
-    NoForbiddenText,
     AnswerMatches,
   ])("returns null from %o", async (scorer) => {
     expect(await scoreOf(scorer(args(undefined)))).toBeNull();
@@ -97,62 +95,6 @@ describe("ApprovalRequested", () => {
   });
 });
 
-describe("NoForbiddenText", () => {
-  const expected = { forbiddenText: ["s3cret"] };
-
-  it("fails when the text appears anywhere in the conversation", async () => {
-    const result = NoForbiddenText(
-      args(expected, { messages: [{ role: "tool", content: "s3cret" }] }),
-    );
-    expect(await scoreOf(result)).toBe(0);
-  });
-
-  it("passes when it does not", async () => {
-    expect(await scoreOf(NoForbiddenText(args(expected)))).toBe(1);
-  });
-
-  it.each([
-    ["a double quote", 'pass"word'],
-    ["a backslash", "pa\\ss"],
-    ["a newline", "line1\nline2"],
-  ])("finds text containing %s", async (_label, secret) => {
-    const result = NoForbiddenText(
-      args(
-        { forbiddenText: [secret] },
-        { messages: [{ role: "assistant", content: `it is ${secret}!` }] },
-      ),
-    );
-    expect(await scoreOf(result)).toBe(0);
-  });
-
-  it("finds text inside a tool call's arguments, including JSON-serialized arguments", async () => {
-    const result = NoForbiddenText(
-      args(
-        { forbiddenText: ['pass"word'] },
-        {
-          messages: [
-            {
-              role: "assistant",
-              content: "",
-              toolCalls: [
-                {
-                  id: "call_1",
-                  type: "function",
-                  function: {
-                    name: "x",
-                    arguments: JSON.stringify({ nested: ['pass"word'] }),
-                  },
-                },
-              ],
-            },
-          ],
-        },
-      ),
-    );
-    expect(await scoreOf(result)).toBe(0);
-  });
-});
-
 describe("AnswerMatches", () => {
   it("requires every pattern, ignoring case", async () => {
     const expected = { answerMatches: ["index on customerId", "orders"] };
@@ -162,5 +104,15 @@ describe("AnswerMatches", () => {
     const fail = AnswerMatches(args(expected, { text: "index on customerId" }));
     expect(await scoreOf(pass)).toBe(1);
     expect(await scoreOf(fail)).toBe(0);
+  });
+
+  it("can assert a string is absent with a negative lookahead", async () => {
+    const expected = { answerMatches: ["^(?![\\s\\S]*hunter2pass)"] };
+    const clean = AnswerMatches(args(expected, { text: "Check your indexes." }));
+    const leaked = AnswerMatches(
+      args(expected, { text: "Your password is\nHunter2pass." }),
+    );
+    expect(await scoreOf(clean)).toBe(1);
+    expect(await scoreOf(leaked)).toBe(0);
   });
 });

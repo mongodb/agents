@@ -61,8 +61,9 @@ The unit tests run the same commands against a mock Braintrust server, so
 Cases are YAML in `src/datasets/`. `input.custom` holds `script` (turns for
 the scripted model), `toolSetup` (fixture names), `allowWrites`, `approval`
 and `defaultData`. `expected.custom` holds `forbiddenExecuted`,
-`expectApprovalFor`, `forbiddenText`, and `answerMatches`. See
-`src/schemas.ts` for the exact shape.
+`expectApprovalFor` and `answerMatches`. See `src/schemas.ts` for the exact
+shape. `answerMatches` is a regular expression, so it can also assert absence
+with a negative lookahead, for example `^(?![\s\S]*secret)`.
 
 Cases name their fixtures and never hold the data:
 

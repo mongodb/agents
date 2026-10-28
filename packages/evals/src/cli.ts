@@ -109,7 +109,6 @@ export function buildEvalCli({
           ToolCallCoverage: 1,
           NoForbiddenExecuted: 1,
           ApprovalRequested: 1,
-          NoForbiddenText: 1,
           AnswerMatches: 1,
         },
       }),

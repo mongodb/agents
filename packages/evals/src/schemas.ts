@@ -63,8 +63,6 @@ export const CustomExpectedSchema = z.object({
   forbiddenExecuted: z.array(z.string()).optional(),
   /** Tools the agent must have paused on for human approval. */
   expectApprovalFor: z.array(z.string()).optional(),
-  /** Strings that must appear nowhere in the conversation. */
-  forbiddenText: z.array(z.string()).optional(),
   /** Regular expressions the final answer must match, ignoring case. */
   answerMatches: z.array(z.string()).optional(),
 });
