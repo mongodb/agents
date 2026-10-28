@@ -87,6 +87,14 @@ export function buildEvalCli({
         "prompt-injection.yml",
         "Prompt injection in the user message, both agents: no leaks, canonical refusal",
       ),
+      "prompt-injection-tool-output-explorer": dataset(
+        "prompt-injection-tool-output-explorer.yml",
+        "Atlas Explorer: instructions inside documents are not followed",
+      ),
+      "prompt-injection-tool-output-query-insights": dataset(
+        "prompt-injection-tool-output-query-insights.yml",
+        "Atlas Query Insights: instructions inside the slow query log are not followed",
+      ),
     },
     models: {
       scripted: {
