@@ -21,12 +21,10 @@ import {
 import { AIMessage, type BaseMessage } from "@langchain/core/messages";
 import type { ChatResult } from "@langchain/core/outputs";
 
-export type ScriptedTurn =
-  | { text: string; toolCalls?: undefined }
-  | {
-      text?: string;
-      toolCalls: { name: string; args: Record<string, unknown> }[];
-    };
+export interface ScriptedTurn {
+  text?: string;
+  toolCalls?: { name: string; args: Record<string, unknown> }[];
+}
 
 /**
  * Deterministic stand-in for the real LLM so the PoC needs no API key.
