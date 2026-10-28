@@ -16,6 +16,10 @@ overrides:
 
 allowBuilds:
   esbuild: true
+  # Pulled in by mongodb-assistant-eval (packages/evals). Neither postinstall
+  # is needed to load the packages.
+  braintrust: false
+  autoevals: false
   # Transitive OpenTelemetry dependency. Its postinstall only warns about
   # versionScheme and is not required to load the package.
   protobufjs: false
