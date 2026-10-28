@@ -29,6 +29,12 @@ allowBuilds:
   cpu-features: false
   macos-export-certificate-and-key: false
   ssh2: false
+  # Optional native deps of mongodb-mcp-server (packages/evals runs it as a
+  # test double for the Atlas MCP server). Atlas API tools and the plain
+  # MongoDB tools work without them.
+  kerberos: false
+  mongodb-client-encryption: false
+  os-dns-native: false
 
 minimumReleaseAgeExclude:
   - '@mongodb-js/agent-engine-runner-shared@0.11.6'

@@ -58,11 +58,16 @@ type KnowledgeToolExecute = {
   execute(args: Record<string, unknown>): Promise<unknown>;
 };
 
+/**
+ * The knowledge tools read only `config` and `logger` from their server. The
+ * full `AssistantToolServer` also needs telemetry, elicitation, an MCP server
+ * and more, none of which these tools touch, so this stub is cast whole.
+ */
 function knowledgeToolServer(): AssistantToolServer {
   return {
     config: {},
     logger: { debug() {} },
-  } as AssistantToolServer;
+  } as unknown as AssistantToolServer;
 }
 
 function langGraphName(packageName: string): string {
