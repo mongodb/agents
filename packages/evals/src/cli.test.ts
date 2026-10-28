@@ -42,6 +42,8 @@ const run = (task: string, dataset: string, validator: string) =>
     "scripted",
     "--validate",
     validator,
+    "--task-concurrency",
+    "2",
     "--trial-count",
     "1",
   ]);

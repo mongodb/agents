@@ -53,6 +53,11 @@ pnpm --filter @repo/evals eval evaluation run --task explorer \
 pnpm --filter @repo/evals eval evaluation run --help
 ```
 
+The library runs 10 cases at once by default. Each case starts its own MCP
+server and the agent logs large traces, so a busy machine can run out of
+memory. The smoke scripts and tests pass `--task-concurrency 2`. Do the same
+for big datasets.
+
 The unit tests run the same commands against a mock Braintrust server, so
 `pnpm test` needs no keys.
 

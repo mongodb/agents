@@ -14,8 +14,8 @@
     "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json --noEmit",
     "preeval": "pnpm run build:deps",
     "eval": "tsx src/bin.ts",
-    "eval:smoke:explorer": "pnpm run eval evaluation run --task explorer --dataset explorer-smoke --model scripted --validate smoke-explorer --trial-count 1",
-    "eval:smoke:query-insights": "pnpm run eval evaluation run --task query-insights --dataset query-insights-smoke --model scripted --validate smoke-query-insights --trial-count 1"
+    "eval:smoke:explorer": "pnpm run eval evaluation run --task explorer --dataset explorer-smoke --model scripted --validate smoke-explorer --task-concurrency 2 --trial-count 1",
+    "eval:smoke:query-insights": "pnpm run eval evaluation run --task query-insights --dataset query-insights-smoke --model scripted --validate smoke-query-insights --task-concurrency 2 --trial-count 1"
   },
   "dependencies": {
     "@ai-sdk/azure": "^4.0.0",
