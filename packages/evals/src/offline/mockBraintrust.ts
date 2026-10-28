@@ -23,7 +23,7 @@ type Row = Record<string, unknown> & {
   span_attributes?: { name?: string; type?: string };
 };
 
-export interface FakeBraintrust {
+export interface MockBraintrust {
   url: string;
   requests: { method: string; path: string }[];
   /** Every row uploaded through /logs3, flattened. */
@@ -36,8 +36,8 @@ export interface FakeBraintrust {
  * CLI's `Eval()` call. The CLI has no offline mode and needs an API key,
  * so offline and CI smoke runs point it at this server instead.
  */
-export async function startFakeBraintrust(): Promise<FakeBraintrust> {
-  const requests: FakeBraintrust["requests"] = [];
+export async function startMockBraintrust(): Promise<MockBraintrust> {
+  const requests: MockBraintrust["requests"] = [];
   const rows: Row[] = [];
   let url = "";
 
@@ -55,7 +55,7 @@ export async function startFakeBraintrust(): Promise<FakeBraintrust> {
       try {
         body = raw.length ? JSON.parse(raw.toString("utf8")) : {};
       } catch {
-        // Non-JSON bodies carry nothing the fake needs.
+        // Non-JSON bodies carry nothing the mock needs.
       }
       const json = (obj: unknown) => {
         res.setHeader("content-type", "application/json");
@@ -64,7 +64,7 @@ export async function startFakeBraintrust(): Promise<FakeBraintrust> {
       if (path.endsWith("/api/apikey/login")) {
         return json({
           org_info: [
-            { id: "org1", name: "fake-org", api_url: url, proxy_url: url },
+            { id: "org1", name: "mock-org", api_url: url, proxy_url: url },
           ],
         });
       }

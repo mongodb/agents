@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { startFakeBraintrust, type FakeBraintrust } from "./fakeBraintrust.js";
+import { startMockBraintrust, type MockBraintrust } from "./mockBraintrust.js";
 
 /** The part of the yargs instance the helper uses. */
 interface ParsableCli {
@@ -25,7 +25,7 @@ export interface OfflineCliResult {
   /** 0 on success, 1 when a validator failed or the run errored. */
   exitCode: number;
   /** Rows the run uploaded, for asserting on spans and scores. */
-  braintrust: Pick<FakeBraintrust, "rows" | "requests">;
+  braintrust: Pick<MockBraintrust, "rows" | "requests">;
 }
 
 class CliExit extends Error {
@@ -35,9 +35,9 @@ class CliExit extends Error {
 }
 
 /**
- * Runs an eval CLI to completion against the fake Braintrust server. The
+ * Runs an eval CLI to completion against the mock Braintrust server. The
  * library CLI needs a Braintrust key and calls `process.exit(1)` on a
- * failed validator. This sets a dummy key, points the SDK at the fake and
+ * failed validator. This sets a dummy key, points the SDK at the mock and
  * turns the exit into a return value, so scripted runs work in unit tests
  * and CI without secrets.
  */
@@ -45,11 +45,11 @@ export async function runEvalCliOffline(
   createCli: () => ParsableCli,
   args: string[],
 ): Promise<OfflineCliResult> {
-  const fake = await startFakeBraintrust();
+  const mock = await startMockBraintrust();
   const env = {
     BRAINTRUST_API_KEY: "offline",
-    BRAINTRUST_API_URL: fake.url,
-    BRAINTRUST_APP_URL: fake.url,
+    BRAINTRUST_API_URL: mock.url,
+    BRAINTRUST_APP_URL: mock.url,
   };
   const previousEnv = Object.fromEntries(
     Object.keys(env).map((key) => [key, process.env[key]]),
@@ -74,10 +74,10 @@ export async function runEvalCliOffline(
     }
     // Spans upload in the background. Give them a moment to land.
     await new Promise((resolve) => setTimeout(resolve, 500));
-    await fake.close();
+    await mock.close();
   }
   return {
     exitCode,
-    braintrust: { rows: fake.rows, requests: fake.requests },
+    braintrust: { rows: mock.rows, requests: mock.requests },
   };
 }
