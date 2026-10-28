@@ -6,11 +6,16 @@
   "license": "Apache-2.0",
   "type": "module",
   "scripts": {
-    "pretest": "pnpm --filter @repo/atlas-explorer-agent build && pnpm --filter @repo/atlas-query-insights-agent build",
+    "build:agents": "pnpm --filter @repo/atlas-explorer-agent build && pnpm --filter @repo/atlas-query-insights-agent build",
+    "pretest": "pnpm build:agents",
     "test": "vitest run",
     "test:watch": "vitest",
-    "pretypecheck": "pnpm --filter @repo/atlas-explorer-agent build && pnpm --filter @repo/atlas-query-insights-agent build",
-    "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json --noEmit"
+    "pretypecheck": "pnpm build:agents",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json --noEmit",
+    "preeval:ci:explorer": "pnpm build:agents",
+    "eval:ci:explorer": "tsx src/cli.ts evaluation run --task explorer --dataset smoke --validate smoke --trial-count 1 --task-concurrency 10 --ci",
+    "preeval:ci:query-insights": "pnpm build:agents",
+    "eval:ci:query-insights": "tsx src/cli.ts evaluation run --task query-insights --dataset smoke --validate smoke --trial-count 1 --task-concurrency 10 --ci"
   },
   "dependencies": {
     "@ai-sdk/azure": "^4.0.0",
