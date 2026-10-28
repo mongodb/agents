@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { _internalGetGlobalState } from "braintrust";
+
 import { startFakeBraintrust, type FakeBraintrust } from "./fakeBraintrust.js";
 
 /** The part of the yargs instance the helper uses. */
@@ -68,6 +70,8 @@ export async function runEvalCliOffline(
     exitCode = error.code;
   } finally {
     process.exit = realExit;
+    // The SDK caches its login, so a later run would call the closed fake.
+    _internalGetGlobalState().resetLoginInfo();
     for (const [key, value] of Object.entries(previousEnv)) {
       if (value === undefined) delete process.env[key];
       else process.env[key] = value;

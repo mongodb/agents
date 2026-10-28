@@ -1,0 +1,83 @@
+name: Evals (Atlas Explorer)
+
+on:
+  pull_request:
+    paths:
+      - "agents/atlas-explorer/**"
+      - "packages/atlas-explorer-agent/**"
+      - "packages/agent-engine-core/**"
+      - "packages/evals/**"
+      - "pnpm-lock.yaml"
+      - ".github/actions/run-eval/**"
+      - ".github/workflows/evals-atlas-explorer.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "agents/atlas-explorer/**"
+      - "packages/atlas-explorer-agent/**"
+      - "packages/agent-engine-core/**"
+      - "packages/evals/**"
+      - "pnpm-lock.yaml"
+      - ".github/actions/run-eval/**"
+      - ".github/workflows/evals-atlas-explorer.yml"
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+    inputs:
+      model:
+        description: Model to run, a key of evalModels in packages/evals
+        required: false
+        default: ""
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  fork-notice:
+    name: Skipped for fork
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "Evals need repository secrets, which fork PRs cannot read." >> "$GITHUB_STEP_SUMMARY"
+          echo "A maintainer can run this workflow with workflow_dispatch on the fork's branch after review." >> "$GITHUB_STEP_SUMMARY"
+
+  evals:
+    name: Atlas Explorer evals
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      COREPACK_ENABLE_DOWNLOAD_PROMPT: "0"
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      BRAINTRUST_API_KEY: ${{ secrets.BRAINTRUST_API_KEY }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: ./.github/actions/setup-workspace
+
+      - name: Choose run id
+        id: run
+        env:
+          EVENT: ${{ github.event_name }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          case "$EVENT" in
+            pull_request) id="explorer-pr-$PR_NUMBER" ;;
+            push) id="explorer-main-${GITHUB_SHA::7}" ;;
+            schedule) id="explorer-weekly-$(date -u +%F)" ;;
+            *) id="explorer-manual-$(date -u +%F)-$GITHUB_RUN_ID" ;;
+          esac
+          echo "id=$id" >> "$GITHUB_OUTPUT"
+
+      - uses: ./.github/actions/run-eval
+        with:
+          name: explorer
+          script: eval:ci:explorer
+          model: ${{ inputs.model || vars.EVAL_MODEL || 'gpt-4.1-mini' }}
+          run-id: ${{ steps.run.outputs.id }}

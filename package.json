@@ -17,7 +17,9 @@
     "test:atlas-explorer": "pnpm --filter @repo/agent-engine-core test && pnpm --filter @repo/testing test && pnpm --filter @repo/atlas-explorer-agent test && pnpm --filter atlas-explorer test",
     "test:atlas-query-insights": "pnpm --filter @repo/atlas-query-insights-agent test && pnpm --filter atlas-query-insights test",
     "test:load-test": "pnpm --filter @repo/agent-engine-load-test test",
-    "update-skills": "pnpm --filter @repo/update-skills update-skills"
+    "update-skills": "pnpm --filter @repo/update-skills update-skills",
+    "eval:ci:explorer": "pnpm --filter @repo/evals eval:ci:explorer",
+    "eval:ci:query-insights": "pnpm --filter @repo/evals eval:ci:query-insights"
   },
   "devDependencies": {
     "husky": "9.1.7"

@@ -1,0 +1,97 @@
+name: Run eval
+description: >-
+  Run one eval script with a single automatic retry, write the Braintrust
+  experiment URLs and validation result to the job summary, and upload the log
+
+inputs:
+  script:
+    description: Root package.json script to run, for example eval:ci:explorer
+    required: true
+  name:
+    description: Short name used for the run id, summary heading and artifact
+    required: true
+  model:
+    description: Model name passed to the eval CLI with --model
+    required: true
+  run-id:
+    description: Run id passed to the eval CLI with --run-id
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Run ${{ inputs.script }}
+      id: run
+      shell: bash
+      env:
+        EVAL_SCRIPT: ${{ inputs.script }}
+        EVAL_MODEL: ${{ inputs.model }}
+        EVAL_RUN_ID: ${{ inputs.run-id }}
+      run: |
+        mkdir -p "$RUNNER_TEMP/eval-logs"
+        log="$RUNNER_TEMP/eval-logs/eval.log"
+        : > "$log"
+        # One rerun absorbs a provider or network blip. A real score
+        # failure fails both attempts and the step.
+        for attempt in 1 2; do
+          run_id="$EVAL_RUN_ID"
+          if [ "$attempt" -gt 1 ]; then run_id="$EVAL_RUN_ID-retry"; fi
+          echo "::group::Attempt $attempt ($run_id)"
+          set +e
+          pnpm run "$EVAL_SCRIPT" --model "$EVAL_MODEL" --run-id "$run_id" \
+            2>&1 | tee -a "$log"
+          status=${PIPESTATUS[0]}
+          set -e
+          echo "::endgroup::"
+          echo "attempts=$attempt" >> "$GITHUB_OUTPUT"
+          if [ "$status" -eq 0 ]; then break; fi
+        done
+        echo "status=$status" >> "$GITHUB_OUTPUT"
+        exit "$status"
+
+    - name: Write job summary
+      if: always()
+      shell: bash
+      env:
+        EVAL_NAME: ${{ inputs.name }}
+        EVAL_MODEL: ${{ inputs.model }}
+        EVAL_RUN_ID: ${{ inputs.run-id }}
+        EVAL_STATUS: ${{ steps.run.outputs.status }}
+        EVAL_ATTEMPTS: ${{ steps.run.outputs.attempts }}
+      run: |
+        log="$RUNNER_TEMP/eval-logs/eval.log"
+        {
+          echo "## Evals: $EVAL_NAME"
+          echo
+          echo "- Model: \`$EVAL_MODEL\`"
+          echo "- Run id: \`$EVAL_RUN_ID\`"
+          if [ "$EVAL_STATUS" = "0" ]; then
+            echo "- Result: passed after ${EVAL_ATTEMPTS:-0} attempt(s)"
+          else
+            echo "- Result: failed after ${EVAL_ATTEMPTS:-0} attempt(s)"
+          fi
+          echo
+          if [ -f "$log" ]; then
+            urls=$(grep -oE 'See results at [^ ]+' "$log" | sort -u || true)
+            if [ -n "$urls" ]; then
+              echo "### Braintrust experiments"
+              echo
+              echo "$urls" | sed 's/^See results at /- /'
+              echo
+            fi
+            if grep -q "Validation Summary" "$log"; then
+              echo "### Validation"
+              echo
+              echo '```'
+              awk '/Validation Summary/{found=1} found' "$log" | tail -n 60
+              echo '```'
+            fi
+          fi
+        } >> "$GITHUB_STEP_SUMMARY"
+
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: ${{ inputs.name }}-eval-log
+        path: ${{ runner.temp }}/eval-logs
+        if-no-files-found: ignore
