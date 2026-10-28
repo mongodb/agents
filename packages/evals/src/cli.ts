@@ -17,6 +17,10 @@
 import path from "node:path";
 
 import { createMongoDbAssistantEvalCli } from "mongodb-assistant-eval/cli";
+import {
+  makeFactuality,
+  type JudgeModelConfig,
+} from "mongodb-assistant-eval/scorers";
 import { makeValidateMinimums } from "mongodb-assistant-eval/validators";
 
 import { atlasExplorerConfig } from "../../../agents/atlas-explorer/src/agent_atlas_explorer/config.js";
@@ -24,6 +28,7 @@ import { atlasQueryInsightsConfig } from "../../../agents/atlas-query-insights/s
 import { atlasExplorerAgent } from "./agents/atlasExplorer.js";
 import { atlasQueryInsightsAgent } from "./agents/atlasQueryInsights.js";
 import { loadAgentCasesFromFile } from "./cases.js";
+import { judgeModelConfig } from "./judge.js";
 import type { ModelConfig } from "./models.js";
 import { scorers } from "./scorers.js";
 import { makeAgentTask } from "./task.js";
@@ -53,6 +58,8 @@ function productionModel(
 export interface EvalCliOptions {
   /** Defaults to the local servers. Tests pass stubs. */
   readonly toolProvider?: ToolProvider;
+  /** Defaults to `gpt-6-luna` through the Braintrust proxy. Tests pass a stub. */
+  readonly judge?: JudgeModelConfig;
 }
 
 /**
@@ -66,6 +73,7 @@ export interface EvalCliOptions {
  */
 export function buildEvalCli({
   toolProvider: baseProvider = createLocalToolProvider(),
+  judge = judgeModelConfig(),
 }: EvalCliOptions = {}) {
   const toolProvider = withNamedFixtures(baseProvider);
   return createMongoDbAssistantEvalCli({
@@ -116,7 +124,14 @@ export function buildEvalCli({
         toolProvider,
       }),
     },
-    scorers,
+    scorers: {
+      ...scorers,
+      Factuality: {
+        scorer: makeFactuality(judge),
+        description:
+          "LLM judge: does the answer agree with the case's referenceAnswer",
+      },
+    },
     // A threshold on a score a dataset never emits counts as missing and
     // fails, so each dataset has its own validator.
     validators: {
