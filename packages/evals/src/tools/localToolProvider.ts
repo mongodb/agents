@@ -72,7 +72,7 @@ function toLangChainTool(binding: MCPToolBinding): StructuredToolInterface {
  *   server and transport the agents use in production.
  * - The server's Atlas API calls go to one shared mock, which keeps a
  *   separate account per case.
- * - A case with `toolSetup.mongo` also gets a MongoDB connection. Read-only
+ * - A case with `toolSetup.localMongo` also gets a MongoDB connection. Read-only
  *   cases with identical seed data share one mongod and a read-only server.
  *   A case that allows writes gets its own mongod.
  *
@@ -122,15 +122,15 @@ export function createLocalToolProvider(
 
       try {
         const clientId = `case-${randomUUID()}`;
-        const account = atlas.register(clientId, setup.atlas ?? {});
+        const account = atlas.register(clientId, setup.mockAtlas ?? {});
         cleanups.push(() => account.release());
 
         let mongo: EphemeralMongo | undefined;
-        if (setup.mongo && request.allowWrites) {
-          mongo = await startEphemeralMongo(setup.mongo);
+        if (setup.localMongo && request.allowWrites) {
+          mongo = await startEphemeralMongo(setup.localMongo);
           cleanups.push(() => mongo?.stop());
-        } else if (setup.mongo) {
-          mongo = await sharedMongo(setup.mongo);
+        } else if (setup.localMongo) {
+          mongo = await sharedMongo(setup.localMongo);
         }
 
         const server: McpServerProcess = await startMcpServer({

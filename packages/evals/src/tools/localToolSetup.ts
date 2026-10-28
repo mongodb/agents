@@ -20,13 +20,13 @@ import { AtlasFixtureSchema } from "../atlas/fixtures.js";
 import { MongoSeedSchema } from "../mongo/seed.js";
 
 /**
- * A case's `input.custom.toolSetup` for the local provider. `atlas` seeds the
- * mock Atlas account and `mongo` seeds the database the MongoDB tools use.
- * A case with no `mongo` has no database connection.
+ * A case's `input.custom.toolSetup` for the local provider. `mockAtlas` seeds
+ * the mock Atlas account and `localMongo` seeds the database the MongoDB tools
+ * use. A case with no `localMongo` has no database connection.
  */
 export const LocalToolSetupSchema = z.object({
-  atlas: AtlasFixtureSchema.optional(),
-  mongo: MongoSeedSchema.optional(),
+  mockAtlas: AtlasFixtureSchema.optional(),
+  localMongo: MongoSeedSchema.optional(),
 });
 
 export type LocalToolSetup = z.output<typeof LocalToolSetupSchema>;

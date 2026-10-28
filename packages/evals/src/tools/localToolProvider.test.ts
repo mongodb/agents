@@ -25,7 +25,7 @@ import type { CaseTools, ToolProvider } from "./types.js";
 const ORG = "5".padEnd(24, "0");
 const PROJECT = "6".padEnd(24, "0");
 
-const atlas = {
+const mockAtlas = {
   orgs: [{ id: ORG, name: "Acme" }],
   projects: [
     {
@@ -52,7 +52,7 @@ const atlas = {
   ],
 };
 
-const mongo = {
+const localMongo = {
   shop: {
     orders: {
       documents: [
@@ -107,7 +107,7 @@ describe("local tool provider", () => {
 
   it("serves the seeded Atlas account", async () => {
     await withCase(
-      { allowWrites: false, setup: { atlas } },
+      { allowWrites: false, setup: { mockAtlas } },
       async (_caseTools, call) => {
         const result = await call("mongodb__atlas_list_clusters", {
           projectId: PROJECT,
@@ -119,7 +119,7 @@ describe("local tool provider", () => {
 
   it("reads seeded documents through a read-only server", async () => {
     await withCase(
-      { allowWrites: false, setup: { mongo } },
+      { allowWrites: false, setup: { localMongo } },
       async ({ tools }, call) => {
         expect(tools.map((t) => t.name)).not.toContain("mongodb__insert_many");
         const found = await call("mongodb__find", {
@@ -143,11 +143,11 @@ describe("local tool provider", () => {
       });
 
     const [first, second] = await Promise.all([
-      withCase({ allowWrites: true, setup: { mongo } }, async (c, call) => {
+      withCase({ allowWrites: true, setup: { localMongo } }, async (c, call) => {
         await insert(call);
         return c.state() as Promise<any>;
       }),
-      withCase({ allowWrites: true, setup: { mongo } }, async (c) =>
+      withCase({ allowWrites: true, setup: { localMongo } }, async (c) =>
         c.state() as Promise<any>,
       ),
     ]);
@@ -158,7 +158,7 @@ describe("local tool provider", () => {
 
   it("reports atlas state and the requests the tools made", async () => {
     await withCase(
-      { allowWrites: true, setup: { atlas } },
+      { allowWrites: true, setup: { mockAtlas } },
       async (c, call) => {
         await call("mongodb__atlas_pause_resume_cluster", {
           projectId: PROJECT,
@@ -179,7 +179,7 @@ describe("local tool provider", () => {
     await expect(
       provider.forCase({
         allowWrites: false,
-        setup: { mongo: { admin: { users: {} } } },
+        setup: { localMongo: { admin: { users: {} } } },
       }),
     ).rejects.toThrow(/admin, config, or local/);
   });
@@ -206,7 +206,7 @@ describe("with the agents", () => {
       input: {
         messages: [{ role: "user", content: "How many orders are there?" }],
         custom: {
-          toolSetup: { atlas, mongo },
+          toolSetup: { mockAtlas, localMongo },
           script: [
             {
               toolCalls: [
@@ -245,7 +245,7 @@ describe("with the agents", () => {
         messages: [{ role: "user", content: "Pause c1" }],
         custom: {
           allowWrites: true,
-          toolSetup: { atlas },
+          toolSetup: { mockAtlas },
           script: [
             {
               toolCalls: [
@@ -281,7 +281,7 @@ describe("with the agents", () => {
         custom: {
           allowWrites: true,
           approval: "reject",
-          toolSetup: { atlas },
+          toolSetup: { mockAtlas },
           script: [
             {
               toolCalls: [
@@ -315,7 +315,7 @@ describe("with the agents", () => {
       input: {
         messages: [{ role: "user", content: "Any index suggestions?" }],
         custom: {
-          toolSetup: { atlas },
+          toolSetup: { mockAtlas },
           script: [
             {
               toolCalls: [
