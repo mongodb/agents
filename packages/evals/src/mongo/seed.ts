@@ -55,7 +55,12 @@ export async function seedMongo(uri: string, seed: MongoSeed): Promise<void> {
         const collection = client.db(dbName).collection(name);
         if (documents.length) {
           await collection.insertMany(
-            documents.map((doc) => BSON.EJSON.deserialize(doc) as BSON.Document),
+            documents.map(
+              (doc) =>
+                BSON.EJSON.deserialize(doc, {
+                  relaxed: false,
+                }) as BSON.Document,
+            ),
           );
         }
         for (const { key, name: indexName, unique } of indexes) {
