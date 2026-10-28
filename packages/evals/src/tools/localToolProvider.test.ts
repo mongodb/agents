@@ -106,6 +106,31 @@ describe("local tool provider", () => {
     });
   });
 
+  it("offers the knowledge tools by default", async () => {
+    await withCase({ allowWrites: false }, async ({ tools }) => {
+      const names = tools.map((t) => t.name);
+      expect(names).toContain("search_knowledge");
+      expect(names).toContain("list_knowledge_sources");
+    });
+  });
+
+  it("leaves the knowledge tools out when asked", async () => {
+    const offline = createLocalToolProvider({ includeKnowledgeTools: false });
+    await offline.start?.();
+    try {
+      const caseTools = await offline.forCase({ allowWrites: false });
+      try {
+        const names = caseTools.tools.map((t) => t.name);
+        expect(names).not.toContain("search_knowledge");
+        expect(names).toContain("mongodb__find");
+      } finally {
+        await caseTools.dispose();
+      }
+    } finally {
+      await offline.stop?.();
+    }
+  });
+
   it("serves the seeded Atlas account", async () => {
     await withCase(
       { allowWrites: false, setup: { mockAtlas } },
