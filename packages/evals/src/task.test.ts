@@ -70,6 +70,7 @@ function staticToolProvider(
 
 const LIST_PROJECTS = "mongodb__atlas_list_projects";
 const PAUSE_CLUSTER = "mongodb__atlas_pause_resume_cluster";
+const AGGREGATE = "mongodb__aggregate";
 
 const toolProvider = staticToolProvider([
   {
@@ -85,6 +86,15 @@ const toolProvider = staticToolProvider([
       action: z.string(),
     }),
     result: () => "paused",
+  },
+  {
+    name: AGGREGATE,
+    schema: z.object({
+      database: z.string(),
+      collection: z.string(),
+      pipeline: z.array(z.record(z.string(), z.unknown())),
+    }),
+    result: () => "written",
   },
   {
     name: "mongodb__atlas_get_performance_advisor",
@@ -186,6 +196,31 @@ describe("makeAgentTask", () => {
     expect(output.assistantMessageContent).toBe("Paused c1.");
   });
 
+  it("answers every approval when writes run in parallel", async () => {
+    const outCall = (collection: string) => ({
+      name: AGGREGATE,
+      args: {
+        database: "db",
+        collection,
+        pipeline: [{ $out: `${collection}_copy` }],
+      },
+    });
+    const output = await run(
+      atlasExplorerAgent,
+      caseInput("Copy both collections", {
+        allowWrites: true,
+        script: [
+          { toolCalls: [outCall("a"), outCall("b")] },
+          { text: "Copied both." },
+        ],
+      }),
+    );
+
+    expect(output.custom?.approvalRequests).toEqual([AGGREGATE, AGGREGATE]);
+    expect(output.custom?.executed).toEqual([outCall("a"), outCall("b")]);
+    expect(output.assistantMessageContent).toBe("Copied both.");
+  });
+
   it("does not run a rejected write", async () => {
     const output = await run(
       atlasExplorerAgent,
@@ -225,12 +260,15 @@ describe("makeAgentTask", () => {
     );
 
     const system = capture.prompts[0].find((m) => m.type === "system");
-    expect(JSON.stringify(system?.content)).toContain("mongodb-query-optimizer");
+    expect(JSON.stringify(system?.content)).toContain(
+      "mongodb-query-optimizer",
+    );
   });
 
   it("redacts pasted secrets before the model sees them", async () => {
     const capture = new ModelInputCapture();
-    const secret = "mongodb+srv://admin:hunter2pass@cluster0.example.mongodb.net";
+    const secret =
+      "mongodb+srv://admin:hunter2pass@cluster0.example.mongodb.net";
     await run(
       atlasExplorerAgent,
       caseInput(`Connect with ${secret}`, { script: [{ text: "No." }] }),
@@ -334,11 +372,9 @@ describe("makeAgentTask", () => {
     };
 
     await expect(
-      run(
-        atlasExplorerAgent,
-        caseInput("a", { script: [{ text: "ok" }] }),
-        { toolProvider: failing },
-      ),
+      run(atlasExplorerAgent, caseInput("a", { script: [{ text: "ok" }] }), {
+        toolProvider: failing,
+      }),
     ).rejects.toThrow("state failed");
     expect(disposed).toBe(1);
   });

@@ -20,7 +20,10 @@ import type { BaseCallbackHandler } from "@langchain/core/callbacks/base";
 import type { BaseMessage } from "@langchain/core/messages";
 import { Command, MemorySaver } from "@langchain/langgraph";
 import { createAgentEngineDeepAgent } from "@mongodb-js/agent-engine-sdk-langgraph";
-import { prepareAgentInput, createInputRedactor } from "@repo/agent-engine-core";
+import {
+  prepareAgentInput,
+  createInputRedactor,
+} from "@repo/agent-engine-core";
 import { BraintrustLangChainCallbackHandler } from "braintrust";
 import type { EvalTask } from "mongodb-assistant-eval/cli";
 import type {
@@ -63,11 +66,17 @@ const MAX_APPROVAL_ROUNDS = 5;
 const EVAL_USER_ID = "eval-user";
 
 interface Interrupt {
+  id: string;
   value?: { actionRequests?: { name: string }[] };
 }
 
+interface AgentResult {
+  messages: BaseMessage[];
+  __interrupt__?: Interrupt[];
+}
+
 interface InvokableAgent {
-  invoke(input: unknown, config: unknown): Promise<Record<string, unknown>>;
+  invoke(input: unknown, config: unknown): Promise<AgentResult>;
 }
 
 function singleUserMessage(input: AgentTaskInput): string {
@@ -155,21 +164,22 @@ export function makeAgentTask(
         const approvalRequests: string[] = [];
         for (
           let round = 0;
-          Array.isArray(result.__interrupt__) && round < MAX_APPROVAL_ROUNDS;
+          result.__interrupt__ !== undefined && round < MAX_APPROVAL_ROUNDS;
           round++
         ) {
-          const actions =
-            (result.__interrupt__[0] as Interrupt | undefined)?.value
-              ?.actionRequests ?? [];
-          approvalRequests.push(...actions.map((a) => a.name));
           const decision =
             custom?.approval === "reject"
               ? { type: "reject", message: "Rejected by eval harness" }
               : { type: "approve" };
-          result = await agent.invoke(
-            new Command({ resume: { decisions: actions.map(() => decision) } }),
-            config,
-          );
+          // Parallel tool calls can each pause on their own interrupt. LangGraph
+          // resumes them only from a map keyed by interrupt id.
+          const resume: Record<string, { decisions: unknown[] }> = {};
+          for (const interrupt of result.__interrupt__) {
+            const actions = interrupt.value?.actionRequests ?? [];
+            approvalRequests.push(...actions.map((a) => a.name));
+            resume[interrupt.id] = { decisions: actions.map(() => decision) };
+          }
+          result = await agent.invoke(new Command({ resume }), config);
         }
         if (result.__interrupt__) {
           throw new Error(
@@ -178,7 +188,7 @@ export function makeAgentTask(
         }
 
         const messages = convertLangchainMessagesToAssistantEvalMessages(
-          result.messages as BaseMessage[],
+          result.messages,
         );
         const lastAssistant = messages.findLast((m) => m.role === "assistant");
         return {
