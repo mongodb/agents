@@ -18,11 +18,11 @@ import { createMongoDbAssistantEvalCli } from "mongodb-assistant-eval/cli";
 import { makeValidateMinimums } from "mongodb-assistant-eval/validators";
 import { describe, expect, it } from "vitest";
 
-import { runEvalCliOffline } from "./runEvalCliOffline.js";
+import { runEvalCliWithMockBraintrust } from "./runEvalCliWithMockBraintrust.js";
 
 function buildCli(score: number) {
   return createMongoDbAssistantEvalCli({
-    projectName: "evals-offline-test",
+    projectName: "evals-mock-braintrust-test",
     datasets: {
       tiny: {
         description: "One case",
@@ -71,16 +71,16 @@ const args = [
   "1",
 ];
 
-describe("runEvalCliOffline", () => {
+describe("runEvalCliWithMockBraintrust", () => {
   it("runs the CLI without a Braintrust key and passes validation", async () => {
-    const result = await runEvalCliOffline(() => buildCli(1), args);
+    const result = await runEvalCliWithMockBraintrust(() => buildCli(1), args);
     expect(result.exitCode).toBe(0);
     const scored = result.braintrust.rows.filter((row) => row.scores);
     expect(scored.length).toBeGreaterThan(0);
   });
 
   it("reports a failed validator as exit code 1", async () => {
-    const result = await runEvalCliOffline(() => buildCli(0), args);
+    const result = await runEvalCliWithMockBraintrust(() => buildCli(0), args);
     expect(result.exitCode).toBe(1);
   });
 });

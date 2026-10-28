@@ -21,7 +21,7 @@ interface ParsableCli {
   parseAsync(args: string[]): Promise<unknown>;
 }
 
-export interface OfflineCliResult {
+export interface MockBraintrustCliResult {
   /** 0 on success, 1 when a validator failed or the run errored. */
   exitCode: number;
   /** Rows the run uploaded, for asserting on spans and scores. */
@@ -41,13 +41,13 @@ class CliExit extends Error {
  * turns the exit into a return value, so scripted runs work in unit tests
  * and CI without secrets.
  */
-export async function runEvalCliOffline(
+export async function runEvalCliWithMockBraintrust(
   createCli: () => ParsableCli,
   args: string[],
-): Promise<OfflineCliResult> {
+): Promise<MockBraintrustCliResult> {
   const mock = await startMockBraintrust();
   const env = {
-    BRAINTRUST_API_KEY: "offline",
+    BRAINTRUST_API_KEY: "mock",
     BRAINTRUST_API_URL: mock.url,
     BRAINTRUST_APP_URL: mock.url,
   };
