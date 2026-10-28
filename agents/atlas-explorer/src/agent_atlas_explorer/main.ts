@@ -18,33 +18,18 @@
 
 import "dotenv/config";
 
-import { humanInTheLoopMiddleware } from "langchain";
-
 import {
   App,
   AgentEngineToolSandboxBackend,
   type DeepAgentOptions,
 } from "@mongodb-js/agent-engine-sdk-langgraph";
+import { registerKnowledgeTools } from "@repo/agent-engine-core";
 import {
-  registerKnowledgeTools,
-  type DataAccessConfig,
-} from "@repo/agent-engine-core";
-import {
-  approveAggregateWritesMiddleware,
+  buildAtlasExplorerAgentOptions,
   buildLLM,
-  buildSystemPrompt,
-  clusterAllowlistMiddleware,
-  createInputRefusalMiddleware,
   createInputRedactor,
-  databaseAllowlistMiddleware,
-  mutativeInterruptOn,
   prepareAtlasExplorerInput,
-  recoverToolErrorsMiddleware,
-  redactSecretsMiddleware,
-  selectAtlasTools,
-  stampResumeClientUserMiddleware,
   startRuntimeDiagnostics,
-  stripToolEchoMiddleware,
   surfaceTokenMintFailures,
   withRequesterMetadata,
   withoutShellExecution,
@@ -52,9 +37,6 @@ import {
 } from "@repo/atlas-explorer-agent";
 
 import { atlasExplorerConfig } from "./config.js";
-
-// Typed so `databaseNames` type-checks even when config.ts sets only `projects`.
-const dataAccess: DataAccessConfig = atlasExplorerConfig.dataAccess;
 
 function log(level: "INFO" | "WARN" | "ERROR", msg: string): void {
   const t = new Date().toISOString().slice(11, 19);
@@ -90,22 +72,16 @@ export const buildAgent = app.entrypoint((): unknown => {
       ? "Write operations enabled; non-read MCP tools require HITL approval"
       : "Read-only tool policy; write MCP tools are hidden",
   );
-  const discoveredTools = app.getTools();
-  const availableAtlasTools = selectAtlasTools(
-    discoveredTools,
+  const options = buildAtlasExplorerAgentOptions({
+    config: atlasExplorerConfig,
+    tools: app.getTools(),
     allowWriteOperations,
-  );
+  });
   const platformSaver = app.checkpointer();
   const saver =
     platformSaver === null
       ? null
       : withRequesterMetadata(platformSaver);
-  const mutativeToolReview = humanInTheLoopMiddleware({
-    interruptOn: allowWriteOperations
-      ? mutativeInterruptOn(availableAtlasTools)
-      : {},
-    descriptionPrefix: "MongoDB or Atlas operation pending approval",
-  });
 
   return app.deepAgent(
     buildLLM({
@@ -114,30 +90,11 @@ export const buildAgent = app.entrypoint((): unknown => {
       logPrefix: "atlas-explorer",
     }),
     {
-      tools: availableAtlasTools,
-      systemPrompt: buildSystemPrompt(allowWriteOperations, {
-        ...atlasExplorerConfig.systemPrompt,
-        dataAccess,
-      }),
-      skills: ["skills"],
+      ...options,
       backend: withoutShellExecution(new AgentEngineToolSandboxBackend()),
       // PlatformCheckpointer versions checkpoints as string | number. deepAgent
       // types the saver as BaseCheckpointSaver<number>.
       checkpointer: (saver ?? false) as DeepAgentOptions["checkpointer"],
-      middleware: [
-        createInputRefusalMiddleware({
-          mode: atlasExplorerConfig.inputGuard.mode,
-        }),
-        stampResumeClientUserMiddleware,
-        stripToolEchoMiddleware,
-        redactSecretsMiddleware,
-        clusterAllowlistMiddleware(dataAccess),
-        mutativeToolReview,
-        approveAggregateWritesMiddleware,
-        // After approval, so it checks the arguments a reviewer edited.
-        databaseAllowlistMiddleware(dataAccess.databaseNames),
-        recoverToolErrorsMiddleware,
-      ],
     },
   );
 });

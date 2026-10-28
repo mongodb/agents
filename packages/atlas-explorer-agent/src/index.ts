@@ -50,6 +50,11 @@ export {
 } from "@repo/agent-engine-core";
 export type { AtlasExplorerConfig } from "./agentConfig.js";
 export {
+  buildAtlasExplorerAgentOptions,
+  type AtlasExplorerAgentOptions,
+  type AtlasExplorerAgentOptionsInput,
+} from "./agentOptions.js";
+export {
   HIGH_RISK_MCP_TOOLS,
   mutativeInterruptOn,
   READ_ONLY_MCP_TOOLS,
