@@ -139,16 +139,29 @@ describe("NoForbiddenText", () => {
     expect(await scoreOf(result)).toBe(0);
   });
 
-  it("finds text inside a tool call's arguments", async () => {
+  it("finds text inside a tool call's arguments, including JSON-serialized arguments", async () => {
     const result = NoForbiddenText(
-      args(expected, {
-        messages: [
-          {
-            role: "assistant-tool",
-            toolCalls: [{ name: "x", args: { nested: ["s3cret"] } }],
-          },
-        ],
-      }),
+      args(
+        { forbiddenText: ['pass"word'] },
+        {
+          messages: [
+            {
+              role: "assistant",
+              content: "",
+              toolCalls: [
+                {
+                  id: "call_1",
+                  type: "function",
+                  function: {
+                    name: "x",
+                    arguments: JSON.stringify({ nested: ['pass"word'] }),
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ),
     );
     expect(await scoreOf(result)).toBe(0);
   });

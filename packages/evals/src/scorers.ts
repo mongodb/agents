@@ -68,7 +68,16 @@ function collectStrings(value: unknown, into: string[] = []): string[] {
   } else if (Array.isArray(value)) {
     for (const item of value) collectStrings(item, into);
   } else if (value !== null && typeof value === "object") {
-    for (const item of Object.values(value)) collectStrings(item, into);
+    for (const [key, item] of Object.entries(value)) {
+      collectStrings(item, into);
+      if (key === "arguments" && typeof item === "string") {
+        try {
+          collectStrings(JSON.parse(item), into);
+        } catch {
+          // Raw string was already added above.
+        }
+      }
+    }
   }
   return into;
 }
