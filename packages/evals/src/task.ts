@@ -34,8 +34,8 @@ import type {
 import type { AgentDefinition } from "./agents/definition.js";
 import { convertLangchainMessagesToAssistantEvalMessages } from "./convertLangchainMessagesToAssistantEvalMessages.js";
 import { ExecutionRecorder, type ExecutedToolCall } from "./executionRecorder.js";
+import { readAgentFiles } from "./agentFiles.js";
 import { makeChatModel, type ModelConfig } from "./models.js";
-import { readOnlyAgentBackend } from "./readOnlyBackend.js";
 import type { CustomInput } from "./schemas.js";
 import type { ToolProvider } from "./tools/types.js";
 
@@ -131,12 +131,11 @@ export function makeAgentTask(
         });
         const agent = createAgentEngineDeepAgent(
           model,
-          readOnlyAgentBackend(definition.agentDir) as never,
+          undefined,
           {
             tools: options.tools as never,
             systemPrompt: options.systemPrompt,
-            // Relative: the backend is rooted at the agent directory.
-            skills: options.skills,
+            skills: options.skills.map((skill) => `/${skill}`),
             middleware: options.middleware as never,
             checkpointer: new MemorySaver(),
           },
@@ -152,12 +151,13 @@ export function makeAgentTask(
           configurable: { thread_id: threadId },
         };
 
+        const input = prepareAgentInput(
+          { payload: { message } } as never,
+          { userId: EVAL_USER_ID, sessionId: threadId },
+          { redactMessage: createInputRedactor(definition.inputGuardMode) },
+        );
         let result = await agent.invoke(
-          prepareAgentInput(
-            { payload: { message } } as never,
-            { userId: EVAL_USER_ID, sessionId: threadId },
-            { redactMessage: createInputRedactor(definition.inputGuardMode) },
-          ),
+          { ...input, files: readAgentFiles(definition.agentDir) },
           config,
         );
 

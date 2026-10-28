@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+import fs from "node:fs";
+import path from "node:path";
+
 import { BaseCallbackHandler } from "@langchain/core/callbacks/base";
 import type { BaseMessage } from "@langchain/core/messages";
 import { tool, type StructuredToolInterface } from "@langchain/core/tools";
@@ -263,6 +266,66 @@ describe("makeAgentTask", () => {
     expect(JSON.stringify(system?.content)).toContain(
       "mongodb-query-optimizer",
     );
+  });
+
+  it("lets the agent read its skills from memory", async () => {
+    const output = await run(
+      atlasExplorerAgent,
+      caseInput("Read the skill", {
+        script: [
+          {
+            toolCalls: [
+              {
+                name: "read_file",
+                args: { file_path: "/skills/mongodb-query-optimizer/SKILL.md" },
+              },
+            ],
+          },
+          { text: "Read it." },
+        ],
+      }),
+    );
+
+    const toolMessage = output.messages.find((m) => m.role === "tool");
+    expect(JSON.stringify(toolMessage)).toContain("mongodb-query-optimizer");
+  });
+
+  it("keeps filesystem writes in the case and off the disk", async () => {
+    const skillFile = path.join(
+      atlasExplorerAgent.agentDir,
+      "skills",
+      "eval-scratch.md",
+    );
+    const write = {
+      name: "write_file",
+      args: {
+        file_path: "/skills/eval-scratch.md",
+        content: "written-by-first-case",
+      },
+    };
+    const read = {
+      name: "read_file",
+      args: { file_path: "/skills/eval-scratch.md" },
+    };
+
+    const first = await run(
+      atlasExplorerAgent,
+      caseInput("Write", {
+        script: [{ toolCalls: [write] }, { toolCalls: [read] }, { text: "Ok" }],
+      }),
+    );
+    const second = await run(
+      atlasExplorerAgent,
+      caseInput("Read", {
+        script: [{ toolCalls: [read] }, { text: "Ok" }],
+      }),
+    );
+
+    expect(fs.existsSync(skillFile)).toBe(false);
+    const readBack = (messages: typeof first.messages) =>
+      JSON.stringify(messages.filter((m) => m.role === "tool").at(-1));
+    expect(readBack(first.messages)).toContain("written-by-first-case");
+    expect(readBack(second.messages)).not.toContain("written-by-first-case");
   });
 
   it("redacts pasted secrets before the model sees them", async () => {
