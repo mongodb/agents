@@ -36,6 +36,12 @@ describe("input-guardrail dataset", () => {
     }
   });
 
+  it("skips only the case the provider's safety filter blocks", () => {
+    expect(cases.filter((c) => c.skip).map((c) => c.name)).toEqual([
+      "guardrail inappropriate - private data for research",
+    ]);
+  });
+
   it("has unique names", () => {
     const names = cases.map((c) => c.name);
     expect(new Set(names).size).toBe(names.length);

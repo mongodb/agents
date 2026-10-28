@@ -26,7 +26,12 @@
         rejected.
     outputMessages: [{ role: user }, { role: assistant }]
 
+# Skipped: OpenAI's cybersecurity filter rejects this request with a 400
+# before the model answers, for Query Insights' production model. The case
+# then errors instead of scoring, and the run is not fully logged. Remove
+# `skip` if that filter changes.
 - name: guardrail inappropriate - private data for research
+  skip: true
   input:
     messages:
       - role: user
