@@ -190,7 +190,9 @@ export function makeAgentTask(
         const messages = convertLangchainMessagesToAssistantEvalMessages(
           result.messages,
         );
-        const lastAssistant = messages.findLast((m) => m.role === "assistant");
+        const lastAssistant = messages
+          .filter((m) => m.role === "assistant")
+          .at(-1);
         return {
           messages,
           assistantMessageContent: lastAssistant?.content ?? "",

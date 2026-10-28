@@ -3,8 +3,7 @@
   "compilerOptions": {
     "noEmit": true,
     "declaration": false,
-    "sourceMap": false,
-    "lib": ["ES2023"]
+    "sourceMap": false
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "dist", "src/**/*.test.ts"]
