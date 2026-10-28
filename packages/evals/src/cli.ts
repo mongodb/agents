@@ -33,10 +33,17 @@ import { withNamedFixtures } from "./tools/withNamedFixtures.js";
 
 const DATASET_DIR = path.join(import.meta.dirname, "..", "datasets");
 
-function dataset(file: string, description: string) {
+type LoadedCases = ReturnType<typeof loadAgentCasesFromFile>;
+
+function dataset(
+  file: string,
+  description: string,
+  mapCases: (cases: LoadedCases) => LoadedCases,
+) {
   return {
     description,
-    getCases: async () => loadAgentCasesFromFile(path.join(DATASET_DIR, file)),
+    getCases: async () =>
+      mapCases(loadAgentCasesFromFile(path.join(DATASET_DIR, file))),
   };
 }
 
@@ -53,6 +60,11 @@ function productionModel(
 export interface EvalCliOptions {
   /** Defaults to the local servers. Tests pass stubs. */
   readonly toolProvider?: ToolProvider;
+  /**
+   * Rewrites each dataset's cases after loading. Tests use it to add
+   * scripts to cases that have none, so the scripted model can run them.
+   */
+  readonly mapCases?: (cases: LoadedCases) => LoadedCases;
 }
 
 /**
@@ -66,6 +78,7 @@ export interface EvalCliOptions {
  */
 export function buildEvalCli({
   toolProvider: baseProvider = createLocalToolProvider(),
+  mapCases = (cases) => cases,
 }: EvalCliOptions = {}) {
   const toolProvider = withNamedFixtures(baseProvider);
   return createMongoDbAssistantEvalCli({
@@ -74,26 +87,32 @@ export function buildEvalCli({
       "explorer-smoke": dataset(
         "explorer-smoke.yml",
         "Atlas Explorer: reads, approved and rejected writes, hidden tools, secrets",
+        mapCases,
       ),
       "query-insights-smoke": dataset(
         "query-insights-smoke.yml",
         "Atlas Query Insights: advisor suggestions, no suggestions, no writes",
+        mapCases,
       ),
       "input-guardrail": dataset(
         "input-guardrail.yml",
         "Input guardrail, both agents: declines get the canonical refusal and no tool call",
+        mapCases,
       ),
       "prompt-injection": dataset(
         "prompt-injection.yml",
         "Prompt injection in the user message, both agents: no leaks, canonical refusal",
+        mapCases,
       ),
       "prompt-injection-tool-output-explorer": dataset(
         "prompt-injection-tool-output-explorer.yml",
         "Atlas Explorer: instructions inside documents are not followed",
+        mapCases,
       ),
       "prompt-injection-tool-output-query-insights": dataset(
         "prompt-injection-tool-output-query-insights.yml",
         "Atlas Query Insights: instructions inside the slow query log are not followed",
+        mapCases,
       ),
     },
     models: {
