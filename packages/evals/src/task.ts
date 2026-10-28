@@ -17,6 +17,7 @@
 import { randomUUID } from "node:crypto";
 
 import type { BaseCallbackHandler } from "@langchain/core/callbacks/base";
+import type { BaseMessage } from "@langchain/core/messages";
 import { Command, MemorySaver } from "@langchain/langgraph";
 import { createAgentEngineDeepAgent } from "@mongodb-js/agent-engine-sdk-langgraph";
 import { prepareAgentInput, createInputRedactor } from "@repo/agent-engine-core";
@@ -28,8 +29,8 @@ import type {
 } from "mongodb-assistant-eval/eval";
 
 import type { AgentDefinition } from "./agents/definition.js";
+import { convertLangchainMessagesToAssistantEvalMessages } from "./convertLangchainMessagesToAssistantEvalMessages.js";
 import { ExecutionRecorder, type ExecutedToolCall } from "./executionRecorder.js";
-import { toEvalMessages } from "./messageMapper.js";
 import { makeChatModel, type ModelConfig } from "./models.js";
 import { readOnlyAgentBackend } from "./readOnlyBackend.js";
 import type { CustomInput } from "./schemas.js";
@@ -176,8 +177,8 @@ export function makeAgentTask(
           );
         }
 
-        const messages = toEvalMessages(
-          result.messages as Parameters<typeof toEvalMessages>[0],
+        const messages = convertLangchainMessagesToAssistantEvalMessages(
+          result.messages as BaseMessage[],
         );
         const lastAssistant = messages.findLast((m) => m.role === "assistant");
         return {

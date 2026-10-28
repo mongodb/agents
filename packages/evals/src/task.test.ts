@@ -16,6 +16,7 @@
 
 import { BaseCallbackHandler } from "@langchain/core/callbacks/base";
 import type { BaseMessage } from "@langchain/core/messages";
+import { tool, type StructuredToolInterface } from "@langchain/core/tools";
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 
@@ -27,8 +28,45 @@ import {
   type AgentTaskInput,
   type AgentTaskOptions,
 } from "./task.js";
-import { staticToolProvider } from "./tools/staticToolProvider.js";
-import type { CaseTools, ToolProvider } from "./tools/types.js";
+import type {
+  CaseTools,
+  CaseToolsRequest,
+  ToolProvider,
+} from "./tools/types.js";
+
+interface StaticToolSpec {
+  readonly name: string;
+  readonly description?: string;
+  readonly schema: z.ZodObject<z.ZodRawShape>;
+  /** Result the model sees. A thrown error becomes a tool error. */
+  readonly result: (args: Record<string, unknown>) => string | Promise<string>;
+}
+
+/**
+ * Canned tools, so these tests exercise the task without starting an MCP
+ * server or a database. A fresh set is built for every case.
+ */
+function staticToolProvider(
+  specs: readonly StaticToolSpec[],
+  state: () => unknown = () => ({}),
+): ToolProvider {
+  return {
+    async forCase(_request: CaseToolsRequest): Promise<CaseTools> {
+      return {
+        tools: specs.map(
+          (spec) =>
+            tool(async (args: Record<string, unknown>) => spec.result(args), {
+              name: spec.name,
+              description: spec.description ?? spec.name,
+              schema: spec.schema as never,
+            }) as unknown as StructuredToolInterface,
+        ),
+        state,
+        dispose: async () => {},
+      };
+    },
+  };
+}
 
 const LIST_PROJECTS = "mongodb__atlas_list_projects";
 const PAUSE_CLUSTER = "mongodb__atlas_pause_resume_cluster";
