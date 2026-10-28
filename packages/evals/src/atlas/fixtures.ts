@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { randomUUID } from "node:crypto";
+
 import { z } from "zod";
 
 const objectId = z
@@ -21,6 +23,8 @@ const objectId = z
   .regex(/^[0-9a-f]{24}$/, "Atlas ids are 24 lowercase hex characters");
 
 const ClusterSchema = z.object({
+  /** Atlas returns an id next to the name. Nothing looks a cluster up by it. */
+  id: z.string().default(() => randomUUID()),
   name: z.string().regex(/^[a-zA-Z0-9_-]{1,64}$/),
   instanceSize: z.string().default("M10"),
   provider: z.string().default("AWS"),
@@ -65,13 +69,20 @@ const AlertSchema = z.object({
   acknowledgementComment: z.string().default(""),
 });
 
-const ProjectSchema = z.object({
-  id: objectId,
-  name: z.string(),
-  orgId: objectId,
-  clusters: z.array(ClusterSchema).default([]),
-  alerts: z.array(AlertSchema).default([]),
-});
+const ProjectSchema = z
+  .object({
+    id: objectId,
+    name: z.string(),
+    orgId: objectId,
+    clusters: z.array(ClusterSchema).default([]),
+    alerts: z.array(AlertSchema).default([]),
+  })
+  .refine(
+    (project) =>
+      new Set(project.clusters.map((c) => c.name)).size ===
+      project.clusters.length,
+    { message: "Cluster names must be unique within a project" },
+  );
 
 /** What a case's mock Atlas account holds. Seeded per case. */
 export const AtlasFixtureSchema = z.object({
