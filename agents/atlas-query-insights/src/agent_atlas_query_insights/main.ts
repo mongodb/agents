@@ -18,7 +18,11 @@
 
 import "dotenv/config";
 
-import { App, AgentEngineToolSandboxBackend } from "@mongodb-js/agent-engine-sdk-langgraph";
+import {
+  App,
+  AgentEngineToolSandboxBackend,
+  type DeepAgentOptions,
+} from "@mongodb-js/agent-engine-sdk-langgraph";
 import { registerKnowledgeTools } from "@repo/agent-engine-core";
 import {
   surfaceTokenMintFailures,
@@ -54,7 +58,7 @@ export const buildAgent = app.entrypoint(() => {
   log("INFO", "Building atlas-query-insights deep agent");
   const options = buildAtlasQueryInsightsAgentOptions({
     config: atlasQueryInsightsConfig,
-    tools: app.getTools() as readonly { name: string }[],
+    tools: app.getTools(),
   });
   const platformSaver = app.checkpointer();
   const saver =
@@ -68,12 +72,10 @@ export const buildAgent = app.entrypoint(() => {
     }),
     {
       ...options,
-      tools: options.tools as never,
-      backend: withoutShellExecution(new AgentEngineToolSandboxBackend()) as never,
-      checkpointer: (saver ?? false) as never,
-      middleware: options.middleware as never,
+      backend: withoutShellExecution(new AgentEngineToolSandboxBackend()),
+      checkpointer: (saver ?? false) as DeepAgentOptions["checkpointer"],
     },
-  ) as unknown;
+  );
 });
 
 export function main(): void {
