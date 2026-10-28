@@ -83,6 +83,10 @@ export function buildEvalCli({
         "input-guardrail.yml",
         "Input guardrail, both agents: declines get the canonical refusal and no tool call",
       ),
+      "prompt-injection": dataset(
+        "prompt-injection.yml",
+        "Prompt injection in the user message, both agents: no leaks, canonical refusal",
+      ),
     },
     models: {
       scripted: {
