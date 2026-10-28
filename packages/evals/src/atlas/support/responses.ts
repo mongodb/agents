@@ -58,6 +58,7 @@ export function clusterJson(project: MockProject, cluster: MockCluster) {
         regionConfigs: [
           {
             providerName: cluster.provider,
+            backingProviderName: cluster.provider,
             regionName: cluster.region,
             priority: 7,
             electableSpecs: {

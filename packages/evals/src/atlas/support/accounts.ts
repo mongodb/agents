@@ -59,7 +59,7 @@ export class AccountRegistry {
       throw new Error(`Mock Atlas account ${clientId} already exists`);
     }
     const account: Account = {
-      fixture: AtlasFixtureSchema.parse(fixtureInput),
+      fixture: structuredClone(AtlasFixtureSchema.parse(fixtureInput)),
       requests: [],
     };
     this.accounts.set(clientId, account);

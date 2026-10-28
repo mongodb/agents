@@ -39,8 +39,10 @@ export function createAtlasApp(registry: AccountRegistry) {
   // Record every request an account makes, whatever the outcome.
   app.use("*", async (c, next) => {
     await next();
-    c.header("Content-Type", ATLAS_CONTENT_TYPE);
     const url = new URL(c.req.url);
+    if (!url.pathname.startsWith("/api/oauth/")) {
+      c.header("Content-Type", ATLAS_CONTENT_TYPE);
+    }
     c.get("account")?.requests.push({
       method: c.req.method,
       url: `${url.pathname}${url.search}`,

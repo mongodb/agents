@@ -33,7 +33,7 @@ const ClusterSchema = z.object({
   paused: z.boolean().default(false),
   state: z.enum(["IDLE", "CREATING", "UPDATING", "REPAIRING"]).default("IDLE"),
   /** `host:port` of each node. The slow query endpoint is keyed by these. */
-  hosts: z.array(z.string()).optional(),
+  hosts: z.array(z.string()).min(1).optional(),
   /** Performance Advisor payloads, in the shape the Atlas API returns. */
   advisor: z
     .object({
@@ -44,20 +44,11 @@ const ClusterSchema = z.object({
           redundantIndexes: z.array(z.unknown()).default([]),
           unusedIndexes: z.array(z.unknown()).default([]),
         })
-        .default({ hiddenIndexes: [], redundantIndexes: [], unusedIndexes: [] }),
+        .prefault({}),
       schemaAdvice: z.array(z.unknown()).default([]),
       slowQueries: z.array(z.record(z.string(), z.unknown())).default([]),
     })
-    .default({
-      suggestedIndexes: [],
-      dropIndexSuggestions: {
-        hiddenIndexes: [],
-        redundantIndexes: [],
-        unusedIndexes: [],
-      },
-      schemaAdvice: [],
-      slowQueries: [],
-    }),
+    .prefault({}),
 });
 
 const AlertSchema = z.object({
