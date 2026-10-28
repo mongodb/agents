@@ -7,6 +7,7 @@ on:
       - "packages/agent-engine-core/**"
       - "packages/atlas-explorer-agent/**"
       - "packages/atlas-query-insights-agent/**"
+      - "packages/evals/**"
       - "packages/testing/**"
       - "package.json"
       - "pnpm-lock.yaml"
@@ -24,6 +25,7 @@ on:
       - "packages/agent-engine-core/**"
       - "packages/atlas-explorer-agent/**"
       - "packages/atlas-query-insights-agent/**"
+      - "packages/evals/**"
       - "packages/testing/**"
       - "package.json"
       - "pnpm-lock.yaml"
@@ -65,6 +67,8 @@ jobs:
             command: pnpm --filter @repo/atlas-query-insights-agent test
           - name: atlas-query-insights
             command: pnpm --filter atlas-query-insights test
+          - name: evals
+            command: pnpm --filter @repo/evals test
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/unit-test

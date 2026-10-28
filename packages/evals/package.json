@@ -1,0 +1,39 @@
+{
+  "name": "@repo/evals",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Eval harness that runs the Atlas agents through mongodb-assistant-eval",
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "pretest": "pnpm --filter @repo/atlas-explorer-agent build && pnpm --filter @repo/atlas-query-insights-agent build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "pretypecheck": "pnpm --filter @repo/atlas-explorer-agent build && pnpm --filter @repo/atlas-query-insights-agent build",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json --noEmit"
+  },
+  "dependencies": {
+    "@ai-sdk/azure": "^4.0.0",
+    "@ai-sdk/openai": "^4.0.0",
+    "@ai-sdk/provider": "^4.0.0",
+    "@langchain/core": "^1.2.11",
+    "@slack/web-api": "^7.0.0",
+    "ai": "^7.0.0",
+    "braintrust": "^3.35.0",
+    "mongodb": "^6.21.0",
+    "mongodb-assistant-eval": "0.1.1",
+    "openai": "^7.25.0",
+    "slack-block-builder": "^2.0.0",
+    "slackify-markdown": "^4.0.0",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.0",
+    "tsx": "^4.16.0",
+    "typescript": "^5.5.0",
+    "vitest": "^4.1.11"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}
