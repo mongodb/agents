@@ -53,6 +53,11 @@ export {
 } from "@repo/agent-engine-core";
 export type { AtlasQueryInsightsConfig } from "./agentConfig.js";
 export {
+  buildAtlasQueryInsightsAgentOptions,
+  type AtlasQueryInsightsAgentOptions,
+  type AtlasQueryInsightsAgentOptionsInput,
+} from "./agentOptions.js";
+export {
   ATLAS_QUERY_INSIGHTS_MCP_TOOLS,
   selectAtlasQueryInsightsTools,
 } from "./toolPolicy.js";

@@ -18,34 +18,23 @@
 
 import "dotenv/config";
 
-import { App, AgentEngineToolSandboxBackend } from "@mongodb-js/agent-engine-sdk-langgraph";
 import {
-  registerKnowledgeTools,
-  type DataAccessConfig,
-} from "@repo/agent-engine-core";
+  App,
+  AgentEngineToolSandboxBackend,
+  type DeepAgentOptions,
+} from "@mongodb-js/agent-engine-sdk-langgraph";
+import { registerKnowledgeTools } from "@repo/agent-engine-core";
 import {
-  clusterAllowlistMiddleware,
-  rejectAggregateWritesMiddleware,
   surfaceTokenMintFailures,
+  buildAtlasQueryInsightsAgentOptions,
   buildLLM,
-  buildSystemPrompt,
-  createInputRefusalMiddleware,
   createInputRedactor,
-  databaseAllowlistMiddleware,
   prepareAgentInput,
-  recoverToolErrorsMiddleware,
-  redactSecretsMiddleware,
-  selectAtlasQueryInsightsTools,
-  stampResumeClientUserMiddleware,
-  stripToolEchoMiddleware,
   withRequesterMetadata,
   withoutShellExecution,
 } from "@repo/atlas-query-insights-agent";
 
 import { atlasQueryInsightsConfig } from "./config.js";
-
-// Typed so `databaseNames` type-checks even when config.ts sets only `projects`.
-const dataAccess: DataAccessConfig = atlasQueryInsightsConfig.dataAccess;
 
 function log(level: "INFO" | "WARN" | "ERROR", msg: string): void {
   const t = new Date().toISOString().slice(11, 19);
@@ -67,8 +56,10 @@ log("INFO", "App created; Atlas MCP tools will be discovered from agent.yaml");
 
 export const buildAgent = app.entrypoint(() => {
   log("INFO", "Building atlas-query-insights deep agent");
-  const discoveredTools = app.getTools() as readonly { name: string }[];
-  const availableTools = selectAtlasQueryInsightsTools(discoveredTools);
+  const options = buildAtlasQueryInsightsAgentOptions({
+    config: atlasQueryInsightsConfig,
+    tools: app.getTools(),
+  });
   const platformSaver = app.checkpointer();
   const saver =
     platformSaver === null ? null : withRequesterMetadata(platformSaver);
@@ -80,31 +71,13 @@ export const buildAgent = app.entrypoint(() => {
       logPrefix: "atlas-query-insights",
     }),
     {
-      tools: availableTools as never,
-      systemPrompt: buildSystemPrompt({
-        name: atlasQueryInsightsConfig.systemPrompt.name,
-        customInstructions: atlasQueryInsightsConfig.systemPrompt.customInstructions,
-        defaultData: atlasQueryInsightsConfig.systemPrompt.defaultData,
-        dataAccess,
-        maxQueryShapes: atlasQueryInsightsConfig.maxQueryShapes,
-      }),
-      skills: ["skills"],
-      backend: withoutShellExecution(new AgentEngineToolSandboxBackend()) as never,
-      checkpointer: (saver ?? false) as never,
-      middleware: [
-        createInputRefusalMiddleware({
-          mode: atlasQueryInsightsConfig.inputGuard.mode,
-        }),
-        stampResumeClientUserMiddleware,
-        stripToolEchoMiddleware,
-        redactSecretsMiddleware,
-        clusterAllowlistMiddleware(dataAccess),
-        databaseAllowlistMiddleware(dataAccess.databaseNames),
-        rejectAggregateWritesMiddleware,
-        recoverToolErrorsMiddleware,
-      ] as never,
+      ...options,
+      backend: withoutShellExecution(new AgentEngineToolSandboxBackend()),
+      // PlatformCheckpointer versions checkpoints as string | number. deepAgent
+      // types the saver as BaseCheckpointSaver<number>.
+      checkpointer: (saver ?? false) as DeepAgentOptions["checkpointer"],
     },
-  ) as unknown;
+  );
 });
 
 export function main(): void {
