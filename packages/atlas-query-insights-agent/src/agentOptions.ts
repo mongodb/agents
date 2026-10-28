@@ -33,15 +33,15 @@ import { buildSystemPrompt } from "./systemMessage.js";
 import { selectAtlasQueryInsightsTools } from "./toolPolicy.js";
 
 export interface AtlasQueryInsightsAgentOptionsInput<
-  T extends { name: string },
+  Tool extends { name: string },
 > {
   readonly config: AtlasQueryInsightsConfig;
   /** Every tool the runtime discovered, before the agent's tool policy. */
-  readonly tools: readonly T[];
+  readonly tools: readonly Tool[];
 }
 
-export interface AtlasQueryInsightsAgentOptions<T extends { name: string }> {
-  readonly tools: T[];
+export interface AtlasQueryInsightsAgentOptions<Tool extends { name: string }> {
+  readonly tools: Tool[];
   readonly systemPrompt: string;
   readonly skills: string[];
   readonly middleware: AgentMiddleware[];
@@ -54,11 +54,11 @@ export interface AtlasQueryInsightsAgentOptions<T extends { name: string }> {
  * supplies local ones, so both run the same agent.
  */
 export function buildAtlasQueryInsightsAgentOptions<
-  T extends { name: string },
+  Tool extends { name: string },
 >({
   config,
   tools,
-}: AtlasQueryInsightsAgentOptionsInput<T>): AtlasQueryInsightsAgentOptions<T> {
+}: AtlasQueryInsightsAgentOptionsInput<Tool>): AtlasQueryInsightsAgentOptions<Tool> {
   // Typed so `databaseNames` type-checks even when config.ts sets only `projects`.
   const dataAccess: DataAccessConfig = config.dataAccess;
 

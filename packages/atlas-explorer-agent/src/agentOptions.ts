@@ -33,10 +33,10 @@ import type { AtlasExplorerConfig } from "./agentConfig.js";
 import { mutativeInterruptOn, selectAtlasTools } from "./agentPolicy.js";
 import { buildSystemPrompt } from "./systemMessage.js";
 
-export interface AtlasExplorerAgentOptionsInput<T extends { name: string }> {
+export interface AtlasExplorerAgentOptionsInput<Tool extends { name: string }> {
   readonly config: AtlasExplorerConfig;
   /** Every tool the runtime discovered, before the agent's tool policy. */
-  readonly tools: readonly T[];
+  readonly tools: readonly Tool[];
   /**
    * Whether write tools are exposed behind human approval. Callers pass
    * this explicitly. `main.ts` reads `ALLOW_WRITE_OPERATIONS`, the eval
@@ -45,8 +45,8 @@ export interface AtlasExplorerAgentOptionsInput<T extends { name: string }> {
   readonly allowWriteOperations: boolean;
 }
 
-export interface AtlasExplorerAgentOptions<T extends { name: string }> {
-  readonly tools: T[];
+export interface AtlasExplorerAgentOptions<Tool extends { name: string }> {
+  readonly tools: Tool[];
   readonly systemPrompt: string;
   readonly skills: string[];
   readonly middleware: AgentMiddleware[];
@@ -58,11 +58,11 @@ export interface AtlasExplorerAgentOptions<T extends { name: string }> {
  * it: `main.ts` supplies the Agent Engine ones and the eval harness
  * supplies local ones, so both run the same agent.
  */
-export function buildAtlasExplorerAgentOptions<T extends { name: string }>({
+export function buildAtlasExplorerAgentOptions<Tool extends { name: string }>({
   config,
   tools,
   allowWriteOperations,
-}: AtlasExplorerAgentOptionsInput<T>): AtlasExplorerAgentOptions<T> {
+}: AtlasExplorerAgentOptionsInput<Tool>): AtlasExplorerAgentOptions<Tool> {
   // Typed so `databaseNames` type-checks even when config.ts sets only `projects`.
   const dataAccess: DataAccessConfig = config.dataAccess;
   const availableTools = selectAtlasTools(tools, allowWriteOperations);
