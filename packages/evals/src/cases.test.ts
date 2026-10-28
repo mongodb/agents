@@ -21,7 +21,7 @@ import { describe, expect, it } from "vitest";
 
 import { KNOWN_AGENT_TOOLS, loadAgentCasesFromFile, parseAgentCases } from "./cases.js";
 
-const DATASET_DIR = path.join(import.meta.dirname, "datasets");
+const DATASET_DIR = path.join(import.meta.dirname, "..", "datasets");
 
 const caseYaml = (extra: string) => `
 - name: sample
