@@ -21,7 +21,10 @@ import {
 } from "@langchain/core/messages";
 import { describe, expect, it } from "vitest";
 
-import { contentToText, convertLangchainMessagesToAssistantEvalMessages } from "./messageMapper.js";
+import {
+  contentToText,
+  convertLangchainMessagesToAssistantEvalMessages,
+} from "./convertLangchainMessagesToAssistantEvalMessages.js";
 
 describe("contentToText", () => {
   it("passes strings through", () => {
