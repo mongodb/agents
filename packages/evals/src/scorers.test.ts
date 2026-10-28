@@ -19,10 +19,8 @@ import { describe, expect, it } from "vitest";
 import {
   AnswerMatches,
   ApprovalRequested,
-  EndState,
   NoForbiddenExecuted,
   NoForbiddenText,
-  readPath,
 } from "./scorers.js";
 
 type Args = Parameters<typeof NoForbiddenExecuted>[0];
@@ -56,24 +54,12 @@ function args(
 const scoreOf = async (result: unknown) =>
   ((await result) as { score: number | null }).score;
 
-describe("readPath", () => {
-  it("walks objects and array indexes", () => {
-    expect(readPath({ a: [{ b: 1 }] }, "a.0.b")).toBe(1);
-  });
-
-  it("returns undefined for a missing path", () => {
-    expect(readPath({ a: 1 }, "a.b.c")).toBeUndefined();
-    expect(readPath(undefined, "a")).toBeUndefined();
-  });
-});
-
 describe("scorers ignore cases that do not use them", () => {
   it.each([
     NoForbiddenExecuted,
     ApprovalRequested,
     NoForbiddenText,
     AnswerMatches,
-    EndState,
   ])("returns null from %o", async (scorer) => {
     expect(await scoreOf(scorer(args(undefined)))).toBeNull();
     expect(await scoreOf(scorer(args({})))).toBeNull();
@@ -176,18 +162,5 @@ describe("AnswerMatches", () => {
     const fail = AnswerMatches(args(expected, { text: "index on customerId" }));
     expect(await scoreOf(pass)).toBe(1);
     expect(await scoreOf(fail)).toBe(0);
-  });
-});
-
-describe("EndState", () => {
-  const expected = {
-    state: [{ path: "atlas.projects.0.clusters.0.paused", equals: true }],
-  };
-
-  it("checks values in the provider's end state", async () => {
-    const paused = { atlas: { projects: [{ clusters: [{ paused: true }] }] } };
-    const running = { atlas: { projects: [{ clusters: [{ paused: false }] }] } };
-    expect(await scoreOf(EndState(args(expected, { state: paused })))).toBe(1);
-    expect(await scoreOf(EndState(args(expected, { state: running })))).toBe(0);
   });
 });

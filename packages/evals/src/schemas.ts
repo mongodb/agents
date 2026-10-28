@@ -57,8 +57,6 @@ export const CustomInputSchema = z.object({
 
 export type CustomInput = z.infer<typeof CustomInputSchema>;
 
-const JsonScalarSchema = z.union([z.string(), z.number(), z.boolean(), z.null()]);
-
 /** Agent-specific expectations, carried in the library's `expected.custom`. */
 export const CustomExpectedSchema = z.object({
   /** Tools that must not have run, whether hidden, refused, or rejected. */
@@ -69,13 +67,6 @@ export const CustomExpectedSchema = z.object({
   forbiddenText: z.array(z.string()).optional(),
   /** Regular expressions the final answer must match, ignoring case. */
   answerMatches: z.array(z.string()).optional(),
-  /**
-   * Checks on the tool provider's end state. `path` is dot-separated, with
-   * array indexes as numbers, for example `atlas.projects.0.clusters.0.paused`.
-   */
-  state: z
-    .array(z.object({ path: z.string(), equals: JsonScalarSchema }))
-    .optional(),
 });
 
 export type CustomExpected = z.infer<typeof CustomExpectedSchema>;

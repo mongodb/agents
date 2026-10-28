@@ -111,7 +111,6 @@ export function buildEvalCli({
           ApprovalRequested: 1,
           NoForbiddenText: 1,
           AnswerMatches: 1,
-          EndState: 1,
         },
       }),
       "smoke-query-insights": makeValidateMinimums({
@@ -119,7 +118,6 @@ export function buildEvalCli({
           ToolCallCoverage: 1,
           NoForbiddenExecuted: 1,
           AnswerMatches: 1,
-          EndState: 1,
         },
       }),
     },

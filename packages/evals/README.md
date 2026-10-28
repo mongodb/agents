@@ -61,7 +61,7 @@ The unit tests run the same commands against a mock Braintrust server, so
 Cases are YAML in `src/datasets/`. `input.custom` holds `script` (turns for
 the scripted model), `toolSetup` (fixture names), `allowWrites`, `approval`
 and `defaultData`. `expected.custom` holds `forbiddenExecuted`,
-`expectApprovalFor`, `forbiddenText`, `answerMatches` and `state`. See
+`expectApprovalFor`, `forbiddenText`, and `answerMatches`. See
 `src/schemas.ts` for the exact shape.
 
 Cases name their fixtures and never hold the data:
@@ -73,9 +73,7 @@ toolSetup: { mockAtlas: one-project, localMongo: shop-orders }
 Fixtures are YAML in `fixtures/atlas/` and `fixtures/mongo/`. Each
 case gets a fresh copy, and the loader rejects an unknown name. Dataset rows
 hold only the names. The task output, which Braintrust also logs, includes the
-end state (the whole mock Atlas account and a dump of the seeded MongoDB data),
-because the `state` scorer reads it. Keep fixtures synthetic: never put real
-customer or production data in one. For a one-off variation, add a small
-fixture. Ids in `script`
-and `defaultData` must match the fixture, and `expected.custom.state` paths
-index into it (`atlas.projects.0...`).
+end state (the whole mock Atlas account and a dump of the seeded MongoDB data).
+Keep fixtures synthetic: never put real customer or production data in one.
+For a one-off variation, add a small fixture. Ids in `script` and
+`defaultData` must match the fixture.
