@@ -4,7 +4,7 @@
     "noEmit": true,
     "declaration": false,
     "sourceMap": false,
-    "rootDir": "src"
+    "lib": ["ES2023"]
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "dist", "src/**/*.test.ts"]
