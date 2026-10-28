@@ -40,7 +40,9 @@ export function contentToText(content: BaseMessage["content"]): string {
     .join("");
 }
 
-export function toEvalMessages(messages: BaseMessage[]): SomeMessage[] {
+export function convertLangchainMessagesToAssistantEvalMessages(
+  messages: BaseMessage[],
+): SomeMessage[] {
   const out: SomeMessage[] = [];
   for (const m of messages) {
     if (HumanMessage.isInstance(m)) {

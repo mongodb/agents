@@ -21,7 +21,7 @@ import {
 } from "@langchain/core/messages";
 import { describe, expect, it } from "vitest";
 
-import { contentToText, toEvalMessages } from "./messageMapper.js";
+import { contentToText, convertLangchainMessagesToAssistantEvalMessages } from "./messageMapper.js";
 
 describe("contentToText", () => {
   it("passes strings through", () => {
@@ -39,9 +39,9 @@ describe("contentToText", () => {
   });
 });
 
-describe("toEvalMessages", () => {
+describe("convertLangchainMessagesToAssistantEvalMessages", () => {
   it("maps a tool-calling turn to the library message shape", () => {
-    const messages = toEvalMessages([
+    const messages = convertLangchainMessagesToAssistantEvalMessages([
       new HumanMessage("list my clusters"),
       new AIMessage({
         content: "",
