@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { _exportsForTestingOnly } from "braintrust";
+
 import { startMockBraintrust, type MockBraintrust } from "./mockBraintrust.js";
 
 /** The part of the yargs instance the helper uses. */
@@ -55,6 +57,9 @@ export async function runEvalCliWithMockBraintrust(
     Object.keys(env).map((key) => [key, process.env[key]]),
   );
   const realExit = process.exit;
+  // The SDK caches its login, so a second run in one process would still
+  // talk to the first run's server.
+  await _exportsForTestingOnly.simulateLogoutForTests();
   Object.assign(process.env, env);
   process.exit = ((code?: number) => {
     throw new CliExit(code ?? 0);
@@ -75,6 +80,7 @@ export async function runEvalCliWithMockBraintrust(
     // Spans upload in the background. Give them a moment to land.
     await new Promise((resolve) => setTimeout(resolve, 500));
     await mock.close();
+    await _exportsForTestingOnly.simulateLogoutForTests();
   }
   return {
     exitCode,

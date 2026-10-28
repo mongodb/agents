@@ -1,0 +1,9 @@
+# One org (Acme) with one project (prod) and one idle cluster (Cluster0).
+orgs:
+  - { id: "500000000000000000000001", name: Acme }
+projects:
+  - id: "600000000000000000000001"
+    name: prod
+    orgId: "500000000000000000000001"
+    clusters:
+      - { name: Cluster0, instanceSize: M10 }

@@ -1,0 +1,8 @@
+# shop.orders with two orders and an index on customerId.
+shop:
+  orders:
+    documents:
+      - { _id: 1, customerId: a, total: 10 }
+      - { _id: 2, customerId: b, total: 20 }
+    indexes:
+      - key: { customerId: 1 }

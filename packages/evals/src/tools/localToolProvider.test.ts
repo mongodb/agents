@@ -20,6 +20,7 @@ import { atlasExplorerAgent } from "../agents/atlasExplorer.js";
 import { atlasQueryInsightsAgent } from "../agents/atlasQueryInsights.js";
 import { makeAgentTask } from "../task.js";
 import { createLocalToolProvider } from "./localToolProvider.js";
+import { withNamedFixtures } from "./withNamedFixtures.js";
 import type { CaseTools, ToolProvider } from "./types.js";
 
 const ORG = "5".padEnd(24, "0");
@@ -195,9 +196,14 @@ describe("local tool provider", () => {
 });
 
 describe("with the agents", () => {
+  // The agents' cases name shared fixtures, as the datasets do.
+  const ADVISOR_ACCOUNT = "one-project-with-advisor";
+  const FIXTURE_PROJECT = "600000000000000000000001";
+  const named = () => withNamedFixtures(provider);
+
   it("lets Atlas Explorer read Atlas and MongoDB data", async () => {
     const task = makeAgentTask(atlasExplorerAgent, {
-      toolProvider: provider,
+      toolProvider: named(),
       callbacks: () => [],
     });
     const output = await task.run({
@@ -206,7 +212,7 @@ describe("with the agents", () => {
       input: {
         messages: [{ role: "user", content: "How many orders are there?" }],
         custom: {
-          toolSetup: { mockAtlas, localMongo },
+          toolSetup: { mockAtlas: ADVISOR_ACCOUNT, localMongo: "shop-orders" },
           script: [
             {
               toolCalls: [
@@ -235,27 +241,27 @@ describe("with the agents", () => {
 
   it("pauses a cluster after approval and leaves the change in state", async () => {
     const task = makeAgentTask(atlasExplorerAgent, {
-      toolProvider: provider,
+      toolProvider: named(),
       callbacks: () => [],
     });
     const output = await task.run({
       modelName: "scripted",
       modelConfig: { kind: "scripted" },
       input: {
-        messages: [{ role: "user", content: "Pause c1" }],
+        messages: [{ role: "user", content: "Pause Cluster0" }],
         custom: {
           allowWrites: true,
-          toolSetup: { mockAtlas },
+          toolSetup: { mockAtlas: ADVISOR_ACCOUNT },
           script: [
             {
               toolCalls: [
                 {
                   name: "mongodb__atlas_pause_resume_cluster",
-                  args: { projectId: PROJECT, clusterName: "c1", action: "PAUSE" },
+                  args: { projectId: FIXTURE_PROJECT, clusterName: "Cluster0", action: "PAUSE" },
                 },
               ],
             },
-            { text: "Paused c1." },
+            { text: "Paused Cluster0." },
           ],
         },
       },
@@ -270,24 +276,24 @@ describe("with the agents", () => {
 
   it("leaves the cluster alone when the approval is rejected", async () => {
     const task = makeAgentTask(atlasExplorerAgent, {
-      toolProvider: provider,
+      toolProvider: named(),
       callbacks: () => [],
     });
     const output = await task.run({
       modelName: "scripted",
       modelConfig: { kind: "scripted" },
       input: {
-        messages: [{ role: "user", content: "Pause c1" }],
+        messages: [{ role: "user", content: "Pause Cluster0" }],
         custom: {
           allowWrites: true,
           approval: "reject",
-          toolSetup: { mockAtlas },
+          toolSetup: { mockAtlas: ADVISOR_ACCOUNT },
           script: [
             {
               toolCalls: [
                 {
                   name: "mongodb__atlas_pause_resume_cluster",
-                  args: { projectId: PROJECT, clusterName: "c1", action: "PAUSE" },
+                  args: { projectId: FIXTURE_PROJECT, clusterName: "Cluster0", action: "PAUSE" },
                 },
               ],
             },
@@ -306,7 +312,7 @@ describe("with the agents", () => {
 
   it("gives Query Insights the advisor output", async () => {
     const task = makeAgentTask(atlasQueryInsightsAgent, {
-      toolProvider: provider,
+      toolProvider: named(),
       callbacks: () => [],
     });
     const output = await task.run({
@@ -315,13 +321,13 @@ describe("with the agents", () => {
       input: {
         messages: [{ role: "user", content: "Any index suggestions?" }],
         custom: {
-          toolSetup: { mockAtlas },
+          toolSetup: { mockAtlas: ADVISOR_ACCOUNT },
           script: [
             {
               toolCalls: [
                 {
                   name: "mongodb__atlas_get_performance_advisor",
-                  args: { projectId: PROJECT, clusterName: "c1" },
+                  args: { projectId: FIXTURE_PROJECT, clusterName: "Cluster0" },
                 },
               ],
             },

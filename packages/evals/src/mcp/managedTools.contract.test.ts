@@ -23,6 +23,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { startMockAtlasApi, type MockAtlasApi } from "../atlas/mockAtlasApi.js";
 import {
   LOCAL_ONLY_MCP_TOOLS,
+  MANAGED_MCP_TOOLS,
   disabledToolsEnv,
   isManagedMcpTool,
   serverToolName,
@@ -152,53 +153,10 @@ describe("managed tool filter", () => {
 
   it("matches the reviewed tool list", () => {
     // A new tool in a server upgrade lands here. Decide whether the managed
-    // service has it, then add it to LOCAL_ONLY_MCP_TOOLS or to this list.
-    expect(serverTools.filter(isManagedMcpTool).sort()).toMatchInlineSnapshot(`
-      [
-        "aggregate",
-        "aggregate-db",
-        "atlas-connect-cluster",
-        "atlas-create-access-list",
-        "atlas-create-cluster",
-        "atlas-create-db-user",
-        "atlas-create-free-cluster",
-        "atlas-create-project",
-        "atlas-get-performance-advisor",
-        "atlas-get-regions",
-        "atlas-inspect-access-list",
-        "atlas-inspect-cluster",
-        "atlas-list-alerts",
-        "atlas-list-clusters",
-        "atlas-list-db-users",
-        "atlas-list-orgs",
-        "atlas-list-projects",
-        "atlas-load-sample-dataset",
-        "atlas-pause-resume-cluster",
-        "atlas-streams-build",
-        "atlas-streams-discover",
-        "atlas-streams-manage",
-        "atlas-streams-teardown",
-        "atlas-upgrade-cluster",
-        "collection-indexes",
-        "collection-schema",
-        "collection-storage-size",
-        "count",
-        "create-collection",
-        "create-index",
-        "db-stats",
-        "delete-many",
-        "drop-collection",
-        "drop-database",
-        "drop-index",
-        "explain",
-        "find",
-        "insert-many",
-        "list-collections",
-        "list-databases",
-        "rename-collection",
-        "update-many",
-      ]
-    `);
+    // service has it, then add it to LOCAL_ONLY_MCP_TOOLS or MANAGED_MCP_TOOLS.
+    expect(serverTools.filter(isManagedMcpTool).sort()).toEqual(
+      [...MANAGED_MCP_TOOLS].sort(),
+    );
   });
 });
 

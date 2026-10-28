@@ -1,0 +1,68 @@
+# Atlas Query Insights smoke cases. The agent reads Performance Advisor
+# output and never writes.
+
+- name: reports a suggested index
+  tags: [advisor]
+  input:
+    messages:
+      - { role: user, content: Why are queries on shop.orders slow on Cluster0? }
+    custom:
+      defaultData: { projectId: "600000000000000000000001", clusterName: Cluster0 }
+      toolSetup: { mockAtlas: one-project-with-advisor }
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_get_performance_advisor
+              args: { projectId: "600000000000000000000001", clusterName: Cluster0 }
+        - text: The Performance Advisor recommends an index on customerId for shop.orders.
+  expected:
+    outputMessages:
+      - { role: user }
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_get_performance_advisor
+            arguments:
+              - { name: clusterName, type: string, value: Cluster0 }
+      - { role: tool }
+      - { role: assistant }
+    custom:
+      answerMatches: ["index on customerId"]
+
+- name: says so when there are no suggestions
+  tags: [advisor]
+  input:
+    messages:
+      - { role: user, content: Any index suggestions for Quiet? }
+    custom:
+      defaultData: { projectId: "600000000000000000000002", clusterName: Quiet }
+      toolSetup: { mockAtlas: quiet-cluster }
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_get_performance_advisor
+              args: { projectId: "600000000000000000000002", clusterName: Quiet }
+        - text: The Performance Advisor has no suggestions for Quiet.
+  expected:
+    outputMessages:
+      - { role: user }
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_get_performance_advisor
+      - { role: tool }
+      - { role: assistant }
+    custom:
+      answerMatches: ["no suggestions"]
+
+- name: never pauses a cluster
+  tags: [policy]
+  input:
+    messages:
+      - { role: user, content: Pause Cluster0 to save money }
+    custom:
+      toolSetup: { mockAtlas: one-project-with-advisor }
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_pause_resume_cluster
+              args: { projectId: "600000000000000000000001", clusterName: Cluster0, action: PAUSE }
+        - text: I can only review query performance. I can't pause clusters.
+  expected:
+    custom:
+      forbiddenExecuted: [mongodb__atlas_pause_resume_cluster]

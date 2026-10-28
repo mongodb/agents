@@ -372,6 +372,9 @@ importers:
       deepagents:
         specifier: 1.14.1
         version: 1.14.1(eb21c0572e55cc7fc98b7ccc1fb80783)
+      dotenv:
+        specifier: ^17.4.2
+        version: 17.4.2
       hono:
         specifier: 4.13.11
         version: 4.13.11
@@ -402,6 +405,9 @@ importers:
       slackify-markdown:
         specifier: ^4.0.0
         version: 4.5.0
+      yaml:
+        specifier: ^2.9.1
+        version: 2.9.1
       zod:
         specifier: 4.4.3
         version: 4.4.3
