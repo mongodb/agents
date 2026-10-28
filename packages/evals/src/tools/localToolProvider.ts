@@ -46,19 +46,6 @@ export interface LocalToolProviderOptions {
    */
   readonly includeKnowledgeTools?: boolean;
   readonly serverStartTimeoutMs?: number;
-  /**
-   * How many unused shared mongod instances to keep for reuse. A shared one
-   * stops as soon as no case is using it and more than this many are idle,
-   * oldest first. Defaults to 2.
-   */
-  readonly maxIdleSharedMongos?: number;
-  /** Starts a mongod. Replaced in tests to count starts and stops. */
-  readonly startMongo?: (seed: MongoSeed) => Promise<EphemeralMongo>;
-}
-
-interface SharedMongo {
-  readonly started: Promise<EphemeralMongo>;
-  users: number;
 }
 
 /** The server name the agents' `agent.yaml` uses, so tool names match. */
@@ -90,9 +77,7 @@ function toLangChainTool(binding: MCPToolBinding): StructuredToolInterface {
  *   separate account per case.
  * - A case with `toolSetup.localMongo` also gets a MongoDB connection. Read-only
  *   cases with identical seed data share one mongod and a read-only server.
- *   A shared mongod stops once no case uses it and more than
- *   `maxIdleSharedMongos` others are idle. A case that allows writes gets its
- *   own mongod.
+ *   A case that allows writes gets its own mongod.
  *
  * Tools carry the names the agent sees in production (`mongodb__find`).
  * Every MongoDB tool needs `connectionId: "preconfigured"`.
@@ -101,55 +86,19 @@ export function createLocalToolProvider(
   options: LocalToolProviderOptions = {},
 ): ToolProvider {
   let atlas: MockAtlasApi | undefined;
-  const startMongo = options.startMongo ?? startEphemeralMongo;
-  const maxIdle = options.maxIdleSharedMongos ?? 2;
-  const sharedMongos = new Map<string, SharedMongo>();
-  /** Keys of shared instances nobody is using, oldest first. */
-  const idleKeys = new Set<string>();
+  // Limitation: shared read-only mongod instances stay running until `stop()`,
+  // so sequential cases with the same seed reuse them without restarting. If a
+  // suite ever defines many distinct read-only seeds, cap or evict entries here.
+  const sharedMongos = new Map<string, Promise<EphemeralMongo>>();
 
-  async function stopShared(entry: SharedMongo): Promise<void> {
-    const [result] = await Promise.allSettled([entry.started]);
-    if (result.status === "fulfilled") await result.value.stop();
-  }
-
-  async function trimIdle(): Promise<void> {
-    while (idleKeys.size > maxIdle) {
-      const [oldest] = idleKeys;
-      idleKeys.delete(oldest);
-      const entry = sharedMongos.get(oldest);
-      sharedMongos.delete(oldest);
-      if (entry) await stopShared(entry);
-    }
-  }
-
-  function acquireSharedMongo(seed: MongoSeed) {
+  function sharedMongo(seed: MongoSeed): Promise<EphemeralMongo> {
     const key = JSON.stringify(seed);
-    let entry = sharedMongos.get(key);
-    if (!entry) {
-      const created: SharedMongo = { started: startMongo(seed), users: 0 };
-      // A failed start must not be handed to later cases.
-      created.started.catch(() => {
-        if (sharedMongos.get(key) === created) sharedMongos.delete(key);
-        idleKeys.delete(key);
-      });
-      sharedMongos.set(key, created);
-      entry = created;
+    let started = sharedMongos.get(key);
+    if (!started) {
+      started = startEphemeralMongo(seed);
+      sharedMongos.set(key, started);
     }
-    const held = entry;
-    held.users++;
-    idleKeys.delete(key);
-    let released = false;
-    return {
-      mongo: held.started,
-      async release() {
-        if (released) return;
-        released = true;
-        held.users--;
-        if (held.users > 0 || sharedMongos.get(key) !== held) return;
-        idleKeys.add(key);
-        await trimIdle();
-      },
-    };
+    return started;
   }
 
   return {
@@ -158,10 +107,11 @@ export function createLocalToolProvider(
     },
 
     async stop() {
-      const entries = [...sharedMongos.values()];
+      const mongos = await Promise.allSettled([...sharedMongos.values()]);
       sharedMongos.clear();
-      idleKeys.clear();
-      await Promise.all(entries.map(stopShared));
+      await Promise.all(
+        mongos.map((m) => (m.status === "fulfilled" ? m.value.stop() : undefined)),
+      );
       await atlas?.close();
       atlas = undefined;
     },
@@ -183,12 +133,10 @@ export function createLocalToolProvider(
 
         let mongo: EphemeralMongo | undefined;
         if (setup.localMongo && request.allowWrites) {
-          mongo = await startMongo(setup.localMongo);
+          mongo = await startEphemeralMongo(setup.localMongo);
           cleanups.push(() => mongo?.stop());
         } else if (setup.localMongo) {
-          const shared = acquireSharedMongo(setup.localMongo);
-          cleanups.push(() => shared.release());
-          mongo = await shared.mongo;
+          mongo = await sharedMongo(setup.localMongo);
         }
 
         const server: McpServerProcess = await startMcpServer({

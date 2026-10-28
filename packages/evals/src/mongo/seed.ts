@@ -51,9 +51,9 @@ export type MongoSeed = z.output<typeof MongoSeedSchema>;
 export type MongoSeedInput = z.input<typeof MongoSeedSchema>;
 
 /**
- * Documents, keyed by database then collection, as canonical Extended JSON:
- * the same format as the seed, so 64-bit integers keep their value and type
- * (`{"$numberLong": "..."}`, `{"$numberInt": "..."}`).
+ * Documents, keyed by database then collection, as relaxed Extended JSON so
+ * numbers stay plain JSON numbers (`10`, not `{"$numberInt": "10"}`) for
+ * scorer path assertions.
  */
 export type MongoDump = Record<string, Record<string, unknown[]>>;
 
@@ -93,9 +93,7 @@ export async function seedMongo(uri: string, seed: MongoSeed): Promise<void> {
 
 /** Every document in every user collection, for scorers to inspect. */
 export async function dumpMongo(uri: string): Promise<MongoDump> {
-  // Without this the driver turns small Longs into numbers, so they would
-  // dump as `$numberInt`/`$numberDouble` and lose their type.
-  const client = new MongoClient(uri, { promoteLongs: false });
+  const client = new MongoClient(uri);
   try {
     const dump: MongoDump = {};
     const { databases } = await client.db().admin().listDatabases();
@@ -106,7 +104,7 @@ export async function dumpMongo(uri: string): Promise<MongoDump> {
       for (const { name } of await db.listCollections().toArray()) {
         const docs = await db.collection(name).find().toArray();
         dump[dbName][name] = docs.map((doc) =>
-          BSON.EJSON.serialize(doc, { relaxed: false }),
+          BSON.EJSON.serialize(doc, { relaxed: true }),
         );
       }
     }

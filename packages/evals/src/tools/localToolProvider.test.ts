@@ -19,15 +19,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { atlasExplorerAgent } from "../agents/atlasExplorer.js";
 import { atlasQueryInsightsAgent } from "../agents/atlasQueryInsights.js";
 import { makeAgentTask } from "../task.js";
-import {
-  startEphemeralMongo,
-  type EphemeralMongo,
-} from "../mongo/ephemeralMongo.js";
-import type { MongoSeed } from "../mongo/seed.js";
-import {
-  createLocalToolProvider,
-  type LocalToolProviderOptions,
-} from "./localToolProvider.js";
+import { createLocalToolProvider } from "./localToolProvider.js";
 import type { CaseTools, ToolProvider } from "./types.js";
 
 const ORG = "5".padEnd(24, "0");
@@ -200,104 +192,6 @@ describe("local tool provider", () => {
     await caseTools.dispose();
     await expect(list.invoke({} as never)).rejects.toThrow();
   });
-});
-
-describe("shared mongod lifetime", () => {
-  const seedOf = (n: number) => ({
-    shop: { orders: { documents: [{ _id: n }] } },
-  });
-
-  async function countingProvider(
-    options: Pick<LocalToolProviderOptions, "maxIdleSharedMongos">,
-  ) {
-    const counts = { started: 0, stopped: 0 };
-    const counting = createLocalToolProvider({
-      ...options,
-      startMongo: async (seed: MongoSeed): Promise<EphemeralMongo> => {
-        counts.started++;
-        const mongo = await startEphemeralMongo(seed);
-        return {
-          ...mongo,
-          stop: async () => {
-            counts.stopped++;
-            await mongo.stop();
-          },
-        };
-      },
-    });
-    await counting.start?.();
-    const readOnlyCase = async (n: number) => {
-      const tools = await counting.forCase({
-        allowWrites: false,
-        setup: { localMongo: seedOf(n) },
-      });
-      await tools.dispose();
-    };
-    return { counting, counts, readOnlyCase };
-  }
-
-  it("reuses an idle instance for the same seed", async () => {
-    const { counting, counts, readOnlyCase } = await countingProvider({});
-    try {
-      await readOnlyCase(1);
-      await readOnlyCase(1);
-
-      expect(counts).toEqual({ started: 1, stopped: 0 });
-    } finally {
-      await counting.stop?.();
-    }
-    expect(counts.stopped).toBe(1);
-  }, 120_000);
-
-  it("stops an instance once no case uses it and none may idle", async () => {
-    const { counting, counts, readOnlyCase } = await countingProvider({
-      maxIdleSharedMongos: 0,
-    });
-    try {
-      await readOnlyCase(1);
-
-      expect(counts).toEqual({ started: 1, stopped: 1 });
-    } finally {
-      await counting.stop?.();
-    }
-  }, 120_000);
-
-  it("keeps a shared instance running while a case still uses it", async () => {
-    const { counting, counts } = await countingProvider({
-      maxIdleSharedMongos: 0,
-    });
-    try {
-      const request = {
-        allowWrites: false,
-        setup: { localMongo: seedOf(1) },
-      };
-      const first = await counting.forCase(request);
-      const second = await counting.forCase(request);
-      await first.dispose();
-
-      expect(counts).toEqual({ started: 1, stopped: 0 });
-      await second.dispose();
-      expect(counts).toEqual({ started: 1, stopped: 1 });
-    } finally {
-      await counting.stop?.();
-    }
-  }, 120_000);
-
-  it("evicts the oldest idle instance past the limit", async () => {
-    const { counting, counts, readOnlyCase } = await countingProvider({
-      maxIdleSharedMongos: 1,
-    });
-    try {
-      await readOnlyCase(1);
-      await readOnlyCase(2);
-      await readOnlyCase(3);
-
-      expect(counts).toEqual({ started: 3, stopped: 2 });
-    } finally {
-      await counting.stop?.();
-    }
-    expect(counts.stopped).toBe(3);
-  }, 180_000);
 });
 
 describe("with the agents", () => {

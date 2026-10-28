@@ -61,12 +61,13 @@ describe("seeded BSON types", () => {
     }
   });
 
-  it("dumps 64-bit integers without losing value or type", async () => {
+  it("dumps numbers as plain JSON values for scorer assertions", async () => {
     const dump = await mongo.dump();
 
     expect(dump.shop.orders[0]).toMatchObject({
-      big: { $numberLong: BIG },
-      small: { $numberLong: "5" },
+      _id: 1,
+      small: 5,
+      plain: 7,
     });
   });
 });
