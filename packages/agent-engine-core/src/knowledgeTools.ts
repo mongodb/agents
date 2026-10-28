@@ -62,7 +62,7 @@ function knowledgeToolServer(): AssistantToolServer {
   return {
     config: {},
     logger: { debug() {} },
-  } as AssistantToolServer;
+  } as unknown as AssistantToolServer;
 }
 
 function langGraphName(packageName: string): string {
