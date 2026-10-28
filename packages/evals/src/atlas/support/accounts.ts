@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import { AtlasFixtureSchema, type AtlasFixture, type AtlasFixtureInput } from "../fixtures.js";
+import {
+  AtlasFixtureSchema,
+  type AtlasFixture,
+  type AtlasFixtureInput,
+} from "../fixtures.js";
 
 export interface RecordedRequest {
   readonly method: string;
@@ -47,7 +51,10 @@ export class AccountRegistry {
     return this.accounts.get(clientId);
   }
 
-  register(clientId: string, fixtureInput: AtlasFixtureInput): MockAtlasAccount {
+  register(
+    clientId: string,
+    fixtureInput: AtlasFixtureInput,
+  ): MockAtlasAccount {
     if (this.accounts.has(clientId)) {
       throw new Error(`Mock Atlas account ${clientId} already exists`);
     }
@@ -60,7 +67,12 @@ export class AccountRegistry {
       clientId,
       state: () => structuredClone(account.fixture),
       requests: () => [...account.requests],
-      release: () => void this.accounts.delete(clientId),
+      release: () => {
+        // A later case may have registered the same id after this release.
+        if (this.accounts.get(clientId) === account) {
+          this.accounts.delete(clientId);
+        }
+      },
     };
   }
 }

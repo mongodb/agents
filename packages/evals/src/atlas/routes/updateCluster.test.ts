@@ -39,12 +39,24 @@ describe("PATCH /groups/:groupId/clusters/:clusterName", () => {
     expect(res.body.paused).toBe(false);
   });
 
-  it("ignores fields other than paused", async () => {
+  it("rejects fields the mock does not apply", async () => {
     const atlas = createTestAtlas();
-    const res = await atlas.patch(c1, { name: "renamed", paused: "yes" });
+    const res = await atlas.patch(c1, {
+      paused: true,
+      replicationSpecs: [{ numShards: 2 }],
+    });
 
-    expect(res.status).toBe(200);
-    expect(res.body).toMatchObject({ name: "c1", paused: false });
+    expect(res.status).toBe(400);
+    expect(res.body.errorCode).toBe("INVALID_ATTRIBUTE");
+    expect(res.body.detail).toContain("replicationSpecs");
+    expect(atlas.account.state().projects[0].clusters[0].paused).toBe(false);
+  });
+
+  it("rejects a body without a boolean paused", async () => {
+    const atlas = createTestAtlas();
+
+    expect((await atlas.patch(c1, {})).status).toBe(400);
+    expect((await atlas.patch(c1, { paused: "yes" })).status).toBe(400);
   });
 
   it("changes only the calling account", async () => {

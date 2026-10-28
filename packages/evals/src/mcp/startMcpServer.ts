@@ -19,6 +19,20 @@ import net from "node:net";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+/**
+ * The parent's environment without the server's own settings. A developer or
+ * CI shell may export `MDB_MCP_CONNECTION_STRING` or Atlas credentials, and a
+ * child that inherited them could reach a real deployment instead of the
+ * case's fixture.
+ */
+export function inheritedEnv(): NodeJS.ProcessEnv {
+  return Object.fromEntries(
+    Object.entries(process.env).filter(
+      ([name]) => !name.toUpperCase().startsWith("MDB_MCP_"),
+    ),
+  );
+}
+
 export interface McpServerProcess {
   /** Streamable HTTP endpoint, `http://127.0.0.1:<port>/mcp`. */
   readonly url: string;
@@ -28,11 +42,30 @@ export interface McpServerProcess {
 }
 
 export interface StartMcpServerOptions {
-  /** Added to the process environment. */
+  /**
+   * Added to the process environment. Inherited `MDB_MCP_*` variables are
+   * dropped first, so only what is listed here configures the server.
+   */
   readonly env?: Readonly<Record<string, string>>;
   /** Extra CLI flags, for example `["--readOnly"]`. */
   readonly args?: readonly string[];
   readonly startTimeoutMs?: number;
+}
+
+/**
+ * SIGTERM, then SIGKILL after 3 s. Returns at once for a process that has
+ * already exited, whether by code or by signal: no further `exit` event
+ * would come, so waiting for one would hang.
+ */
+export async function stopProcess(child: ChildProcess): Promise<void> {
+  if (child.exitCode !== null || child.signalCode !== null) return;
+  const exited = new Promise<void>((resolve) =>
+    child.once("exit", () => resolve()),
+  );
+  child.kill("SIGTERM");
+  const force = setTimeout(() => child.kill("SIGKILL"), 3_000);
+  await exited;
+  clearTimeout(force);
 }
 
 function serverEntryPoint(): string {
@@ -59,9 +92,9 @@ async function waitUntilListening(
 ): Promise<void> {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
-    if (child.exitCode !== null) {
+    if (child.exitCode !== null || child.signalCode !== null) {
       throw new Error(
-        `mongodb-mcp-server exited with ${child.exitCode} before it was ready:\n${output()}`,
+        `mongodb-mcp-server exited with ${child.exitCode ?? child.signalCode} before it was ready:\n${output()}`,
       );
     }
     try {
@@ -102,7 +135,7 @@ export async function startMcpServer({
     ],
     {
       env: {
-        ...process.env,
+        ...inheritedEnv(),
         MDB_MCP_TELEMETRY: "disabled",
         ...env,
         NODE_OPTIONS: [process.env.NODE_OPTIONS, env.NODE_OPTIONS]
@@ -130,15 +163,6 @@ export async function startMcpServer({
   return {
     url: `http://127.0.0.1:${port}/mcp`,
     output,
-    async stop() {
-      if (child.exitCode !== null) return;
-      const exited = new Promise<void>((resolve) =>
-        child.once("exit", () => resolve()),
-      );
-      child.kill("SIGTERM");
-      const force = setTimeout(() => child.kill("SIGKILL"), 3_000);
-      await exited;
-      clearTimeout(force);
-    },
+    stop: () => stopProcess(child),
   };
 }

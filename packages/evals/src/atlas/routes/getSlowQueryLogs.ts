@@ -27,6 +27,9 @@ import { nodeHosts } from "../support/responses.js";
  *
  * The tool asks every node of a cluster. Only the first node reports, so a
  * case's slow queries are not repeated once per node.
+ *
+ * The optional `namespaces` parameter (`db.collection`, repeated or
+ * comma-separated) keeps only the slow queries from those collections.
  */
 export const getSlowQueryLogsRoute = new Hono<AtlasEnv>().get(
   "/groups/:groupId/processes/:processId/performanceAdvisor/slowQueryLogs",
@@ -40,6 +43,15 @@ export const getSlowQueryLogsRoute = new Hono<AtlasEnv>().get(
       throw new AtlasError(404, "PROCESS_NOT_FOUND", `No process ${processId}`);
     }
     const reportsHere = nodeHosts(cluster)[0] === processId;
-    return c.json({ slowQueries: reportsHere ? cluster.advisor.slowQueries : [] });
+    const namespaces = (c.req.queries("namespaces") ?? []).flatMap((value) =>
+      value.split(","),
+    );
+    const slowQueries = cluster.advisor.slowQueries.filter(
+      (query) =>
+        namespaces.length === 0 ||
+        (typeof query.namespace === "string" &&
+          namespaces.includes(query.namespace)),
+    );
+    return c.json({ slowQueries: reportsHere ? slowQueries : [] });
   },
 );

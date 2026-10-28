@@ -59,6 +59,7 @@ const seed = {
             ],
             slowQueries: [
               { namespace: "shop.orders", line: "COLLSCAN customerId" },
+              { namespace: "shop.carts", line: "SORT cartTotal" },
             ],
           },
         },
@@ -236,6 +237,18 @@ describe("mock Atlas API against the real tools", () => {
     expect(text).toContain("customerId");
     expect(text).toContain("COLLSCAN customerId");
     expect(text.match(/COLLSCAN customerId/g)).toHaveLength(1);
+  });
+
+  it("scopes slow queries to the requested namespaces", async () => {
+    const scoped = await callText(client, "atlas-get-performance-advisor", {
+      projectId: PROJECT,
+      clusterName: "c1",
+      operations: ["slowQueryLogs"],
+      namespaces: ["shop.carts"],
+    });
+
+    expect(scoped).toContain("SORT cartTotal");
+    expect(scoped).not.toContain("COLLSCAN customerId");
   });
 
   it("lists alerts", async () => {

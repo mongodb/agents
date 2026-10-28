@@ -53,6 +53,16 @@ describe("AccountRegistry", () => {
     expect(() => registry.register("a", baseFixture)).not.toThrow();
   });
 
+  it("keeps a reused id registered when a stale handle releases again", () => {
+    const registry = new AccountRegistry();
+    const first = registry.register("a", baseFixture);
+    first.release();
+    registry.register("a", baseFixture);
+    first.release();
+
+    expect(registry.find("a")).toBeDefined();
+  });
+
   it("gives each account its own copy of the data", () => {
     const registry = new AccountRegistry();
     const a = registry.register("a", baseFixture);

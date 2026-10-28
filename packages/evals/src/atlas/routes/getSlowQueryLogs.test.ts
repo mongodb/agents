@@ -19,6 +19,7 @@ import { describe, expect, it } from "vitest";
 import { baseFixture, createTestAtlas, PROJECT } from "../testSupport.js";
 
 const slowQuery = { namespace: "a.b", line: "slow" };
+const otherQuery = { namespace: "a.c", line: "other" };
 
 const fixture = {
   ...baseFixture,
@@ -43,10 +44,54 @@ describe("GET .../processes/:processId/performanceAdvisor/slowQueryLogs", () => 
       (n) => `c1-shard-00-0${n}.mock.mongodb.net:27017`,
     );
     const counts = await Promise.all(
-      nodes.map(async (node) => (await atlas.get(logs(node))).body.slowQueries.length),
+      nodes.map(
+        async (node) => (await atlas.get(logs(node))).body.slowQueries.length,
+      ),
     );
 
     expect(counts).toEqual([1, 0, 0]);
+  });
+
+  describe("namespaces filter", () => {
+    const mixed = {
+      ...baseFixture,
+      projects: [
+        {
+          ...baseFixture.projects[0],
+          clusters: [
+            {
+              name: "c1",
+              advisor: { slowQueries: [slowQuery, otherQuery] },
+            },
+          ],
+        },
+      ],
+    };
+    const first = "c1-shard-00-00.mock.mongodb.net:27017";
+
+    it("returns every slow query when no namespace is given", async () => {
+      const res = await createTestAtlas(mixed).get(logs(first));
+
+      expect(res.body.slowQueries).toEqual([slowQuery, otherQuery]);
+    });
+
+    it("keeps only the requested namespaces", async () => {
+      const atlas = createTestAtlas(mixed);
+
+      expect(
+        (await atlas.get(`${logs(first)}?namespaces=a.c`)).body.slowQueries,
+      ).toEqual([otherQuery]);
+      expect(
+        (await atlas.get(`${logs(first)}?namespaces=a.b&namespaces=a.c`)).body
+          .slowQueries,
+      ).toEqual([slowQuery, otherQuery]);
+      expect(
+        (await atlas.get(`${logs(first)}?namespaces=a.b,a.c`)).body.slowQueries,
+      ).toEqual([slowQuery, otherQuery]);
+      expect(
+        (await atlas.get(`${logs(first)}?namespaces=x.y`)).body.slowQueries,
+      ).toEqual([]);
+    });
   });
 
   it("finds a node by an explicitly seeded host", async () => {
