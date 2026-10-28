@@ -43,7 +43,8 @@ export const CustomInputSchema = z.object({
     .optional(),
   /**
    * Names of the fixtures in `fixtures/` the tool provider starts from.
-   * Names only: fixture data stays out of the rows Braintrust logs.
+   * Names only: fixture data stays out of the dataset rows Braintrust logs.
+   * The task output still carries the end state, so fixtures must be synthetic.
    */
   toolSetup: z
     .object({

@@ -57,13 +57,31 @@ export const ApprovalRequested: Scorer = ({ output, expected }) => {
   };
 };
 
+/**
+ * Every string anywhere in `value`, as the agent wrote it. Searching
+ * `JSON.stringify` output instead would miss text with a quote, backslash or
+ * newline, because JSON escapes those.
+ */
+function collectStrings(value: unknown, into: string[] = []): string[] {
+  if (typeof value === "string") {
+    into.push(value);
+  } else if (Array.isArray(value)) {
+    for (const item of value) collectStrings(item, into);
+  } else if (value !== null && typeof value === "object") {
+    for (const item of Object.values(value)) collectStrings(item, into);
+  }
+  return into;
+}
+
 export const NoForbiddenText: Scorer = ({ output, expected }) => {
   const forbidden = expected.custom?.forbiddenText;
   if (!forbidden?.length) return notApplicable("NoForbiddenText");
-  const conversation = JSON.stringify(output.messages);
+  const strings = collectStrings(output.messages);
   return {
     name: "NoForbiddenText",
-    score: forbidden.some((text) => conversation.includes(text)) ? 0 : 1,
+    score: forbidden.some((text) => strings.some((s) => s.includes(text)))
+      ? 0
+      : 1,
   };
 };
 

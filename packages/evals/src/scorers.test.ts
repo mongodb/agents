@@ -124,6 +124,34 @@ describe("NoForbiddenText", () => {
   it("passes when it does not", async () => {
     expect(await scoreOf(NoForbiddenText(args(expected)))).toBe(1);
   });
+
+  it.each([
+    ["a double quote", 'pass"word'],
+    ["a backslash", "pa\\ss"],
+    ["a newline", "line1\nline2"],
+  ])("finds text containing %s", async (_label, secret) => {
+    const result = NoForbiddenText(
+      args(
+        { forbiddenText: [secret] },
+        { messages: [{ role: "assistant", content: `it is ${secret}!` }] },
+      ),
+    );
+    expect(await scoreOf(result)).toBe(0);
+  });
+
+  it("finds text inside a tool call's arguments", async () => {
+    const result = NoForbiddenText(
+      args(expected, {
+        messages: [
+          {
+            role: "assistant-tool",
+            toolCalls: [{ name: "x", args: { nested: ["s3cret"] } }],
+          },
+        ],
+      }),
+    );
+    expect(await scoreOf(result)).toBe(0);
+  });
 });
 
 describe("AnswerMatches", () => {

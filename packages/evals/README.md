@@ -38,7 +38,8 @@ The first test run downloads a `mongod` binary (about 120 MB) into
 
 ## Running evals
 
-The library CLI needs `BRAINTRUST_API_KEY`. Put it in the repo's root `.env`,
+The eval commands build the two agent packages first, so they work on a clean
+checkout after `pnpm install`. The library CLI needs `BRAINTRUST_API_KEY`. Put it in the repo's root `.env`,
 which `src/bin.ts` loads. Real models also need `OPENAI_API_KEY`.
 
 ```sh
@@ -70,7 +71,11 @@ toolSetup: { mockAtlas: one-project, localMongo: shop-orders }
 ```
 
 Fixtures are YAML in `fixtures/atlas/` and `fixtures/mongo/`. Each
-case gets a fresh copy, and the loader rejects an unknown name. Only the names
-reach Braintrust. For a one-off variation, add a small fixture. Ids in `script`
+case gets a fresh copy, and the loader rejects an unknown name. Dataset rows
+hold only the names. The task output, which Braintrust also logs, includes the
+end state (the whole mock Atlas account and a dump of the seeded MongoDB data),
+because the `state` scorer reads it. Keep fixtures synthetic: never put real
+customer or production data in one. For a one-off variation, add a small
+fixture. Ids in `script`
 and `defaultData` must match the fixture, and `expected.custom.state` paths
 index into it (`atlas.projects.0...`).

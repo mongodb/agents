@@ -32,9 +32,30 @@ type AgentEvalCase = ReturnType<
   >
 >[number];
 
-/** Names the agent can see: the `mongodb__` tools plus the knowledge tools. */
+/**
+ * Tools the deep agent always has: its virtual filesystem (skills are read
+ * through it), planning, and sub-agent delegation. `execute` is left out
+ * because it needs a sandbox backend the agents do not configure.
+ */
+export const DEEP_AGENT_BUILT_IN_TOOLS: readonly string[] = [
+  "ls",
+  "read_file",
+  "write_file",
+  "edit_file",
+  "delete",
+  "glob",
+  "grep",
+  "write_todos",
+  "task",
+];
+
+/**
+ * Names the agent can see: the `mongodb__` tools, the knowledge tools, and
+ * the deep agent's built-ins.
+ */
 export const KNOWN_AGENT_TOOLS: ReadonlySet<string> = new Set([
   ...MANAGED_MCP_TOOLS.map(agentToolName),
+  ...DEEP_AGENT_BUILT_IN_TOOLS,
   "search_knowledge",
   "list_knowledge_sources",
 ]);

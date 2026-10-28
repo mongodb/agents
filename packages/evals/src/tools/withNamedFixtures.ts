@@ -21,6 +21,9 @@ import type { CaseToolsRequest, ToolProvider } from "./types.js";
  * Lets cases name their fixtures. A case's `toolSetup` holds fixture names, so
  * the data never enters the dataset row that Braintrust logs. The names are
  * swapped for data here, as each case's tools are built.
+ *
+ * This covers the dataset row only. `state()` is unchanged, so the task output
+ * still carries the end state for scorers, and fixtures must be synthetic.
  */
 export function withNamedFixtures(provider: ToolProvider): ToolProvider {
   return {

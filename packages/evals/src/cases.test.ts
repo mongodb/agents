@@ -38,6 +38,13 @@ describe("KNOWN_AGENT_TOOLS", () => {
     expect(KNOWN_AGENT_TOOLS.has("search_knowledge")).toBe(true);
   });
 
+  it("includes the deep agent's built-in tools", () => {
+    for (const name of ["read_file", "write_file", "ls", "write_todos"]) {
+      expect(KNOWN_AGENT_TOOLS.has(name)).toBe(true);
+    }
+    expect(KNOWN_AGENT_TOOLS.has("execute")).toBe(false);
+  });
+
   it("excludes names the server does not expose", () => {
     expect(KNOWN_AGENT_TOOLS.has("mongodb__connect")).toBe(false);
   });
@@ -49,6 +56,19 @@ describe("parseAgentCases", () => {
       caseYaml(`  expected:
     custom:
       forbiddenExecuted: [mongodb__drop_database]`),
+      "inline",
+    );
+    expect(cases).toHaveLength(1);
+  });
+
+  it("accepts built-in tools in a script and in expectations", () => {
+    const cases = parseAgentCases(
+      caseYaml(`    custom:
+      script:
+        - toolCalls: [{ name: read_file, args: { file_path: /x } }]
+  expected:
+    custom:
+      forbiddenExecuted: [write_file]`),
       "inline",
     );
     expect(cases).toHaveLength(1);
