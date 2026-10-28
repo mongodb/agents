@@ -81,6 +81,6 @@ export function buildAtlasQueryInsightsAgentOptions<
       databaseAllowlistMiddleware(dataAccess.databaseNames),
       rejectAggregateWritesMiddleware,
       recoverToolErrorsMiddleware,
-    ] as AgentMiddleware[],
+    ],
   };
 }

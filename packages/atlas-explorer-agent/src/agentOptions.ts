@@ -67,7 +67,9 @@ export function buildAtlasExplorerAgentOptions<Tool extends { name: string }>({
   const dataAccess: DataAccessConfig = config.dataAccess;
   const availableTools = selectAtlasTools(tools, allowWriteOperations);
   const mutativeToolReview = humanInTheLoopMiddleware({
-    interruptOn: allowWriteOperations ? mutativeInterruptOn(availableTools) : {},
+    interruptOn: allowWriteOperations
+      ? mutativeInterruptOn(availableTools)
+      : {},
     descriptionPrefix: "MongoDB or Atlas operation pending approval",
   });
 
@@ -89,6 +91,6 @@ export function buildAtlasExplorerAgentOptions<Tool extends { name: string }>({
       // After approval, so it checks the arguments a reviewer edited.
       databaseAllowlistMiddleware(dataAccess.databaseNames),
       recoverToolErrorsMiddleware,
-    ] as AgentMiddleware[],
+    ],
   };
 }

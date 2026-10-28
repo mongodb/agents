@@ -73,6 +73,8 @@ export const buildAgent = app.entrypoint(() => {
     {
       ...options,
       backend: withoutShellExecution(new AgentEngineToolSandboxBackend()),
+      // PlatformCheckpointer versions checkpoints as string | number. deepAgent
+      // types the saver as BaseCheckpointSaver<number>.
       checkpointer: (saver ?? false) as DeepAgentOptions["checkpointer"],
     },
   );
