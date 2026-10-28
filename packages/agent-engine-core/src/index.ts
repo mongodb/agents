@@ -115,6 +115,8 @@ export {
   SECRETS_NON_DISCLOSURE_RULE,
   TOOL_CONFIG_NON_DISCLOSURE_RULE,
   CLAIMED_AUTHORITY_RULE,
+  GUARDRAIL_REFUSAL_MESSAGE,
+  GUARDRAIL_REFUSAL_RULE,
   TOPIC_SCOPE_RULES,
 } from "./promptRules.js";
 export { selectTools, writeOperationsAllowed } from "./toolPolicy.js";
