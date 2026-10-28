@@ -465,3 +465,71 @@ describe("makeAgentTask", () => {
     expect(output.assistantMessageContent).toBe("Hello.");
   });
 });
+
+describe("knowledge sources in the output", () => {
+  const TAG = "untrusted-user-data-1b9d6bcd-bbfd-4b2d-9b5f-ab8ff5b8bdb7";
+  const knowledgeProvider = (result: () => string) =>
+    staticToolProvider([
+      {
+        name: "search_knowledge",
+        schema: z.object({ query: z.string() }),
+        result,
+      },
+    ]);
+  const searchCall = {
+    name: "search_knowledge",
+    args: { query: "what is a replica set" },
+  };
+
+  it("lists the URLs search_knowledge returned, in order", async () => {
+    const output = await run(
+      atlasExplorerAgent,
+      caseInput("What is a replica set?", {
+        script: [{ toolCalls: [searchCall] }, { text: "A replica set is." }],
+      }),
+      {
+        toolProvider: knowledgeProvider(
+          () =>
+            `Found 2 results.\n\n<${TAG}>\n- url: https://www.mongodb.com/docs/manual/replication/\n  title: Replication\n- url: https://www.mongodb.com/docs/manual/core/replica-set-members/\n  title: Members\n</${TAG}>`,
+        ),
+      },
+    );
+
+    expect(output.urls).toEqual([
+      "https://www.mongodb.com/docs/manual/replication/",
+      "https://www.mongodb.com/docs/manual/core/replica-set-members/",
+    ]);
+    expect(output.custom?.knowledgeErrors).toEqual([]);
+  });
+
+  it("reports a failed search and no URLs", async () => {
+    const output = await run(
+      atlasExplorerAgent,
+      caseInput("What is a replica set?", {
+        script: [{ toolCalls: [searchCall] }, { text: "I could not search." }],
+      }),
+      {
+        toolProvider: knowledgeProvider(() => {
+          throw new Error("knowledge.mongodb.com is down");
+        }),
+      },
+    );
+
+    expect(output.urls).toEqual([]);
+    expect(output.custom?.knowledgeErrors).toEqual([
+      {
+        tool: "search_knowledge",
+        message: expect.stringContaining("knowledge.mongodb.com is down"),
+      },
+    ]);
+  });
+
+  it("reports no URLs when the agent never searched", async () => {
+    const output = await run(
+      atlasQueryInsightsAgent,
+      caseInput("Hi", { script: [{ text: "Hello." }] }),
+    );
+    expect(output.urls).toEqual([]);
+    expect(output.custom?.knowledgeErrors).toEqual([]);
+  });
+});

@@ -34,6 +34,11 @@ import type {
 import type { AgentDefinition } from "./agents/definition.js";
 import { convertLangchainMessagesToAssistantEvalMessages } from "./convertLangchainMessagesToAssistantEvalMessages.js";
 import { ExecutionRecorder, type ExecutedToolCall } from "./executionRecorder.js";
+import {
+  knowledgeSourceUrls,
+  knowledgeToolErrors,
+  type KnowledgeToolError,
+} from "./knowledgeSources.js";
 import { readAgentFiles } from "./agentFiles.js";
 import { makeChatModel, type ModelConfig } from "./models.js";
 import type { CustomInput } from "./schemas.js";
@@ -48,6 +53,8 @@ export interface AgentTaskOutputCustom extends Record<string, unknown> {
   approvalRequests: string[];
   /** End state from the tool provider. */
   state: unknown;
+  /** Knowledge tool calls that failed, so a low score can be told from an outage. */
+  knowledgeErrors: KnowledgeToolError[];
 }
 
 export type AgentTaskOutput =
@@ -199,10 +206,12 @@ export function makeAgentTask(
           // Required by the library's output type. The library's own
           // AllowedQuery scorer is not used for these agents.
           allowedQuery: true,
+          urls: knowledgeSourceUrls(result.messages),
           custom: {
             executed: recorder.calls,
             approvalRequests,
             state: await caseTools.state(),
+            knowledgeErrors: knowledgeToolErrors(result.messages),
           },
         };
       } finally {

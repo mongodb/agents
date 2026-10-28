@@ -21,6 +21,7 @@ import { GUARDRAIL_REFUSAL_MESSAGE } from "@repo/agent-engine-core";
 import {
   AnswerMatches,
   ApprovalRequested,
+  BinaryNdcgAt5,
   NoForbiddenExecuted,
   QueryRefusalMatch,
   ToolCallAmountCorrect,
@@ -230,5 +231,62 @@ describe("ToolCallAmountCorrect", () => {
     const base = { guardrail: { reject: false }, outputMessages: noTools };
     expect(await score(calledTool, base)).toBeNull();
     expect(await score(calledTool, {})).toBeNull();
+  });
+});
+
+describe("BinaryNdcgAt5", () => {
+  const withLinks = (links: string[] | undefined, urls: string[]) =>
+    ({
+      input: { messages: [] },
+      expected: { links },
+      output: { messages: [], assistantMessageContent: "", urls },
+    }) as unknown as Args;
+
+  const scoresOf = async (args: Args) =>
+    (await BinaryNdcgAt5(args)) as unknown as {
+      name: string;
+      score: number;
+    }[];
+
+  it("emits only the k=5 score", async () => {
+    const scores = await scoresOf(
+      withLinks(["https://a/docs/x"], ["https://a/docs/x"]),
+    );
+    expect(scores.map((s) => s.name)).toEqual(["BinaryNdcgAt5"]);
+    expect(scores[0].score).toBe(1);
+  });
+
+  it("matches a link by its path, ignoring the domain", async () => {
+    const [score] = await scoresOf(
+      withLinks(
+        ["https://www.mongodb.com/docs/manual/indexes/"],
+        ["https://other.example/docs/manual/indexes"],
+      ),
+    );
+    expect(score.score).toBe(1);
+  });
+
+  it("scores 0 when no returned URL is expected", async () => {
+    const [score] = await scoresOf(
+      withLinks(["https://a/docs/x"], ["https://a/docs/y"]),
+    );
+    expect(score.score).toBe(0);
+  });
+
+  it("ranks an expected link lower the further down it is returned", async () => {
+    const [first] = await scoresOf(
+      withLinks(["https://a/docs/x"], ["https://a/docs/x", "https://a/docs/y"]),
+    );
+    const [second] = await scoresOf(
+      withLinks(["https://a/docs/x"], ["https://a/docs/y", "https://a/docs/x"]),
+    );
+    expect(first.score).toBeGreaterThan(second.score);
+    expect(second.score).toBeGreaterThan(0);
+  });
+
+  it("emits nothing for a case with no expected links", async () => {
+    expect(await scoresOf(withLinks(undefined, ["https://a/docs/x"]))).toEqual(
+      [],
+    );
   });
 });
