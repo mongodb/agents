@@ -10,7 +10,10 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "pretypecheck": "pnpm --filter @repo/atlas-explorer-agent build && pnpm --filter @repo/atlas-query-insights-agent build",
-    "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json --noEmit"
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json --noEmit",
+    "eval": "tsx src/bin.ts",
+    "eval:smoke:explorer": "tsx src/bin.ts evaluation run --task explorer --dataset explorer-smoke --model scripted --validate smoke-explorer --trial-count 1",
+    "eval:smoke:query-insights": "tsx src/bin.ts evaluation run --task query-insights --dataset query-insights-smoke --model scripted --validate smoke-query-insights --trial-count 1"
   },
   "dependencies": {
     "@ai-sdk/azure": "^4.0.0",
@@ -28,6 +31,7 @@
     "ai": "^7.0.0",
     "braintrust": "^3.35.0",
     "deepagents": "1.14.1",
+    "dotenv": "^17.4.2",
     "hono": "4.13.11",
     "langchain": "^1.5.10",
     "mongodb": "^6.21.0",
@@ -38,6 +42,7 @@
     "selfsigned": "^5.5.0",
     "slack-block-builder": "^2.0.0",
     "slackify-markdown": "^4.0.0",
+    "yaml": "^2.9.1",
     "zod": "4.4.3"
   },
   "devDependencies": {

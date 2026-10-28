@@ -1,0 +1,7 @@
+# A staging project whose cluster (Quiet) has no Performance Advisor data.
+projects:
+  - id: "600000000000000000000002"
+    name: staging
+    orgId: "500000000000000000000001"
+    clusters:
+      - { name: Quiet }

@@ -1,0 +1,20 @@
+# Same account as one-project. Cluster0 has one suggested index on
+# shop.orders (customerId) and one slow query that would use it.
+orgs:
+  - { id: "500000000000000000000001", name: Acme }
+projects:
+  - id: "600000000000000000000001"
+    name: prod
+    orgId: "500000000000000000000001"
+    clusters:
+      - name: Cluster0
+        advisor:
+          suggestedIndexes:
+            - id: idx1
+              namespace: shop.orders
+              index: [{ customerId: 1 }]
+              weight: 5000
+              impact: [query-shape-1]
+          slowQueries:
+            - namespace: shop.orders
+              line: '{"command":{"find":"orders","filter":{"customerId":"c1"}},"planSummary":"COLLSCAN","docsExamined":1200000,"nreturned":20,"millis":2300}'

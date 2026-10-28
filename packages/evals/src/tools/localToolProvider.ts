@@ -86,6 +86,9 @@ export function createLocalToolProvider(
   options: LocalToolProviderOptions = {},
 ): ToolProvider {
   let atlas: MockAtlasApi | undefined;
+  let starting: Promise<MockAtlasApi> | undefined;
+  // The CLI starts the provider once per task. Both tasks share it.
+  let users = 0;
   // Limitation: shared read-only mongod instances stay running until `stop()`,
   // so sequential cases with the same seed reuse them without restarting. If a
   // suite ever defines many distinct read-only seeds, cap or evict entries here.
@@ -103,10 +106,13 @@ export function createLocalToolProvider(
 
   return {
     async start() {
-      atlas = await startMockAtlasApi();
+      users++;
+      starting ??= startMockAtlasApi();
+      atlas = await starting;
     },
 
     async stop() {
+      if (--users > 0) return;
       const mongos = await Promise.allSettled([...sharedMongos.values()]);
       sharedMongos.clear();
       await Promise.all(
@@ -114,6 +120,7 @@ export function createLocalToolProvider(
       );
       await atlas?.close();
       atlas = undefined;
+      starting = undefined;
     },
 
     async forCase(request: CaseToolsRequest): Promise<CaseTools> {

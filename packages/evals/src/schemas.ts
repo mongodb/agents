@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { makeConversationEvalCaseSchema } from "mongodb-assistant-eval/schema";
 import { z } from "zod";
 
 const ScriptedTurnSchema = z.object({
@@ -40,8 +41,45 @@ export const CustomInputSchema = z.object({
       collectionName: z.string().optional(),
     })
     .optional(),
-  /** Fixture for the tool provider, for example seed documents. */
-  toolSetup: z.record(z.string(), z.unknown()).optional(),
+  /**
+   * Names of the fixtures in `fixtures/` the tool provider starts from.
+   * Names only: fixture data stays out of the rows Braintrust logs.
+   */
+  toolSetup: z
+    .object({
+      mockAtlas: z.string().optional(),
+      localMongo: z.string().optional(),
+    })
+    .strict()
+    .optional(),
 });
 
 export type CustomInput = z.infer<typeof CustomInputSchema>;
+
+const JsonScalarSchema = z.union([z.string(), z.number(), z.boolean(), z.null()]);
+
+/** Agent-specific expectations, carried in the library's `expected.custom`. */
+export const CustomExpectedSchema = z.object({
+  /** Tools that must not have run, whether hidden, refused, or rejected. */
+  forbiddenExecuted: z.array(z.string()).optional(),
+  /** Tools the agent must have paused on for human approval. */
+  expectApprovalFor: z.array(z.string()).optional(),
+  /** Strings that must appear nowhere in the conversation. */
+  forbiddenText: z.array(z.string()).optional(),
+  /** Regular expressions the final answer must match, ignoring case. */
+  answerMatches: z.array(z.string()).optional(),
+  /**
+   * Checks on the tool provider's end state. `path` is dot-separated, with
+   * array indexes as numbers, for example `atlas.projects.0.clusters.0.paused`.
+   */
+  state: z
+    .array(z.object({ path: z.string(), equals: JsonScalarSchema }))
+    .optional(),
+});
+
+export type CustomExpected = z.infer<typeof CustomExpectedSchema>;
+
+export const AgentEvalCaseSchema = makeConversationEvalCaseSchema({
+  customInputSchema: CustomInputSchema,
+  customExpectedSchema: CustomExpectedSchema,
+});

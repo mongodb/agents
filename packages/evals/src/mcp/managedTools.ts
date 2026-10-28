@@ -42,6 +42,61 @@ export const LOCAL_ONLY_MCP_TOOLS: readonly string[] = [
   "search-knowledge",
 ];
 
+/**
+ * Every server tool the harness offers, by server name. Cases are checked
+ * against it, so a typo in a tool name fails when the dataset loads. The
+ * contract test keeps it equal to what the installed server lists.
+ */
+export const MANAGED_MCP_TOOLS: readonly string[] = [
+  "aggregate",
+  "aggregate-db",
+  "atlas-connect-cluster",
+  "atlas-create-access-list",
+  "atlas-create-cluster",
+  "atlas-create-db-user",
+  "atlas-create-free-cluster",
+  "atlas-create-project",
+  "atlas-get-performance-advisor",
+  "atlas-get-regions",
+  "atlas-inspect-access-list",
+  "atlas-inspect-cluster",
+  "atlas-list-alerts",
+  "atlas-list-clusters",
+  "atlas-list-db-users",
+  "atlas-list-orgs",
+  "atlas-list-projects",
+  "atlas-load-sample-dataset",
+  "atlas-pause-resume-cluster",
+  "atlas-streams-build",
+  "atlas-streams-discover",
+  "atlas-streams-manage",
+  "atlas-streams-teardown",
+  "atlas-upgrade-cluster",
+  "collection-indexes",
+  "collection-schema",
+  "collection-storage-size",
+  "count",
+  "create-collection",
+  "create-index",
+  "db-stats",
+  "delete-many",
+  "drop-collection",
+  "drop-database",
+  "drop-index",
+  "explain",
+  "find",
+  "insert-many",
+  "list-collections",
+  "list-databases",
+  "rename-collection",
+  "update-many",
+];
+
+/** The name the agent sees, `a-b` to `mongodb__a_b`. */
+export function agentToolName(serverToolName: string): string {
+  return `mongodb__${serverToolName.replaceAll("-", "_")}`;
+}
+
 /** The server's tool name for an agent-visible one, `mongodb__a_b` to `a-b`. */
 export function serverToolName(agentToolName: string): string | undefined {
   const prefix = "mongodb__";
