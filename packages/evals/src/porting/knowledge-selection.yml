@@ -30,3 +30,21 @@ cases:
   - { file: faq_conversations.yml, name: Should know how to use with nodejs mongodb driver }
   - { file: faq_conversations.yml, name: Should know how connect to MongoDB using Mongoose? }
   - { file: faq_conversations.yml, name: Should know about Atlas Vector Search }
+  # version_q_and_a_conversations.yml
+  # The questions name a product version. The source cases' `version` tool
+  # argument is dropped (see portAssistantCase.ts).
+  - { file: version_q_and_a_conversations.yml, name: source_misleading, message: vector search in my mongodb 7.0 cluster, as: "Vector search on a 7.0 cluster" }
+  - { file: version_q_and_a_conversations.yml, name: new_feature_this_version, message: Spark Connector 10.3, as: "Spark Connector 10.3 multi-collection streams" }
+  - { file: version_q_and_a_conversations.yml, name: feature_changed_this_version, message: Kafka Connector 2.0.3, as: "Kafka Connector 2.0.3 TLS versions" }
+  - { file: version_q_and_a_conversations.yml, name: feature_not_yet_present_in_this_version, message: config server also store application data in MongoDB 7.0, as: "Config shard data on 7.0" }
+  - { file: version_q_and_a_conversations.yml, name: feature_not_yet_present_in_this_version, message: CSFLE on the MongoDB Kafka sink connector, as: "Kafka sink CSFLE on 2.0" }
+  - { file: version_q_and_a_conversations.yml, name: downgrade_version_where_feature_doesnt_exist, message: downgrading from MongoDB 8.0 to 7.0, as: "Downgrade 8.0 to 7.0 with a config shard" }
+  - { file: version_q_and_a_conversations.yml, name: user_is_wrong_feature_not_yet_added, message: moveCollection has been available since, as: "moveCollection on 7.0" }
+  - { file: version_q_and_a_conversations.yml, name: feature_removed_this_version, message: Collection.count() method in PyMongo 4.9, as: "PyMongo 4.9 Collection.count" }
+  - { file: version_q_and_a_conversations.yml, name: retrieves_specific_old_page, message: hedged reads in MongoDB 7.0, as: "Hedged reads on 7.0" }
+  - { file: version_q_and_a_conversations.yml, name: retrieves_specific_old_page, message: Atlas CLI 1.56, as: "Atlas CLI 1.56 reset model rate limit" }
+  - { file: version_q_and_a_conversations.yml, name: retrieves_specific_old_page, message: I'm on Rust driver 2.8, as: "Rust 2.8 find with limit" }
+  - { file: version_q_and_a_conversations.yml, name: retrieves_specific_old_page, message: In Rust driver 2.7, as: "Rust 2.7 limit skip sort" }
+  - { file: version_q_and_a_conversations.yml, name: retrieves_specific_old_page, message: Go driver 1.17, as: "Go 1.17 WriteNull error" }
+  - { file: version_q_and_a_conversations.yml, name: retrieves_specific_old_page, message: C# driver 2.28, as: "C# 2.28 dispose MongoClient" }
+  - { file: version_q_and_a_conversations.yml, name: retrieves_specific_old_page, message: Laravel MongoDB 4.8, as: "Laravel MongoDB 4.8 install" }

@@ -127,6 +127,8 @@ export function portKnowledgeCase(source: unknown): PortedKnowledgeCase {
 export interface PortedCaseWithSource {
   /** Source file name, for the provenance comment. */
   readonly file: string;
+  /** The case's name in the source, when `case.name` was changed. */
+  readonly sourceName?: string;
   readonly case: PortedKnowledgeCase;
 }
 
@@ -146,7 +148,7 @@ export function renderPortedCases(
   cases.forEach((c, i) => {
     const item = (doc.contents as { items: { commentBefore?: string }[] })
       .items[i];
-    item.commentBefore = ` Source: ${c.file}, "${c.case.name}"`;
+    item.commentBefore = ` Source: ${c.file}, "${c.sourceName ?? c.case.name}"`;
   });
   return stringify(doc, { lineWidth: 80 });
 }

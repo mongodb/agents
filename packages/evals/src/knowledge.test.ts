@@ -36,8 +36,12 @@ const KNOWLEDGE_DATASET = path.join(
 describe("knowledge dataset", () => {
   const cases = loadAgentCasesFromFile(KNOWLEDGE_DATASET);
 
-  it("has the general cases", () => {
-    expect(cases.length).toBeGreaterThanOrEqual(20);
+  it("has the general and the version-specific cases", () => {
+    expect(cases.length).toBeGreaterThanOrEqual(35);
+    expect(
+      cases.filter((c) => /\b\d+\.\d+/.test(c.input.messages[0]!.content))
+        .length,
+    ).toBeGreaterThanOrEqual(10);
   });
 
   it("has unique case names", () => {
