@@ -16,9 +16,9 @@
 
 import { Hono } from "hono";
 
-import type { AtlasEnv } from "../env.js";
-import { requireProject } from "../lookups.js";
-import { atlasPage } from "../responses.js";
+import type { AtlasEnv } from "../support/env.js";
+import { requireProject } from "../support/lookups.js";
+import { atlasPage } from "../support/responses.js";
 
 /**
  * `GET /groups/:groupId/flexClusters`. The fixtures hold no flex clusters, but

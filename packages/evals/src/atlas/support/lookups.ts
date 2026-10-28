@@ -18,7 +18,7 @@ import type { Context } from "hono";
 
 import type { AtlasEnv } from "./env.js";
 import { AtlasError } from "./errors.js";
-import type { MockCluster, MockProject } from "./fixtures.js";
+import type { MockCluster, MockProject } from "../fixtures.js";
 
 export function requireProject(
   c: Context<AtlasEnv>,

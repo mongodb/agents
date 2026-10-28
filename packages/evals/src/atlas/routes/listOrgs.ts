@@ -16,8 +16,8 @@
 
 import { Hono } from "hono";
 
-import type { AtlasEnv } from "../env.js";
-import { atlasPage } from "../responses.js";
+import type { AtlasEnv } from "../support/env.js";
+import { atlasPage } from "../support/responses.js";
 
 /** `GET /orgs` */
 export const listOrgsRoute = new Hono<AtlasEnv>().get("/orgs", (c) =>

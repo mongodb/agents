@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { AtlasFixtureSchema, type AtlasFixture, type AtlasFixtureInput } from "./fixtures.js";
+import { AtlasFixtureSchema, type AtlasFixture, type AtlasFixtureInput } from "../fixtures.js";
 
 export interface RecordedRequest {
   readonly method: string;

@@ -16,8 +16,8 @@
 
 import { Hono } from "hono";
 
-import type { AtlasEnv } from "../env.js";
-import { requireCluster } from "../lookups.js";
+import type { AtlasEnv } from "../support/env.js";
+import { requireCluster } from "../support/lookups.js";
 
 /** `GET /groups/:groupId/clusters/:clusterName/performanceAdvisor/suggestedIndexes` */
 export const getSuggestedIndexesRoute = new Hono<AtlasEnv>().get(

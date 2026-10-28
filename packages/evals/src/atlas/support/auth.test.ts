@@ -21,7 +21,7 @@ import {
   clientIdFromToken,
   tokenFor,
 } from "./auth.js";
-import { createTestAtlas } from "./testSupport.js";
+import { createTestAtlas } from "../testSupport.js";
 
 describe("clientIdFromBasicAuth", () => {
   it("reads the user part of a Basic header", () => {

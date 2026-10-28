@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { AccountRegistry, type MockAtlasAccount } from "./accounts.js";
+import { AccountRegistry, type MockAtlasAccount } from "./support/accounts.js";
 import { API_PREFIX, createAtlasApp } from "./app.js";
 import type { AtlasFixtureInput } from "./fixtures.js";
 

@@ -16,10 +16,10 @@
 
 import { Hono } from "hono";
 
-import type { AtlasEnv } from "../env.js";
-import { AtlasError } from "../errors.js";
-import { requireProject } from "../lookups.js";
-import { nodeHosts } from "../responses.js";
+import type { AtlasEnv } from "../support/env.js";
+import { AtlasError } from "../support/errors.js";
+import { requireProject } from "../support/lookups.js";
+import { nodeHosts } from "../support/responses.js";
 
 /**
  * `GET /groups/:groupId/processes/:processId/performanceAdvisor/slowQueryLogs`.

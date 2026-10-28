@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { MockCluster, MockProject } from "./fixtures.js";
+import type { MockCluster, MockProject } from "../fixtures.js";
 
 /** Atlas wraps every list in a page. The mock never has a second page. */
 export function atlasPage<T>(items: readonly T[]) {

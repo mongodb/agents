@@ -16,8 +16,8 @@
 
 import { Hono } from "hono";
 
-import type { AccountRegistry } from "../accounts.js";
-import { clientIdFromBasicAuth, tokenFor } from "../auth.js";
+import type { AccountRegistry } from "../support/accounts.js";
+import { clientIdFromBasicAuth, tokenFor } from "../support/auth.js";
 
 /**
  * `POST /api/oauth/token`. The Atlas token library asks for a client

@@ -16,9 +16,9 @@
 
 import { describe, expect, it } from "vitest";
 
-import { AtlasError } from "./errors.js";
+import { AtlasError } from "./support/errors.js";
 import { createAtlasApp } from "./app.js";
-import { AccountRegistry } from "./accounts.js";
+import { AccountRegistry } from "./support/accounts.js";
 import { createTestAtlas, OTHER_PROJECT, PROJECT } from "./testSupport.js";
 
 describe("createAtlasApp", () => {

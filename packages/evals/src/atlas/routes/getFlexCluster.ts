@@ -16,9 +16,9 @@
 
 import { Hono } from "hono";
 
-import type { AtlasEnv } from "../env.js";
-import { AtlasError } from "../errors.js";
-import { requireProject } from "../lookups.js";
+import type { AtlasEnv } from "../support/env.js";
+import { AtlasError } from "../support/errors.js";
+import { requireProject } from "../support/lookups.js";
 
 /**
  * `GET /groups/:groupId/flexClusters/:clusterName`. Always a miss. The tools

@@ -16,9 +16,9 @@
 
 import { Hono } from "hono";
 
-import type { AtlasEnv } from "../env.js";
-import { requireProject } from "../lookups.js";
-import { atlasPage, clusterJson } from "../responses.js";
+import type { AtlasEnv } from "../support/env.js";
+import { requireProject } from "../support/lookups.js";
+import { atlasPage, clusterJson } from "../support/responses.js";
 
 /** `GET /groups/:groupId/clusters` */
 export const listClustersRoute = new Hono<AtlasEnv>().get(

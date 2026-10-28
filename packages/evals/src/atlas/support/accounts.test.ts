@@ -17,7 +17,7 @@
 import { describe, expect, it } from "vitest";
 
 import { AccountRegistry } from "./accounts.js";
-import { baseFixture, ORG } from "./testSupport.js";
+import { baseFixture, ORG } from "../testSupport.js";
 
 describe("AccountRegistry", () => {
   it("finds a registered account by client id", () => {

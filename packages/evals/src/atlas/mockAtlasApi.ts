@@ -19,12 +19,12 @@ import type { AddressInfo } from "node:net";
 
 import { serve } from "@hono/node-server";
 
-import { AccountRegistry, type MockAtlasAccount } from "./accounts.js";
+import { AccountRegistry, type MockAtlasAccount } from "./support/accounts.js";
 import { createAtlasApp } from "./app.js";
 import type { AtlasFixtureInput } from "./fixtures.js";
-import { createMockTls } from "./tls.js";
+import { createMockTls } from "./support/tls.js";
 
-export type { MockAtlasAccount, RecordedRequest } from "./accounts.js";
+export type { MockAtlasAccount, RecordedRequest } from "./support/accounts.js";
 
 export interface MockAtlasApi {
   /** `https://localhost:<port>`. Pass it as `MDB_MCP_API_BASE_URL`. */

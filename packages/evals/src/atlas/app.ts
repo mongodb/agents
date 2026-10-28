@@ -16,10 +16,10 @@
 
 import { Hono } from "hono";
 
-import type { AccountRegistry } from "./accounts.js";
-import { requireAccount } from "./auth.js";
-import type { AtlasEnv } from "./env.js";
-import { AtlasError } from "./errors.js";
+import type { AccountRegistry } from "./support/accounts.js";
+import { requireAccount } from "./support/auth.js";
+import type { AtlasEnv } from "./support/env.js";
+import { AtlasError } from "./support/errors.js";
 import { atlasRoutes } from "./routes/index.js";
 import { oauthTokenRoute } from "./routes/oauthToken.js";
 

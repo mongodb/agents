@@ -16,9 +16,9 @@
 
 import { Hono } from "hono";
 
-import type { AtlasEnv } from "../env.js";
-import { readJsonBody, requireCluster } from "../lookups.js";
-import { clusterJson } from "../responses.js";
+import type { AtlasEnv } from "../support/env.js";
+import { readJsonBody, requireCluster } from "../support/lookups.js";
+import { clusterJson } from "../support/responses.js";
 
 /**
  * `PATCH /groups/:groupId/clusters/:clusterName`. Only `paused` is applied,

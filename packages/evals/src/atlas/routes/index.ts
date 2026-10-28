@@ -16,7 +16,7 @@
 
 import { Hono } from "hono";
 
-import type { AtlasEnv } from "../env.js";
+import type { AtlasEnv } from "../support/env.js";
 import { getClusterRoute } from "./getCluster.js";
 import { getDropIndexSuggestionsRoute } from "./getDropIndexSuggestions.js";
 import { getFlexClusterRoute } from "./getFlexCluster.js";
