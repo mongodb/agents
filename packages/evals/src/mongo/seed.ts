@@ -20,12 +20,18 @@ import { z } from "zod";
 const SYSTEM_DATABASES = new Set(["admin", "config", "local"]);
 
 const CollectionSeedSchema = z.object({
-  /** Extended JSON, so `{"$oid": "..."}` and `{"$date": "..."}` work. */
+  /**
+   * Canonical Extended JSON, so `{"$oid": "..."}`, `{"$date": "..."}` and
+   * `{"$numberLong": "..."}` keep their BSON types and values.
+   */
   documents: z.array(z.record(z.string(), z.unknown())).default([]),
   indexes: z
     .array(
       z.object({
-        key: z.record(z.string(), z.union([z.literal(1), z.literal(-1), z.string()])),
+        key: z.record(
+          z.string(),
+          z.union([z.literal(1), z.literal(-1), z.string()]),
+        ),
         name: z.string().optional(),
         unique: z.boolean().optional(),
       }),
@@ -44,14 +50,20 @@ export const MongoSeedSchema = z.record(
 export type MongoSeed = z.output<typeof MongoSeedSchema>;
 export type MongoSeedInput = z.input<typeof MongoSeedSchema>;
 
-/** Documents, keyed by database then collection, as plain JSON. */
+/**
+ * Documents, keyed by database then collection, as canonical Extended JSON:
+ * the same format as the seed, so 64-bit integers keep their value and type
+ * (`{"$numberLong": "..."}`, `{"$numberInt": "..."}`).
+ */
 export type MongoDump = Record<string, Record<string, unknown[]>>;
 
 export async function seedMongo(uri: string, seed: MongoSeed): Promise<void> {
   const client = new MongoClient(uri);
   try {
     for (const [dbName, collections] of Object.entries(seed)) {
-      for (const [name, { documents, indexes }] of Object.entries(collections)) {
+      for (const [name, { documents, indexes }] of Object.entries(
+        collections,
+      )) {
         const collection = client.db(dbName).collection(name);
         if (documents.length) {
           await collection.insertMany(
@@ -81,7 +93,9 @@ export async function seedMongo(uri: string, seed: MongoSeed): Promise<void> {
 
 /** Every document in every user collection, for scorers to inspect. */
 export async function dumpMongo(uri: string): Promise<MongoDump> {
-  const client = new MongoClient(uri);
+  // Without this the driver turns small Longs into numbers, so they would
+  // dump as `$numberInt`/`$numberDouble` and lose their type.
+  const client = new MongoClient(uri, { promoteLongs: false });
   try {
     const dump: MongoDump = {};
     const { databases } = await client.db().admin().listDatabases();
@@ -92,7 +106,7 @@ export async function dumpMongo(uri: string): Promise<MongoDump> {
       for (const { name } of await db.listCollections().toArray()) {
         const docs = await db.collection(name).find().toArray();
         dump[dbName][name] = docs.map((doc) =>
-          BSON.EJSON.serialize(doc, { relaxed: true }),
+          BSON.EJSON.serialize(doc, { relaxed: false }),
         );
       }
     }
