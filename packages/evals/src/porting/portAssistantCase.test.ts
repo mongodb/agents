@@ -170,6 +170,23 @@ describe("renderPortedCases", () => {
     );
   });
 
+  it("names the source case when the ported case was renamed", () => {
+    const text = renderPortedCases(
+      [
+        {
+          file: "version_q_and_a_conversations.yml",
+          sourceName: "new_feature_this_version",
+          case: { ...portKnowledgeCase(VERSIONED), name: "Spark 10.3 streams" },
+        },
+      ],
+      "Header.",
+    );
+    expect(text).toContain(
+      '# Source: version_q_and_a_conversations.yml, "new_feature_this_version"',
+    );
+    expect(text).toContain("- name: Spark 10.3 streams");
+  });
+
   it("produces a dataset the case loader accepts", () => {
     const cases = parseAgentCases(rendered, "ported.yml");
     expect(cases.map((c) => c.name)).toEqual([

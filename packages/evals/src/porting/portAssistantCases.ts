@@ -34,6 +34,8 @@ const SelectionSchema = z.object({
       name: z.string(),
       /** Part of the user message. Needed when several cases share a name. */
       message: z.string().optional(),
+      /** New case name. Needed when sources reuse a name, as versions do. */
+      as: z.string().optional(),
     }),
   ),
 });
@@ -45,7 +47,7 @@ The selection file lists the cases to port:
 
   cases:
     - { file: conversations.yml, name: "Create a cluster in Atlas" }
-    - { file: version_q_and_a_conversations.yml, name: retrieves_specific_old_page, message: Rust driver 2.8 }
+    - { file: version_q_and_a_conversations.yml, name: retrieves_specific_old_page, message: Rust driver 2.8, as: "Rust 2.8 find with limit" }
 
 --source-dir is a checkout of mongodb/ai-assistant at
 packages/chatbot-server-mongodb-public/evalCases.`;
@@ -92,7 +94,7 @@ function main() {
   );
   const sourceFiles = new Map<string, unknown[]>();
   const ported: PortedCaseWithSource[] = selection.cases.map(
-    ({ file, name, message }) => {
+    ({ file, name, message, as }) => {
       if (!sourceFiles.has(file)) {
         const text = fs.readFileSync(path.join(values["source-dir"]!, file), "utf8");
         sourceFiles.set(file, parse(text) as unknown[]);
@@ -103,7 +105,10 @@ function main() {
         name,
         message,
       );
-      return { file, case: portKnowledgeCase(source) };
+      const ported = portKnowledgeCase(source);
+      return as === undefined
+        ? { file, case: ported }
+        : { file, sourceName: name, case: { ...ported, name: as } };
     },
   );
 
