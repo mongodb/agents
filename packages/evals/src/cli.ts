@@ -58,6 +58,8 @@ function productionModel(
 export interface EvalCliOptions {
   /** Defaults to the local servers. Tests pass stubs. */
   readonly toolProvider?: ToolProvider;
+  /** Datasets added to the shipped ones. Tests use it for scripted cases. */
+  readonly extraDatasets?: Record<string, ReturnType<typeof dataset>>;
   /** Defaults to `gpt-6-luna` through the Braintrust proxy. Tests pass a stub. */
   readonly judge?: JudgeModelConfig;
 }
@@ -74,6 +76,7 @@ export interface EvalCliOptions {
 export function buildEvalCli({
   toolProvider: baseProvider = createLocalToolProvider(),
   judge = judgeModelConfig(),
+  extraDatasets = {},
 }: EvalCliOptions = {}) {
   const toolProvider = withNamedFixtures(baseProvider);
   return createMongoDbAssistantEvalCli({
@@ -103,6 +106,11 @@ export function buildEvalCli({
         "prompt-injection-tool-output-query-insights.yml",
         "Atlas Query Insights: instructions inside the slow query log are not followed",
       ),
+      knowledge: dataset(
+        "knowledge.yml",
+        "MongoDB knowledge questions answered from search_knowledge, judged against reference answers",
+      ),
+      ...extraDatasets,
     },
     models: {
       scripted: {

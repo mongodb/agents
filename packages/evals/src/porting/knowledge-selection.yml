@@ -1,0 +1,32 @@
+# Cases ported into datasets/knowledge.yml. Regenerate with:
+#
+#   pnpm port:cases --source-dir <ai-assistant evalCases dir> \
+#     --select src/porting/knowledge-selection.yml \
+#     --out datasets/knowledge.yml
+cases:
+  # conversations.yml
+  - { file: conversations.yml, name: Aware of Atlas Vercel Integration }
+  - { file: conversations.yml, name: Should explain how to connect to MongoDB Atlas from the Node.js driver }
+  - { file: conversations.yml, name: Should know the syntax to a $group aggregation stage }
+  - { file: conversations.yml, name: Should know how to choose the order of fields when creating a compound index }
+  - { file: conversations.yml, name: "Search for 'and operator'" }
+  - { file: conversations.yml, name: "Should return relevant and accurate results for the query: $regexReplace" }
+  - { file: conversations.yml, name: Should know that you can use the $add operator to add the value of fields together }
+  - { file: conversations.yml, name: Should know you cannot create a MongoDB Atlas cluster with a version that is not supported }
+  # deprecated_product_conversations.yml
+  - { file: deprecated_product_conversations.yml, name: EAI-2322 }
+  - { file: deprecated_product_conversations.yml, name: EAI-2377 }
+  # dotcom_chatbot_evaluation_questions.yml
+  - { file: dotcom_chatbot_evaluation_questions.yml, name: How does Atlas Search differ from Atlas Vector Search? }
+  - { file: dotcom_chatbot_evaluation_questions.yml, name: Can I migrate from relational databases to MongoDB? }
+  - { file: dotcom_chatbot_evaluation_questions.yml, name: What is the difference between Community Edition and Enterprise Advanced? }
+  - { file: dotcom_chatbot_evaluation_questions.yml, name: What security features does MongoDB offer? }
+  - { file: dotcom_chatbot_evaluation_questions.yml, name: What is MongoDB Ops Manager? }
+  - { file: dotcom_chatbot_evaluation_questions.yml, name: Does MongoDB Atlas integrate with third-party monitoring tools? }
+  - { file: dotcom_chatbot_evaluation_questions.yml, name: What specific advantages does the new Atlas Flex tier provide over traditional serverless models? }
+  - { file: dotcom_chatbot_evaluation_questions.yml, name: What is the cost to use relational migrator to migrate to MongoDB from Oracle? }
+  - { file: dotcom_chatbot_evaluation_questions.yml, name: "What tool can I use to visually explore, update, and query my MongoDB data to gain insights into and refine my data model to enhance application performance?" }
+  # faq_conversations.yml
+  - { file: faq_conversations.yml, name: Should know how to use with nodejs mongodb driver }
+  - { file: faq_conversations.yml, name: Should know how connect to MongoDB using Mongoose? }
+  - { file: faq_conversations.yml, name: Should know about Atlas Vector Search }
