@@ -95,21 +95,43 @@ export async function seedMongo(uri: string, seed: MongoSeed): Promise<void> {
 export async function dumpMongo(uri: string): Promise<MongoDump> {
   const client = new MongoClient(uri);
   try {
-    const dump: MongoDump = {};
-    const { databases } = await client.db().admin().listDatabases();
-    for (const { name: dbName } of databases) {
-      if (SYSTEM_DATABASES.has(dbName)) continue;
-      const db = client.db(dbName);
-      dump[dbName] = {};
-      for (const { name } of await db.listCollections().toArray()) {
-        const docs = await db.collection(name).find().toArray();
-        dump[dbName][name] = docs.map((doc) =>
-          BSON.EJSON.serialize(doc, { relaxed: true }),
-        );
-      }
-    }
-    return dump;
+    return await dumpMongoWith(client);
   } finally {
     await client.close();
   }
+}
+
+/** `dumpMongo` over a client the caller already has. */
+export async function dumpMongoWith(client: MongoClient): Promise<MongoDump> {
+  const dump: MongoDump = {};
+  const { databases } = await client.db().admin().listDatabases();
+  for (const { name: dbName } of databases) {
+    if (SYSTEM_DATABASES.has(dbName)) continue;
+    const db = client.db(dbName);
+    dump[dbName] = {};
+    for (const { name } of await db.listCollections().toArray()) {
+      const docs = await db.collection(name).find().toArray();
+      dump[dbName][name] = docs.map((doc) =>
+        BSON.EJSON.serialize(doc, { relaxed: true }),
+      );
+    }
+  }
+  return dump;
+}
+
+/** The dump a database holds right after `seedMongo(seed)`. */
+export function seedAsDump(seed: MongoSeed): MongoDump {
+  const dump: MongoDump = {};
+  for (const [dbName, collections] of Object.entries(seed)) {
+    dump[dbName] = {};
+    for (const [name, { documents }] of Object.entries(collections)) {
+      dump[dbName][name] = documents.map((doc) =>
+        BSON.EJSON.serialize(
+          BSON.EJSON.deserialize(doc, { relaxed: false }) as BSON.Document,
+          { relaxed: true },
+        ),
+      );
+    }
+  }
+  return dump;
 }

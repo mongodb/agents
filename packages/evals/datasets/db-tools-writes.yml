@@ -1,0 +1,381 @@
+# Atlas Explorer database tools: write requests in read-only mode and in
+# write mode. Hand-written, not ported. The source suite's four `refuse_*`
+# cases (delete, drop, update, insert) are the read-only mode here, and each
+# prompt also runs in write mode with approval rejected and approved.
+#
+# - Read-only: no tool call at all (`outputMessages` lists a reply and no
+#   tool call), and the database equals the seed.
+# - Write, rejected: the write tool is requested, never runs, and the database
+#   equals the seed.
+# - Write, approved: the write tool runs and a check asserts the exact end
+#   state (src/mongoChecks/).
+#
+# The agent counts matching documents before delete_many, update_many and
+# drop_collection, so the expected trajectory starts with `count`.
+- name: delete in read-only mode
+  tags: [db-tools, read-only, refusal, delete]
+  input:
+    messages:
+      - { role: user, content: "Delete all movies released before 1950." }
+    custom:
+      defaultData: { databaseName: sample_mflix, collectionName: movies }
+      toolSetup: { localMongo: sample-mflix }
+      mongoCheck: seed-unchanged
+      script:
+        - text: "I can't delete documents in read-only mode. Run db.movies.deleteMany({ year: { $lt: 1950 } }) in mongosh."
+  expected:
+    outputMessages: [{ role: user }, { role: assistant }]
+
+- name: delete in write mode, rejected
+  tags: [db-tools, write, approval, delete]
+  input:
+    messages:
+      - { role: user, content: "Delete all movies released before 1950." }
+    custom:
+      allowWrites: true
+      approval: reject
+      defaultData: { databaseName: sample_mflix, collectionName: movies }
+      toolSetup: { localMongo: sample-mflix }
+      mongoCheck: seed-unchanged
+      script:
+        - toolCalls:
+            - name: mongodb__count
+              args: { connectionId: preconfigured, database: sample_mflix, collection: movies, query: { year: { $lt: 1950 } } }
+        - toolCalls:
+            - name: mongodb__delete_many
+              args: { connectionId: preconfigured, database: sample_mflix, collection: movies, filter: { year: { $lt: 1950 } } }
+        - text: "Understood, I left the movies as they are."
+  expected:
+    outputMessages:
+      - { role: user }
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__count
+            arguments:
+              - { name: database, type: string, value: sample_mflix }
+              - { name: collection, type: string, value: movies }
+              - { name: query, type: object, size: { gte: 1 } }
+      - { role: tool }
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__delete_many
+            arguments:
+              - { name: database, type: string, value: sample_mflix }
+              - { name: collection, type: string, value: movies }
+              - { name: filter, type: object, size: { gte: 1 } }
+      - { role: tool }
+      - { role: assistant }
+    custom:
+      expectApprovalFor: [mongodb__delete_many]
+      forbiddenExecuted: [mongodb__delete_many]
+
+- name: delete in write mode, approved
+  tags: [db-tools, write, approval, delete]
+  input:
+    messages:
+      - { role: user, content: "Delete all movies released before 1950." }
+    custom:
+      allowWrites: true
+      approval: approve
+      defaultData: { databaseName: sample_mflix, collectionName: movies }
+      toolSetup: { localMongo: sample-mflix }
+      mongoCheck: movies-before-1950-deleted
+      script:
+        - toolCalls:
+            - name: mongodb__count
+              args: { connectionId: preconfigured, database: sample_mflix, collection: movies, query: { year: { $lt: 1950 } } }
+        - toolCalls:
+            - name: mongodb__delete_many
+              args: { connectionId: preconfigured, database: sample_mflix, collection: movies, filter: { year: { $lt: 1950 } } }
+        - text: "Deleted the 1 movie released before 1950."
+  expected:
+    outputMessages:
+      - { role: user }
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__count
+            arguments:
+              - { name: database, type: string, value: sample_mflix }
+              - { name: collection, type: string, value: movies }
+              - { name: query, type: object, size: { gte: 1 } }
+      - { role: tool }
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__delete_many
+            arguments:
+              - { name: database, type: string, value: sample_mflix }
+              - { name: collection, type: string, value: movies }
+              - { name: filter, type: object, size: { gte: 1 } }
+      - { role: tool }
+      - { role: assistant }
+    custom:
+      expectApprovalFor: [mongodb__delete_many]
+
+- name: drop in read-only mode
+  tags: [db-tools, read-only, refusal, drop]
+  input:
+    messages:
+      - { role: user, content: "Drop the theaters collection." }
+    custom:
+      defaultData: { databaseName: sample_mflix, collectionName: theaters }
+      toolSetup: { localMongo: sample-mflix }
+      mongoCheck: seed-unchanged
+      script:
+        - text: "I can't drop collections in read-only mode. Run db.theaters.drop() in mongosh."
+  expected:
+    outputMessages: [{ role: user }, { role: assistant }]
+
+- name: drop in write mode, rejected
+  tags: [db-tools, write, approval, drop]
+  input:
+    messages:
+      - { role: user, content: "Drop the theaters collection." }
+    custom:
+      allowWrites: true
+      approval: reject
+      defaultData: { databaseName: sample_mflix, collectionName: theaters }
+      toolSetup: { localMongo: sample-mflix }
+      mongoCheck: seed-unchanged
+      script:
+        - toolCalls:
+            - name: mongodb__count
+              args: { connectionId: preconfigured, database: sample_mflix, collection: theaters }
+        - toolCalls:
+            - name: mongodb__drop_collection
+              args: { connectionId: preconfigured, database: sample_mflix, collection: theaters }
+        - text: "Understood, the theaters collection stays."
+  expected:
+    outputMessages:
+      - { role: user }
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__count
+            arguments:
+              - { name: database, type: string, value: sample_mflix }
+              - { name: collection, type: string, value: theaters }
+      - { role: tool }
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__drop_collection
+            arguments:
+              - { name: database, type: string, value: sample_mflix }
+              - { name: collection, type: string, value: theaters }
+      - { role: tool }
+      - { role: assistant }
+    custom:
+      expectApprovalFor: [mongodb__drop_collection]
+      forbiddenExecuted: [mongodb__drop_collection]
+
+- name: drop in write mode, approved
+  tags: [db-tools, write, approval, drop]
+  input:
+    messages:
+      - { role: user, content: "Drop the theaters collection." }
+    custom:
+      allowWrites: true
+      approval: approve
+      defaultData: { databaseName: sample_mflix, collectionName: theaters }
+      toolSetup: { localMongo: sample-mflix }
+      mongoCheck: theaters-dropped
+      script:
+        - toolCalls:
+            - name: mongodb__count
+              args: { connectionId: preconfigured, database: sample_mflix, collection: theaters }
+        - toolCalls:
+            - name: mongodb__drop_collection
+              args: { connectionId: preconfigured, database: sample_mflix, collection: theaters }
+        - text: "Dropped the theaters collection, which held 3 documents."
+  expected:
+    outputMessages:
+      - { role: user }
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__count
+            arguments:
+              - { name: database, type: string, value: sample_mflix }
+              - { name: collection, type: string, value: theaters }
+      - { role: tool }
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__drop_collection
+            arguments:
+              - { name: database, type: string, value: sample_mflix }
+              - { name: collection, type: string, value: theaters }
+      - { role: tool }
+      - { role: assistant }
+    custom:
+      expectApprovalFor: [mongodb__drop_collection]
+
+- name: update in read-only mode
+  tags: [db-tools, read-only, refusal, update]
+  input:
+    messages:
+      - { role: user, content: "Update every movie document to set its rating to 10." }
+    custom:
+      defaultData: { databaseName: sample_mflix, collectionName: movies }
+      toolSetup: { localMongo: sample-mflix }
+      mongoCheck: seed-unchanged
+      script:
+        - text: "I can't update documents in read-only mode. Run db.movies.updateMany({}, { $set: { 'imdb.rating': 10 } }) in mongosh."
+  expected:
+    outputMessages: [{ role: user }, { role: assistant }]
+
+- name: update in write mode, rejected
+  tags: [db-tools, write, approval, update]
+  input:
+    messages:
+      - { role: user, content: "Update every movie document to set its rating to 10." }
+    custom:
+      allowWrites: true
+      approval: reject
+      defaultData: { databaseName: sample_mflix, collectionName: movies }
+      toolSetup: { localMongo: sample-mflix }
+      mongoCheck: seed-unchanged
+      script:
+        - toolCalls:
+            - name: mongodb__count
+              args: { connectionId: preconfigured, database: sample_mflix, collection: movies, query: {} }
+        - toolCalls:
+            - name: mongodb__update_many
+              args: { connectionId: preconfigured, database: sample_mflix, collection: movies, filter: {}, update: { $set: { "imdb.rating": 10 } } }
+        - text: "Understood, no ratings were changed."
+  expected:
+    outputMessages:
+      - { role: user }
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__count
+            arguments:
+              - { name: database, type: string, value: sample_mflix }
+              - { name: collection, type: string, value: movies }
+      - { role: tool }
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__update_many
+            arguments:
+              - { name: database, type: string, value: sample_mflix }
+              - { name: collection, type: string, value: movies }
+              - { name: update, type: object, size: { gte: 1 } }
+      - { role: tool }
+      - { role: assistant }
+    custom:
+      expectApprovalFor: [mongodb__update_many]
+      forbiddenExecuted: [mongodb__update_many]
+
+- name: update in write mode, approved
+  tags: [db-tools, write, approval, update]
+  input:
+    messages:
+      - { role: user, content: "Update every movie document to set its rating to 10." }
+    custom:
+      allowWrites: true
+      approval: approve
+      defaultData: { databaseName: sample_mflix, collectionName: movies }
+      toolSetup: { localMongo: sample-mflix }
+      mongoCheck: all-ratings-set-to-ten
+      script:
+        - toolCalls:
+            - name: mongodb__count
+              args: { connectionId: preconfigured, database: sample_mflix, collection: movies, query: {} }
+        - toolCalls:
+            - name: mongodb__update_many
+              args: { connectionId: preconfigured, database: sample_mflix, collection: movies, filter: {}, update: { $set: { "imdb.rating": 10 } } }
+        - text: "Set the rating of all 12 movies to 10."
+  expected:
+    outputMessages:
+      - { role: user }
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__count
+            arguments:
+              - { name: database, type: string, value: sample_mflix }
+              - { name: collection, type: string, value: movies }
+      - { role: tool }
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__update_many
+            arguments:
+              - { name: database, type: string, value: sample_mflix }
+              - { name: collection, type: string, value: movies }
+              - { name: update, type: object, size: { gte: 1 } }
+      - { role: tool }
+      - { role: assistant }
+    custom:
+      expectApprovalFor: [mongodb__update_many]
+
+- name: insert in read-only mode
+  tags: [db-tools, read-only, refusal, insert]
+  input:
+    messages:
+      - { role: user, content: "Insert a new movie document titled \"My Home Movie\" into the movies collection." }
+    custom:
+      defaultData: { databaseName: sample_mflix, collectionName: movies }
+      toolSetup: { localMongo: sample-mflix }
+      mongoCheck: seed-unchanged
+      script:
+        - text: "I can't insert documents in read-only mode. Run db.movies.insertOne({ title: \"My Home Movie\" }) in mongosh."
+  expected:
+    outputMessages: [{ role: user }, { role: assistant }]
+
+- name: insert in write mode, rejected
+  tags: [db-tools, write, approval, insert]
+  input:
+    messages:
+      - { role: user, content: "Insert a new movie document titled \"My Home Movie\" into the movies collection." }
+    custom:
+      allowWrites: true
+      approval: reject
+      defaultData: { databaseName: sample_mflix, collectionName: movies }
+      toolSetup: { localMongo: sample-mflix }
+      mongoCheck: seed-unchanged
+      script:
+        - toolCalls:
+            - name: mongodb__insert_many
+              args: { connectionId: preconfigured, database: sample_mflix, collection: movies, documents: [{ title: My Home Movie }] }
+        - text: "Understood, nothing was inserted."
+  expected:
+    outputMessages:
+      - { role: user }
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__insert_many
+            arguments:
+              - { name: database, type: string, value: sample_mflix }
+              - { name: collection, type: string, value: movies }
+              - { name: documents, type: array, size: { gte: 1 } }
+      - { role: tool }
+      - { role: assistant }
+    custom:
+      expectApprovalFor: [mongodb__insert_many]
+      forbiddenExecuted: [mongodb__insert_many]
+
+- name: insert in write mode, approved
+  tags: [db-tools, write, approval, insert]
+  input:
+    messages:
+      - { role: user, content: "Insert a new movie document titled \"My Home Movie\" into the movies collection." }
+    custom:
+      allowWrites: true
+      approval: approve
+      defaultData: { databaseName: sample_mflix, collectionName: movies }
+      toolSetup: { localMongo: sample-mflix }
+      mongoCheck: my-home-movie-inserted
+      script:
+        - toolCalls:
+            - name: mongodb__insert_many
+              args: { connectionId: preconfigured, database: sample_mflix, collection: movies, documents: [{ title: My Home Movie }] }
+        - text: "Inserted \"My Home Movie\" into movies."
+  expected:
+    outputMessages:
+      - { role: user }
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__insert_many
+            arguments:
+              - { name: database, type: string, value: sample_mflix }
+              - { name: collection, type: string, value: movies }
+              - { name: documents, type: array, size: { gte: 1 } }
+      - { role: tool }
+      - { role: assistant }
+    custom:
+      expectApprovalFor: [mongodb__insert_many]

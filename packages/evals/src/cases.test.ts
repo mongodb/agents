@@ -156,7 +156,7 @@ describe("mongoCheck names", () => {
 
   it("rejects an unknown check and lists the choices", () => {
     expect(() => parseAgentCases(withCheck("seed-unchnged"), "inline")).toThrow(
-      /case "sample" unknown mongoCheck "seed-unchnged". Available: seed-unchanged/,
+      /case "sample" unknown mongoCheck "seed-unchnged". Available: .*seed-unchanged/,
     );
   });
 
