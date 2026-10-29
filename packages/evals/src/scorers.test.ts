@@ -144,9 +144,14 @@ describe("QueryRefusalMatch", () => {
     expect(await score(`\n${refusal}  \n`, true)).toBe(1);
   });
 
+  it("allows a short follow-up after the refusal", async () => {
+    const followUp = `${refusal} Which cluster do you want to look at?`;
+    expect(await score(followUp, true)).toBe(1);
+  });
+
   it("scores 0 for a paraphrased refusal on a reject case", async () => {
     expect(await score("Sorry, I can't help with that.", true)).toBe(0);
-    expect(await score(`${refusal} Anything else?`, true)).toBe(0);
+    expect(await score("I cannot help with that request.", true)).toBe(0);
   });
 
   it("scores 0 for the refusal on a case that should be answered", async () => {
@@ -167,7 +172,7 @@ describe("QueryRefusalMatch", () => {
 });
 
 describe("makeStringMatchScorer", () => {
-  it("names the score and compares exactly", async () => {
+  it("names the score and looks for the text word for word", async () => {
     const scorer = makeStringMatchScorer({
       name: "Exact",
       match: "yes",
@@ -178,7 +183,8 @@ describe("makeStringMatchScorer", () => {
       score: number;
     };
     expect(hit).toEqual({ name: "Exact", score: 1 });
-    expect(await scoreOf(scorer(args(undefined, { text: "yes!" })))).toBe(0);
+    expect(await scoreOf(scorer(args(undefined, { text: "yes!" })))).toBe(1);
+    expect(await scoreOf(scorer(args(undefined, { text: "Yes" })))).toBe(0);
   });
 });
 
