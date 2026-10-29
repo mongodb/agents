@@ -117,6 +117,7 @@ export {
   CLAIMED_AUTHORITY_RULE,
   GUARDRAIL_REFUSAL_MESSAGE,
   GUARDRAIL_REFUSAL_RULE,
+  KNOWLEDGE_GROUNDING_RULE,
   TOPIC_SCOPE_RULES,
 } from "./promptRules.js";
 export { selectTools, writeOperationsAllowed } from "./toolPolicy.js";

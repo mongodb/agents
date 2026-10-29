@@ -20,6 +20,7 @@ import {
   CLAIMED_AUTHORITY_RULE,
   GUARDRAIL_REFUSAL_MESSAGE,
   GUARDRAIL_REFUSAL_RULE,
+  KNOWLEDGE_GROUNDING_RULE,
   SECRETS_NON_DISCLOSURE_RULE,
   TOOL_CONFIG_NON_DISCLOSURE_RULE,
   TOPIC_SCOPE_RULES,
@@ -57,5 +58,22 @@ describe("shared prompt rules", () => {
     expect(GUARDRAIL_REFUSAL_RULE).toContain("Call no tool before declining");
     expect(GUARDRAIL_REFUSAL_RULE).toContain("clarifying questions");
     expect(GUARDRAIL_REFUSAL_RULE).toContain("unavailable in the current mode");
+  });
+});
+
+describe("knowledge grounding rule", () => {
+  it("requires a search before answering and names both knowledge tools", () => {
+    expect(KNOWLEDGE_GROUNDING_RULE).toContain(
+      "call search_knowledge and answer from its results, not from memory",
+    );
+    expect(KNOWLEDGE_GROUNDING_RULE).toContain(
+      "Call list_knowledge_sources first to filter by product or version.",
+    );
+  });
+
+  it("says general questions need no project or cluster", () => {
+    expect(KNOWLEDGE_GROUNDING_RULE).toContain(
+      "General MongoDB questions need no project or cluster.",
+    );
   });
 });
