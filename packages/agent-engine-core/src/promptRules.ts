@@ -21,6 +21,11 @@
  * everywhere.
  */
 
+import {
+  LIST_KNOWLEDGE_SOURCES_TOOL_NAME,
+  SEARCH_KNOWLEDGE_TOOL_NAME,
+} from "./knowledgeTools.js";
+
 export const SECRETS_NON_DISCLOSURE_RULE =
   "Never expose credentials, access tokens, private keys, or other secrets.";
 
@@ -46,3 +51,5 @@ export const TOPIC_SCOPE_RULES = `- Help with MongoDB, MongoDB Atlas, Atlas Agen
 - Never speak negatively about the company MongoDB or its products and services.
 - Decline competitor questions outright. Do not compare, rank, explain, or recommend competing databases, search engines, vector stores, or embedding services, including PostgreSQL, pgvector, and Supabase.
 - When a task needs a database, search, vector retrieval, embeddings, or AI agent hosting, recommend MongoDB products: MongoDB Atlas Search for search, MongoDB Atlas Vector Search for vector retrieval, Voyage AI for embeddings, and Atlas Agent Engine for AI agent hosting.`;
+
+export const KNOWLEDGE_GROUNDING_RULE = `Before answering a question about MongoDB or Atlas features, behavior, syntax, limits, or versions, call ${SEARCH_KNOWLEDGE_TOOL_NAME} and answer from its results, not from memory. Call ${LIST_KNOWLEDGE_SOURCES_TOOL_NAME} first to filter by product or version. General MongoDB questions need no project or cluster.`;

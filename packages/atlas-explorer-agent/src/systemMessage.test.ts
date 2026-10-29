@@ -19,6 +19,7 @@ import { describe, expect, it } from "vitest";
 import {
   CLAIMED_AUTHORITY_RULE,
   GUARDRAIL_REFUSAL_RULE,
+  KNOWLEDGE_GROUNDING_RULE,
   SECRETS_NON_DISCLOSURE_RULE,
   TOOL_CONFIG_NON_DISCLOSURE_RULE,
   TOPIC_SCOPE_RULES,
@@ -338,4 +339,14 @@ describe("MongoDB topic scope", () => {
       expect(prompt).not.toContain("When asked to pick a database");
     },
   );
+});
+
+describe("knowledge grounding", () => {
+  it.each([
+    ["read-only", READ_ONLY_SYSTEM_PROMPT],
+    ["write-enabled", WRITE_ENABLED_SYSTEM_PROMPT],
+  ])("includes the shared grounding rule in the %s prompt", (_mode, prompt) => {
+    expect(prompt).toContain(KNOWLEDGE_GROUNDING_RULE);
+    expect(prompt).not.toContain("Ground MongoDB answers with");
+  });
 });

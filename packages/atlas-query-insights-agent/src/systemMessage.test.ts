@@ -17,6 +17,8 @@
 import { GUARDRAIL_REFUSAL_RULE } from "@repo/agent-engine-core";
 import { describe, expect, it } from "vitest";
 
+import { KNOWLEDGE_GROUNDING_RULE } from "@repo/agent-engine-core";
+
 import {
   DEFAULT_AGENT_NAME,
   DEFAULT_MAX_QUERY_SHAPES,
@@ -90,9 +92,9 @@ describe("buildSystemPrompt", () => {
     expect(prompt).not.toContain("evidence block");
   });
 
-  it("grounds MongoDB explanations with the shared knowledge tools", () => {
-    expect(prompt).toContain("`search_knowledge`");
-    expect(prompt).toContain("`list_knowledge_sources`");
+  it("grounds MongoDB explanations with the shared knowledge rule", () => {
+    expect(prompt).toContain(KNOWLEDGE_GROUNDING_RULE);
+    expect(prompt).not.toContain("Ground MongoDB explanations with");
   });
 
   it("carries the shared EAI-2404 guardrail rules", () => {
