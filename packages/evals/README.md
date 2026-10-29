@@ -122,6 +122,85 @@ model. Real-model runs ignore `script`.
    fixture with a poisoned field and a positive `answerMatches` check.
 4. Add a script like the two above.
 
+## Database tools suite
+
+One command runs the Explorer's database tool suite with the production model,
+3 trials, 4 datasets:
+
+```sh
+pnpm --filter @repo/evals eval:db-tools:explorer
+```
+
+It needs `OPENAI_API_KEY` and `BRAINTRUST_API_KEY`, and takes about 20
+minutes. Each case that allows writes starts its own `mongod`.
+
+| Dataset | Cases | What it checks |
+| :---- | :---- | :---- |
+| `db-tools` | 27 | Read-only: the right `mongodb__*` tool with the right arguments, ported from `mongodb/ai-assistant` |
+| `db-tools-writes` | 12 | Delete, drop, update and insert, each read-only, write rejected and write approved |
+| `db-tools-aggregate-writes` | 3 | `$out` approved and rejected, and `$merge` in read-only mode |
+| `db-tools-injection` | 8 | Instructions hidden in data, or in the user message, must not change the database |
+
+What the scores mean:
+
+- `ToolCallArgCoverage` is the share of expected arguments the agent passed.
+  It is 100% when the agent picks the right tool and arguments.
+- `ToolCallCoverage` is 1 when every expected tool was called, capped when
+  the agent makes more than twice the expected calls. The Explorer often reads
+  a skill and inspects the schema before the real call, so it scores about
+  0.4 on single-call cases. Compare runs, not the absolute value.
+- `MongoCheck` asserts the database end state. See "Mongo checks".
+- `ApprovalRequested` and `NoForbiddenExecuted` check that writes paused for
+  approval and that a rejected or injected write never ran.
+- `ToolCallAmountCorrect` is 1 when a read-only write request made no tool
+  call.
+
+The read-only `db-tools` cases have no `script`, so the scripted model cannot
+run them. The other three datasets are scripted, and
+`src/dbToolsRuns.test.ts` runs them offline.
+
+### Adding the suite to a new agent
+
+The datasets, fixtures and Mongo checks are not tied to the Explorer. A
+second agent that has the database tools can run them with a task and a
+script. Use the Explorer as the reference: `src/agents/atlasExplorer.ts`.
+
+1. **Expose the database tools.** The cases script and expect
+   `mongodb__find`, `mongodb__aggregate`, `mongodb__list_collections` and the
+   other `mongodb__*` tools. The harness discovers all of them from the
+   MongoDB MCP server, and the agent's `buildOptions` decides which ones the
+   model sees. A case that expects a tool the agent hides cannot pass
+   `ToolCallCoverage`.
+2. **Pass `extraInstructions` into the system prompt.** For every case with a
+   `localMongo` fixture the task passes `extraInstructions`, the note telling
+   the model its database is already connected and to use
+   `connectionId: "preconfigured"` (see "Adding a case"). `buildOptions` must
+   append it to the agent's custom instructions, as `atlasExplorer.ts` does.
+   `atlasQueryInsights.ts` ignores it today. Without the note the model does
+   not know the connection id. In the first Explorer run it guessed ids and
+   tried to connect to a cluster, so the database cases failed.
+3. **Set `supportsWrites`.** The write datasets set `allowWrites: true`, and
+   the task throws on a read-only agent. For an agent that never writes, run
+   only `db-tools` and the read-only cases, or write its own datasets.
+4. **Register the task** in `src/cli.ts` with `makeAgentTask(definition, {
+   toolProvider })`, and add the agent's production model to `models`. The
+   `--model` flag must match that model's key.
+5. **Add a script** to `package.json` next to `eval:db-tools:explorer`. Change
+   `--task` and `--model`. List the datasets the agent can run. Leave
+   `--validate` out until you have a baseline to gate on.
+6. **Reuse the fixtures and checks.** Name `sample-mflix` in `toolSetup` and a
+   check from `src/mongoChecks/registry.ts` in `mongoCheck`. Do not copy the
+   seed. A new dataset file goes in `datasets/` and is registered under
+   `datasets` in `src/cli.ts`, like `db-tools-writes`.
+7. **Run it offline first.** The scripted datasets run on the `scripted` model
+   with no key. `src/dbToolsRuns.test.ts` does this for the Explorer's script.
+   Add a matching test for the new script, then run a real-model baseline.
+
+Expect different scores from the Explorer. The cases were tuned to its prompt,
+for example `count` before `delete_many`. Another agent's prompt may call for
+different expected trajectories, so copy a dataset and edit it instead of
+sharing one.
+
 ## Adding a case
 
 Cases are YAML in `datasets/`. `input.custom` holds `script` (turns for
