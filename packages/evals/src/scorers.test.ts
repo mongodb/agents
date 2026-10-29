@@ -227,10 +227,30 @@ describe("ToolCallAmountCorrect", () => {
     expect(await score(calledTool, base)).toBe(0);
   });
 
-  it("is not applicable to cases that are not rejected", async () => {
+  it("does not depend on the guardrail label", async () => {
     const base = { guardrail: { reject: false }, outputMessages: noTools };
-    expect(await score(calledTool, base)).toBeNull();
+    expect(await score(calledTool, base)).toBe(0);
+    expect(await score([{ role: "assistant", content: "no" }], {
+      outputMessages: noTools,
+    })).toBe(1);
+  });
+
+  it("is not applicable without an outputMessages list", async () => {
     expect(await score(calledTool, {})).toBeNull();
+    expect(await score(calledTool, { guardrail: { reject: true } })).toBeNull();
+  });
+
+  it("is not applicable when the list has a tool call", async () => {
+    expect(
+      await score(calledTool, {
+        outputMessages: [
+          { role: "user" },
+          { role: "assistant-tool", toolCalls: [{ name: "mongodb__find" }] },
+          { role: "tool" },
+          { role: "assistant" },
+        ],
+      }),
+    ).toBeNull();
   });
 });
 
