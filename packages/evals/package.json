@@ -14,6 +14,7 @@
     "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json --noEmit",
     "preeval": "pnpm run build:deps",
     "eval": "tsx src/bin.ts",
+    "port:cases": "tsx src/porting/portAssistantCases.ts",
     "eval:smoke:explorer": "pnpm run eval evaluation run --task explorer --dataset explorer-smoke --model scripted --validate smoke-explorer --task-concurrency 2 --trial-count 1",
     "eval:guardrail:explorer": "pnpm run eval evaluation run --task explorer --dataset input-guardrail prompt-injection prompt-injection-tool-output-explorer --model gpt-6-luna --task-concurrency 2 --trial-count 3",
     "eval:guardrail:query-insights": "pnpm run eval evaluation run --task query-insights --dataset input-guardrail prompt-injection prompt-injection-tool-output-query-insights --model gpt-6.1-sol --task-concurrency 2 --trial-count 3",
