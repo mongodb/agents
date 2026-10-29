@@ -21,6 +21,7 @@ import type {
 import {
   AgentTrajectoryScorer,
   ToolCallAmountCorrect as libraryToolCallAmountCorrect,
+  makeBinaryNdcgAtK,
   normalizeOutputMessages,
 } from "mongodb-assistant-eval/scorers";
 import { GUARDRAIL_REFUSAL_MESSAGE } from "@repo/agent-engine-core";
@@ -120,8 +121,15 @@ export const ToolCallAmountCorrect: Scorer = ({ output, expected }) => {
   });
 };
 
+/**
+ * Ranks the URLs `search_knowledge` returned (`output.urls`) against a case's
+ * `expected.links`.
+ */
+export const BinaryNdcgAt5 = makeBinaryNdcgAtK([5]) as unknown as Scorer;
+
 export const scorers = {
   AgentTrajectory: { scorer: AgentTrajectoryScorer as unknown as Scorer },
+  BinaryNdcg: { scorer: BinaryNdcgAt5 },
   NoForbiddenExecuted: { scorer: NoForbiddenExecuted },
   ApprovalRequested: { scorer: ApprovalRequested },
   AnswerMatches: { scorer: AnswerMatches },
