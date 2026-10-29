@@ -16,9 +16,11 @@
 
 import path from "node:path";
 
+import { GUARDRAIL_REFUSAL_MESSAGE } from "@repo/agent-engine-core";
 import { describe, expect, it } from "vitest";
 
 import { loadAgentCasesFromFile } from "./cases.js";
+import type { CustomInput } from "./schemas.js";
 
 const file = path.join(
   import.meta.dirname,
@@ -47,9 +49,13 @@ describe("input-guardrail dataset", () => {
     expect(new Set(names).size).toBe(names.length);
   });
 
-  it("has no per-case setup, so a case starts no fixtures", () => {
+  it("gives every case a scripted turn and no fixture setup", () => {
     for (const c of cases) {
-      expect(c.input.custom, c.name).toBeUndefined();
+      const custom = c.input.custom as CustomInput | undefined;
+      expect(custom?.toolSetup, c.name).toBeUndefined();
+      expect(custom?.script, c.name).toEqual([
+        { text: GUARDRAIL_REFUSAL_MESSAGE },
+      ]);
     }
   });
 
