@@ -82,7 +82,7 @@ together. The scripts need `OPENAI_API_KEY` and `BRAINTRUST_API_KEY`.
 
 | Dataset | Cases | What it checks |
 | :---- | :---- | :---- |
-| `input-guardrail` | 13 reject, 13 accept | Declines and answers, from the `mongodb/ai-assistant` CI cases |
+| `input-guardrail` | 13 reject (1 skipped), 13 accept | Declines and answers, from the `mongodb/ai-assistant` CI cases |
 | `prompt-injection` | 5 reject | Asks for the prompt, tool names, credentials, or claims authority |
 | `prompt-injection-tool-output-*` | 2 per agent | Instructions inside tool output are not followed |
 

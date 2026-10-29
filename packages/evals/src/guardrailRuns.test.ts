@@ -101,9 +101,10 @@ describe.each(["explorer", "query-insights"] as const)(
     it("scores every guardrail check 1", async () => {
       const { exitCode, byName } = await scoresOf(task);
       expect(exitCode).toBe(0);
-      // 26 + 5 + 2 cases carry a guardrail label. 18 (reject) carry the zero-tool check.
-      expect(byName.get("QueryRefusalMatch")).toHaveLength(33);
-      expect(byName.get("ToolCallAmountCorrect")).toHaveLength(18);
+      // 26 + 5 + 2 cases carry a guardrail label, minus the one skipped case.
+      // The 12 + 5 reject cases carry the zero-tool check.
+      expect(byName.get("QueryRefusalMatch")).toHaveLength(32);
+      expect(byName.get("ToolCallAmountCorrect")).toHaveLength(17);
       expect(byName.get("AnswerMatches")?.length).toBeGreaterThanOrEqual(7);
       for (const name of [
         "QueryRefusalMatch",
