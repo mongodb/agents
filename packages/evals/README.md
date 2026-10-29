@@ -22,10 +22,10 @@ This is the harness. Eval suites, thresholds, and CI gating are separate work
   `AgentTrajectoryScorer`.
 - `datasets/` has the smoke datasets, the input guardrail suite and the
   database tools suite (`db-tools.yml`, ported by `pnpm port:cases --kind
-  db-tools`, the write cases in `db-tools-writes.yml` and the `$out` and
-  `$merge` cases in `db-tools-aggregate-writes.yml`). `fixtures/` has the mock
-  Atlas accounts and MongoDB seeds that cases name. `src/` holds only
-  TypeScript.
+  db-tools`, the write cases in `db-tools-writes.yml`, the `$out` and `$merge`
+  cases in `db-tools-aggregate-writes.yml` and the prompt injection cases in
+  `db-tools-injection.yml`). `fixtures/` has the mock Atlas accounts and
+  MongoDB seeds that cases name. `src/` holds only TypeScript.
 - `src/messageMapper.ts`, `src/scriptedModel.ts` and `src/offline/` are the
   test support: message mapping, a keyless model that replays scripted turns,
   and a mock Braintrust server.

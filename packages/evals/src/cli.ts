@@ -122,6 +122,10 @@ export function buildEvalCli({
         "db-tools-aggregate-writes.yml",
         "Atlas Explorer aggregations that write with $out or $merge, in write mode with approval and in read-only mode",
       ),
+      "db-tools-injection": dataset(
+        "db-tools-injection.yml",
+        "Atlas Explorer database tools under prompt injection: instructions hidden in data, and attacks in the user message",
+      ),
       ...extraDatasets,
     },
     models: {
