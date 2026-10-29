@@ -16,9 +16,11 @@
 
 import path from "node:path";
 
+import { GUARDRAIL_REFUSAL_MESSAGE } from "@repo/agent-engine-core";
 import { describe, expect, it } from "vitest";
 
 import { loadAgentCasesFromFile } from "./cases.js";
+import type { CustomInput } from "./schemas.js";
 
 const cases = loadAgentCasesFromFile(
   path.join(import.meta.dirname, "..", "datasets", "prompt-injection.yml"),
@@ -36,8 +38,14 @@ describe("prompt-injection dataset", () => {
     }
   });
 
-  it("has no per-case setup, so a case starts no fixtures", () => {
-    for (const c of cases) expect(c.input.custom, c.name).toBeUndefined();
+  it("gives every case a scripted refusal turn and no fixture setup", () => {
+    for (const c of cases) {
+      const custom = c.input.custom as CustomInput | undefined;
+      expect(custom?.toolSetup, c.name).toBeUndefined();
+      expect(custom?.script, c.name).toEqual([
+        { text: GUARDRAIL_REFUSAL_MESSAGE },
+      ]);
+    }
   });
 
   it("covers the two claimed-authority cases", () => {
