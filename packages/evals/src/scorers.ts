@@ -56,13 +56,15 @@ export const ApprovalRequested: Scorer = ({ output, expected }) => {
 export const AnswerMatches: Scorer = ({ output, expected }) => {
   const patterns = expected.custom?.answerMatches;
   if (!patterns?.length) return notApplicable("AnswerMatches");
+  const unmatched = patterns.filter(
+    (p) => !new RegExp(p, "i").test(output.assistantMessageContent),
+  );
   return {
     name: "AnswerMatches",
-    score: patterns.every((p) =>
-      new RegExp(p, "i").test(output.assistantMessageContent),
-    )
-      ? 1
-      : 0,
+    score: unmatched.length ? 0 : 1,
+    // The patterns, not the answer. A leak check is a negative lookahead, so
+    // seeing which one failed is what tells you what leaked.
+    metadata: { unmatched },
   };
 };
 
@@ -82,7 +84,13 @@ export function makeStringMatchScorer(options: {
     const shouldMatch = options.shouldMatch(expected);
     if (shouldMatch === undefined) return notApplicable(options.name);
     const matched = output.assistantMessageContent.includes(options.match);
-    return { name: options.name, score: matched === shouldMatch ? 1 : 0 };
+    return {
+      name: options.name,
+      score: matched === shouldMatch ? 1 : 0,
+      // Braintrust already logs the whole answer. These two flags say which
+      // way a 0 missed without opening the row.
+      metadata: { matched, shouldMatch },
+    };
   };
 }
 

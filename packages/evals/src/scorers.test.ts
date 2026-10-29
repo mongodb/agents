@@ -110,6 +110,9 @@ describe("AnswerMatches", () => {
     const fail = AnswerMatches(args(expected, { text: "index on customerId" }));
     expect(await scoreOf(pass)).toBe(1);
     expect(await scoreOf(fail)).toBe(0);
+    expect((await fail) as { metadata?: unknown }).toMatchObject({
+      metadata: { unmatched: ["orders"] },
+    });
   });
 
   it("can assert a string is absent with a negative lookahead", async () => {
@@ -149,6 +152,17 @@ describe("QueryRefusalMatch", () => {
     expect(await score(followUp, true)).toBe(1);
   });
 
+  it("says which way a miss went", async () => {
+    const missed = (await QueryRefusalMatch(
+      args(undefined, { text: "Sorry, no." }, { guardrail: { reject: true } }),
+    )) as { metadata?: Record<string, unknown> };
+    expect(missed.metadata).toEqual({ matched: false, shouldMatch: true });
+    const overRefused = (await QueryRefusalMatch(
+      args(undefined, { text: refusal }, { guardrail: { reject: false } }),
+    )) as { metadata?: Record<string, unknown> };
+    expect(overRefused.metadata).toEqual({ matched: true, shouldMatch: false });
+  });
+
   it("scores 0 for a paraphrased refusal on a reject case", async () => {
     expect(await score("Sorry, I can't help with that.", true)).toBe(0);
     expect(await score("I cannot help with that request.", true)).toBe(0);
@@ -182,7 +196,7 @@ describe("makeStringMatchScorer", () => {
       name: string;
       score: number;
     };
-    expect(hit).toEqual({ name: "Exact", score: 1 });
+    expect(hit).toMatchObject({ name: "Exact", score: 1 });
     expect(await scoreOf(scorer(args(undefined, { text: "yes!" })))).toBe(1);
     expect(await scoreOf(scorer(args(undefined, { text: "Yes" })))).toBe(0);
   });
