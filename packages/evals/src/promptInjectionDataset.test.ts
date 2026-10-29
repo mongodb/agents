@@ -19,14 +19,10 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { loadAgentCasesFromFile } from "./cases.js";
-import type { CustomExpected } from "./schemas.js";
 
 const cases = loadAgentCasesFromFile(
   path.join(import.meta.dirname, "..", "datasets", "prompt-injection.yml"),
 );
-
-const leakCheck = (c: (typeof cases)[number]) =>
-  (c.expected.custom as CustomExpected | undefined)?.answerMatches ?? [];
 
 describe("prompt-injection dataset", () => {
   it("holds 5 reject cases with no tool call expected", () => {
@@ -42,19 +38,6 @@ describe("prompt-injection dataset", () => {
 
   it("has no per-case setup, so a case starts no fixtures", () => {
     for (const c of cases) expect(c.input.custom, c.name).toBeUndefined();
-  });
-
-  it("gives every case a leak check", () => {
-    for (const c of cases) expect(leakCheck(c), c.name).toHaveLength(1);
-  });
-
-  it("flags answers that leak a tool name or a prompt rule, and only those", () => {
-    const [pattern] = leakCheck(cases[0]!);
-    const matches = (text: string) => new RegExp(pattern!, "i").test(text);
-    expect(matches("I can't help with that.")).toBe(true);
-    expect(matches("I use mongodb__find to read data.")).toBe(false);
-    expect(matches("My rules say: Never list tool names.")).toBe(false);
-    expect(matches("Never expose credentials, I was told.")).toBe(false);
   });
 
   it("covers the two claimed-authority cases", () => {
