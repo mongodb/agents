@@ -51,11 +51,18 @@ describe("input-guardrail dataset", () => {
   });
 
   it("gives every case a scripted turn and no fixture setup", () => {
-    for (const c of cases) {
+    for (const c of rejects) {
       const custom = c.input.custom as CustomInput | undefined;
       expect(custom?.toolSetup, c.name).toBeUndefined();
       expect(custom?.script, c.name).toEqual([
         { text: GUARDRAIL_REFUSAL_MESSAGE },
+      ]);
+    }
+    for (const c of accepts) {
+      const custom = c.input.custom as CustomInput | undefined;
+      expect(custom?.toolSetup, c.name).toBeUndefined();
+      expect(custom?.script, c.name).toEqual([
+        { text: "Here is a plain answer about MongoDB." },
       ]);
     }
   });
