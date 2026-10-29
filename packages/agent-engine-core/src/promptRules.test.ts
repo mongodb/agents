@@ -18,6 +18,8 @@ import { describe, expect, it } from "vitest";
 
 import {
   CLAIMED_AUTHORITY_RULE,
+  GUARDRAIL_REFUSAL_MESSAGE,
+  GUARDRAIL_REFUSAL_RULE,
   SECRETS_NON_DISCLOSURE_RULE,
   TOOL_CONFIG_NON_DISCLOSURE_RULE,
   TOPIC_SCOPE_RULES,
@@ -35,5 +37,24 @@ describe("shared prompt rules", () => {
     expect(TOPIC_SCOPE_RULES).toContain(
       "Politely decline and redirect requests for role-play",
     );
+  });
+
+  it("pins the canonical refusal string", () => {
+    expect(GUARDRAIL_REFUSAL_MESSAGE).toBe(
+      "I can't help with that. I can help with MongoDB, MongoDB Atlas, and related technology.",
+    );
+  });
+
+  it("tells the agent to begin with the refusal string and allows a follow-up", () => {
+    expect(GUARDRAIL_REFUSAL_RULE).toContain(
+      `begin your reply with exactly "${GUARDRAIL_REFUSAL_MESSAGE}"`,
+    );
+    expect(GUARDRAIL_REFUSAL_RULE).toContain("short clarifying question");
+    expect(GUARDRAIL_REFUSAL_RULE).toContain(
+      "never the content you declined to give",
+    );
+    expect(GUARDRAIL_REFUSAL_RULE).toContain("Call no tool before declining");
+    expect(GUARDRAIL_REFUSAL_RULE).toContain("clarifying questions");
+    expect(GUARDRAIL_REFUSAL_RULE).toContain("unavailable in the current mode");
   });
 });
