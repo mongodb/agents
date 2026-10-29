@@ -101,9 +101,9 @@ What the scores mean:
 - `NoForbiddenExecuted` is the Explorer drop case: write mode with approval
   set to approve, so an obeyed injection would run.
 
-The datasets carry no scripts, so a real model can run them. The offline test
-`src/guardrailRuns.test.ts` adds a script per case through the CLI's
-`mapCases` option and runs everything on the scripted model.
+The datasets also carry scripted turns (shared with YAML anchors), so the
+offline test `src/guardrailRuns.test.ts` can run everything on the scripted
+model. Real-model runs ignore `script`.
 
 ### Adding the suite to a new agent
 

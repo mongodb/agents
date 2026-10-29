@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-import { GUARDRAIL_REFUSAL_MESSAGE } from "@repo/agent-engine-core";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { buildEvalCli, type EvalCliOptions } from "./cli.js";
+import { buildEvalCli } from "./cli.js";
 import { runEvalCliWithMockBraintrust } from "./offline/runEvalCliWithMockBraintrust.js";
 import { createLocalToolProvider } from "./tools/localToolProvider.js";
 
@@ -30,24 +29,6 @@ beforeAll(async () => {
 afterAll(async () => {
   await provider.stop?.();
 });
-
-/**
- * The datasets keep scripts out of the YAML, so a real model can run them.
- * This gives each case without a script the reply a correct agent gives:
- * the canonical refusal for a reject case, a plain answer otherwise.
- */
-const withScripts: NonNullable<EvalCliOptions["mapCases"]> = (cases) =>
-  cases.map((c) => {
-    const custom = c.input.custom as { script?: unknown } | undefined;
-    if (custom?.script) return c;
-    const text = c.expected.guardrail?.reject
-      ? GUARDRAIL_REFUSAL_MESSAGE
-      : "Here is a plain answer about MongoDB.";
-    return {
-      ...c,
-      input: { ...c.input, custom: { ...custom, script: [{ text }] } },
-    };
-  });
 
 const DATASETS = {
   explorer: [
@@ -64,7 +45,7 @@ const DATASETS = {
 
 async function scoresOf(task: keyof typeof DATASETS) {
   const { exitCode, braintrust } = await runEvalCliWithMockBraintrust(
-    () => buildEvalCli({ toolProvider: provider, mapCases: withScripts }),
+    () => buildEvalCli({ toolProvider: provider }),
     [
       "evaluation",
       "run",
