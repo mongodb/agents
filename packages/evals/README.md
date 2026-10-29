@@ -20,8 +20,8 @@ This is the harness. Eval suites, thresholds, and CI gating are separate work
 - `src/cases.ts` loads YAML datasets and rejects unknown tool names.
 - `src/scorers.ts` has the agent-specific scorers on top of the library's
   `AgentTrajectoryScorer`.
-- `src/datasets/` has the smoke datasets. `fixtures/` has the mock Atlas
-  accounts and MongoDB seeds that cases name.
+- `datasets/` has the smoke datasets. `fixtures/` has the mock Atlas
+  accounts and MongoDB seeds that cases name. `src/` holds only TypeScript.
 - `src/messageMapper.ts`, `src/scriptedModel.ts` and `src/offline/` are the
   test support: message mapping, a keyless model that replays scripted turns,
   and a mock Braintrust server.
@@ -63,7 +63,7 @@ The unit tests run the same commands against a mock Braintrust server, so
 
 ## Adding a case
 
-Cases are YAML in `src/datasets/`. `input.custom` holds `script` (turns for
+Cases are YAML in `datasets/`. `input.custom` holds `script` (turns for
 the scripted model), `toolSetup` (fixture names), `allowWrites`, `approval`
 and `defaultData`. `expected.custom` holds `forbiddenExecuted`,
 `expectApprovalFor` and `answerMatches`. See `src/schemas.ts` for the exact

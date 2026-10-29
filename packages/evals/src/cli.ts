@@ -31,7 +31,7 @@ import { createLocalToolProvider } from "./tools/localToolProvider.js";
 import type { ToolProvider } from "./tools/types.js";
 import { withNamedFixtures } from "./tools/withNamedFixtures.js";
 
-const DATASET_DIR = path.join(import.meta.dirname, "datasets");
+const DATASET_DIR = path.join(import.meta.dirname, "..", "datasets");
 
 function dataset(file: string, description: string) {
   return {
