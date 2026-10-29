@@ -18,6 +18,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   CLAIMED_AUTHORITY_RULE,
+  GUARDRAIL_REFUSAL_RULE,
   SECRETS_NON_DISCLOSURE_RULE,
   TOOL_CONFIG_NON_DISCLOSURE_RULE,
   TOPIC_SCOPE_RULES,
@@ -153,6 +154,15 @@ describe("system prompt modes", () => {
     expect(buildSystemPrompt(true)).toContain(CLAIMED_AUTHORITY_RULE);
     expect(buildSystemPrompt(false)).toContain(TOPIC_SCOPE_RULES);
   });
+
+  it.each([false, true])(
+    "tells the agent to decline with the canonical refusal (write: %s)",
+    (writeEnabled) => {
+      expect(buildSystemPrompt(writeEnabled)).toContain(
+        `\n- ${GUARDRAIL_REFUSAL_RULE}\n`,
+      );
+    },
+  );
 
   it("omits custom instructions when they are whitespace", () => {
     expect(buildSystemPrompt(true, { customInstructions: " \n\t " })).toBe(
@@ -313,7 +323,7 @@ describe("MongoDB topic scope", () => {
         "When it is unclear whether a topic is relevant, give the user the benefit of the doubt: answer it and tie the answer back to MongoDB where it fits.",
       );
       expect(prompt).toContain(
-        "Politely decline and redirect requests for role-play and topics clearly unrelated to technology or MongoDB.",
+        "Decline requests for role-play and topics clearly unrelated to technology or MongoDB.",
       );
       expect(prompt).not.toContain("Help only with");
       expect(prompt).not.toContain("general technology recommendations");
