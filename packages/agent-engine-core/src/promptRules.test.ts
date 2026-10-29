@@ -45,9 +45,13 @@ describe("shared prompt rules", () => {
     );
   });
 
-  it("tells the agent to reply with exactly the refusal string", () => {
+  it("tells the agent to begin with the refusal string and allows a follow-up", () => {
     expect(GUARDRAIL_REFUSAL_RULE).toContain(
-      `reply with exactly "${GUARDRAIL_REFUSAL_MESSAGE}" and nothing else`,
+      `begin your reply with exactly "${GUARDRAIL_REFUSAL_MESSAGE}"`,
+    );
+    expect(GUARDRAIL_REFUSAL_RULE).toContain("short clarifying question");
+    expect(GUARDRAIL_REFUSAL_RULE).toContain(
+      "never the content you declined to give",
     );
     expect(GUARDRAIL_REFUSAL_RULE).toContain("Call no tool before declining");
     expect(GUARDRAIL_REFUSAL_RULE).toContain("clarifying questions");
