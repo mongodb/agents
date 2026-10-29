@@ -22,6 +22,7 @@ import {
   discoverMcpTools,
   makeMcpToolCallable,
   type MCPToolBinding,
+  type RuntimeMCPServerConfig,
 } from "@mongodb-js/agent-engine-runner-shared";
 
 import { startMockAtlasApi, type MockAtlasApi } from "../atlas/mockAtlasApi.js";
@@ -60,25 +61,40 @@ function mcpConfig(url: string) {
   });
 }
 
-function toLangChainTool(binding: MCPToolBinding): StructuredToolInterface {
-  const call = makeMcpToolCallable(binding);
-  return tool((args: Record<string, unknown>) => call(args), {
-    name: binding.sdkToolName,
-    description: binding.description.trim(),
-    schema: binding.inputSchema as never,
-  }) as unknown as StructuredToolInterface;
+/**
+ * The schema comes from `binding`; calls go to `serverConfig()`, which may
+ * start the case's server first.
+ */
+function toLangChainTool(
+  binding: MCPToolBinding,
+  serverConfig: () => Promise<RuntimeMCPServerConfig>,
+): StructuredToolInterface {
+  return tool(
+    async (args: Record<string, unknown>) =>
+      makeMcpToolCallable({ ...binding, serverConfig: await serverConfig() })(
+        args,
+      ),
+    {
+      name: binding.sdkToolName,
+      description: binding.description.trim(),
+      schema: binding.inputSchema as never,
+    },
+  ) as unknown as StructuredToolInterface;
 }
 
 /**
  * Tools backed by real servers on this machine, so no credentials are needed.
  *
- * - Each case gets its own `mongodb-mcp-server` child process, the same
- *   server and transport the agents use in production.
+ * - One shared `mongodb-mcp-server`, the same server and transport the agents
+ *   use in production, discovers the tool schemas once for the whole run.
+ * - Each case that needs a server gets its own: a write case from the start, a
+ *   read-only case on its first tool call. So a case that calls no tool, as
+ *   every guardrail case does, starts no process.
  * - The server's Atlas API calls go to one shared mock, which keeps a
  *   separate account per case.
  * - A case with `toolSetup.localMongo` also gets a MongoDB connection. Read-only
- *   cases with identical seed data share one mongod and a read-only server.
- *   A case that allows writes gets its own mongod.
+ *   cases with identical seed data share one mongod. A case that allows writes
+ *   gets its own mongod.
  *
  * Tools carry the names the agent sees in production (`mongodb__find`).
  * Every MongoDB tool needs `connectionId: "preconfigured"`.
@@ -94,6 +110,13 @@ export function createLocalToolProvider(
   // so sequential cases with the same seed reuse them without restarting. If a
   // suite ever defines many distinct read-only seeds, cap or evict entries here.
   const sharedMongos = new Map<string, Promise<EphemeralMongo>>();
+  // Read-only cases have the same tools whatever their fixture holds: discovery
+  // only lists schemas, it never opens a connection. So one read-only server
+  // discovers them once for the whole run, and only its schema list is reused.
+  // A case still gets its own server, and its own Atlas account, when it calls
+  // a tool, so `atlasRequests` and `state()` stay per case.
+  let readOnlySchemas: Promise<MCPToolBinding[]> | undefined;
+  const readOnlyCleanups: (() => Promise<void> | void)[] = [];
 
   function sharedMongo(seed: MongoSeed): Promise<EphemeralMongo> {
     const key = JSON.stringify(seed);
@@ -105,6 +128,50 @@ export function createLocalToolProvider(
     return started;
   }
 
+  function sharedReadOnlySchemas(): Promise<MCPToolBinding[]> {
+    readOnlySchemas ??= (async () => {
+      const clientId = "schema-discovery";
+      const account = atlas!.register(clientId, {});
+      readOnlyCleanups.push(() => account.release());
+      const server = await startMcpServer({
+        env: { ...atlas!.serverEnv(clientId), ...disabledToolsEnv() },
+        args: ["--readOnly"],
+        startTimeoutMs: options.serverStartTimeoutMs,
+      });
+      readOnlyCleanups.push(() => server.stop());
+      return discoverMcpTools(mcpConfig(server.url));
+    })().catch((error: unknown) => {
+      // Let the next case try again rather than fail every case after this one.
+      readOnlySchemas = undefined;
+      throw error;
+    });
+    return readOnlySchemas;
+  }
+
+  /**
+   * A case's read-only server, started by its first tool call. Most guardrail
+   * cases make none, and a failed start must not outlive `forCase`.
+   */
+  function lazyReadOnlyServer(start: () => Promise<McpServerProcess>) {
+    let started: Promise<McpServerProcess> | undefined;
+    let disposed = false;
+    return {
+      async config(): Promise<RuntimeMCPServerConfig> {
+        if (disposed) {
+          throw new Error("case tools were disposed before the tool was called");
+        }
+        started ??= start();
+        const { url } = await started;
+        return mcpConfig(url).servers[SERVER_NAME]!;
+      },
+      async stop() {
+        disposed = true;
+        const server = await started?.catch(() => undefined);
+        await server?.stop();
+      },
+    };
+  }
+
   return {
     async start() {
       users++;
@@ -114,10 +181,17 @@ export function createLocalToolProvider(
 
     async stop() {
       if (--users > 0) return;
-      const mongos = await Promise.allSettled([...sharedMongos.values()]);
+      const mongos = [...sharedMongos.values()];
       sharedMongos.clear();
+      // Discovery servers first: a later `start()` must not reuse them.
+      const cleanups = [...readOnlyCleanups];
+      readOnlyCleanups.length = 0;
+      readOnlySchemas = undefined;
+      for (const fn of cleanups.reverse()) await fn();
       await Promise.all(
-        mongos.map((m) => (m.status === "fulfilled" ? m.value.stop() : undefined)),
+        mongos.map(async (started) =>
+          (await started.catch(() => undefined))?.stop(),
+        ),
       );
       await atlas?.close();
       atlas = undefined;
@@ -147,21 +221,42 @@ export function createLocalToolProvider(
           mongo = await sharedMongo(setup.localMongo);
         }
 
-        const server: McpServerProcess = await startMcpServer({
-          env: {
-            ...atlas.serverEnv(clientId),
-            ...disabledToolsEnv(),
-            ...(mongo && { MDB_MCP_CONNECTION_STRING: mongo.uri }),
-          },
-          args: request.allowWrites ? [] : ["--readOnly"],
-          startTimeoutMs: options.serverStartTimeoutMs,
-        });
-        cleanups.push(() => server.stop());
+        const startCaseServer = () =>
+          startMcpServer({
+            env: {
+              ...atlas!.serverEnv(clientId),
+              ...disabledToolsEnv(),
+              ...(mongo && { MDB_MCP_CONNECTION_STRING: mongo.uri }),
+            },
+            args: request.allowWrites ? [] : ["--readOnly"],
+            startTimeoutMs: options.serverStartTimeoutMs,
+          });
 
-        const bindings = await discoverMcpTools(mcpConfig(server.url));
+        let bindings: MCPToolBinding[];
+        // Where a discovered tool sends its calls. Read-only tools resolve it
+        // lazily, so a case that calls nothing starts no server.
+        let caseServerConfig: () => Promise<RuntimeMCPServerConfig>;
+        if (request.allowWrites) {
+          // A write case changes its own mongod and Atlas account, so it keeps
+          // its own server for the whole case.
+          const server = await startCaseServer();
+          cleanups.push(() => server.stop());
+          const config = mcpConfig(server.url);
+          bindings = await discoverMcpTools(config);
+          caseServerConfig = async () => config.servers[SERVER_NAME]!;
+        } else {
+          // A read-only case changes nothing another case could see, so it
+          // borrows the schemas discovered once for the run and starts its own
+          // server only if the agent calls a tool.
+          const lazy = lazyReadOnlyServer(startCaseServer);
+          cleanups.push(() => lazy.stop());
+          bindings = await sharedReadOnlySchemas();
+          caseServerConfig = () => lazy.config();
+        }
+
         const tools = bindings
           .filter((b) => isManagedMcpTool(b.toolName))
-          .map(toLangChainTool);
+          .map((binding) => toLangChainTool(binding, caseServerConfig));
         if (!options.excludeKnowledgeTools) tools.push(...knowledgeTools());
 
         return {
