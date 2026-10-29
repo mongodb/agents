@@ -24,6 +24,7 @@ import {
   type MCPToolBinding,
   type RuntimeMCPServerConfig,
 } from "@mongodb-js/agent-engine-runner-shared";
+import { MongoClient } from "mongodb";
 
 import { startMockAtlasApi, type MockAtlasApi } from "../atlas/mockAtlasApi.js";
 import { disabledToolsEnv, isManagedMcpTool } from "../mcp/managedTools.js";
@@ -38,7 +39,12 @@ import {
 import type { MongoSeed } from "../mongo/seed.js";
 import { knowledgeTools } from "./knowledgeTools.js";
 import { LocalToolSetupSchema } from "./localToolSetup.js";
-import type { CaseTools, CaseToolsRequest, ToolProvider } from "./types.js";
+import type {
+  CaseTools,
+  CaseToolsRequest,
+  MongoAccess,
+  ToolProvider,
+} from "./types.js";
 
 export interface LocalToolProviderOptions {
   /**
@@ -268,6 +274,20 @@ export function createLocalToolProvider(
               ...(mongo && { mongo: await mongo.dump() }),
             };
           },
+          ...(mongo && {
+            withMongo: async <T>(fn: (access: MongoAccess) => Promise<T>) => {
+              const client = new MongoClient(mongo.uri);
+              try {
+                return await fn({
+                  client,
+                  seed: setup.localMongo!,
+                  baselineDbHashes: mongo.baselineDbHashes,
+                });
+              } finally {
+                await client.close();
+              }
+            },
+          }),
           dispose: cleanup,
         };
       } catch (error) {

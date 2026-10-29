@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
+import { MongoClient } from "mongodb";
 import { MongoMemoryServer } from "mongodb-memory-server-core";
 
+import { dbHashes, type DbHashes } from "./dbHash.js";
 import { dumpMongo, seedMongo, type MongoDump, type MongoSeed } from "./seed.js";
 
 /** The mongod the harness downloads on first use, about 120 MB. */
@@ -23,6 +25,8 @@ const DEFAULT_MONGOD_VERSION = "8.2.6";
 
 export interface EphemeralMongo {
   readonly uri: string;
+  /** The hashes right after seeding, to tell later if anything changed. */
+  readonly baselineDbHashes: DbHashes;
   dump(): Promise<MongoDump>;
   stop(): Promise<void>;
 }
@@ -37,8 +41,16 @@ export async function startEphemeralMongo(
   try {
     const uri = server.getUri();
     await seedMongo(uri, seed);
+    const client = new MongoClient(uri);
+    let baselineDbHashes: DbHashes;
+    try {
+      baselineDbHashes = await dbHashes(client);
+    } finally {
+      await client.close();
+    }
     return {
       uri,
+      baselineDbHashes,
       dump: () => dumpMongo(uri),
       stop: async () => void (await server.stop()),
     };

@@ -141,3 +141,31 @@ end state (the whole mock Atlas account and a dump of the seeded MongoDB data).
 Keep fixtures synthetic: never put real customer or production data in one.
 For a one-off variation, add a small fixture. Ids in `script` and
 `defaultData` must match the fixture.
+
+### Mongo checks
+
+A case can name a TypeScript check that asserts on the database after the
+agent finishes. There is no assertion syntax in YAML. A check is a function in
+`src/mongoChecks/` that gets a client on the case's `mongod`, the seed, and
+`baselineDbHashes` (the per-collection hashes right after seeding), and throws
+(`node:assert/strict`) when the database is wrong. Register it in
+`src/mongoChecks/registry.ts`, then name it in the case. It needs a
+`localMongo` fixture:
+
+```yaml
+toolSetup: { localMongo: sample-mflix }
+mongoCheck: seed-unchanged
+```
+
+The task runs it while the case's `mongod` is still up, and the `MongoCheck`
+score is 1 or 0 with the assertion message in the metadata. A check only
+reads. An error that is not an assertion, such as a lost connection, fails the
+case instead of scoring 0. The loader rejects an unknown name.
+`seed-unchanged` checks that nothing was inserted, changed, deleted or
+dropped, by comparing server-side `dbHash` values with `baselineDbHashes`.
+
+Limitation: each check opens its own `MongoClient` on the case's `mongod`
+and closes it after. That is fine for a handful of small fixtures. A suite
+with many cases, or checks that run in parallel against a shared database,
+would open one connection per check at once. Share a pooled client if that
+becomes a problem.

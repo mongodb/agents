@@ -22,6 +22,7 @@ import {
   AnswerMatches,
   ApprovalRequested,
   BinaryNdcgAt5,
+  MongoCheck,
   NoForbiddenExecuted,
   QueryRefusalMatch,
   ToolCallAmountCorrect,
@@ -251,6 +252,39 @@ describe("ToolCallAmountCorrect", () => {
         ],
       }),
     ).toBeNull();
+  });
+});
+
+describe("MongoCheck", () => {
+  const withCheck = (mongoCheck: object | undefined) =>
+    ({
+      input: { messages: [] },
+      expected: {},
+      output: {
+        messages: [],
+        assistantMessageContent: "",
+        allowedQuery: true,
+        custom: { executed: [], approvalRequests: [], mongoCheck },
+      },
+    }) as unknown as Args;
+
+  it("scores 1 when the check passed", async () => {
+    const result = await MongoCheck(withCheck({ name: "c", passed: true }));
+    expect(result).toMatchObject({ name: "MongoCheck", score: 1 });
+  });
+
+  it("scores 0 and keeps the failure when it did not", async () => {
+    const result = await MongoCheck(
+      withCheck({ name: "c", passed: false, failure: "movies is missing" }),
+    );
+    expect(result).toMatchObject({
+      score: 0,
+      metadata: { check: "c", failure: "movies is missing" },
+    });
+  });
+
+  it("is not applicable to a case that names no check", async () => {
+    expect(await scoreOf(MongoCheck(withCheck(undefined)))).toBeNull();
   });
 });
 

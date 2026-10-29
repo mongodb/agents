@@ -140,6 +140,36 @@ describe("fixture names", () => {
   });
 });
 
+describe("mongoCheck names", () => {
+  const withCheck = (name: string, setup = "{ localMongo: shop-orders }") =>
+    caseYaml(`    custom:
+      toolSetup: ${setup}
+      mongoCheck: ${name}
+  expected:
+    outputMessages: [{ role: user }]`);
+
+  it("accepts a registered check on a case with a database", () => {
+    expect(() =>
+      parseAgentCases(withCheck("seed-unchanged"), "inline"),
+    ).not.toThrow();
+  });
+
+  it("rejects an unknown check and lists the choices", () => {
+    expect(() => parseAgentCases(withCheck("seed-unchnged"), "inline")).toThrow(
+      /case "sample" unknown mongoCheck "seed-unchnged". Available: seed-unchanged/,
+    );
+  });
+
+  it("rejects a check on a case with no database", () => {
+    expect(() =>
+      parseAgentCases(
+        withCheck("seed-unchanged", "{ mockAtlas: one-project }"),
+        "inline",
+      ),
+    ).toThrow(/names a mongoCheck but no toolSetup.localMongo/);
+  });
+});
+
 describe("shipped datasets", () => {
   const files = fs
     .readdirSync(DATASET_DIR)

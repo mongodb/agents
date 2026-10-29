@@ -70,6 +70,21 @@ export const AnswerMatches: Scorer = ({ output, expected }) => {
 };
 
 /**
+ * 1 when the Mongo check the case names passed, 0 when its assertion failed.
+ * The failure message is in the metadata. Cases that name no check give it
+ * nothing to measure.
+ */
+export const MongoCheck: Scorer = ({ output }) => {
+  const result = output.custom?.mongoCheck;
+  if (!result) return notApplicable("MongoCheck");
+  return {
+    name: "MongoCheck",
+    score: result.passed ? 1 : 0,
+    metadata: { check: result.name, ...(result.failure && { failure: result.failure }) },
+  };
+};
+
+/**
  * Builds a scorer from whether the final answer contains `match`.
  * `shouldMatch` reads the case and says whether the answer must contain it
  * (true), must not (false), or is not measured (undefined, scores null).
@@ -141,6 +156,7 @@ export const scorers = {
   NoForbiddenExecuted: { scorer: NoForbiddenExecuted },
   ApprovalRequested: { scorer: ApprovalRequested },
   AnswerMatches: { scorer: AnswerMatches },
+  MongoCheck: { scorer: MongoCheck },
   QueryRefusalMatch: { scorer: QueryRefusalMatch },
   ToolCallAmountCorrect: { scorer: ToolCallAmountCorrect },
 };
