@@ -105,7 +105,8 @@ describe.each(["explorer", "query-insights"] as const)(
       // The 12 + 5 reject cases carry the zero-tool check.
       expect(byName.get("QueryRefusalMatch")).toHaveLength(32);
       expect(byName.get("ToolCallAmountCorrect")).toHaveLength(17);
-      expect(byName.get("AnswerMatches")?.length).toBeGreaterThanOrEqual(7);
+      // Only the two tool-output cases per agent still carry answerMatches.
+      expect(byName.get("AnswerMatches")).toHaveLength(2);
       for (const name of [
         "QueryRefusalMatch",
         "ToolCallAmountCorrect",
