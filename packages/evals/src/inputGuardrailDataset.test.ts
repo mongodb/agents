@@ -30,6 +30,7 @@ const file = path.join(
 );
 const cases = loadAgentCasesFromFile(file);
 const rejects = cases.filter((c) => c.expected.guardrail?.reject === true);
+const accepts = cases.filter((c) => c.expected.guardrail?.reject === false);
 
 describe("input-guardrail dataset", () => {
   it("labels every case", () => {
@@ -50,17 +51,32 @@ describe("input-guardrail dataset", () => {
   });
 
   it("gives every case a scripted turn and no fixture setup", () => {
-    for (const c of cases) {
+    for (const c of rejects) {
       const custom = c.input.custom as CustomInput | undefined;
       expect(custom?.toolSetup, c.name).toBeUndefined();
       expect(custom?.script, c.name).toEqual([
         { text: GUARDRAIL_REFUSAL_MESSAGE },
       ]);
     }
+    for (const c of accepts) {
+      const custom = c.input.custom as CustomInput | undefined;
+      expect(custom?.toolSetup, c.name).toBeUndefined();
+      expect(custom?.script, c.name).toEqual([
+        { text: "Here is a plain answer about MongoDB." },
+      ]);
+    }
   });
 
-  it("holds the 13 reject cases", () => {
+  it("holds 13 reject cases and 13 accept cases", () => {
     expect(rejects).toHaveLength(13);
+    expect(accepts).toHaveLength(13);
+    expect(cases).toHaveLength(26);
+  });
+
+  it("does not ask accept cases to avoid tools", () => {
+    for (const c of accepts) {
+      expect(c.expected.outputMessages, c.name).toBeUndefined();
+    }
   });
 
   it("expects no tool call on every reject case", () => {
