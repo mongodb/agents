@@ -79,6 +79,10 @@ export function buildEvalCli({
         "query-insights-smoke.yml",
         "Atlas Query Insights: advisor suggestions, no suggestions, no writes",
       ),
+      "input-guardrail": dataset(
+        "input-guardrail.yml",
+        "Input guardrail, both agents: declines get the canonical refusal and no tool call",
+      ),
     },
     models: {
       scripted: {
