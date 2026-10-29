@@ -56,7 +56,7 @@ pnpm --filter @repo/evals eval evaluation run --help
 The agents also get `search_knowledge` and `list_knowledge_sources`, as in
 production. They call the live `knowledge.mongodb.com` API, so a real-model
 run needs network access. The scripted model never calls them. Pass
-`includeKnowledgeTools: false` to `createLocalToolProvider` to keep a run
+`excludeKnowledgeTools: true` to `createLocalToolProvider` to keep a run
 offline.
 
 The library runs 10 cases at once by default. Each case starts its own MCP

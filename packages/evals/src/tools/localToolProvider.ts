@@ -41,11 +41,11 @@ import type { CaseTools, CaseToolsRequest, ToolProvider } from "./types.js";
 
 export interface LocalToolProviderOptions {
   /**
-   * Offer `search_knowledge` and `list_knowledge_sources`, as the agents do.
-   * They call the live knowledge.mongodb.com API. Default true. Pass false
-   * to keep a run offline.
+   * Leave out `search_knowledge` and `list_knowledge_sources`, which the
+   * agents have in production. They call the live knowledge.mongodb.com API,
+   * so set this to keep a run offline. Default false.
    */
-  readonly includeKnowledgeTools?: boolean;
+  readonly excludeKnowledgeTools?: boolean;
   readonly serverStartTimeoutMs?: number;
 }
 
@@ -162,9 +162,7 @@ export function createLocalToolProvider(
         const tools = bindings
           .filter((b) => isManagedMcpTool(b.toolName))
           .map(toLangChainTool);
-        if (options.includeKnowledgeTools ?? true) {
-          tools.push(...knowledgeTools());
-        }
+        if (!options.excludeKnowledgeTools) tools.push(...knowledgeTools());
 
         return {
           tools,

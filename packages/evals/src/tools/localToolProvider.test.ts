@@ -115,7 +115,7 @@ describe("local tool provider", () => {
   });
 
   it("leaves the knowledge tools out when asked", async () => {
-    const offline = createLocalToolProvider({ includeKnowledgeTools: false });
+    const offline = createLocalToolProvider({ excludeKnowledgeTools: true });
     await offline.start?.();
     try {
       const caseTools = await offline.forCase({ allowWrites: false });
