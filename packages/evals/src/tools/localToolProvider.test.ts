@@ -210,11 +210,24 @@ describe("local tool provider", () => {
     ).rejects.toThrow(/admin, config, or local/);
   });
 
+  it("rejects a call after dispose without starting a server", async () => {
+    const caseTools = await provider.forCase({ allowWrites: false });
+    const find = caseTools.tools.find(
+      (t) => t.name === "mongodb__atlas_list_orgs",
+    )!;
+    await caseTools.dispose();
+    await expect(find.invoke({} as never)).rejects.toThrow(
+      /disposed before the tool was called/,
+    );
+  });
+
   it("stops the case's server on dispose", async () => {
     const caseTools = await provider.forCase({ allowWrites: false });
     const list = caseTools.tools.find(
       (t) => t.name === "mongodb__atlas_list_orgs",
     )!;
+    // The case's server starts on its first call, so there is one to stop.
+    await list.invoke({} as never);
     await caseTools.dispose();
     await expect(list.invoke({} as never)).rejects.toThrow();
   });
