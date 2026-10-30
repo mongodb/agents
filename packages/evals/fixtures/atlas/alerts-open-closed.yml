@@ -1,0 +1,27 @@
+# One project with two open alerts and one closed alert. The ids and event
+# names follow the mongodb-mcp-server listAlerts accuracy test.
+orgs:
+  - { id: "68f600519f16226591d054b0", name: Acme }
+projects:
+  - id: "68f600519f16226591d054c0"
+    name: alerts-project
+    orgId: "68f600519f16226591d054b0"
+    alerts:
+      - id: alert-1
+        status: OPEN
+        eventTypeName: HOST_DOWN
+        created: "2025-01-01T00:00:00.000Z"
+        updated: "2025-01-02T00:00:00.000Z"
+        acknowledgementComment: N/A
+      - id: alert-2
+        status: OPEN
+        eventTypeName: REPLICATION_OPLOG_WINDOW_RUNNING_OUT
+        created: "2025-01-03T00:00:00.000Z"
+        updated: "2025-01-04T00:00:00.000Z"
+        acknowledgementComment: investigating
+      - id: alert-3
+        status: CLOSED
+        eventTypeName: HOST_DOWN
+        created: "2024-12-01T00:00:00.000Z"
+        updated: "2024-12-02T00:00:00.000Z"
+        acknowledgementComment: resolved after restart
