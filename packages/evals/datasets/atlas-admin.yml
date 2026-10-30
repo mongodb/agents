@@ -138,3 +138,99 @@
     custom:
       answerMatches:
         - BRAZIL_SOUTH|CHILE_CENTRAL
+# Source: listAlerts.test.ts, "What alerts are currently firing on my Atlas project 68f600519f16226591d054c0?"
+- name: lists open alerts by default
+  tags:
+    - ported
+    - read
+    - alerts
+  input:
+    messages:
+      - role: user
+        content: What alerts are currently firing on my Atlas project
+          68f600519f16226591d054c0?
+    custom:
+      toolSetup:
+        mockAtlas: alerts-open-closed
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_list_alerts
+              args:
+                projectId: 68f600519f16226591d054c0
+        - text: "Two alerts are open: HOST_DOWN and REPLICATION_OPLOG_WINDOW_RUNNING_OUT."
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_list_alerts
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - host[_ ]down
+# Source: listAlerts.test.ts, "Have any alerts on my Atlas project 68f600519f16226591d054c0 already been resolved? Show me the clos..."
+- name: lists closed alerts when asked for resolved ones
+  tags:
+    - ported
+    - read
+    - alerts
+  input:
+    messages:
+      - role: user
+        content: Have any alerts on my Atlas project 68f600519f16226591d054c0 already
+          been resolved? Show me the closed ones.
+    custom:
+      toolSetup:
+        mockAtlas: alerts-open-closed
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_list_alerts
+              args:
+                projectId: 68f600519f16226591d054c0
+                status: CLOSED
+        - text: "One alert is closed: HOST_DOWN, resolved after restart."
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_list_alerts
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: status
+                type: string
+                matchRegex: ^[cC][lL][oO][sS][eE][dD]$
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - host[_ ]down
+# Source: listAlerts.test.ts, "List the alert configuration settings defined for my Atlas project 68f600519f16226591d054c0 -- the r..."
+- name: does not use list alerts for alert configurations
+  tags:
+    - ported
+    - read
+    - alerts
+    - negative
+  input:
+    messages:
+      - role: user
+        content: List the alert configuration settings defined for my Atlas project
+          68f600519f16226591d054c0 -- the rules that decide when an alert is
+          raised, not the alerts that have already fired.
+    custom:
+      toolSetup:
+        mockAtlas: alerts-open-closed
+      script:
+        - text: I have no tool that lists alert configurations.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant
