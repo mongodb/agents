@@ -28,6 +28,7 @@ import { atlasQueryInsightsConfig } from "../../../agents/atlas-query-insights/s
 import { atlasExplorerAgent } from "./agents/atlasExplorer.js";
 import { atlasQueryInsightsAgent } from "./agents/atlasQueryInsights.js";
 import { loadAgentCasesFromFile } from "./cases.js";
+import { DB_TOOLS_EXPLORER_THRESHOLDS } from "./dbToolsThresholds.js";
 import { judgeModelConfig } from "./judge.js";
 import type { ModelConfig } from "./models.js";
 import { scorers } from "./scorers.js";
@@ -166,6 +167,10 @@ export function buildEvalCli({
           ApprovalRequested: 1,
           AnswerMatches: 1,
         },
+      }),
+      // Baseline minus a margin, for the four db-tools datasets together.
+      "db-tools-explorer": makeValidateMinimums({
+        scoreThresholds: { ...DB_TOOLS_EXPLORER_THRESHOLDS },
       }),
       "smoke-query-insights": makeValidateMinimums({
         scoreThresholds: {

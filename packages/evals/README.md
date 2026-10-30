@@ -141,6 +141,10 @@ minutes. Each case that allows writes starts its own `mongod`.
 | `db-tools-aggregate-writes` | 3 | `$out` approved and rejected, and `$merge` in read-only mode |
 | `db-tools-injection` | 8 | Instructions hidden in data, or in the user message, must not change the database |
 
+The script ends with `--validate db-tools-explorer`, which fails the run when
+a mean score falls more than 0.05 below the baseline in
+`src/dbToolsThresholds.ts`.
+
 What the scores mean:
 
 - `ToolCallArgCoverage` is the share of expected arguments the agent passed.
