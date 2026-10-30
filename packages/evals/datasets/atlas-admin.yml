@@ -1,0 +1,140 @@
+# Atlas Admin cases adapted from mongodb-js/mongodb-mcp-server v3.0.5
+# (packages/accuracy-tests). Copyright MongoDB, Inc. Licensed under the Apache
+# License, Version 2.0. Each case names its source prompt.
+
+# Source: getRegions.test.ts, "List the atlas regions for AWS"
+- name: lists AWS regions
+  tags:
+    - ported
+    - read
+    - regions
+  input:
+    messages:
+      - role: user
+        content: List the atlas regions for AWS
+    custom:
+      toolSetup:
+        mockAtlas: one-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_get_regions
+              args:
+                provider: AWS
+        - text: AWS has US_EAST_1 and many more regions.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_get_regions
+            arguments:
+              - name: provider
+                type: string
+                value: AWS
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - US_EAST_1
+# Source: getRegions.test.ts, "What regions does atlas support in GCP?"
+- name: lists GCP regions
+  tags:
+    - ported
+    - read
+    - regions
+  input:
+    messages:
+      - role: user
+        content: What regions does atlas support in GCP?
+    custom:
+      toolSetup:
+        mockAtlas: one-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_get_regions
+              args:
+                provider: GCP
+        - text: GCP has CENTRAL_US and many more regions.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_get_regions
+            arguments:
+              - name: provider
+                type: string
+                value: GCP
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - CENTRAL_US
+# Source: getRegions.test.ts, "Which region code is AWS Mexico?"
+- name: finds the AWS Mexico region code
+  tags:
+    - ported
+    - read
+    - regions
+  input:
+    messages:
+      - role: user
+        content: Which region code is AWS Mexico?
+    custom:
+      toolSetup:
+        mockAtlas: one-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_get_regions
+              args:
+                provider: AWS
+        - text: AWS Mexico is MX_CENTRAL_1.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_get_regions
+            arguments:
+              - name: provider
+                type: string
+                value: AWS
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - MX_CENTRAL_1
+# Source: getRegions.test.ts, "What region should I use for Azure south america?"
+- name: finds an Azure South America region
+  tags:
+    - ported
+    - read
+    - regions
+  input:
+    messages:
+      - role: user
+        content: What region should I use for Azure south america?
+    custom:
+      toolSetup:
+        mockAtlas: one-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_get_regions
+              args:
+                provider: AZURE
+        - text: Use BRAZIL_SOUTH for Azure in South America.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_get_regions
+            arguments:
+              - name: provider
+                type: string
+                value: AZURE
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - BRAZIL_SOUTH|CHILE_CENTRAL
