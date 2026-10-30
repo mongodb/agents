@@ -15,6 +15,7 @@
  */
 
 import {
+  CLAIM_LEASE_MS,
   threadKey,
   type ThreadRecord,
   type ThreadStore,
@@ -29,7 +30,6 @@ interface MemoryThreadStoreOptions {
 
 const DEFAULT_TTL_MS = 24 * 60 * 60 * 1_000;
 const DEFAULT_MAX_ENTRIES = 1_000;
-const TURN_LEASE_MS = 10 * 60 * 1_000;
 const DELIVERY_LEASE_MS = 5 * 60 * 1_000;
 const RECENT_EVENT_LIMIT = 20;
 
@@ -90,7 +90,7 @@ export class MemoryThreadStore implements ThreadStore {
       existing?.inFlightEventId &&
       existing.inFlightStartedAt &&
       claimedAt.getTime() - existing.inFlightStartedAt.getTime() <
-        TURN_LEASE_MS
+        CLAIM_LEASE_MS
     ) {
       return {
         status: "busy",
