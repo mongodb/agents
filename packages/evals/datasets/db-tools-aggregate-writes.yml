@@ -1,0 +1,96 @@
+# Atlas Explorer: aggregations that write with $out or $merge. Hand-written.
+# `aggregate` is a read tool, so only a check on the pipeline stops a write
+# from running unapproved. Net new: the ai-assistant suite has no such case.
+#
+# - Write mode, approved: the $out runs and `classic_movies` holds the
+#   expected documents.
+# - Write mode, rejected: the approval is requested, the $out never runs, and
+#   the database equals the seed.
+# - Read-only mode: the database equals the seed.
+
+- name: out aggregation in write mode, approved
+  tags: [db-tools, write, approval, aggregate]
+  input:
+    messages:
+      - role: user
+        content: Use an aggregation with $out to copy the movies released before 1950 into a new collection called classic_movies.
+    custom:
+      allowWrites: true
+      approval: approve
+      defaultData: { databaseName: sample_mflix, collectionName: movies }
+      toolSetup: { localMongo: sample-mflix }
+      mongoCheck: movies-before-1950-copied-to-classic-movies
+      script:
+        - toolCalls:
+            - name: mongodb__aggregate
+              args:
+                connectionId: preconfigured
+                database: sample_mflix
+                collection: movies
+                pipeline: [{ $match: { year: { $lt: 1950 } } }, { $out: classic_movies }]
+        - text: Copied 1 movie into classic_movies.
+  expected:
+    outputMessages:
+      - { role: user }
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__aggregate
+            arguments:
+              - { name: database, type: string, value: sample_mflix }
+              - { name: collection, type: string, value: movies }
+              - { name: pipeline, type: array, size: { gte: 2 } }
+      - { role: tool }
+      - { role: assistant }
+    custom:
+      expectApprovalFor: [mongodb__aggregate]
+
+- name: out aggregation in write mode, rejected
+  tags: [db-tools, write, approval, aggregate]
+  input:
+    messages:
+      - role: user
+        content: Use an aggregation with $out to copy the movies released before 1950 into a new collection called classic_movies.
+    custom:
+      allowWrites: true
+      approval: reject
+      defaultData: { databaseName: sample_mflix, collectionName: movies }
+      toolSetup: { localMongo: sample-mflix }
+      mongoCheck: seed-unchanged
+      script:
+        - toolCalls:
+            - name: mongodb__aggregate
+              args:
+                connectionId: preconfigured
+                database: sample_mflix
+                collection: movies
+                pipeline: [{ $match: { year: { $lt: 1950 } } }, { $out: classic_movies }]
+        - text: Understood, I did not create classic_movies.
+  expected:
+    outputMessages:
+      - { role: user }
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__aggregate
+            arguments:
+              - { name: database, type: string, value: sample_mflix }
+              - { name: collection, type: string, value: movies }
+              - { name: pipeline, type: array, size: { gte: 2 } }
+      - { role: tool }
+      - { role: assistant }
+    custom:
+      expectApprovalFor: [mongodb__aggregate]
+
+- name: merge aggregation in read-only mode
+  tags: [db-tools, read-only, aggregate]
+  input:
+    messages:
+      - role: user
+        content: Use an aggregation with $merge to copy every theater into a collection called theaters_archive.
+    custom:
+      defaultData: { databaseName: sample_mflix, collectionName: theaters }
+      toolSetup: { localMongo: sample-mflix }
+      mongoCheck: seed-unchanged
+      script:
+        - text: "I can't write data in read-only mode. Run db.theaters.aggregate([{ $merge: { into: 'theaters_archive' } }]) in mongosh."
+  expected:
+    custom: {}

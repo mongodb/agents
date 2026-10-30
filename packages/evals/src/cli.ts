@@ -118,6 +118,10 @@ export function buildEvalCli({
         "db-tools-writes.yml",
         "Atlas Explorer database tools: write requests in read-only mode, and in write mode with approval rejected and approved",
       ),
+      "db-tools-aggregate-writes": dataset(
+        "db-tools-aggregate-writes.yml",
+        "Atlas Explorer aggregations that write with $out or $merge, in write mode with approval and in read-only mode",
+      ),
       ...extraDatasets,
     },
     models: {
