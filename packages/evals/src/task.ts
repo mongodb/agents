@@ -85,6 +85,14 @@ export interface AgentTaskOptions {
 const MAX_APPROVAL_ROUNDS = 5;
 const EVAL_USER_ID = "eval-user";
 
+/**
+ * A case's MongoDB is already connected when the run starts. Production
+ * connects with `atlas_connect_cluster`, which the mock Atlas API cannot
+ * serve, so the model is told which connection to use instead.
+ */
+export const PRECONFIGURED_CONNECTION_NOTE =
+  'A MongoDB connection is already open. Pass connectionId "preconfigured" to every MongoDB tool that takes one. Do not connect to a cluster.';
+
 interface Interrupt {
   id: string;
   value?: { actionRequests?: { name: string }[] };
@@ -178,6 +186,9 @@ export function makeAgentTask(
           tools: caseTools.tools,
           allowWrites,
           defaultData: custom?.defaultData,
+          extraInstructions: custom?.toolSetup?.localMongo
+            ? PRECONFIGURED_CONNECTION_NOTE
+            : undefined,
         });
         const agent = createAgentEngineDeepAgent(
           model,

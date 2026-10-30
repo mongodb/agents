@@ -142,6 +142,11 @@ Keep fixtures synthetic: never put real customer or production data in one.
 For a one-off variation, add a small fixture. Ids in `script` and
 `defaultData` must match the fixture.
 
+A case with `localMongo` has its database connected before the run, and the
+system prompt says so. The model passes `connectionId: "preconfigured"` to
+MongoDB tools and does not call `atlas_connect_cluster`, which the mock Atlas
+API cannot serve. Cases without `localMongo` get no such note.
+
 ### Mongo checks
 
 A case can name a TypeScript check that asserts on the database after the

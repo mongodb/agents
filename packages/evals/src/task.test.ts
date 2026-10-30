@@ -255,6 +255,31 @@ describe("makeAgentTask", () => {
     expect(JSON.stringify(system?.content)).toContain("c-case");
   });
 
+  it("names the preconfigured connection when the case has a MongoDB", async () => {
+    const withMongo = new ModelInputCapture();
+    await run(
+      atlasExplorerAgent,
+      caseInput("Count movies", {
+        script: [{ text: "Done." }],
+        toolSetup: { localMongo: "sample-mflix" },
+      }),
+      { callbacks: () => [withMongo] },
+    );
+    const withoutMongo = new ModelInputCapture();
+    await run(
+      atlasExplorerAgent,
+      caseInput("Count movies", { script: [{ text: "Done." }] }),
+      { callbacks: () => [withoutMongo] },
+    );
+
+    const system = (capture: ModelInputCapture) =>
+      JSON.stringify(
+        capture.prompts[0].find((m) => m.type === "system")?.content,
+      );
+    expect(system(withMongo)).toContain('connectionId \\"preconfigured\\"');
+    expect(system(withoutMongo)).not.toContain("preconfigured");
+  });
+
   it("loads the agent's skills into the prompt", async () => {
     const capture = new ModelInputCapture();
     await run(

@@ -25,14 +25,19 @@ export const atlasExplorerAgent: AgentDefinition = {
   agentDir: agentDirectory("atlas-explorer"),
   inputGuardMode: atlasExplorerConfig.inputGuard.mode,
   supportsWrites: true,
-  buildOptions({ tools, allowWrites, defaultData }) {
+  buildOptions({ tools, allowWrites, defaultData, extraInstructions }) {
+    const base = atlasExplorerConfig.systemPrompt;
     const options = buildAtlasExplorerAgentOptions({
-      config: defaultData
-        ? {
-            ...atlasExplorerConfig,
-            systemPrompt: { ...atlasExplorerConfig.systemPrompt, defaultData },
-          }
-        : atlasExplorerConfig,
+      config: {
+        ...atlasExplorerConfig,
+        systemPrompt: {
+          ...base,
+          defaultData: defaultData ?? base.defaultData,
+          customInstructions: [base.customInstructions, extraInstructions]
+            .filter(Boolean)
+            .join("\n\n"),
+        },
+      },
       tools,
       allowWriteOperations: allowWrites,
     });

@@ -24,6 +24,8 @@ export interface BuildAgentOptionsArgs {
   readonly allowWrites: boolean;
   /** Replaces the config's `systemPrompt.defaultData` for this case. */
   readonly defaultData?: DefaultDataConfig;
+  /** Appended to the config's `systemPrompt.customInstructions`. */
+  readonly extraInstructions?: string;
 }
 
 export interface BuiltAgentOptions {
