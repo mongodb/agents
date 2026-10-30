@@ -110,6 +110,10 @@ export function buildEvalCli({
         "knowledge.yml",
         "MongoDB knowledge questions answered from search_knowledge, judged against reference answers",
       ),
+      "db-tools": dataset(
+        "db-tools.yml",
+        "Atlas Explorer database tools, read-only mode: the right tool with the right arguments",
+      ),
       ...extraDatasets,
     },
     models: {

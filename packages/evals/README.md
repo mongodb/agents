@@ -20,7 +20,9 @@ This is the harness. Eval suites, thresholds, and CI gating are separate work
 - `src/cases.ts` loads YAML datasets and rejects unknown tool names.
 - `src/scorers.ts` has the agent-specific scorers on top of the library's
   `AgentTrajectoryScorer`.
-- `datasets/` has the smoke datasets and the input guardrail suite.
+- `datasets/` has the smoke datasets, the input guardrail suite and the
+  database tools suite (`db-tools.yml`, ported by `pnpm port:cases --kind
+  db-tools`).
   `fixtures/` has the mock Atlas
   accounts and MongoDB seeds that cases name. `src/` holds only TypeScript.
 - `src/messageMapper.ts`, `src/scriptedModel.ts` and `src/offline/` are the
