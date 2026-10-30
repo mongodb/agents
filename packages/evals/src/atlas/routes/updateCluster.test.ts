@@ -16,7 +16,7 @@
 
 import { describe, expect, it } from "vitest";
 
-import { createTestAtlas, PROJECT } from "../testSupport.js";
+import { baseFixture, createTestAtlas, PROJECT } from "../testSupport.js";
 
 const c1 = `/groups/${PROJECT}/clusters/c1`;
 
@@ -41,14 +41,11 @@ describe("PATCH /groups/:groupId/clusters/:clusterName", () => {
 
   it("rejects fields the mock does not apply", async () => {
     const atlas = createTestAtlas();
-    const res = await atlas.patch(c1, {
-      paused: true,
-      replicationSpecs: [{ numShards: 2 }],
-    });
+    const res = await atlas.patch(c1, { paused: true, diskSizeGB: 20 });
 
     expect(res.status).toBe(400);
     expect(res.body.errorCode).toBe("INVALID_ATTRIBUTE");
-    expect(res.body.detail).toContain("replicationSpecs");
+    expect(res.body.detail).toContain("diskSizeGB");
     expect(atlas.account.state().projects[0].clusters[0].paused).toBe(false);
   });
 
@@ -57,6 +54,90 @@ describe("PATCH /groups/:groupId/clusters/:clusterName", () => {
 
     expect((await atlas.patch(c1, {})).status).toBe(400);
     expect((await atlas.patch(c1, { paused: "yes" })).status).toBe(400);
+  });
+
+  describe("replicationSpecs", () => {
+    const scale = (instanceSize: string, compute?: object) => ({
+      replicationSpecs: [
+        {
+          regionConfigs: [
+            {
+              electableSpecs: { instanceSize, nodeCount: 3 },
+              ...(compute && { autoScaling: { compute } }),
+            },
+          ],
+        },
+      ],
+    });
+
+    it("scales the cluster and returns it", async () => {
+      const atlas = createTestAtlas();
+      const res = await atlas.patch(c1, scale("M20"));
+
+      expect(res.status).toBe(200);
+      expect(
+        res.body.replicationSpecs[0].regionConfigs[0].electableSpecs,
+      ).toMatchObject({ instanceSize: "M20" });
+      expect(atlas.account.state().projects[0].clusters[0].instanceSize).toBe(
+        "M20",
+      );
+    });
+
+    it("stores compute autoscaling bounds", async () => {
+      const atlas = createTestAtlas();
+      const res = await atlas.patch(
+        c1,
+        scale("M10", {
+          enabled: true,
+          scaleDownEnabled: true,
+          minInstanceSize: "M10",
+          maxInstanceSize: "M30",
+        }),
+      );
+
+      expect(
+        res.body.replicationSpecs[0].regionConfigs[0].autoScaling.compute,
+      ).toMatchObject({ enabled: true, maxInstanceSize: "M30" });
+      expect(atlas.account.state().projects[0].clusters[0].autoScaling).toEqual({
+        enabled: true,
+        minInstanceSize: "M10",
+        maxInstanceSize: "M30",
+      });
+    });
+
+    it("rejects an instance size that does not exist", async () => {
+      const res = await createTestAtlas().patch(c1, scale("M25"));
+
+      expect(res.status).toBe(400);
+    });
+
+    it("rejects scaling a free cluster", async () => {
+      const atlas = createTestAtlas({
+        ...baseFixture,
+        projects: [
+          {
+            ...baseFixture.projects[0],
+            clusters: [{ name: "free", instanceSize: "M0" }],
+          },
+        ],
+      });
+      const res = await atlas.patch(
+        `/groups/${PROJECT}/clusters/free`,
+        scale("M20"),
+      );
+
+      expect(res.status).toBe(400);
+      expect(res.body.errorCode).toBe("CANNOT_SCALE_FREE_CLUSTER");
+    });
+
+    it("rejects paused and replicationSpecs in one request", async () => {
+      const res = await createTestAtlas().patch(c1, {
+        paused: true,
+        ...scale("M20"),
+      });
+
+      expect(res.status).toBe(400);
+    });
   });
 
   it("changes only the calling account", async () => {

@@ -718,3 +718,308 @@
         - mongodb__atlas_pause_resume_cluster
       answerMatches:
         - paus
+# Source: upgradeCluster.test.ts, "Scale cluster "MyCluster" in project "9123a4b056c7d890e1f2a3f4" to M20"
+- name: scales a dedicated cluster after approval
+  tags:
+    - ported
+    - write
+    - write-approve
+    - upgrade
+  input:
+    messages:
+      - role: user
+        content: Scale cluster "MyCluster" in project "9123a4b056c7d890e1f2a3f4" to M20
+    custom:
+      allowWrites: true
+      approval: approve
+      toolSetup:
+        mockAtlas: upgrade-dedicated
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_upgrade_cluster
+              args:
+                projectId: 9123a4b056c7d890e1f2a3f4
+                clusterName: MyCluster
+                targetTier: M20
+        - text: MyCluster is being scaled to M20.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_upgrade_cluster
+            arguments:
+              - name: projectId
+                type: string
+                value: 9123a4b056c7d890e1f2a3f4
+              - name: clusterName
+                type: string
+                value: MyCluster
+              - name: targetTier
+                type: string
+                value: M20
+      - role: tool
+      - role: assistant
+    custom:
+      expectApprovalFor:
+        - mongodb__atlas_upgrade_cluster
+      answerMatches:
+        - M20
+# Source: upgradeCluster.test.ts, "Scale cluster "MyCluster" in project "9123a4b056c7d890e1f2a3f4" to M20"
+- name: does not scale a cluster when approval is rejected
+  tags:
+    - ported
+    - write
+    - write-reject
+    - upgrade
+    - twin
+  input:
+    messages:
+      - role: user
+        content: Scale cluster "MyCluster" in project "9123a4b056c7d890e1f2a3f4" to M20
+    custom:
+      allowWrites: true
+      approval: reject
+      toolSetup:
+        mockAtlas: upgrade-dedicated
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_upgrade_cluster
+              args:
+                projectId: 9123a4b056c7d890e1f2a3f4
+                clusterName: MyCluster
+                targetTier: M20
+        - text: I did not scale MyCluster because the request was rejected.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_upgrade_cluster
+            arguments:
+              - name: projectId
+                type: string
+                value: 9123a4b056c7d890e1f2a3f4
+              - name: clusterName
+                type: string
+                value: MyCluster
+              - name: targetTier
+                type: string
+                value: M20
+      - role: tool
+      - role: assistant
+    custom:
+      expectApprovalFor: &a2
+        - mongodb__atlas_upgrade_cluster
+      forbiddenExecuted: *a2
+      answerMatches:
+        - not|didn't|did not|won't|cancel
+# Source: upgradeCluster.test.ts, "Scale cluster "MyCluster" in project "9123a4b056c7d890e1f2a3f4" to M20"
+- name: does not scale a cluster in read-only mode
+  tags:
+    - ported
+    - write
+    - read-only
+    - upgrade
+    - twin
+  input:
+    messages:
+      - role: user
+        content: Scale cluster "MyCluster" in project "9123a4b056c7d890e1f2a3f4" to M20
+    custom:
+      toolSetup:
+        mockAtlas: upgrade-dedicated
+      script:
+        - text: I can't do that because I am in read-only mode.
+  expected:
+    custom:
+      forbiddenExecuted:
+        - mongodb__atlas_upgrade_cluster
+      answerMatches:
+        - (can't|cannot|unable|read-only|not able)
+# Source: upgradeCluster.test.ts, "Upgrade the Flex cluster "MyCluster" in project "9123a4b056c7d890e1f2a3f4" to Dedicated"
+- name: upgrades a Flex cluster to Dedicated after approval
+  tags:
+    - ported
+    - write
+    - write-approve
+    - upgrade
+  input:
+    messages:
+      - role: user
+        content: Upgrade the Flex cluster "MyCluster" in project
+          "9123a4b056c7d890e1f2a3f4" to Dedicated
+    custom:
+      allowWrites: true
+      approval: approve
+      toolSetup:
+        mockAtlas: upgrade-flex
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_upgrade_cluster
+              args:
+                projectId: 9123a4b056c7d890e1f2a3f4
+                clusterName: MyCluster
+        - text: MyCluster is being upgraded from Flex to M10 Dedicated.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_upgrade_cluster
+            arguments:
+              - name: projectId
+                type: string
+                value: 9123a4b056c7d890e1f2a3f4
+              - name: clusterName
+                type: string
+                value: MyCluster
+      - role: tool
+      - role: assistant
+    custom:
+      expectApprovalFor:
+        - mongodb__atlas_upgrade_cluster
+      answerMatches:
+        - M10|dedicated
+# Source: upgradeCluster.test.ts, "Upgrade the Flex cluster "MyCluster" in project "9123a4b056c7d890e1f2a3f4" to Dedicated"
+- name: does not upgrade a Flex cluster in read-only mode
+  tags:
+    - ported
+    - write
+    - read-only
+    - upgrade
+    - twin
+  input:
+    messages:
+      - role: user
+        content: Upgrade the Flex cluster "MyCluster" in project
+          "9123a4b056c7d890e1f2a3f4" to Dedicated
+    custom:
+      toolSetup:
+        mockAtlas: upgrade-flex
+      script:
+        - text: I can't do that because I am in read-only mode.
+  expected:
+    custom:
+      forbiddenExecuted:
+        - mongodb__atlas_upgrade_cluster
+      answerMatches:
+        - (can't|cannot|unable|read-only|not able)
+# Source: upgradeCluster.test.ts, "Enable autoscaling on cluster "MyCluster" in project "9123a4b056c7d890e1f2a3f4" between M10 and M30"
+- name: enables autoscaling between two sizes after approval
+  tags:
+    - ported
+    - write
+    - write-approve
+    - upgrade
+  input:
+    messages:
+      - role: user
+        content: Enable autoscaling on cluster "MyCluster" in project
+          "9123a4b056c7d890e1f2a3f4" between M10 and M30
+    custom:
+      allowWrites: true
+      approval: approve
+      toolSetup:
+        mockAtlas: upgrade-dedicated
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_upgrade_cluster
+              args:
+                projectId: 9123a4b056c7d890e1f2a3f4
+                clusterName: MyCluster
+                computeAutoScaling: true
+                minInstanceSize: M10
+                maxInstanceSize: M30
+        - text: MyCluster now autoscales between M10 and M30.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_upgrade_cluster
+            arguments:
+              - name: projectId
+                type: string
+                value: 9123a4b056c7d890e1f2a3f4
+              - name: clusterName
+                type: string
+                value: MyCluster
+              - name: computeAutoScaling
+                type: boolean
+                value: true
+              - name: minInstanceSize
+                type: string
+                value: M10
+              - name: maxInstanceSize
+                type: string
+                value: M30
+      - role: tool
+      - role: assistant
+    custom:
+      expectApprovalFor:
+        - mongodb__atlas_upgrade_cluster
+      answerMatches:
+        - autoscal
+# Source: getRegions.test.ts, "Upgrade the free cluster "regions-accuracy-cluster" in project "9123a4b056c7d890e1f2a3f4" to M10 on ..."
+- name: upgrades a free cluster into a region named in words after approval
+  tags:
+    - ported
+    - write
+    - write-approve
+    - regions
+    - upgrade
+  input:
+    messages:
+      - role: user
+        content: Upgrade the free cluster "regions-accuracy-cluster" in project
+          "9123a4b056c7d890e1f2a3f4" to M10 on AWS in South America
+    custom:
+      allowWrites: true
+      approval: approve
+      toolSetup:
+        mockAtlas: upgrade-free
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_get_regions
+              args:
+                provider: AWS
+        - toolCalls:
+            - name: mongodb__atlas_upgrade_cluster
+              args:
+                projectId: 9123a4b056c7d890e1f2a3f4
+                clusterName: regions-accuracy-cluster
+                provider: AWS
+                region: SA_EAST_1
+        - text: regions-accuracy-cluster is being upgraded to M10 in SA_EAST_1.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_get_regions
+            arguments:
+              - name: provider
+                type: string
+                value: AWS
+          - name: mongodb__atlas_upgrade_cluster
+            arguments:
+              - name: projectId
+                type: string
+                value: 9123a4b056c7d890e1f2a3f4
+              - name: clusterName
+                type: string
+                value: regions-accuracy-cluster
+              - name: provider
+                type: string
+                value: AWS
+              - name: region
+                type: string
+                value: SA_EAST_1
+      - role: tool
+      - role: assistant
+    custom:
+      expectApprovalFor:
+        - mongodb__atlas_upgrade_cluster
+      answerMatches:
+        - M10

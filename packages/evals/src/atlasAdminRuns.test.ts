@@ -20,6 +20,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import type { RecordedRequest } from "./atlas/mockAtlasApi.js";
 import { buildEvalCli } from "./cli.js";
+import { AtlasFixtureSchema } from "./atlas/fixtures.js";
 import { loadAgentCasesFromFile } from "./cases.js";
 import { runEvalCliWithMockBraintrust } from "./offline/runEvalCliWithMockBraintrust.js";
 import { createLocalToolProvider } from "./tools/localToolProvider.js";
@@ -32,6 +33,29 @@ const cases = loadAgentCasesFromFile(
 const local = createLocalToolProvider();
 const atlasRequests: RecordedRequest[] = [];
 const readOnlyCaseWrites: RecordedRequest[] = [];
+
+/**
+ * Tools look a cluster up as a dedicated cluster first, and fall back to a
+ * flex cluster on a 404. That probe is expected for a seeded flex cluster.
+ */
+function isFlexProbe(r: RecordedRequest, flexNames: string[]): boolean {
+  const name = /\/clusters\/([^/?]+)$/.exec(r.url)?.[1];
+  return (
+    r.method === "GET" &&
+    r.status === 404 &&
+    name !== undefined &&
+    flexNames.includes(name)
+  );
+}
+
+function seededFlexNames(request: CaseToolsRequest): string[] {
+  const seed = request.setup?.mockAtlas;
+  if (seed === undefined) return [];
+  // The CLI has already replaced the fixture name with its contents.
+  return AtlasFixtureSchema.parse(seed).projects.flatMap((project) =>
+    project.flexClusters.map((flex) => flex.name),
+  );
+}
 
 const isWrite = (r: RecordedRequest) => r.method !== "GET";
 
@@ -47,7 +71,10 @@ const provider: ToolProvider = {
         const state = (await caseTools.state()) as {
           atlasRequests: RecordedRequest[];
         };
-        atlasRequests.push(...state.atlasRequests);
+        const flexNames = seededFlexNames(request);
+        atlasRequests.push(
+          ...state.atlasRequests.filter((r) => !isFlexProbe(r, flexNames)),
+        );
         if (!request.allowWrites) {
           readOnlyCaseWrites.push(...state.atlasRequests.filter(isWrite));
         }
