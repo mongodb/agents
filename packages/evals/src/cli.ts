@@ -114,6 +114,10 @@ export function buildEvalCli({
         "db-tools.yml",
         "Atlas Explorer database tools, read-only mode: the right tool with the right arguments",
       ),
+      "db-tools-writes": dataset(
+        "db-tools-writes.yml",
+        "Atlas Explorer database tools: write requests in read-only mode, and in write mode with approval rejected and approved",
+      ),
       ...extraDatasets,
     },
     models: {

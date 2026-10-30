@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
+import { allRatingsSetToTen } from "./allRatingsSetToTen.js";
+import { moviesBefore1950Deleted } from "./moviesBefore1950Deleted.js";
+import { myHomeMovieInserted } from "./myHomeMovieInserted.js";
 import { seedUnchanged } from "./seedUnchanged.js";
+import { theatersDropped } from "./theatersDropped.js";
 import type { MongoCheck } from "./types.js";
 
 /**
@@ -23,5 +27,9 @@ import type { MongoCheck } from "./types.js";
  * code that is in this repo.
  */
 export const MONGO_CHECKS: Readonly<Record<string, MongoCheck>> = {
+  "all-ratings-set-to-ten": allRatingsSetToTen,
+  "movies-before-1950-deleted": moviesBefore1950Deleted,
+  "my-home-movie-inserted": myHomeMovieInserted,
   "seed-unchanged": seedUnchanged,
+  "theaters-dropped": theatersDropped,
 };
