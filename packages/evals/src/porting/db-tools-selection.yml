@@ -1,0 +1,38 @@
+# Cases ported into datasets/db-tools.yml. Regenerate with:
+#
+#   pnpm port:cases --kind db-tools --source-dir <ai-assistant evalCases dir> \
+#     --select src/porting/db-tools-selection.yml \
+#     --out datasets/db-tools.yml
+#
+# The four refuse_* write prompts are not here: each runs in three modes, so
+# they are written by hand in datasets/db-tools-writes.yml.
+cases:
+  - { file: mongodb_mcp_tools_db_read_only.yml, name: list_databases_available }
+  - { file: mongodb_mcp_tools_db_read_only.yml, name: list_databases_access }
+  - { file: mongodb_mcp_tools_db_read_only.yml, name: list_collections_mflix }
+  - { file: mongodb_mcp_tools_db_read_only.yml, name: list_collections_generic }
+  - { file: mongodb_mcp_tools_db_read_only.yml, name: collection_schema_movies }
+  - { file: mongodb_mcp_tools_db_read_only.yml, name: collection_schema_theaters }
+  - { file: mongodb_mcp_tools_db_read_only.yml, name: collection_schema_fields }
+  - { file: mongodb_mcp_tools_db_read_only.yml, name: collection_indexes_movies }
+  - { file: mongodb_mcp_tools_db_read_only.yml, name: collection_indexes_theaters }
+  - { file: mongodb_mcp_tools_db_read_only.yml, name: find_movies_basic }
+  - { file: mongodb_mcp_tools_db_read_only.yml, name: find_movies_by_year }
+  - { file: mongodb_mcp_tools_db_read_only.yml, name: find_theaters_basic }
+  - { file: mongodb_mcp_tools_db_read_only.yml, name: find_movies_high_rating }
+  - { file: mongodb_mcp_tools_db_read_only.yml, name: find_movies_titles }
+  - { file: mongodb_mcp_tools_db_read_only.yml, name: aggregate_avg_rating }
+  - { file: mongodb_mcp_tools_db_read_only.yml, name: aggregate_count_by_genre }
+  - { file: mongodb_mcp_tools_db_read_only.yml, name: aggregate_theaters_by_state }
+  - { file: mongodb_mcp_tools_db_read_only.yml, name: count_movies_all }
+  - { file: mongodb_mcp_tools_db_read_only.yml, name: count_movies_filtered }
+  - { file: mongodb_mcp_tools_db_read_only.yml, name: count_theaters }
+  - { file: mongodb_mcp_tools_db_read_only.yml, name: db_stats_mflix }
+  - { file: mongodb_mcp_tools_db_read_only.yml, name: db_stats_size }
+  - { file: mongodb_mcp_tools_db_read_only.yml, name: collection_storage_size_movies }
+  - { file: mongodb_mcp_tools_db_read_only.yml, name: collection_storage_size_theaters }
+  - { file: mongodb_mcp_tools_db_read_only.yml, name: explain_find_movies }
+  - { file: mongodb_mcp_tools_db_read_only.yml, name: explain_aggregate_movies }
+  - file: mongodb_mcp_tools_db_read_only.yml
+    name: schema_then_find_movies
+    description: should call collection-schema and find on the movies collection, in that order

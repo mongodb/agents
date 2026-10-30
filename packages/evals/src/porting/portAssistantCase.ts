@@ -129,7 +129,7 @@ export interface PortedCaseWithSource {
   readonly file: string;
   /** The case's name in the source, when `case.name` was changed. */
   readonly sourceName?: string;
-  readonly case: PortedKnowledgeCase;
+  readonly case: { readonly name: string };
 }
 
 /**
