@@ -34,6 +34,7 @@ import { listOrgsRoute } from "./listOrgs.js";
 import { listProjectsRoute } from "./listProjects.js";
 import { sampleDatasetLoadRoute } from "./sampleDatasetLoad.js";
 import { streamsDiscoverRoutes } from "./streamsDiscover.js";
+import { streamsWriteRoutes } from "./streamsWrite.js";
 import { updateClusterRoute } from "./updateCluster.js";
 import { upgradeFlexClusterRoute } from "./upgradeFlexCluster.js";
 import { upgradeFreeClusterRoute } from "./upgradeFreeCluster.js";
@@ -59,6 +60,7 @@ export const atlasRoutes = new Hono<AtlasEnv>()
   .route("/", accessListRoute)
   .route("/", sampleDatasetLoadRoute)
   .route("/", streamsDiscoverRoutes)
+  .route("/", streamsWriteRoutes)
   .route("/", getEncryptionAtRestRoute)
   .route("/", getSuggestedIndexesRoute)
   .route("/", getDropIndexSuggestionsRoute)

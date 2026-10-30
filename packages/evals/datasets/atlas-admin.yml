@@ -2268,3 +2268,332 @@
     custom:
       answerMatches:
         - no (more )?processors
+# Source: streamsBuild.test.ts, "Create a new streams workspace called 'analytics' in AWS Virginia"
+- name: creates a stream processing workspace after approval
+  tags:
+    - ported
+    - write
+    - write-approve
+    - streams-write
+  input:
+    messages:
+      - role: user
+        content: >-
+          The user is working in Atlas project 'StreamsProject' (projectId:
+          '68f600519f16226591d054c0').
+
+
+          Create a new streams workspace called 'analytics' in AWS Virginia
+    custom:
+      allowWrites: true
+      approval: approve
+      toolSetup:
+        mockAtlas: streams-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_streams_build
+              args:
+                projectId: 68f600519f16226591d054c0
+                resource: workspace
+                workspaceName: analytics
+                cloudProvider: AWS
+                region: VIRGINIA_USA
+        - text: The analytics workspace was created on AWS in VIRGINIA_USA.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_streams_build
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: resource
+                type: string
+                value: workspace
+              - name: workspaceName
+                type: string
+                value: analytics
+              - name: cloudProvider
+                type: string
+                value: AWS
+              - name: region
+                type: string
+                value: VIRGINIA_USA
+      - role: tool
+      - role: assistant
+    custom:
+      expectApprovalFor:
+        - mongodb__atlas_streams_build
+      answerMatches:
+        - analytics
+# Source: streamsBuild.test.ts, "Add a Kafka connection named 'events' to workspace 'myworkspace' with bootstrap server broker.exampl..."
+- name: adds a Kafka connection to a workspace after approval
+  tags:
+    - ported
+    - write
+    - write-approve
+    - streams-write
+  input:
+    messages:
+      - role: user
+        content: >-
+          The user is working in Atlas project 'StreamsProject' (projectId:
+          '68f600519f16226591d054c0').
+
+
+          Add a Kafka connection named 'events' to workspace 'myworkspace' with
+          bootstrap server broker.example.com:9092, PLAIN authentication,
+          username 'user1', and SASL_SSL security
+    custom:
+      allowWrites: true
+      approval: approve
+      toolSetup:
+        mockAtlas: streams-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_streams_build
+              args:
+                projectId: 68f600519f16226591d054c0
+                resource: connection
+                workspaceName: myworkspace
+                connectionName: events
+                connectionType: Kafka
+                connectionConfig:
+                  bootstrapServers: broker.example.com:9092
+                  authentication:
+                    mechanism: PLAIN
+                    username: user1
+                  security:
+                    protocol: SASL_SSL
+        - text: The Kafka connection events was added to myworkspace.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_streams_build
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: resource
+                type: string
+                value: connection
+              - name: workspaceName
+                type: string
+                value: myworkspace
+              - name: connectionName
+                type: string
+                value: events
+              - name: connectionType
+                type: string
+                value: Kafka
+              - name: connectionConfig
+                type: object
+      - role: tool
+      - role: assistant
+    custom:
+      expectApprovalFor:
+        - mongodb__atlas_streams_build
+      answerMatches:
+        - events
+# Source: streamsManage.test.ts, "Start processor 'myprocessor' in workspace 'myworkspace'"
+- name: starts a stream processor after approval
+  tags:
+    - ported
+    - write
+    - write-approve
+    - streams-write
+  input:
+    messages:
+      - role: user
+        content: >-
+          The user is working in Atlas project 'StreamsProject' (projectId:
+          '68f600519f16226591d054c0').
+
+
+          Start processor 'myprocessor' in workspace 'myworkspace'
+    custom:
+      allowWrites: true
+      approval: approve
+      toolSetup:
+        mockAtlas: streams-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_streams_manage
+              args:
+                projectId: 68f600519f16226591d054c0
+                action: start-processor
+                workspaceName: myworkspace
+                resourceName: myprocessor
+        - text: myprocessor is starting.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_streams_manage
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: action
+                type: string
+                value: start-processor
+              - name: workspaceName
+                type: string
+                value: myworkspace
+              - name: resourceName
+                type: string
+                value: myprocessor
+      - role: tool
+      - role: assistant
+    custom:
+      expectApprovalFor:
+        - mongodb__atlas_streams_manage
+      answerMatches:
+        - start
+# Source: streamsTeardown.test.ts, "Delete processor 'myprocessor' from workspace 'myworkspace'"
+- name: deletes a stream processor after approval
+  tags:
+    - ported
+    - write
+    - write-approve
+    - streams-write
+  input:
+    messages:
+      - role: user
+        content: >-
+          The user is working in Atlas project 'StreamsProject' (projectId:
+          '68f600519f16226591d054c0').
+
+
+          Delete processor 'myprocessor' from workspace 'myworkspace'
+    custom:
+      allowWrites: true
+      approval: approve
+      toolSetup:
+        mockAtlas: streams-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_streams_teardown
+              args:
+                projectId: 68f600519f16226591d054c0
+                resource: processor
+                workspaceName: myworkspace
+                resourceName: myprocessor
+        - text: myprocessor was deleted from myworkspace.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_streams_teardown
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: resource
+                type: string
+                value: processor
+              - name: workspaceName
+                type: string
+                value: myworkspace
+              - name: resourceName
+                type: string
+                value: myprocessor
+      - role: tool
+      - role: assistant
+    custom:
+      expectApprovalFor:
+        - mongodb__atlas_streams_teardown
+      answerMatches:
+        - delet
+# Source: streamsTeardown.test.ts, "Delete processor 'myprocessor' from workspace 'myworkspace'"
+- name: does not delete a stream processor when approval is rejected
+  tags:
+    - ported
+    - write
+    - write-reject
+    - streams-write
+    - twin
+  input:
+    messages:
+      - role: user
+        content: >-
+          The user is working in Atlas project 'StreamsProject' (projectId:
+          '68f600519f16226591d054c0').
+
+
+          Delete processor 'myprocessor' from workspace 'myworkspace'
+    custom:
+      allowWrites: true
+      approval: reject
+      toolSetup:
+        mockAtlas: streams-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_streams_teardown
+              args:
+                projectId: 68f600519f16226591d054c0
+                resource: processor
+                workspaceName: myworkspace
+                resourceName: myprocessor
+        - text: I did not delete myprocessor because the request was rejected.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_streams_teardown
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: resource
+                type: string
+                value: processor
+              - name: workspaceName
+                type: string
+                value: myworkspace
+              - name: resourceName
+                type: string
+                value: myprocessor
+      - role: tool
+      - role: assistant
+    custom:
+      expectApprovalFor: &a5
+        - mongodb__atlas_streams_teardown
+      forbiddenExecuted: *a5
+      answerMatches:
+        - not|didn't|did not|won't|cancel
+# Source: streamsTeardown.test.ts, "Delete processor 'myprocessor' from workspace 'myworkspace'"
+- name: does not delete a stream processor in read-only mode
+  tags:
+    - ported
+    - write
+    - read-only
+    - streams-write
+    - twin
+  input:
+    messages:
+      - role: user
+        content: >-
+          The user is working in Atlas project 'StreamsProject' (projectId:
+          '68f600519f16226591d054c0').
+
+
+          Delete processor 'myprocessor' from workspace 'myworkspace'
+    custom:
+      toolSetup:
+        mockAtlas: streams-project
+      script:
+        - text: I can't do that because I am in read-only mode.
+  expected:
+    custom:
+      forbiddenExecuted:
+        - mongodb__atlas_streams_teardown
+      answerMatches:
+        - (can't|cannot|unable|read-only|not able)
