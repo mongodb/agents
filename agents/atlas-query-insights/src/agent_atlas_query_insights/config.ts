@@ -70,7 +70,7 @@ import type { AtlasQueryInsightsConfig } from "@repo/atlas-query-insights-agent"
 export const atlasQueryInsightsConfig = {
   llm: {
     provider: "openai",
-    model: "gpt-6.1-sol",
+    model: "gpt-6.1-terra",
   },
   systemPrompt: {
     name: "",
