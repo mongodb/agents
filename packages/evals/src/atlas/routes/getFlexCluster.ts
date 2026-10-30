@@ -19,19 +19,27 @@ import { Hono } from "hono";
 import type { AtlasEnv } from "../support/env.js";
 import { AtlasError } from "../support/errors.js";
 import { requireProject } from "../support/lookups.js";
+import { flexClusterJson } from "../support/responses.js";
 
 /**
- * `GET /groups/:groupId/flexClusters/:clusterName`. Always a miss. The tools
- * try this after a dedicated cluster lookup fails.
+ * `GET /groups/:groupId/flexClusters/:clusterName`. The tools try this after
+ * a dedicated cluster lookup fails.
  */
 export const getFlexClusterRoute = new Hono<AtlasEnv>().get(
   "/groups/:groupId/flexClusters/:clusterName",
   (c) => {
-    requireProject(c, c.req.param("groupId"));
-    throw new AtlasError(
-      404,
-      "CLUSTER_NOT_FOUND",
-      `No flex cluster named ${c.req.param("clusterName")}`,
+    const project = requireProject(c, c.req.param("groupId"));
+    const name = c.req.param("clusterName");
+    const flex = project.flexClusters.find(
+      (candidate) => candidate.name === name,
     );
+    if (!flex) {
+      throw new AtlasError(
+        404,
+        "CLUSTER_NOT_FOUND",
+        `No flex cluster named ${name}`,
+      );
+    }
+    return c.json(flexClusterJson(project, flex));
   },
 );

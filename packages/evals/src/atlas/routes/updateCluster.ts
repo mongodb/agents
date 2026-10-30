@@ -22,12 +22,47 @@ import { AtlasError } from "../support/errors.js";
 import { readJsonBody, requireCluster } from "../support/lookups.js";
 import { clusterJson } from "../support/responses.js";
 
-const UpdateBody = z.strictObject({ paused: z.boolean() });
+const INSTANCE_SIZE = /^M(10|20|30|40|50|60|80|100|140|160|200|300|400|700)$/;
+
+const ComputeBody = z.object({
+  enabled: z.boolean(),
+  scaleDownEnabled: z.boolean().optional(),
+  minInstanceSize: z.string().regex(INSTANCE_SIZE).optional(),
+  maxInstanceSize: z.string().regex(INSTANCE_SIZE).optional(),
+});
+
+const RegionConfigBody = z.looseObject({
+  electableSpecs: z
+    .looseObject({ instanceSize: z.string().regex(INSTANCE_SIZE) })
+    .optional(),
+  autoScaling: z.looseObject({ compute: ComputeBody.optional() }).optional(),
+});
+
+const UpdateBody = z
+  .strictObject({
+    paused: z.boolean().optional(),
+    replicationSpecs: z
+      .array(
+        z.looseObject({
+          regionConfigs: z.array(RegionConfigBody).min(1),
+        }),
+      )
+      .length(1)
+      .optional(),
+  })
+  .refine(
+    (body) =>
+      (body.paused === undefined) !== (body.replicationSpecs === undefined),
+    { message: "Send either paused or replicationSpecs, and not both" },
+  );
 
 /**
- * `PATCH /groups/:groupId/clusters/:clusterName`. Only `paused` is applied,
- * which is all the pause and resume tool sends. Any other field is rejected,
- * so a case never gets a success for an update the mock did not perform.
+ * `PATCH /groups/:groupId/clusters/:clusterName`. Applies the two updates the
+ * tools send: `paused` (pause and resume), and `replicationSpecs` (scale a
+ * dedicated cluster and set its compute autoscaling). The new size and
+ * autoscaling come from the first region config. Any other field is
+ * rejected, so a case never gets a success for an update the mock did not
+ * perform.
  */
 export const updateClusterRoute = new Hono<AtlasEnv>().patch(
   "/groups/:groupId/clusters/:clusterName",
@@ -45,7 +80,30 @@ export const updateClusterRoute = new Hono<AtlasEnv>().patch(
         parsed.error.issues.map((issue) => issue.message).join("; "),
       );
     }
-    cluster.paused = parsed.data.paused;
+    const { paused, replicationSpecs } = parsed.data;
+    if (paused !== undefined) {
+      cluster.paused = paused;
+    } else if (replicationSpecs) {
+      if (cluster.instanceSize === "M0") {
+        throw new AtlasError(
+          400,
+          "CANNOT_SCALE_FREE_CLUSTER",
+          "A free cluster cannot be scaled. Upgrade it instead.",
+        );
+      }
+      const region = replicationSpecs[0].regionConfigs[0];
+      const compute = region.autoScaling?.compute;
+      if (region.electableSpecs) {
+        cluster.instanceSize = region.electableSpecs.instanceSize;
+      }
+      if (compute) {
+        cluster.autoScaling = {
+          enabled: compute.enabled,
+          minInstanceSize: compute.minInstanceSize,
+          maxInstanceSize: compute.maxInstanceSize,
+        };
+      }
+    }
     return c.json(clusterJson(project, cluster));
   },
 );

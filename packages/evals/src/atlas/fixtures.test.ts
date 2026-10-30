@@ -74,6 +74,26 @@ describe("AtlasFixtureSchema", () => {
     ).toThrow(/unique/);
   });
 
+  it("rejects a flex cluster that shares a cluster's name", () => {
+    expect(() =>
+      AtlasFixtureSchema.parse({
+        projects: [{ ...project([{ name: "c1" }]), flexClusters: [{ name: "c1" }] }],
+      }),
+    ).toThrow(/unique/);
+  });
+
+  it("fills in flex cluster defaults", () => {
+    const { projects } = AtlasFixtureSchema.parse({
+      projects: [{ ...project([]), flexClusters: [{ name: "f1" }] }],
+    });
+
+    expect(projects[0].flexClusters[0]).toMatchObject({
+      provider: "AWS",
+      region: "US_EAST_1",
+      state: "IDLE",
+    });
+  });
+
   it("allows the same cluster name in different projects", () => {
     expect(() =>
       AtlasFixtureSchema.parse({

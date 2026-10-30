@@ -59,7 +59,7 @@ describe("atlas-admin dataset", () => {
         expect(project, `${testCase.name}: project ${args.projectId}`).toBeDefined();
         if (typeof args.clusterName !== "string") continue;
         expect(
-          project!.clusters.map((c) => c.name),
+          [...project!.clusters, ...project!.flexClusters].map((c) => c.name),
           `${testCase.name}: cluster ${args.clusterName}`,
         ).toContain(args.clusterName);
       }

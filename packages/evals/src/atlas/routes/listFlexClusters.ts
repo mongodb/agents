@@ -18,16 +18,20 @@ import { Hono } from "hono";
 
 import type { AtlasEnv } from "../support/env.js";
 import { requireProject } from "../support/lookups.js";
-import { atlasPage } from "../support/responses.js";
+import { atlasPage, flexClusterJson } from "../support/responses.js";
 
 /**
- * `GET /groups/:groupId/flexClusters`. The fixtures hold no flex clusters, but
- * the tools ask for them next to the dedicated ones.
+ * `GET /groups/:groupId/flexClusters`. The tools ask for these next to the
+ * dedicated clusters.
  */
 export const listFlexClustersRoute = new Hono<AtlasEnv>().get(
   "/groups/:groupId/flexClusters",
   (c) => {
-    requireProject(c, c.req.param("groupId"));
-    return c.json(atlasPage([]));
+    const project = requireProject(c, c.req.param("groupId"));
+    return c.json(
+      atlasPage(
+        project.flexClusters.map((flex) => flexClusterJson(project, flex)),
+      ),
+    );
   },
 );
