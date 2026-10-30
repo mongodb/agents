@@ -20,6 +20,7 @@ import type { AccountRegistry } from "./support/accounts.js";
 import { requireAccount } from "./support/auth.js";
 import type { AtlasEnv } from "./support/env.js";
 import { AtlasError } from "./support/errors.js";
+import { getIpInfoRoute } from "./routes/getIpInfo.js";
 import { atlasRoutes } from "./routes/index.js";
 import { oauthTokenRoute } from "./routes/oauthToken.js";
 
@@ -56,6 +57,11 @@ export function createAtlasApp(registry: AccountRegistry) {
   api.use("*", requireAccount(registry));
   api.route("/", atlasRoutes);
   app.route(API_PREFIX, api);
+
+  const privateApi = new Hono<AtlasEnv>();
+  privateApi.use("*", requireAccount(registry));
+  privateApi.route("/", getIpInfoRoute);
+  app.route("/api/private", privateApi);
 
   app.onError((err, c) => {
     if (err instanceof AtlasError) return c.json(err.toBody(), err.status);

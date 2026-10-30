@@ -18,6 +18,7 @@ import { Hono } from "hono";
 import { z } from "zod";
 
 import type { AtlasEnv } from "../support/env.js";
+import { newMockCluster } from "../fixtures.js";
 import { AtlasError } from "../support/errors.js";
 import { readJsonBody, requireProject } from "../support/lookups.js";
 import { flexClusterJson } from "../support/responses.js";
@@ -87,31 +88,21 @@ export const upgradeFlexClusterRoute = new Hono<AtlasEnv>().post(
     project.flexClusters = project.flexClusters.filter(
       (other) => other !== flex,
     );
-    project.clusters.push({
-      id: flex.id,
-      name,
-      instanceSize: "M10",
-      provider: region.providerName ?? flex.provider,
-      region: region.regionName ?? flex.region,
-      mongoDBVersion: flex.mongoDBVersion,
-      paused: false,
-      state: "IDLE",
-      autoScaling: compute && {
-        enabled: compute.enabled,
-        minInstanceSize: compute.minInstanceSize,
-        maxInstanceSize: compute.maxInstanceSize,
-      },
-      advisor: {
-        suggestedIndexes: [],
-        dropIndexSuggestions: {
-          hiddenIndexes: [],
-          redundantIndexes: [],
-          unusedIndexes: [],
+    project.clusters.push(
+      newMockCluster({
+        id: flex.id,
+        name,
+        instanceSize: "M10",
+        provider: region.providerName ?? flex.provider,
+        region: region.regionName ?? flex.region,
+        mongoDBVersion: flex.mongoDBVersion,
+        autoScaling: compute && {
+          enabled: compute.enabled,
+          minInstanceSize: compute.minInstanceSize,
+          maxInstanceSize: compute.maxInstanceSize,
         },
-        schemaAdvice: [],
-        slowQueries: [],
-      },
-    });
+      }),
+    );
     return c.json(flexClusterJson(project, flex));
   },
 );
