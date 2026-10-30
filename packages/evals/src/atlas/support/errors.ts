@@ -20,7 +20,7 @@
  */
 export class AtlasError extends Error {
   constructor(
-    readonly status: 400 | 401 | 404,
+    readonly status: 400 | 401 | 404 | 409,
     readonly errorCode: string,
     readonly detail?: string,
   ) {

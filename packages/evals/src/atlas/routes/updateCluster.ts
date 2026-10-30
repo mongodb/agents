@@ -20,9 +20,8 @@ import { z } from "zod";
 import type { AtlasEnv } from "../support/env.js";
 import { AtlasError } from "../support/errors.js";
 import { readJsonBody, requireCluster } from "../support/lookups.js";
+import { INSTANCE_SIZE } from "../support/instanceSizes.js";
 import { clusterJson } from "../support/responses.js";
-
-const INSTANCE_SIZE = /^M(10|20|30|40|50|60|80|100|140|160|200|300|400|700)$/;
 
 const ComputeBody = z.object({
   enabled: z.boolean(),
