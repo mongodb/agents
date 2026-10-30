@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { MockCluster, MockProject } from "../fixtures.js";
+import type { MockCluster, MockFlexCluster, MockProject } from "../fixtures.js";
 
 /** Atlas wraps every list in a page. The mock never has a second page. */
 export function atlasPage<T>(items: readonly T[]) {
@@ -40,7 +40,28 @@ export function projectSummary(project: MockProject) {
   };
 }
 
+export function flexClusterJson(project: MockProject, flex: MockFlexCluster) {
+  return {
+    id: flex.id,
+    groupId: project.id,
+    name: flex.name,
+    stateName: flex.state,
+    mongoDBVersion: flex.mongoDBVersion,
+    clusterType: "REPLICASET",
+    providerSettings: {
+      providerName: "FLEX",
+      backingProviderName: flex.provider,
+      regionName: flex.region,
+    },
+    connectionStrings: {
+      standard: `mongodb://${flex.name}-shard-00-00.mock.mongodb.net:27017/?ssl=true`,
+      standardSrv: `mongodb+srv://${flex.name}.mock.mongodb.net`,
+    },
+  };
+}
+
 export function clusterJson(project: MockProject, cluster: MockCluster) {
+  const isFree = cluster.instanceSize === "M0";
   return {
     id: cluster.id,
     groupId: project.id,
@@ -57,7 +78,7 @@ export function clusterJson(project: MockProject, cluster: MockCluster) {
       {
         regionConfigs: [
           {
-            providerName: cluster.provider,
+            providerName: isFree ? "TENANT" : cluster.provider,
             backingProviderName: cluster.provider,
             regionName: cluster.region,
             priority: 7,
@@ -65,6 +86,17 @@ export function clusterJson(project: MockProject, cluster: MockCluster) {
               instanceSize: cluster.instanceSize,
               nodeCount: 3,
             },
+            ...(cluster.autoScaling && {
+              autoScaling: {
+                compute: {
+                  enabled: cluster.autoScaling.enabled,
+                  scaleDownEnabled: cluster.autoScaling.enabled,
+                  minInstanceSize: cluster.autoScaling.minInstanceSize,
+                  maxInstanceSize: cluster.autoScaling.maxInstanceSize,
+                },
+                diskGB: { enabled: true },
+              },
+            }),
           },
         ],
       },

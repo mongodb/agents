@@ -30,6 +30,8 @@ import { listFlexClustersRoute } from "./listFlexClusters.js";
 import { listOrgsRoute } from "./listOrgs.js";
 import { listProjectsRoute } from "./listProjects.js";
 import { updateClusterRoute } from "./updateCluster.js";
+import { upgradeFlexClusterRoute } from "./upgradeFlexCluster.js";
+import { upgradeFreeClusterRoute } from "./upgradeFreeCluster.js";
 
 /**
  * The Atlas Admin API routes the agents' tools use, relative to
@@ -45,6 +47,8 @@ export const atlasRoutes = new Hono<AtlasEnv>()
   .route("/", getClusterRoute)
   .route("/", getFlexClusterRoute)
   .route("/", updateClusterRoute)
+  .route("/", upgradeFreeClusterRoute)
+  .route("/", upgradeFlexClusterRoute)
   .route("/", listAlertsRoute)
   .route("/", getSuggestedIndexesRoute)
   .route("/", getDropIndexSuggestionsRoute)
