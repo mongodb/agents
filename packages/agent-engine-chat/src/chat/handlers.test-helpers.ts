@@ -48,6 +48,8 @@ export class FakeAgentGateway implements AgentGateway {
   resumeResult!: InvocationResult;
   invokeError?: unknown;
   resumeError?: unknown;
+  /** Holds `resumeStream` open until it resolves, to model a slow resume. */
+  resumeGate?: Promise<void>;
 
   async invoke(input: InvokeInput): Promise<InvocationResult> {
     this.invokeInputs.push(input);
@@ -87,6 +89,7 @@ export class FakeAgentGateway implements AgentGateway {
     for (const progress of this.progressEvents) {
       await onProgress?.(progress);
     }
+    await this.resumeGate;
     if (this.resumeError) {
       throw this.resumeError;
     }

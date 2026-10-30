@@ -22,7 +22,7 @@ import type {
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { MemoryThreadStore } from "../store/memoryThreadStore.js";
-import type { ThreadStore } from "../store/threadStore.js";
+import { CLAIM_LEASE_MS, type ThreadStore } from "../store/threadStore.js";
 import {
   createProgressHandler,
   handleConversationMessage,
@@ -36,6 +36,7 @@ import {
   seedPendingReview,
   suspended,
 } from "./handlers.test-helpers.js";
+import { defaultAgentChatMessages } from "./messages.js";
 
 const BOT_NAME = "TestBot";
 const THREAD_ID = "slack:C123:1720000000.000100";
@@ -263,6 +264,79 @@ describe("handleConversationMessage", () => {
     expect(agent.resumeInputs).toEqual([]);
     expect(conversation.messages).toEqual([
       expect.stringMatching(/not authorized/i),
+    ]);
+  });
+
+  it("marks a resume abandoned for longer than the lease uncertain and lets it expire", async () => {
+    const claimedAt = new Date("2026-09-08T12:00:00.000Z");
+    store = new MemoryThreadStore({ now: () => claimedAt.getTime() });
+    await seedPendingReview(store);
+    await store.put({
+      ...(await store.get(THREAD_ID))!,
+      pendingReviewState: "resuming",
+      pendingReviewClaimedAt: claimedAt,
+    });
+
+    await handleConversationMessage(
+      {
+        threadId: THREAD_ID,
+        eventId: "event-1",
+        actorId: ACTOR_ID,
+        text: "Any update?",
+      },
+      {
+        agent,
+        conversation,
+        store,
+        botName: BOT_NAME,
+        now: () => new Date(claimedAt.getTime() + CLAIM_LEASE_MS),
+      },
+    );
+
+    expect(agent.invokeInputs).toEqual([]);
+    expect(await store.get(THREAD_ID)).toMatchObject({
+      pendingReviewState: "uncertain",
+      retentionState: "inactive",
+    });
+    expect(await store.get(THREAD_ID)).not.toHaveProperty(
+      "pendingReviewClaimedAt",
+    );
+    expect(conversation.messages).toEqual([
+      defaultAgentChatMessages.resumeUncertain(BOT_NAME),
+    ]);
+  });
+
+  it("keeps a resume newer than the lease busy", async () => {
+    const claimedAt = new Date("2026-09-08T12:00:00.000Z");
+    store = new MemoryThreadStore({ now: () => claimedAt.getTime() });
+    await seedPendingReview(store);
+    await store.put({
+      ...(await store.get(THREAD_ID))!,
+      pendingReviewState: "resuming",
+      pendingReviewClaimedAt: claimedAt,
+    });
+
+    await handleConversationMessage(
+      {
+        threadId: THREAD_ID,
+        eventId: "event-1",
+        actorId: ACTOR_ID,
+        text: "Any update?",
+      },
+      {
+        agent,
+        conversation,
+        store,
+        botName: BOT_NAME,
+        now: () => new Date(claimedAt.getTime() + CLAIM_LEASE_MS - 1),
+      },
+    );
+
+    expect(await store.get(THREAD_ID)).toMatchObject({
+      pendingReviewState: "resuming",
+    });
+    expect(conversation.messages).toEqual([
+      expect.stringMatching(/being processed/i),
     ]);
   });
 
