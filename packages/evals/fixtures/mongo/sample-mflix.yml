@@ -1,0 +1,33 @@
+# A small sample_mflix database for the database tools suite (movies,
+# theaters, indexes).
+#
+# Adapted from src/eval/fixtures/mcpSampleData.ts in mongodb/ai-assistant,
+# under the Apache License, Version 2.0
+# (http://www.apache.org/licenses/LICENSE-2.0). Documents have explicit
+# integer `_id`s, so a check can compare the database to this file.
+sample_mflix:
+  movies:
+    documents:
+      - { _id: 1, title: Aliens, year: 1986, runtime: 137, genres: [Action, Sci-Fi], imdb: { rating: 8.4, votes: 650000 } }
+      - { _id: 2, title: The Matrix, year: 1999, runtime: 136, genres: [Action, Sci-Fi], imdb: { rating: 8.7, votes: 1800000 } }
+      - { _id: 3, title: Inception, year: 2010, runtime: 148, genres: [Action, Adventure, Sci-Fi], imdb: { rating: 8.8, votes: 2300000 } }
+      - { _id: 4, title: The Godfather, year: 1972, runtime: 175, genres: [Crime, Drama], imdb: { rating: 9.2, votes: 1700000 } }
+      - { _id: 5, title: Pulp Fiction, year: 1994, runtime: 154, genres: [Crime, Drama], imdb: { rating: 8.9, votes: 2000000 } }
+      - { _id: 6, title: Spirited Away, year: 2001, runtime: 125, genres: [Animation, Adventure, Family], imdb: { rating: 8.6, votes: 750000 } }
+      - { _id: 7, title: Parasite, year: 2019, runtime: 132, genres: [Drama, Thriller], imdb: { rating: 8.5, votes: 800000 } }
+      - { _id: 8, title: Interstellar, year: 2014, runtime: 169, genres: [Adventure, Drama, Sci-Fi], imdb: { rating: 8.7, votes: 1900000 } }
+      - { _id: 9, title: The Dark Knight, year: 2008, runtime: 152, genres: [Action, Crime, Drama], imdb: { rating: 9.0, votes: 2600000 } }
+      - { _id: 10, title: Forrest Gump, year: 1994, runtime: 142, genres: [Drama, Romance], imdb: { rating: 8.8, votes: 2100000 } }
+      - { _id: 11, title: Casablanca, year: 1942, runtime: 102, genres: [Drama, Romance, War], imdb: { rating: 8.5, votes: 580000 } }
+      - { _id: 12, title: "Mad Max: Fury Road", year: 2015, runtime: 120, genres: [Action, Adventure, Sci-Fi], imdb: { rating: 8.1, votes: 1000000 } }
+    indexes:
+      - key: { year: 1 }
+      - key: { imdb.rating: -1 }
+  theaters:
+    documents:
+      - { _id: 1, theaterId: 1000, location: { address: { city: Bloomington, state: MN, zipcode: "55425" } } }
+      - { _id: 2, theaterId: 1003, location: { address: { city: Mounds View, state: MN, zipcode: "55112" } } }
+      - { _id: 3, theaterId: 1008, location: { address: { city: Linthicum Heights, state: MD, zipcode: "21090" } } }
+    indexes:
+      - key: { theaterId: 1 }
+        unique: true
