@@ -1485,3 +1485,786 @@
         - mongodb__atlas_load_sample_dataset
       answerMatches:
         - sample
+# Source: streamsDiscover.test.ts, "List all stream processing workspaces in project 'StreamsProject'"
+- name: lists stream workspaces
+  tags:
+    - ported
+    - read
+    - streams
+  input:
+    messages:
+      - role: user
+        content: >-
+          The user is working in Atlas project 'StreamsProject' (projectId:
+          '68f600519f16226591d054c0').
+
+
+          List all stream processing workspaces in project 'StreamsProject'
+    custom:
+      toolSetup:
+        mockAtlas: streams-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_streams_discover
+              args:
+                projectId: 68f600519f16226591d054c0
+                action: list-workspaces
+        - text: The project has one workspace, myworkspace.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_streams_discover
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: action
+                type: string
+                value: list-workspaces
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - myworkspace
+# Source: streamsDiscover.test.ts, "Show me details about stream processing workspace 'myworkspace'"
+- name: inspects a stream workspace
+  tags:
+    - ported
+    - read
+    - streams
+  input:
+    messages:
+      - role: user
+        content: >-
+          The user is working in Atlas project 'StreamsProject' (projectId:
+          '68f600519f16226591d054c0').
+
+
+          Show me details about stream processing workspace 'myworkspace'
+    custom:
+      toolSetup:
+        mockAtlas: streams-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_streams_discover
+              args:
+                projectId: 68f600519f16226591d054c0
+                action: inspect-workspace
+                workspaceName: myworkspace
+        - text: myworkspace runs on AWS in VIRGINIA_USA at tier SP10.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_streams_discover
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: action
+                type: string
+                value: inspect-workspace
+              - name: workspaceName
+                type: string
+                value: myworkspace
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - SP10
+# Source: streamsDiscover.test.ts, "What connections are available in workspace 'myworkspace'?"
+- name: lists the connections in a workspace
+  tags:
+    - ported
+    - read
+    - streams
+  input:
+    messages:
+      - role: user
+        content: >-
+          The user is working in Atlas project 'StreamsProject' (projectId:
+          '68f600519f16226591d054c0').
+
+
+          What connections are available in workspace 'myworkspace'?
+    custom:
+      toolSetup:
+        mockAtlas: streams-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_streams_discover
+              args:
+                projectId: 68f600519f16226591d054c0
+                action: list-connections
+                workspaceName: myworkspace
+        - text: myworkspace has two connections, events and sink.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_streams_discover
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: action
+                type: string
+                value: list-connections
+              - name: workspaceName
+                type: string
+                value: myworkspace
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - events
+# Source: streamsDiscover.test.ts, "Show me the processors in workspace 'myworkspace'"
+- name: lists the processors in a workspace
+  tags:
+    - ported
+    - read
+    - streams
+  input:
+    messages:
+      - role: user
+        content: >-
+          The user is working in Atlas project 'StreamsProject' (projectId:
+          '68f600519f16226591d054c0').
+
+
+          Show me the processors in workspace 'myworkspace'
+    custom:
+      toolSetup:
+        mockAtlas: streams-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_streams_discover
+              args:
+                projectId: 68f600519f16226591d054c0
+                action: list-processors
+                workspaceName: myworkspace
+        - text: myworkspace has one processor, myprocessor, which has failed.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_streams_discover
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: action
+                type: string
+                value: list-processors
+              - name: workspaceName
+                type: string
+                value: myworkspace
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - myprocessor
+# Source: streamsDiscover.test.ts, "Why is my processor 'myprocessor' in workspace 'myworkspace' failing?"
+- name: diagnoses a failing processor
+  tags:
+    - ported
+    - read
+    - streams
+  input:
+    messages:
+      - role: user
+        content: >-
+          The user is working in Atlas project 'StreamsProject' (projectId:
+          '68f600519f16226591d054c0').
+
+
+          Why is my processor 'myprocessor' in workspace 'myworkspace' failing?
+    custom:
+      toolSetup:
+        mockAtlas: streams-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_streams_discover
+              args:
+                projectId: 68f600519f16226591d054c0
+                action: diagnose-processor
+                workspaceName: myworkspace
+                resourceName: myprocessor
+        - text: myprocessor has failed and all 100 input messages went to the dead letter
+            queue.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_streams_discover
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: action
+                type: string
+                value: diagnose-processor
+              - name: workspaceName
+                type: string
+                value: myworkspace
+              - name: resourceName
+                type: string
+                value: myprocessor
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - dead letter|dlq
+# Source: streamsDiscover.test.ts, "Show me the networking configuration for my streams project 'StreamsProject'"
+- name: gets the networking configuration
+  tags:
+    - ported
+    - read
+    - streams
+  input:
+    messages:
+      - role: user
+        content: >-
+          The user is working in Atlas project 'StreamsProject' (projectId:
+          '68f600519f16226591d054c0').
+
+
+          Show me the networking configuration for my streams project
+          'StreamsProject'
+    custom:
+      toolSetup:
+        mockAtlas: streams-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_streams_discover
+              args:
+                projectId: 68f600519f16226591d054c0
+                action: get-networking
+        - text: The project has one PrivateLink connection, pl-1.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_streams_discover
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: action
+                type: string
+                value: get-networking
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - pl-1|privatelink
+# Source: streamsDiscover.test.ts, "Show me the details of connection 'events' in workspace 'myworkspace'"
+- name: inspects a connection
+  tags:
+    - ported
+    - read
+    - streams
+  input:
+    messages:
+      - role: user
+        content: >-
+          The user is working in Atlas project 'StreamsProject' (projectId:
+          '68f600519f16226591d054c0').
+
+
+          Show me the details of connection 'events' in workspace 'myworkspace'
+    custom:
+      toolSetup:
+        mockAtlas: streams-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_streams_discover
+              args:
+                projectId: 68f600519f16226591d054c0
+                action: inspect-connection
+                workspaceName: myworkspace
+                resourceName: events
+        - text: events is a Kafka connection to broker-1.example.com:9092.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_streams_discover
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: action
+                type: string
+                value: inspect-connection
+              - name: workspaceName
+                type: string
+                value: myworkspace
+              - name: resourceName
+                type: string
+                value: events
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - kafka
+# Source: streamsDiscover.test.ts, "Show me the full configuration of processor 'myprocessor' in workspace 'myworkspace'"
+- name: inspects a processor
+  tags:
+    - ported
+    - read
+    - streams
+  input:
+    messages:
+      - role: user
+        content: >-
+          The user is working in Atlas project 'StreamsProject' (projectId:
+          '68f600519f16226591d054c0').
+
+
+          Show me the full configuration of processor 'myprocessor' in workspace
+          'myworkspace'
+    custom:
+      toolSetup:
+        mockAtlas: streams-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_streams_discover
+              args:
+                projectId: 68f600519f16226591d054c0
+                action: inspect-processor
+                workspaceName: myworkspace
+                resourceName: myprocessor
+        - text: myprocessor reads from events and writes with $merge into sink.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_streams_discover
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: action
+                type: string
+                value: inspect-processor
+              - name: workspaceName
+                type: string
+                value: myworkspace
+              - name: resourceName
+                type: string
+                value: myprocessor
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - \$merge
+# Source: streamsDiscover.test.ts, "What stream processing workspaces do I have?,The project ID is '68f600519f16226591d054c0'"
+- name: finds workspaces when given the project id in a second message
+  tags:
+    - ported
+    - read
+    - streams
+  input:
+    messages:
+      - role: user
+        content: |-
+          What stream processing workspaces do I have?
+
+          The project ID is '68f600519f16226591d054c0'
+    custom:
+      toolSetup:
+        mockAtlas: streams-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_streams_discover
+              args:
+                projectId: 68f600519f16226591d054c0
+                action: list-workspaces
+        - text: You have one workspace, myworkspace.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_streams_discover
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: action
+                type: string
+                value: list-workspaces
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - myworkspace
+# Source: streamsDiscover.test.ts, "Why is my processor 'myprocessor' failing in workspace 'myworkspace'?,Can you check the processor health again?"
+- name: diagnoses a processor again when asked to recheck
+  tags:
+    - ported
+    - read
+    - streams
+  input:
+    messages:
+      - role: user
+        content: >-
+          The user is working in Atlas project 'StreamsProject' (projectId:
+          '68f600519f16226591d054c0').
+
+
+          Why is my processor 'myprocessor' failing in workspace 'myworkspace'?
+
+
+          Can you check the processor health again?
+    custom:
+      toolSetup:
+        mockAtlas: streams-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_streams_discover
+              args:
+                projectId: 68f600519f16226591d054c0
+                action: diagnose-processor
+                workspaceName: myworkspace
+                resourceName: myprocessor
+        - text: myprocessor is still failed.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_streams_discover
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: action
+                type: string
+                value: diagnose-processor
+              - name: workspaceName
+                type: string
+                value: myworkspace
+              - name: resourceName
+                type: string
+                value: myprocessor
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - failed
+# Source: streamsDiscover.test.ts, "Give me the full detailed configuration of all processors in workspace 'myworkspace'"
+- name: lists processors in detail
+  tags:
+    - ported
+    - read
+    - streams
+  input:
+    messages:
+      - role: user
+        content: >-
+          The user is working in Atlas project 'StreamsProject' (projectId:
+          '68f600519f16226591d054c0').
+
+
+          Give me the full detailed configuration of all processors in workspace
+          'myworkspace'
+    custom:
+      toolSetup:
+        mockAtlas: streams-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_streams_discover
+              args:
+                projectId: 68f600519f16226591d054c0
+                action: list-processors
+                workspaceName: myworkspace
+                responseFormat: detailed
+        - text: myprocessor is the only processor, with its full pipeline and stats.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_streams_discover
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: action
+                type: string
+                value: list-processors
+              - name: workspaceName
+                type: string
+                value: myworkspace
+              - name: responseFormat
+                type: string
+                value: detailed
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - myprocessor
+# Source: streamsDiscover.test.ts, "Give me the full configuration details of all connections in workspace 'myworkspace'"
+- name: lists connections in detail
+  tags:
+    - ported
+    - read
+    - streams
+  input:
+    messages:
+      - role: user
+        content: >-
+          The user is working in Atlas project 'StreamsProject' (projectId:
+          '68f600519f16226591d054c0').
+
+
+          Give me the full configuration details of all connections in workspace
+          'myworkspace'
+    custom:
+      toolSetup:
+        mockAtlas: streams-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_streams_discover
+              args:
+                projectId: 68f600519f16226591d054c0
+                action: list-connections
+                workspaceName: myworkspace
+                responseFormat: detailed
+        - text: events is a Kafka connection and sink is an Atlas cluster connection.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_streams_discover
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: action
+                type: string
+                value: list-connections
+              - name: workspaceName
+                type: string
+                value: myworkspace
+              - name: responseFormat
+                type: string
+                value: detailed
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - events
+# Source: streamsDiscover.test.ts, "Show me the AWS networking details for us-east-1 in my streams project"
+- name: gets AWS networking details for a region
+  tags:
+    - ported
+    - read
+    - streams
+  input:
+    messages:
+      - role: user
+        content: >-
+          The user is working in Atlas project 'StreamsProject' (projectId:
+          '68f600519f16226591d054c0').
+
+
+          Show me the AWS networking details for us-east-1 in my streams project
+    custom:
+      toolSetup:
+        mockAtlas: streams-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_streams_discover
+              args:
+                projectId: 68f600519f16226591d054c0
+                action: get-networking
+                cloudProvider: AWS
+                region: us-east-1
+        - text: The AWS account for us-east-1 is 123456789012.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_streams_discover
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: action
+                type: string
+                value: get-networking
+              - name: cloudProvider
+                type: string
+                value: AWS
+              - name: region
+                type: string
+                value: us-east-1
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - "123456789012"
+# Source: streamsDiscover.test.ts, "Show me the PrivateLink connections for workspace 'myworkspace'"
+- name: gets the PrivateLink connections for a workspace
+  tags:
+    - ported
+    - read
+    - streams
+  input:
+    messages:
+      - role: user
+        content: >-
+          The user is working in Atlas project 'StreamsProject' (projectId:
+          '68f600519f16226591d054c0').
+
+
+          Show me the PrivateLink connections for workspace 'myworkspace'
+    custom:
+      toolSetup:
+        mockAtlas: streams-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_streams_discover
+              args:
+                projectId: 68f600519f16226591d054c0
+                action: get-networking
+                workspaceName: myworkspace
+        - text: There is one PrivateLink connection, pl-1.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_streams_discover
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: action
+                type: string
+                value: get-networking
+              - name: workspaceName
+                type: string
+                value: myworkspace
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - pl-1
+# Source: streamsDiscover.test.ts, "What's the current pipeline for processor 'myprocessor' in workspace 'myworkspace'?"
+- name: inspects a processor to see its current pipeline
+  tags:
+    - ported
+    - read
+    - streams
+  input:
+    messages:
+      - role: user
+        content: >-
+          The user is working in Atlas project 'StreamsProject' (projectId:
+          '68f600519f16226591d054c0').
+
+
+          What's the current pipeline for processor 'myprocessor' in workspace
+          'myworkspace'?
+    custom:
+      toolSetup:
+        mockAtlas: streams-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_streams_discover
+              args:
+                projectId: 68f600519f16226591d054c0
+                action: inspect-processor
+                workspaceName: myworkspace
+                resourceName: myprocessor
+        - text: The pipeline starts with a $source on events and ends in a $merge.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_streams_discover
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: action
+                type: string
+                value: inspect-processor
+              - name: workspaceName
+                type: string
+                value: myworkspace
+              - name: resourceName
+                type: string
+                value: myprocessor
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - \$source
+# Source: streamsDiscover.test.ts, "Show me the next page of processors in workspace 'myworkspace'"
+- name: gets the next page of processors
+  tags:
+    - ported
+    - read
+    - streams
+  input:
+    messages:
+      - role: user
+        content: >-
+          The user is working in Atlas project 'StreamsProject' (projectId:
+          '68f600519f16226591d054c0').
+
+
+          Show me the next page of processors in workspace 'myworkspace'
+    custom:
+      toolSetup:
+        mockAtlas: streams-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_streams_discover
+              args:
+                projectId: 68f600519f16226591d054c0
+                action: list-processors
+                workspaceName: myworkspace
+                pageNum: 2
+        - text: There are no more processors on page 2.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_streams_discover
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: action
+                type: string
+                value: list-processors
+              - name: workspaceName
+                type: string
+                value: myworkspace
+              - name: pageNum
+                type: number
+                value: 2
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - no (more )?processors
