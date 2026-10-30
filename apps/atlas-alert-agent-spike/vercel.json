@@ -1,0 +1,12 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "pnpm --filter @repo/agent-engine-chat build",
+  "outputDirectory": ".",
+  "fluid": true,
+  "framework": null,
+  "functions": {
+    "api/webhooks/atlas-alert.ts": {
+      "maxDuration": 300
+    }
+  }
+}
