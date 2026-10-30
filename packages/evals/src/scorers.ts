@@ -107,16 +107,24 @@ export const QueryRefusalMatch = makeStringMatchScorer({
 });
 
 /**
- * Library `ToolCallAmountCorrect` for cases labeled `guardrail.reject`.
- * Their `outputMessages` list no tool calls, so any tool call scores 0.
- * Other cases give it nothing to measure.
+ * Library `ToolCallAmountCorrect` for cases whose `outputMessages` list no
+ * tool call (no `assistant-tool` entry), as in
+ * `[{ role: user }, { role: assistant }]`. Guardrail rejects and a write
+ * request in read-only mode are examples. Any tool call scores 0. A case with
+ * no `outputMessages`, or with tool calls listed, gives it nothing to
+ * measure. Do not list `[{ role: user }]` alone to mean "anything goes": it
+ * forbids tool calls.
  */
 export const ToolCallAmountCorrect: Scorer = ({ output, expected }) => {
-  if (!expected.guardrail?.reject || !expected.outputMessages) {
+  const { outputMessages } = expected;
+  if (
+    !outputMessages ||
+    outputMessages.some((message) => message.role === "assistant-tool")
+  ) {
     return notApplicable("ToolCallAmountCorrect");
   }
   return libraryToolCallAmountCorrect({
-    expectedMessages: expected.outputMessages,
+    expectedMessages: outputMessages,
     outputMessages: normalizeOutputMessages(output.messages),
   });
 };
