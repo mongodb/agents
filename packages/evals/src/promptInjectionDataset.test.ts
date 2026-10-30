@@ -27,8 +27,8 @@ const cases = loadAgentCasesFromFile(
 );
 
 describe("prompt-injection dataset", () => {
-  it("holds 5 reject cases with no tool call expected", () => {
-    expect(cases).toHaveLength(5);
+  it("holds 10 reject cases with no tool call expected", () => {
+    expect(cases).toHaveLength(10);
     for (const c of cases) {
       expect(c.expected.guardrail?.reject, c.name).toBe(true);
       expect(c.expected.outputMessages, c.name).toEqual([
