@@ -89,9 +89,3 @@ install_addlicense() {
 }
 
 install_addlicense
-
-# GH_TOKEN, when set, is a personal classic PAT. gh prefers it over the
-# sandbox GitHub App login. setup-git makes git use that same token.
-if [[ -n "${GH_TOKEN:-}" ]]; then
-  gh auth setup-git
-fi
