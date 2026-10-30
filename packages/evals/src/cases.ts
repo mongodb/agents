@@ -20,6 +20,7 @@ import { getConversationEvalCasesFromYaml } from "mongodb-assistant-eval/dataset
 
 import { assertFixtureExists, type FixtureField } from "./fixtures.js";
 import { agentToolName, MANAGED_MCP_TOOLS } from "./mcp/managedTools.js";
+import { assertMongoCheckExists } from "./mongoChecks/index.js";
 import {
   AgentEvalCaseSchema,
   type CustomExpected,
@@ -98,9 +99,23 @@ function assertFixturesExist(testCase: AgentEvalCase, label: string): void {
   }
 }
 
+function assertMongoCheckValid(testCase: AgentEvalCase, label: string): void {
+  const input = testCase.input.custom as CustomInput | undefined;
+  if (input?.mongoCheck === undefined) return;
+  const where = `${label}: case "${testCase.name ?? "(unnamed)"}"`;
+  if (!input.toolSetup?.localMongo) {
+    throw new Error(`${where} names a mongoCheck but no toolSetup.localMongo`);
+  }
+  try {
+    assertMongoCheckExists(input.mongoCheck);
+  } catch (error) {
+    throw new Error(`${where} ${(error as Error).message}`);
+  }
+}
+
 /**
- * Parses a YAML dataset and rejects tool names and fixture names that do not
- * exist. A typo in
+ * Parses a YAML dataset and rejects tool names, fixture names and Mongo check
+ * names that do not exist. A typo in
  * `forbiddenExecuted` would otherwise pass for ever, because a tool that is
  * never called is never executed.
  */
@@ -111,6 +126,7 @@ export function parseAgentCases(yaml: string, label: string): AgentEvalCase[] {
   });
   for (const testCase of cases) {
     assertFixturesExist(testCase, label);
+    assertMongoCheckValid(testCase, label);
     for (const { where, name } of toolNamesIn(testCase)) {
       if (!KNOWN_AGENT_TOOLS.has(name)) {
         throw new Error(

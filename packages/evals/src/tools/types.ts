@@ -15,6 +15,10 @@
  */
 
 import type { StructuredToolInterface } from "@langchain/core/tools";
+import type { MongoClient } from "mongodb";
+
+import type { DbHashes } from "../mongo/dbHash.js";
+import type { MongoSeed } from "../mongo/seed.js";
 
 export interface CaseToolsRequest {
   /** Whether the case runs the agent with write tools exposed. */
@@ -26,12 +30,31 @@ export interface CaseToolsRequest {
   readonly setup?: Readonly<Record<string, unknown>>;
 }
 
+/** A case's live MongoDB, for a Mongo check to read. */
+export interface MongoAccess {
+  readonly client: MongoClient;
+  /** What the database held before the agent ran. */
+  readonly seed: MongoSeed;
+  /** The `dbHash` of every collection right after seeding. */
+  readonly baselineDbHashes: DbHashes;
+}
+
 /** The tools one case runs against, and the state they leave behind. */
 export interface CaseTools {
   /** Every tool the runtime would discover, before the agent's tool policy. */
   readonly tools: StructuredToolInterface[];
   /** End state for scorers. Called once, after the agent finishes. */
   state(): Promise<unknown> | unknown;
+  /**
+   * Runs `fn` with a client on the case's MongoDB, and closes the client
+   * after. Absent when the case has no `localMongo`. Call it after the agent
+   * finishes and before `dispose`.
+   *
+   * Each call opens its own client, so many concurrent calls open as many
+   * connections. That is fine for the small fixtures here. Share a pooled
+   * client if a suite ever needs more.
+   */
+  withMongo?<T>(fn: (mongo: MongoAccess) => Promise<T>): Promise<T>;
   /** Releases anything `forCase` started. Always called, even on failure. */
   dispose(): Promise<void>;
 }

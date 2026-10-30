@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { AssertionError } from "node:assert";
 import { randomUUID } from "node:crypto";
 
 import type { BaseCallbackHandler } from "@langchain/core/callbacks/base";
@@ -41,8 +42,9 @@ import {
 } from "./knowledgeSources.js";
 import { readAgentFiles } from "./agentFiles.js";
 import { makeChatModel, type ModelConfig } from "./models.js";
+import { MONGO_CHECKS, type MongoCheck } from "./mongoChecks/index.js";
 import type { CustomInput } from "./schemas.js";
-import type { ToolProvider } from "./tools/types.js";
+import type { CaseTools, ToolProvider } from "./tools/types.js";
 
 export type AgentTaskInput = ConversationEvalCaseInputWithCustom<CustomInput>;
 
@@ -55,6 +57,15 @@ export interface AgentTaskOutputCustom extends Record<string, unknown> {
   state: unknown;
   /** Knowledge tool calls that failed, so a low score can be told from an outage. */
   knowledgeErrors: KnowledgeToolError[];
+  /** The case's Mongo check, when it names one. */
+  mongoCheck?: MongoCheckResult;
+}
+
+export interface MongoCheckResult {
+  readonly name: string;
+  readonly passed: boolean;
+  /** The assertion's message, when the check did not pass. */
+  readonly failure?: string;
 }
 
 export type AgentTaskOutput =
@@ -67,6 +78,8 @@ export interface AgentTaskOptions {
    * nests model and tool spans under the case's task span.
    */
   readonly callbacks?: () => BaseCallbackHandler[];
+  /** Checks a case can name. Defaults to the repo's own. Tests pass stubs. */
+  readonly mongoChecks?: Readonly<Record<string, MongoCheck>>;
 }
 
 const MAX_APPROVAL_ROUNDS = 5;
@@ -96,6 +109,36 @@ function singleUserMessage(input: AgentTaskInput): string {
   return messages[0].content;
 }
 
+const MAX_FAILURE_LENGTH = 2000;
+
+/**
+ * Runs the check a case names against its live database. An assertion that
+ * does not hold is a failed check. Any other error propagates, so a lost
+ * connection fails the case instead of scoring 0.
+ */
+async function runMongoCheck(
+  name: string,
+  caseTools: CaseTools,
+  checks: Readonly<Record<string, MongoCheck>>,
+): Promise<MongoCheckResult> {
+  const check = Object.hasOwn(checks, name) ? checks[name] : undefined;
+  if (!check) throw new Error(`Unknown mongoCheck "${name}"`);
+  if (!caseTools.withMongo) {
+    throw new Error(`mongoCheck "${name}" needs toolSetup.localMongo`);
+  }
+  try {
+    await caseTools.withMongo(check);
+    return { name, passed: true };
+  } catch (error) {
+    if (!(error instanceof AssertionError)) throw error;
+    return {
+      name,
+      passed: false,
+      failure: error.message.slice(0, MAX_FAILURE_LENGTH),
+    };
+  }
+}
+
 /**
  * Runs one of the repo's agents against a case. The agent is the production
  * one: its prompt, tool policy, and middleware come from the same builder
@@ -104,7 +147,7 @@ function singleUserMessage(input: AgentTaskInput): string {
  */
 export function makeAgentTask(
   definition: AgentDefinition,
-  { toolProvider, callbacks }: AgentTaskOptions,
+  { toolProvider, callbacks, mongoChecks = MONGO_CHECKS }: AgentTaskOptions,
 ): EvalTask<AgentTaskInput, AgentTaskOutput, ModelConfig> {
   return {
     description: `${definition.name} deep agent, traced to Braintrust`,
@@ -194,6 +237,11 @@ export function makeAgentTask(
           );
         }
 
+        const mongoCheck =
+          custom?.mongoCheck === undefined
+            ? undefined
+            : await runMongoCheck(custom.mongoCheck, caseTools, mongoChecks);
+
         const messages = convertLangchainMessagesToAssistantEvalMessages(
           result.messages,
         );
@@ -212,6 +260,7 @@ export function makeAgentTask(
             approvalRequests,
             state: await caseTools.state(),
             knowledgeErrors: knowledgeToolErrors(result.messages),
+            ...(mongoCheck && { mongoCheck }),
           },
         };
       } finally {

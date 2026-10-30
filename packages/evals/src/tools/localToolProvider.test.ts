@@ -159,6 +159,29 @@ describe("local tool provider", () => {
     );
   });
 
+  it.each([false, true])(
+    "runs a function on the seeded database (allowWrites %s)",
+    async (allowWrites) => {
+      await withCase(
+        { allowWrites, setup: { localMongo } },
+        async ({ withMongo }) => {
+          const { seed, count } = await withMongo!(async ({ client, seed }) => ({
+            seed,
+            count: await client.db("shop").collection("orders").countDocuments(),
+          }));
+          expect(count).toBe(2);
+          expect(seed).toEqual(localMongo);
+        },
+      );
+    },
+  );
+
+  it("offers no database access to a case without localMongo", async () => {
+    await withCase({ allowWrites: false, setup: { mockAtlas } }, async (c) => {
+      expect(c.withMongo).toBeUndefined();
+    });
+  });
+
   it("gives a write case its own database", async () => {
     const insert = (call: (n: string, a: object) => Promise<unknown>) =>
       call("mongodb__insert_many", {

@@ -53,6 +53,13 @@ export const CustomInputSchema = z.object({
     })
     .strict()
     .optional(),
+  /**
+   * Name of a check in `src/mongoChecks/` that runs against the case's
+   * MongoDB after the agent finishes. Needs `toolSetup.localMongo`. A name
+   * only: it is on the input because the task, which sees only the input,
+   * runs it while the database is still up. Scored by `MongoCheck`.
+   */
+  mongoCheck: z.string().optional(),
 });
 
 export type CustomInput = z.infer<typeof CustomInputSchema>;

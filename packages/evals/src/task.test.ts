@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -531,5 +532,103 @@ describe("knowledge sources in the output", () => {
     );
     expect(output.urls).toEqual([]);
     expect(output.custom?.knowledgeErrors).toEqual([]);
+  });
+});
+
+describe("mongoCheck", () => {
+  const withDb = (): ToolProvider => ({
+    async forCase(request) {
+      const inner = await toolProvider.forCase(request);
+      return {
+        ...inner,
+        withMongo: (fn) =>
+          fn({
+            client: {} as never,
+            seed: { shop: {} } as never,
+            baselineDbHashes: {},
+          }),
+      };
+    },
+  });
+  const script = { script: [{ text: "ok" }] };
+  const named = (name: string): CustomInput => ({ ...script, mongoCheck: name });
+
+  it("records a passing check", async () => {
+    const output = await run(atlasExplorerAgent, caseInput("a", named("ok")), {
+      toolProvider: withDb(),
+      mongoChecks: { ok: async () => {} },
+    });
+
+    expect(output.custom?.mongoCheck).toEqual({ name: "ok", passed: true });
+  });
+
+  it("records the message of a failed assertion", async () => {
+    const output = await run(atlasExplorerAgent, caseInput("a", named("bad")), {
+      toolProvider: withDb(),
+      mongoChecks: {
+        bad: async () => assert.equal(1, 2, "movies has 1 document, wanted 2"),
+      },
+    });
+
+    expect(output.custom?.mongoCheck).toEqual({
+      name: "bad",
+      passed: false,
+      failure: expect.stringContaining("movies has 1 document, wanted 2"),
+    });
+  });
+
+  it("runs the check after the agent finishes, before the tools are disposed", async () => {
+    const events: string[] = [];
+    const provider: ToolProvider = {
+      async forCase(request) {
+        const inner = await withDb().forCase(request);
+        return {
+          ...inner,
+          dispose: async () => void events.push("dispose"),
+        };
+      },
+    };
+    await run(atlasExplorerAgent, caseInput("a", named("order")), {
+      toolProvider: provider,
+      mongoChecks: { order: async () => void events.push("check") },
+    });
+
+    expect(events).toEqual(["check", "dispose"]);
+  });
+
+  it("fails the case, not the score, on an error that is not an assertion", async () => {
+    await expect(
+      run(atlasExplorerAgent, caseInput("a", named("lost")), {
+        toolProvider: withDb(),
+        mongoChecks: {
+          lost: async () => {
+            throw new Error("connection lost");
+          },
+        },
+      }),
+    ).rejects.toThrow("connection lost");
+  });
+
+  it("fails the case when the check is not registered", async () => {
+    await expect(
+      run(atlasExplorerAgent, caseInput("a", named("nope")), {
+        toolProvider: withDb(),
+        mongoChecks: {},
+      }),
+    ).rejects.toThrow(/Unknown mongoCheck "nope"/);
+  });
+
+  it("fails the case when the tools offer no database", async () => {
+    await expect(
+      run(atlasExplorerAgent, caseInput("a", named("ok")), {
+        mongoChecks: { ok: async () => {} },
+      }),
+    ).rejects.toThrow(/needs toolSetup.localMongo/);
+  });
+
+  it("leaves mongoCheck out of the output when a case names none", async () => {
+    const output = await run(atlasExplorerAgent, caseInput("a", script));
+
+    expect(output.custom).not.toHaveProperty("mongoCheck");
   });
 });
