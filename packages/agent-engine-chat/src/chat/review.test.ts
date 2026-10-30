@@ -390,6 +390,52 @@ describe("handleReviewDecision", () => {
     expect(conversation.reviewStatuses).toEqual(["uncertain"]);
   });
 
+  it("unlocks the thread for a reply after an unconfirmed resume and retires the old buttons", async () => {
+    await seedPendingReview(store);
+    agent.resumeError = new AgenticApiError("response lost", {
+      status: 0,
+      code: "REQUEST_FAILED",
+      requestOutcome: "unknown",
+    });
+    const decision = {
+      threadId: THREAD_ID,
+      interruptId: "interrupt-1",
+      actorId: ACTOR_ID,
+      decision: "approve" as const,
+    };
+    const dependencies = { agent, conversation, store, botName: BOT_NAME };
+    await handleReviewDecision(decision, dependencies);
+    agent.invokeResult = completed;
+
+    await handleConversationMessage(
+      {
+        threadId: THREAD_ID,
+        eventId: "event-1",
+        actorId: ACTOR_ID,
+        text: "I checked Atlas",
+      },
+      dependencies,
+    );
+
+    expect(agent.invokeInputs).toEqual([
+      {
+        message: "I checked Atlas",
+        actorId: ACTOR_ID,
+        sessionId: "session-1",
+      },
+    ]);
+    expect(conversation.agentResponses).toEqual([completed.response]);
+    expect(await store.get(THREAD_ID)).not.toHaveProperty(
+      "pendingInterruptId",
+    );
+
+    conversation.messages = [];
+    await expect(
+      handleReviewDecision(decision, dependencies),
+    ).resolves.toBe("missing");
+    expect(agent.resumeInputs).toHaveLength(1);
+  });
+
   it("still delivers a resume that finishes after a message marked its review uncertain", async () => {
     await seedPendingReview(store);
     agent.resumeResult = completed;

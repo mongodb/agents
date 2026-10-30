@@ -17,7 +17,6 @@
 export interface AgentChatMessages {
   decisionUncertain: (botName: string) => string;
   emptyPrompt: string;
-  pendingReviewUncertain: string;
   resumeUncertain: (botName: string) => string;
   reviewCardTitle: string;
   reviewStatusUncertain: string;
@@ -30,12 +29,10 @@ export interface AgentChatMessages {
 
 export const defaultAgentChatMessages: AgentChatMessages = {
   decisionUncertain: (botName) =>
-    `The decision was sent, but ${botName} could not confirm whether it completed. Check the target system before retrying, then start a new conversation.`,
+    `The decision was sent, but ${botName} could not confirm whether it completed. Check the target system before retrying, then reply in this thread to continue.`,
   emptyPrompt: "Send a message to continue.",
-  pendingReviewUncertain:
-    "The previous mutation decision has an uncertain outcome. Check the target system before retrying, then start a new conversation.",
   resumeUncertain: (botName) =>
-    `${botName} could not confirm whether the earlier mutation decision completed. Check the target system before retrying, then start a new conversation.`,
+    `${botName} could not confirm whether the earlier mutation decision completed. Check the target system before retrying, then reply in this thread to continue.`,
   reviewCardTitle: "Agent operation requires approval",
   reviewStatusUncertain:
     "Decision submitted, but its outcome could not be confirmed. Check the target system before retrying.",
