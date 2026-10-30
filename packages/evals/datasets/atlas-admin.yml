@@ -468,3 +468,253 @@
     custom:
       answerMatches:
         - mflix\.movies
+# Source: pauseResumeCluster.test.ts, "Pause cluster prod-cluster in project 9123a4b056c7d890e1f2a3f4"
+- name: pauses a cluster after approval
+  tags:
+    - ported
+    - write
+    - write-approve
+    - pause-resume
+  input:
+    messages:
+      - role: user
+        content: Pause cluster prod-cluster in project 9123a4b056c7d890e1f2a3f4
+    custom:
+      allowWrites: true
+      approval: approve
+      toolSetup:
+        mockAtlas: prod-cluster
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_pause_resume_cluster
+              args:
+                projectId: 9123a4b056c7d890e1f2a3f4
+                clusterName: prod-cluster
+                action: PAUSE
+        - text: prod-cluster is being paused.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_pause_resume_cluster
+            arguments:
+              - name: projectId
+                type: string
+                value: 9123a4b056c7d890e1f2a3f4
+              - name: clusterName
+                type: string
+                value: prod-cluster
+              - name: action
+                type: string
+                value: PAUSE
+      - role: tool
+      - role: assistant
+    custom:
+      expectApprovalFor:
+        - mongodb__atlas_pause_resume_cluster
+      answerMatches:
+        - paus
+# Source: pauseResumeCluster.test.ts, "Pause cluster prod-cluster in project 9123a4b056c7d890e1f2a3f4"
+- name: does not pause a cluster when approval is rejected
+  tags:
+    - ported
+    - write
+    - write-reject
+    - pause-resume
+    - twin
+  input:
+    messages:
+      - role: user
+        content: Pause cluster prod-cluster in project 9123a4b056c7d890e1f2a3f4
+    custom:
+      allowWrites: true
+      approval: reject
+      toolSetup:
+        mockAtlas: prod-cluster
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_pause_resume_cluster
+              args:
+                projectId: 9123a4b056c7d890e1f2a3f4
+                clusterName: prod-cluster
+                action: PAUSE
+        - text: I did not pause prod-cluster because the request was rejected.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_pause_resume_cluster
+            arguments:
+              - name: projectId
+                type: string
+                value: 9123a4b056c7d890e1f2a3f4
+              - name: clusterName
+                type: string
+                value: prod-cluster
+              - name: action
+                type: string
+                value: PAUSE
+      - role: tool
+      - role: assistant
+    custom:
+      expectApprovalFor: &a1
+        - mongodb__atlas_pause_resume_cluster
+      forbiddenExecuted: *a1
+      answerMatches:
+        - not|didn't|did not|won't|cancel
+# Source: pauseResumeCluster.test.ts, "Pause cluster prod-cluster in project 9123a4b056c7d890e1f2a3f4"
+- name: does not pause a cluster in read-only mode
+  tags:
+    - ported
+    - write
+    - read-only
+    - pause-resume
+    - twin
+  input:
+    messages:
+      - role: user
+        content: Pause cluster prod-cluster in project 9123a4b056c7d890e1f2a3f4
+    custom:
+      toolSetup:
+        mockAtlas: prod-cluster
+      script:
+        - text: I can't do that because I am in read-only mode.
+  expected:
+    custom:
+      forbiddenExecuted:
+        - mongodb__atlas_pause_resume_cluster
+      answerMatches:
+        - (can't|cannot|unable|read-only|not able)
+# Source: pauseResumeCluster.test.ts, "Resume cluster prod-cluster in project 9123a4b056c7d890e1f2a3f4"
+- name: resumes a cluster after approval
+  tags:
+    - ported
+    - write
+    - write-approve
+    - pause-resume
+  input:
+    messages:
+      - role: user
+        content: Resume cluster prod-cluster in project 9123a4b056c7d890e1f2a3f4
+    custom:
+      allowWrites: true
+      approval: approve
+      toolSetup:
+        mockAtlas: prod-cluster-paused
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_pause_resume_cluster
+              args:
+                projectId: 9123a4b056c7d890e1f2a3f4
+                clusterName: prod-cluster
+                action: RESUME
+        - text: prod-cluster is being resumed.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_pause_resume_cluster
+            arguments:
+              - name: projectId
+                type: string
+                value: 9123a4b056c7d890e1f2a3f4
+              - name: clusterName
+                type: string
+                value: prod-cluster
+              - name: action
+                type: string
+                value: RESUME
+      - role: tool
+      - role: assistant
+    custom:
+      expectApprovalFor:
+        - mongodb__atlas_pause_resume_cluster
+      answerMatches:
+        - resum
+# Source: pauseResumeCluster.test.ts, "Resume cluster prod-cluster in project 9123a4b056c7d890e1f2a3f4"
+- name: does not resume a cluster in read-only mode
+  tags:
+    - ported
+    - write
+    - read-only
+    - pause-resume
+    - twin
+  input:
+    messages:
+      - role: user
+        content: Resume cluster prod-cluster in project 9123a4b056c7d890e1f2a3f4
+    custom:
+      toolSetup:
+        mockAtlas: prod-cluster-paused
+      script:
+        - text: I can't do that because I am in read-only mode.
+  expected:
+    custom:
+      forbiddenExecuted:
+        - mongodb__atlas_pause_resume_cluster
+      answerMatches:
+        - (can't|cannot|unable|read-only|not able)
+# Source: pauseResumeCluster.test.ts, "I want to save costs, is the prod-cluster cluster in project 9123a4b056c7d890e1f2a3f4 paused? If not..."
+- name: pauses a cluster only after checking it is running
+  tags:
+    - ported
+    - write
+    - write-approve
+    - pause-resume
+  input:
+    messages:
+      - role: user
+        content: I want to save costs, is the prod-cluster cluster in project
+          9123a4b056c7d890e1f2a3f4 paused? If not, stop it
+    custom:
+      allowWrites: true
+      approval: approve
+      toolSetup:
+        mockAtlas: prod-cluster
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_inspect_cluster
+              args:
+                projectId: 9123a4b056c7d890e1f2a3f4
+                clusterName: prod-cluster
+        - toolCalls:
+            - name: mongodb__atlas_pause_resume_cluster
+              args:
+                projectId: 9123a4b056c7d890e1f2a3f4
+                clusterName: prod-cluster
+                action: PAUSE
+        - text: prod-cluster was running, so it is being paused.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_inspect_cluster
+            arguments:
+              - name: projectId
+                type: string
+                value: 9123a4b056c7d890e1f2a3f4
+              - name: clusterName
+                type: string
+                value: prod-cluster
+          - name: mongodb__atlas_pause_resume_cluster
+            arguments:
+              - name: projectId
+                type: string
+                value: 9123a4b056c7d890e1f2a3f4
+              - name: clusterName
+                type: string
+                value: prod-cluster
+              - name: action
+                type: string
+                value: PAUSE
+      - role: tool
+      - role: assistant
+    custom:
+      expectApprovalFor:
+        - mongodb__atlas_pause_resume_cluster
+      answerMatches:
+        - paus
