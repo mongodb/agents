@@ -91,6 +91,7 @@ export const upgradeFlexClusterRoute = new Hono<AtlasEnv>().post(
       id: flex.id,
       name,
       instanceSize: "M10",
+      clusterType: "REPLICASET",
       provider: region.providerName ?? flex.provider,
       region: region.regionName ?? flex.region,
       mongoDBVersion: flex.mongoDBVersion,

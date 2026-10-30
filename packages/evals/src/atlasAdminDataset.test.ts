@@ -48,16 +48,20 @@ describe("atlas-admin dataset", () => {
     for (const testCase of cases) {
       const custom = testCase.input.custom as {
         toolSetup: { mockAtlas: string };
-        script: { toolCalls?: { args: Record<string, unknown> }[] }[];
+        script: {
+          toolCalls?: { name: string; args: Record<string, unknown> }[];
+        }[];
       };
       const seed = AtlasFixtureSchema.parse(
         loadFixture("mockAtlas", custom.toolSetup.mockAtlas),
       );
-      for (const { args } of custom.script.flatMap((t) => t.toolCalls ?? [])) {
+      for (const { name, args } of custom.script.flatMap((t) => t.toolCalls ?? [])) {
         if (typeof args.projectId !== "string") continue;
         const project = seed.projects.find((p) => p.id === args.projectId);
         expect(project, `${testCase.name}: project ${args.projectId}`).toBeDefined();
+        // A create call names a cluster that does not exist yet.
         if (typeof args.clusterName !== "string") continue;
+        if (name === "mongodb__atlas_create_cluster") continue;
         expect(
           [...project!.clusters, ...project!.flexClusters].map((c) => c.name),
           `${testCase.name}: cluster ${args.clusterName}`,

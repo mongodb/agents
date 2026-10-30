@@ -1023,3 +1023,373 @@
         - mongodb__atlas_upgrade_cluster
       answerMatches:
         - M10
+# Source: createCluster.test.ts, "Create a cluster named "accuracy-cluster" in project "9123a4b056c7d890e1f2a3f4" on AWS in US_EAST_1"
+- name: creates a cluster in a provider and region after approval
+  tags:
+    - ported
+    - write
+    - write-approve
+    - create
+  input:
+    messages:
+      - role: user
+        content: Create a cluster named "accuracy-cluster" in project
+          "9123a4b056c7d890e1f2a3f4" on AWS in US_EAST_1
+    custom:
+      allowWrites: true
+      approval: approve
+      toolSetup:
+        mockAtlas: empty-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_create_cluster
+              args:
+                projectId: 9123a4b056c7d890e1f2a3f4
+                clusterName: accuracy-cluster
+                provider: AWS
+                regions:
+                  - US_EAST_1
+        - text: accuracy-cluster is being created on AWS in US_EAST_1.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_create_cluster
+            arguments:
+              - name: projectId
+                type: string
+                value: 9123a4b056c7d890e1f2a3f4
+              - name: clusterName
+                type: string
+                value: accuracy-cluster
+              - name: provider
+                type: string
+                value: AWS
+              - name: regions
+                type: array
+                value: &a3
+                  - US_EAST_1
+      - role: tool
+      - role: assistant
+    custom:
+      expectApprovalFor:
+        - mongodb__atlas_create_cluster
+      answerMatches:
+        - creat
+# Source: createCluster.test.ts, "Create a cluster named "accuracy-cluster" in project "9123a4b056c7d890e1f2a3f4" on AWS in US_EAST_1"
+- name: does not create a cluster when approval is rejected
+  tags:
+    - ported
+    - write
+    - write-reject
+    - create
+    - twin
+  input:
+    messages:
+      - role: user
+        content: Create a cluster named "accuracy-cluster" in project
+          "9123a4b056c7d890e1f2a3f4" on AWS in US_EAST_1
+    custom:
+      allowWrites: true
+      approval: reject
+      toolSetup:
+        mockAtlas: empty-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_create_cluster
+              args:
+                projectId: 9123a4b056c7d890e1f2a3f4
+                clusterName: accuracy-cluster
+                provider: AWS
+                regions:
+                  - US_EAST_1
+        - text: I did not create accuracy-cluster because the request was rejected.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_create_cluster
+            arguments:
+              - name: projectId
+                type: string
+                value: 9123a4b056c7d890e1f2a3f4
+              - name: clusterName
+                type: string
+                value: accuracy-cluster
+              - name: provider
+                type: string
+                value: AWS
+              - name: regions
+                type: array
+                value: *a3
+      - role: tool
+      - role: assistant
+    custom:
+      expectApprovalFor: &a4
+        - mongodb__atlas_create_cluster
+      forbiddenExecuted: *a4
+      answerMatches:
+        - not|didn't|did not|won't|cancel
+# Source: createCluster.test.ts, "Create a cluster named "accuracy-cluster" in project "9123a4b056c7d890e1f2a3f4" on AWS in US_EAST_1"
+- name: does not create a cluster in read-only mode
+  tags:
+    - ported
+    - write
+    - read-only
+    - create
+    - twin
+  input:
+    messages:
+      - role: user
+        content: Create a cluster named "accuracy-cluster" in project
+          "9123a4b056c7d890e1f2a3f4" on AWS in US_EAST_1
+    custom:
+      toolSetup:
+        mockAtlas: empty-project
+      script:
+        - text: I can't do that because I am in read-only mode.
+  expected:
+    custom:
+      forbiddenExecuted:
+        - mongodb__atlas_create_cluster
+      answerMatches:
+        - (can't|cannot|unable|read-only|not able)
+# Source: createCluster.test.ts, "Create a cluster named "accuracy-cluster" in project "9123a4b056c7d890e1f2a3f4" on AWS with US_EAST_..."
+- name: creates a multi-region cluster in priority order after approval
+  tags:
+    - ported
+    - write
+    - write-approve
+    - create
+  input:
+    messages:
+      - role: user
+        content: Create a cluster named "accuracy-cluster" in project
+          "9123a4b056c7d890e1f2a3f4" on AWS with US_EAST_1 as the
+          highest-priority region and US_WEST_2 as the second region
+    custom:
+      allowWrites: true
+      approval: approve
+      toolSetup:
+        mockAtlas: empty-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_create_cluster
+              args:
+                projectId: 9123a4b056c7d890e1f2a3f4
+                clusterName: accuracy-cluster
+                provider: AWS
+                regions:
+                  - US_EAST_1
+                  - US_WEST_2
+        - text: accuracy-cluster is being created on AWS in US_EAST_1 and US_WEST_2.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_create_cluster
+            arguments:
+              - name: projectId
+                type: string
+                value: 9123a4b056c7d890e1f2a3f4
+              - name: clusterName
+                type: string
+                value: accuracy-cluster
+              - name: provider
+                type: string
+                value: AWS
+              - name: regions
+                type: array
+                value:
+                  - US_EAST_1
+                  - US_WEST_2
+      - role: tool
+      - role: assistant
+    custom:
+      expectApprovalFor:
+        - mongodb__atlas_create_cluster
+      answerMatches:
+        - US_EAST_1
+# Source: createCluster.test.ts, "Set up an M30 cluster called "accuracy-cluster" on GCP central US for project 9123a4b056c7d890e1f2a3..."
+- name: creates an M30 cluster on GCP after approval
+  tags:
+    - ported
+    - write
+    - write-approve
+    - create
+  input:
+    messages:
+      - role: user
+        content: Set up an M30 cluster called "accuracy-cluster" on GCP central US for
+          project 9123a4b056c7d890e1f2a3f4
+    custom:
+      allowWrites: true
+      approval: approve
+      toolSetup:
+        mockAtlas: empty-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_create_cluster
+              args:
+                projectId: 9123a4b056c7d890e1f2a3f4
+                clusterName: accuracy-cluster
+                provider: GCP
+                regions:
+                  - CENTRAL_US
+                instanceSize: M30
+        - text: accuracy-cluster is being created as an M30 on GCP in CENTRAL_US.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_create_cluster
+            arguments:
+              - name: projectId
+                type: string
+                value: 9123a4b056c7d890e1f2a3f4
+              - name: clusterName
+                type: string
+                value: accuracy-cluster
+              - name: provider
+                type: string
+                value: GCP
+              - name: regions
+                type: array
+                value:
+                  - CENTRAL_US
+              - name: instanceSize
+                type: string
+                value: M30
+      - role: tool
+      - role: assistant
+    custom:
+      expectApprovalFor:
+        - mongodb__atlas_create_cluster
+      answerMatches:
+        - M30
+# Source: createCluster.test.ts, "Create a sharded cluster named "accuracy-cluster" in project "9123a4b056c7d890e1f2a3f4" on GCP in US..."
+- name: creates a sharded cluster after approval
+  tags:
+    - ported
+    - write
+    - write-approve
+    - create
+  input:
+    messages:
+      - role: user
+        content: Create a sharded cluster named "accuracy-cluster" in project
+          "9123a4b056c7d890e1f2a3f4" on GCP in US_EAST_4
+    custom:
+      allowWrites: true
+      approval: approve
+      toolSetup:
+        mockAtlas: empty-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_create_cluster
+              args:
+                projectId: 9123a4b056c7d890e1f2a3f4
+                clusterName: accuracy-cluster
+                provider: GCP
+                regions:
+                  - US_EAST_4
+                clusterType: SHARDED
+        - text: The sharded cluster accuracy-cluster is being created on GCP in US_EAST_4.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_create_cluster
+            arguments:
+              - name: projectId
+                type: string
+                value: 9123a4b056c7d890e1f2a3f4
+              - name: clusterName
+                type: string
+                value: accuracy-cluster
+              - name: provider
+                type: string
+                value: GCP
+              - name: regions
+                type: array
+                value:
+                  - US_EAST_4
+              - name: clusterType
+                type: string
+                value: SHARDED
+      - role: tool
+      - role: assistant
+    custom:
+      expectApprovalFor:
+        - mongodb__atlas_create_cluster
+      answerMatches:
+        - shard
+# Source: getRegions.test.ts, "Create a cluster named "regions-accuracy-cluster" in project "9123a4b056c7d890e1f2a3f4" on GCP in Lo..."
+- name: creates a cluster in a region named in words after approval
+  tags:
+    - ported
+    - write
+    - write-approve
+    - regions
+    - create
+  input:
+    messages:
+      - role: user
+        content: Create a cluster named "regions-accuracy-cluster" in project
+          "9123a4b056c7d890e1f2a3f4" on GCP in London
+    custom:
+      allowWrites: true
+      approval: approve
+      toolSetup:
+        mockAtlas: empty-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_get_regions
+              args:
+                provider: GCP
+        - toolCalls:
+            - name: mongodb__atlas_create_cluster
+              args:
+                projectId: 9123a4b056c7d890e1f2a3f4
+                clusterName: regions-accuracy-cluster
+                provider: GCP
+                regions:
+                  - EUROPE_WEST_2
+        - text: regions-accuracy-cluster is being created on GCP in EUROPE_WEST_2.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_get_regions
+            arguments:
+              - name: provider
+                type: string
+                value: GCP
+          - name: mongodb__atlas_create_cluster
+            arguments:
+              - name: projectId
+                type: string
+                value: 9123a4b056c7d890e1f2a3f4
+              - name: clusterName
+                type: string
+                value: regions-accuracy-cluster
+              - name: provider
+                type: string
+                value: GCP
+              - name: regions
+                type: array
+                value:
+                  - EUROPE_WEST_2
+      - role: tool
+      - role: assistant
+    custom:
+      expectApprovalFor:
+        - mongodb__atlas_create_cluster
+      answerMatches:
+        - EUROPE_WEST_2
