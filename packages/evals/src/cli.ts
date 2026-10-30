@@ -107,10 +107,6 @@ export function buildEvalCli({
         "prompt-injection-tool-output-query-insights.yml",
         "Atlas Query Insights: instructions inside the slow query log are not followed",
       ),
-      "config-disclosure": dataset(
-        "config-disclosure.yml",
-        "Questions about the agent's own files, environment and configuration: no confirmation, no offers to list",
-      ),
       knowledge: dataset(
         "knowledge.yml",
         "MongoDB knowledge questions answered from search_knowledge, judged against reference answers",
