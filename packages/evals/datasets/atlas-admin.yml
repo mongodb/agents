@@ -234,3 +234,237 @@
     outputMessages:
       - role: user
       - role: assistant
+# Source: getPerformanceAdvisor.test.ts, "Can you give me index suggestions for the database 'mflix' in the project named 'mflix' and cluster ..."
+- name: gets suggested indexes
+  tags:
+    - ported
+    - read
+    - advisor
+  input:
+    messages:
+      - role: user
+        content: Can you give me index suggestions for the database 'mflix' in the
+          project named 'mflix' and cluster 'mflix-cluster'?
+    custom:
+      toolSetup:
+        mockAtlas: mflix-advisor
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_get_performance_advisor
+              args:
+                projectId: 68f600519f16226591d054c0
+                clusterName: mflix-cluster
+                operations:
+                  - suggestedIndexes
+        - text: "Index suggestions: mflix.movies on title and year, and mflix.shows on
+            genre and rating."
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_get_performance_advisor
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: clusterName
+                type: string
+                value: mflix-cluster
+              - name: operations
+                type: array
+                value:
+                  - suggestedIndexes
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - mflix\.movies
+# Source: getPerformanceAdvisor.test.ts, "Show me drop index suggestions for the project named 'mflix' and 'mflix-cluster' cluster"
+- name: gets drop index suggestions
+  tags:
+    - ported
+    - read
+    - advisor
+  input:
+    messages:
+      - role: user
+        content: Show me drop index suggestions for the project named 'mflix' and
+          'mflix-cluster' cluster
+    custom:
+      toolSetup:
+        mockAtlas: mflix-advisor
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_get_performance_advisor
+              args:
+                projectId: 68f600519f16226591d054c0
+                clusterName: mflix-cluster
+                operations:
+                  - dropIndexSuggestions
+        - text: Consider dropping year_1 on mflix.movies and rating_1 on mflix.shows.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_get_performance_advisor
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: clusterName
+                type: string
+                value: mflix-cluster
+              - name: operations
+                type: array
+                value:
+                  - dropIndexSuggestions
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - year_1|rating_1
+# Source: getPerformanceAdvisor.test.ts, "Show me the slow query logs for the project named 'mflix' and 'mflix-cluster' cluster for the namesp..."
+- name: gets slow query logs for namespaces since a date
+  tags:
+    - ported
+    - read
+    - advisor
+  input:
+    messages:
+      - role: user
+        content: Show me the slow query logs for the project named 'mflix' and
+          'mflix-cluster' cluster for the namespaces 'mflix.movies' and
+          'mflix.shows' since January 1st, 2023
+    custom:
+      toolSetup:
+        mockAtlas: mflix-advisor
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_get_performance_advisor
+              args:
+                projectId: 68f600519f16226591d054c0
+                clusterName: mflix-cluster
+                operations:
+                  - slowQueryLogs
+                namespaces:
+                  - mflix.movies
+                  - mflix.shows
+                since: 2023-01-01T00:00:00Z
+        - text: The slow queries are on mflix.movies and mflix.shows.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_get_performance_advisor
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: clusterName
+                type: string
+                value: mflix-cluster
+              - name: operations
+                type: array
+                value:
+                  - slowQueryLogs
+              - name: namespaces
+                type: array
+                value:
+                  - mflix.movies
+                  - mflix.shows
+              - name: since
+                type: string
+                value: 2023-01-01T00:00:00Z
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - mflix\.movies
+# Source: getPerformanceAdvisor.test.ts, "Give me schema recommendations for the project named 'mflix' and 'mflix-cluster' cluster"
+- name: gets schema suggestions
+  tags:
+    - ported
+    - read
+    - advisor
+  input:
+    messages:
+      - role: user
+        content: Give me schema recommendations for the project named 'mflix' and
+          'mflix-cluster' cluster
+    custom:
+      toolSetup:
+        mockAtlas: mflix-advisor
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_get_performance_advisor
+              args:
+                projectId: 68f600519f16226591d054c0
+                clusterName: mflix-cluster
+                operations:
+                  - schemaSuggestions
+        - text: Reduce $lookup operations on mflix.comments.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_get_performance_advisor
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: clusterName
+                type: string
+                value: mflix-cluster
+              - name: operations
+                type: array
+                value:
+                  - schemaSuggestions
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - lookup
+# Source: getPerformanceAdvisor.test.ts, "Show me all performance advisor recommendations for the project named 'mflix' and 'mflix-cluster' cl..."
+- name: gets all advisor recommendations
+  tags:
+    - ported
+    - read
+    - advisor
+  input:
+    messages:
+      - role: user
+        content: Show me all performance advisor recommendations for the project named
+          'mflix' and 'mflix-cluster' cluster
+    custom:
+      toolSetup:
+        mockAtlas: mflix-advisor
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_get_performance_advisor
+              args:
+                projectId: 68f600519f16226591d054c0
+                clusterName: mflix-cluster
+        - text: Advisor found index suggestions, drop suggestions, slow queries and schema
+            advice for mflix.movies and others.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_get_performance_advisor
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: clusterName
+                type: string
+                value: mflix-cluster
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - mflix\.movies
