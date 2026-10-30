@@ -143,11 +143,7 @@ minutes. Each case that allows writes starts its own `mongod`.
 
 The script ends with `--validate db-tools-explorer`, which fails the run when
 a mean score falls more than 0.05 below the baseline in
-`src/dbToolsThresholds.ts`. The baseline is the mean of a 5-trial run of all
-four datasets (the Braintrust link is in that file). After a change to the
-Explorer's prompt, tools or model, re-run with `--trial-count 5` and update
-the baseline. Do not lower a threshold to make a run pass without reading the
-failing cases first.
+`src/dbToolsThresholds.ts`.
 
 What the scores mean:
 
