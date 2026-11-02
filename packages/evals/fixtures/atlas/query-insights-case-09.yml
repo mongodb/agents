@@ -1,0 +1,14 @@
+orgs:
+  - id: 5a0000000000000000000001
+    name: Acme
+projects:
+  - id: 6a0000000000000000000001
+    name: prod
+    orgId: 5a0000000000000000000001
+    clusters:
+      - name: Cluster0
+        advisor:
+          suggestedIndexes: []
+          slowQueries:
+            - namespace: taskManagement.tasks
+              line: '{"t":{"$date":"2026-11-04T12:00:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1204","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"taskManagement.tasks","collectionType":"normal","queryShapeHash":"F17313D0A1B7917F9C8826B8D19441C8C34248B5442DA725FBC87E1F2C9B804B","command":{"find":"tasks","filter":{"assigneeId":{"$eq":"assigneeId-1042"}},"$db":"taskManagement"},"planSummary":"IXSCAN","keysExamined":214,"docsExamined":214,"cursorExhausted":true,"numYields":0,"nreturned":214,"planCacheShapeHash":"F17313D0","queryHash":"F17313D0","planCacheKey":"A1B7917F","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":4}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":163,"durationMillis":96}}'

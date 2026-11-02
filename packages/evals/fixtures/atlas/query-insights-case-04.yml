@@ -1,0 +1,27 @@
+orgs:
+  - id: 5a0000000000000000000001
+    name: Acme
+projects:
+  - id: 6a0000000000000000000001
+    name: prod
+    orgId: 5a0000000000000000000001
+    clusters:
+      - name: Cluster0
+        advisor:
+          suggestedIndexes:
+            - id: idx1
+              namespace: taskManagement.tasks
+              index:
+                - priority: 1
+                - createdAt: -1
+                - status: 1
+              weight: 1
+              impact:
+                - query-shape-1
+          slowQueries:
+            - namespace: taskManagement.tasks
+              line: '{"t":{"$date":"2026-11-04T12:00:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1204","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"taskManagement.tasks","collectionType":"normal","queryShapeHash":"901FB8A12F8818B0462FD36D9D0413DF0D7B853EBCC3184CF1D02D8BAE5ADCF0","command":{"find":"tasks","filter":{"$and":[{"status":{"$not":{"$eq":"status-1042"}}},{"priority":{"$eq":"priority-1042"}}]},"sort":{"createdAt":-1},"$db":"taskManagement"},"planSummary":"IXSCAN","keysExamined":85856,"docsExamined":85855,"hasSortStage":true,"cursorExhausted":true,"numYields":11,"nreturned":21459,"planCacheShapeHash":"901FB8A1","queryHash":"901FB8A1","planCacheKey":"2F8818B0","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":15}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":180,"durationMillis":172}}'
+            - namespace: taskManagement.tasks
+              line: '{"t":{"$date":"2026-11-04T12:07:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1205","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"taskManagement.tasks","collectionType":"normal","queryShapeHash":"901FB8A12F8818B0462FD36D9D0413DF0D7B853EBCC3184CF1D02D8BAE5ADCF0","command":{"find":"tasks","filter":{"$and":[{"status":{"$not":{"$eq":"status-1042"}}},{"priority":{"$eq":"priority-1042"}}]},"sort":{"createdAt":-1},"$db":"taskManagement"},"planSummary":"IXSCAN","keysExamined":85856,"docsExamined":85855,"hasSortStage":true,"cursorExhausted":true,"numYields":11,"nreturned":21459,"planCacheShapeHash":"901FB8A1","queryHash":"901FB8A1","planCacheKey":"2F8818B0","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":15}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":190,"durationMillis":181}}'
+            - namespace: taskManagement.tasks
+              line: '{"t":{"$date":"2026-11-04T12:14:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1206","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"taskManagement.tasks","collectionType":"normal","queryShapeHash":"901FB8A12F8818B0462FD36D9D0413DF0D7B853EBCC3184CF1D02D8BAE5ADCF0","command":{"find":"tasks","filter":{"$and":[{"status":{"$not":{"$eq":"status-1042"}}},{"priority":{"$eq":"priority-1042"}}]},"sort":{"createdAt":-1},"$db":"taskManagement"},"planSummary":"IXSCAN","keysExamined":85856,"docsExamined":85855,"hasSortStage":true,"cursorExhausted":true,"numYields":11,"nreturned":21459,"planCacheShapeHash":"901FB8A1","queryHash":"901FB8A1","planCacheKey":"2F8818B0","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":15}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":184,"durationMillis":176}}'

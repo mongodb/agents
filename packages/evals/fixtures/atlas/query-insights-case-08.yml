@@ -1,0 +1,26 @@
+orgs:
+  - id: 5a0000000000000000000001
+    name: Acme
+projects:
+  - id: 6a0000000000000000000001
+    name: prod
+    orgId: 5a0000000000000000000001
+    clusters:
+      - name: Cluster0
+        advisor:
+          suggestedIndexes:
+            - id: idx1
+              namespace: taskManagement.tasks
+              index:
+                - priority: 1
+                - updatedAt: -1
+              weight: 1
+              impact:
+                - query-shape-1
+          slowQueries:
+            - namespace: taskManagement.tasks
+              line: '{"t":{"$date":"2026-11-04T12:00:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1204","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"taskManagement.tasks","collectionType":"normal","queryShapeHash":"C700D2376DF26485E5F87E67881017B8F66DECB1E06B748A37952E858D20DBDF","command":{"find":"tasks","filter":{"priority":{"$eq":"priority-1042"}},"sort":{"updatedAt":-1},"$db":"taskManagement"},"planSummary":"IXSCAN","keysExamined":5000,"docsExamined":5000,"hasSortStage":true,"cursorExhausted":true,"numYields":1,"nreturned":5000,"planCacheShapeHash":"C700D237","queryHash":"C700D237","planCacheKey":"6DF26485","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":5}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":240,"durationMillis":204}}'
+            - namespace: taskManagement.tasks
+              line: '{"t":{"$date":"2026-11-04T12:07:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1205","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"taskManagement.tasks","collectionType":"normal","queryShapeHash":"C700D2376DF26485E5F87E67881017B8F66DECB1E06B748A37952E858D20DBDF","command":{"find":"tasks","filter":{"priority":{"$eq":"priority-1042"}},"sort":{"updatedAt":-1},"$db":"taskManagement"},"planSummary":"IXSCAN","keysExamined":5000,"docsExamined":5000,"hasSortStage":true,"cursorExhausted":true,"numYields":1,"nreturned":5000,"planCacheShapeHash":"C700D237","queryHash":"C700D237","planCacheKey":"6DF26485","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":5}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":278,"durationMillis":237}}'
+            - namespace: taskManagement.tasks
+              line: '{"t":{"$date":"2026-11-04T12:14:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1206","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"taskManagement.tasks","collectionType":"normal","queryShapeHash":"C700D2376DF26485E5F87E67881017B8F66DECB1E06B748A37952E858D20DBDF","command":{"find":"tasks","filter":{"priority":{"$eq":"priority-1042"}},"sort":{"updatedAt":-1},"$db":"taskManagement"},"planSummary":"IXSCAN","keysExamined":5000,"docsExamined":5000,"hasSortStage":true,"cursorExhausted":true,"numYields":1,"nreturned":5000,"planCacheShapeHash":"C700D237","queryHash":"C700D237","planCacheKey":"6DF26485","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":5}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":288,"durationMillis":245}}'
