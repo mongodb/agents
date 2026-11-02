@@ -240,8 +240,8 @@ writes off (`read-only`). They check that nothing runs. Cases tagged
 `negative` expect no tool call.
 
 Baseline, mean of 5 trials with `gpt-6-luna`, and the `atlas-admin-explorer`
-validator threshold (the mean minus 0.05). The script runs 3 trials, which is
-faster. The thresholds keep their margin for the extra spread:
+validator threshold (the mean minus 0.05). The script runs 3 trials to
+save time, and the thresholds come from the 5-trial run:
 
 | Score | Baseline | Threshold |
 | :---- | :---- | :---- |
