@@ -1,0 +1,18 @@
+orgs:
+  - id: 5a0000000000000000000001
+    name: Acme
+projects:
+  - id: 6a0000000000000000000001
+    name: prod
+    orgId: 5a0000000000000000000001
+    clusters:
+      - name: Cluster0
+        advisor:
+          suggestedIndexes: []
+          slowQueries:
+            - namespace: museumFanoutLookup.admissions
+              line: '{"t":{"$date":"2026-11-04T12:00:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1204","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"museumFanoutLookup.admissions","collectionType":"normal","queryShapeHash":"78BF1AF8D806297E07BB33F2097BBC43B5FE8CDD4DACC65FD13CBDCF78FE9FC5","command":{"aggregate":"admissions","pipeline":[{"$match":{"exhibitionId":{"$eq":"exhibitionId-1042"}}},{"$lookup":{"from":"visitorMemberships","as":"memberships","localField":"visitorId","foreignField":"visitorId"}}],"$db":"museumFanoutLookup"},"planSummary":"IXSCAN","keysExamined":66421,"docsExamined":66421,"cursorExhausted":true,"numYields":9,"nreturned":15000,"planCacheShapeHash":"78BF1AF8","queryHash":"78BF1AF8","planCacheKey":"D806297E","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":13}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":509,"durationMillis":509}}'
+            - namespace: museumFanoutLookup.admissions
+              line: '{"t":{"$date":"2026-11-04T12:07:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1205","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"museumFanoutLookup.admissions","collectionType":"normal","queryShapeHash":"78BF1AF8D806297E07BB33F2097BBC43B5FE8CDD4DACC65FD13CBDCF78FE9FC5","command":{"aggregate":"admissions","pipeline":[{"$match":{"exhibitionId":{"$eq":"exhibitionId-1042"}}},{"$lookup":{"from":"visitorMemberships","as":"memberships","localField":"visitorId","foreignField":"visitorId"}}],"$db":"museumFanoutLookup"},"planSummary":"IXSCAN","keysExamined":66421,"docsExamined":66421,"cursorExhausted":true,"numYields":7,"nreturned":15000,"planCacheShapeHash":"78BF1AF8","queryHash":"78BF1AF8","planCacheKey":"D806297E","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":11}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":435,"durationMillis":436}}'
+            - namespace: museumFanoutLookup.admissions
+              line: '{"t":{"$date":"2026-11-04T12:14:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1206","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"museumFanoutLookup.admissions","collectionType":"normal","queryShapeHash":"78BF1AF8D806297E07BB33F2097BBC43B5FE8CDD4DACC65FD13CBDCF78FE9FC5","command":{"aggregate":"admissions","pipeline":[{"$match":{"exhibitionId":{"$eq":"exhibitionId-1042"}}},{"$lookup":{"from":"visitorMemberships","as":"memberships","localField":"visitorId","foreignField":"visitorId"}}],"$db":"museumFanoutLookup"},"planSummary":"IXSCAN","keysExamined":66421,"docsExamined":66421,"cursorExhausted":true,"numYields":8,"nreturned":15000,"planCacheShapeHash":"78BF1AF8","queryHash":"78BF1AF8","planCacheKey":"D806297E","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":12}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":459,"durationMillis":460}}'

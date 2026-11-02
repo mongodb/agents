@@ -1,0 +1,28 @@
+orgs:
+  - id: 5a0000000000000000000001
+    name: Acme
+projects:
+  - id: 6a0000000000000000000001
+    name: prod
+    orgId: 5a0000000000000000000001
+    clusters:
+      - name: Cluster0
+        advisor:
+          suggestedIndexes:
+            - id: idx1
+              namespace: supportPortal.ticketsExtraKeysStatus
+              index:
+                - status: 1
+                - tenantId: 1
+                - userId: 1
+                - createdAt: 1
+              weight: 1
+              impact:
+                - query-shape-1
+          slowQueries:
+            - namespace: supportPortal.ticketsExtraKeysStatus
+              line: '{"t":{"$date":"2026-11-04T12:00:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1204","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"supportPortal.ticketsExtraKeysStatus","collectionType":"normal","queryShapeHash":"9F3D34D829D63C18360C05F48B8697F81291188108C395F629B05B2A97A8953C","command":{"find":"ticketsExtraKeysStatus","filter":{"status":{"$eq":"status-1042"}},"$db":"supportPortal"},"planSummary":"COLLSCAN","keysExamined":0,"docsExamined":2005,"cursorExhausted":true,"numYields":0,"nreturned":5,"planCacheShapeHash":"9F3D34D8","queryHash":"9F3D34D8","planCacheKey":"29D63C18","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":4}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":31,"durationMillis":32}}'
+            - namespace: supportPortal.ticketsExtraKeysStatus
+              line: '{"t":{"$date":"2026-11-04T12:07:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1205","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"supportPortal.ticketsExtraKeysStatus","collectionType":"normal","queryShapeHash":"9F3D34D829D63C18360C05F48B8697F81291188108C395F629B05B2A97A8953C","command":{"find":"ticketsExtraKeysStatus","filter":{"status":{"$eq":"status-1042"}},"$db":"supportPortal"},"planSummary":"COLLSCAN","keysExamined":0,"docsExamined":2005,"cursorExhausted":true,"numYields":0,"nreturned":5,"planCacheShapeHash":"9F3D34D8","queryHash":"9F3D34D8","planCacheKey":"29D63C18","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":4}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":33,"durationMillis":33}}'
+            - namespace: supportPortal.ticketsExtraKeysStatus
+              line: '{"t":{"$date":"2026-11-04T12:14:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1206","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"supportPortal.ticketsExtraKeysStatus","collectionType":"normal","queryShapeHash":"9F3D34D829D63C18360C05F48B8697F81291188108C395F629B05B2A97A8953C","command":{"find":"ticketsExtraKeysStatus","filter":{"status":{"$eq":"status-1042"}},"$db":"supportPortal"},"planSummary":"COLLSCAN","keysExamined":0,"docsExamined":2005,"cursorExhausted":true,"numYields":0,"nreturned":5,"planCacheShapeHash":"9F3D34D8","queryHash":"9F3D34D8","planCacheKey":"29D63C18","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":4}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":36,"durationMillis":37}}'

@@ -1,0 +1,18 @@
+orgs:
+  - id: 5a0000000000000000000001
+    name: Acme
+projects:
+  - id: 6a0000000000000000000001
+    name: prod
+    orgId: 5a0000000000000000000001
+    clusters:
+      - name: Cluster0
+        advisor:
+          suggestedIndexes: []
+          slowQueries:
+            - namespace: languageLearning.lessonAttemptsGroupByLesson
+              line: '{"t":{"$date":"2026-11-04T12:00:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1204","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"languageLearning.lessonAttemptsGroupByLesson","collectionType":"normal","queryShapeHash":"CE0714FA01D20D062D2C8AC26842DA377DD9A4A03683300197C3371ABFC7B326","command":{"aggregate":"lessonAttemptsGroupByLesson","pipeline":[{"$match":{"moduleId":{"$eq":"moduleId-1042"}}},{"$group":{"_id":"$lessonId","attempts":{"$sum":10},"avgScore":{"$avg":"$score"}}}],"$db":"languageLearning"},"planSummary":"COLLSCAN","keysExamined":0,"docsExamined":300000,"cursorExhausted":true,"numYields":35,"nreturned":17,"planCacheShapeHash":"CE0714FA","queryHash":"CE0714FA","planCacheKey":"01D20D06","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":39}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":169,"durationMillis":170}}'
+            - namespace: languageLearning.lessonAttemptsGroupByLesson
+              line: '{"t":{"$date":"2026-11-04T12:07:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1205","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"languageLearning.lessonAttemptsGroupByLesson","collectionType":"normal","queryShapeHash":"CE0714FA01D20D062D2C8AC26842DA377DD9A4A03683300197C3371ABFC7B326","command":{"aggregate":"lessonAttemptsGroupByLesson","pipeline":[{"$match":{"moduleId":{"$eq":"moduleId-1042"}}},{"$group":{"_id":"$lessonId","attempts":{"$sum":10},"avgScore":{"$avg":"$score"}}}],"$db":"languageLearning"},"planSummary":"COLLSCAN","keysExamined":0,"docsExamined":300000,"cursorExhausted":true,"numYields":36,"nreturned":17,"planCacheShapeHash":"CE0714FA","queryHash":"CE0714FA","planCacheKey":"01D20D06","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":40}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":177,"durationMillis":178}}'
+            - namespace: languageLearning.lessonAttemptsGroupByLesson
+              line: '{"t":{"$date":"2026-11-04T12:14:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1206","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"languageLearning.lessonAttemptsGroupByLesson","collectionType":"normal","queryShapeHash":"CE0714FA01D20D062D2C8AC26842DA377DD9A4A03683300197C3371ABFC7B326","command":{"aggregate":"lessonAttemptsGroupByLesson","pipeline":[{"$match":{"moduleId":{"$eq":"moduleId-1042"}}},{"$group":{"_id":"$lessonId","attempts":{"$sum":10},"avgScore":{"$avg":"$score"}}}],"$db":"languageLearning"},"planSummary":"COLLSCAN","keysExamined":0,"docsExamined":300000,"cursorExhausted":true,"numYields":37,"nreturned":17,"planCacheShapeHash":"CE0714FA","queryHash":"CE0714FA","planCacheKey":"01D20D06","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":41}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":180,"durationMillis":180}}'

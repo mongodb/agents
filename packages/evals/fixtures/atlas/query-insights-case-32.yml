@@ -1,0 +1,18 @@
+orgs:
+  - id: 5a0000000000000000000001
+    name: Acme
+projects:
+  - id: 6a0000000000000000000001
+    name: prod
+    orgId: 5a0000000000000000000001
+    clusters:
+      - name: Cluster0
+        advisor:
+          suggestedIndexes: []
+          slowQueries:
+            - namespace: contentPlatform.articlesCommentTagsElemMatch
+              line: '{"t":{"$date":"2026-11-04T12:00:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1204","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"contentPlatform.articlesCommentTagsElemMatch","collectionType":"normal","queryShapeHash":"4D3553A18817D5A04583EF301A59140A1AAEBA6A4C5198C1EB0FCA760D2C4AEC","command":{"find":"articlesCommentTagsElemMatch","filter":{"comments.tags":{"$elemMatch":{"$and":[{"type":{"$eq":"type-1042"}},{"value":{"$eq":"value-1042"}}]}}},"sort":{"viewCount":-1},"limit":10,"$db":"contentPlatform"},"planSummary":"IXSCAN","keysExamined":400,"docsExamined":400,"hasSortStage":true,"cursorExhausted":true,"numYields":0,"nreturned":50,"planCacheShapeHash":"4D3553A1","queryHash":"4D3553A1","planCacheKey":"8817D5A0","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":4}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":124,"durationMillis":124}}'
+            - namespace: contentPlatform.articlesCommentTagsElemMatch
+              line: '{"t":{"$date":"2026-11-04T12:07:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1205","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"contentPlatform.articlesCommentTagsElemMatch","collectionType":"normal","queryShapeHash":"4D3553A18817D5A04583EF301A59140A1AAEBA6A4C5198C1EB0FCA760D2C4AEC","command":{"find":"articlesCommentTagsElemMatch","filter":{"comments.tags":{"$elemMatch":{"$and":[{"type":{"$eq":"type-1042"}},{"value":{"$eq":"value-1042"}}]}}},"sort":{"viewCount":-1},"limit":10,"$db":"contentPlatform"},"planSummary":"IXSCAN","keysExamined":400,"docsExamined":400,"hasSortStage":true,"cursorExhausted":true,"numYields":0,"nreturned":50,"planCacheShapeHash":"4D3553A1","queryHash":"4D3553A1","planCacheKey":"8817D5A0","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":4}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":120,"durationMillis":120}}'
+            - namespace: contentPlatform.articlesCommentTagsElemMatch
+              line: '{"t":{"$date":"2026-11-04T12:14:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1206","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"contentPlatform.articlesCommentTagsElemMatch","collectionType":"normal","queryShapeHash":"4D3553A18817D5A04583EF301A59140A1AAEBA6A4C5198C1EB0FCA760D2C4AEC","command":{"find":"articlesCommentTagsElemMatch","filter":{"comments.tags":{"$elemMatch":{"$and":[{"type":{"$eq":"type-1042"}},{"value":{"$eq":"value-1042"}}]}}},"sort":{"viewCount":-1},"limit":10,"$db":"contentPlatform"},"planSummary":"IXSCAN","keysExamined":400,"docsExamined":400,"hasSortStage":true,"cursorExhausted":true,"numYields":0,"nreturned":50,"planCacheShapeHash":"4D3553A1","queryHash":"4D3553A1","planCacheKey":"8817D5A0","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":4}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":105,"durationMillis":105}}'

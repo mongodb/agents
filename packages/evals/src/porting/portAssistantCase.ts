@@ -132,23 +132,32 @@ export interface PortedCaseWithSource {
   readonly case: { readonly name: string };
 }
 
+export interface RenderPortedCasesOptions {
+  /** Comment each case with its source file and case. Defaults to true. */
+  readonly sourceComments?: boolean;
+}
+
 /**
  * Renders ported cases as a YAML dataset. `header` becomes the opening
- * comment, and each case gets a comment naming its source file and case.
+ * comment, and each case gets a comment naming its source file and case,
+ * unless `sourceComments` is false.
  */
 export function renderPortedCases(
   cases: readonly PortedCaseWithSource[],
   header: string,
+  { sourceComments = true }: RenderPortedCasesOptions = {},
 ): string {
   const doc = new Document(cases.map((c) => c.case));
   doc.commentBefore = header
     .split("\n")
     .map((line) => ` ${line}`.trimEnd())
     .join("\n");
-  cases.forEach((c, i) => {
-    const item = (doc.contents as { items: { commentBefore?: string }[] })
-      .items[i];
-    item.commentBefore = ` Source: ${c.file}, "${c.sourceName ?? c.case.name}"`;
-  });
+  if (sourceComments) {
+    cases.forEach((c, i) => {
+      const item = (doc.contents as { items: { commentBefore?: string }[] })
+        .items[i];
+      item.commentBefore = ` Source: ${c.file}, "${c.sourceName ?? c.case.name}"`;
+    });
+  }
   return stringify(doc, { lineWidth: 80 });
 }

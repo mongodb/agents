@@ -1,0 +1,18 @@
+orgs:
+  - id: 5a0000000000000000000001
+    name: Acme
+projects:
+  - id: 6a0000000000000000000001
+    name: prod
+    orgId: 5a0000000000000000000001
+    clusters:
+      - name: Cluster0
+        advisor:
+          suggestedIndexes: []
+          slowQueries:
+            - namespace: orderFulfillment.ordersDeepSkip
+              line: '{"t":{"$date":"2026-11-04T12:00:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1204","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"orderFulfillment.ordersDeepSkip","collectionType":"normal","queryShapeHash":"0E736C5C0935BF48E494DD9AAC7CD665EAFDFB824A78CF7FAED1723C6C61E456","command":{"find":"ordersDeepSkip","filter":{"status":{"$eq":"status-1042"}},"sort":{"createdAt":-1},"limit":10,"skip":20,"$db":"orderFulfillment"},"planSummary":"IXSCAN","keysExamined":500020,"docsExamined":20,"cursorExhausted":true,"numYields":0,"nreturned":20,"planCacheShapeHash":"0E736C5C","queryHash":"0E736C5C","planCacheKey":"0935BF48","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":4}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":417,"durationMillis":418}}'
+            - namespace: orderFulfillment.ordersDeepSkip
+              line: '{"t":{"$date":"2026-11-04T12:07:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1205","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"orderFulfillment.ordersDeepSkip","collectionType":"normal","queryShapeHash":"0E736C5C0935BF48E494DD9AAC7CD665EAFDFB824A78CF7FAED1723C6C61E456","command":{"find":"ordersDeepSkip","filter":{"status":{"$eq":"status-1042"}},"sort":{"createdAt":-1},"limit":10,"skip":20,"$db":"orderFulfillment"},"planSummary":"IXSCAN","keysExamined":500020,"docsExamined":20,"cursorExhausted":true,"numYields":0,"nreturned":20,"planCacheShapeHash":"0E736C5C","queryHash":"0E736C5C","planCacheKey":"0935BF48","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":4}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":388,"durationMillis":388}}'
+            - namespace: orderFulfillment.ordersDeepSkip
+              line: '{"t":{"$date":"2026-11-04T12:14:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1206","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"orderFulfillment.ordersDeepSkip","collectionType":"normal","queryShapeHash":"0E736C5C0935BF48E494DD9AAC7CD665EAFDFB824A78CF7FAED1723C6C61E456","command":{"find":"ordersDeepSkip","filter":{"status":{"$eq":"status-1042"}},"sort":{"createdAt":-1},"limit":10,"skip":20,"$db":"orderFulfillment"},"planSummary":"IXSCAN","keysExamined":500020,"docsExamined":20,"cursorExhausted":true,"numYields":0,"nreturned":20,"planCacheShapeHash":"0E736C5C","queryHash":"0E736C5C","planCacheKey":"0935BF48","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":4}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":434,"durationMillis":435}}'

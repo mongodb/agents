@@ -181,6 +181,20 @@ describe("portQueryInsightsCase", () => {
         clusterName: QUERY_INSIGHTS_CLUSTER,
       },
       toolSetup: { mockAtlas: "query-insights-case-07" },
+      script: [
+        {
+          toolCalls: [
+            {
+              name: "mongodb__atlas_get_performance_advisor",
+              args: {
+                projectId: QUERY_INSIGHTS_PROJECT_ID,
+                clusterName: QUERY_INSIGHTS_CLUSTER,
+              },
+            },
+          ],
+        },
+        { text: expect.any(String) },
+      ],
     });
     expect(parsed.input.messages).toEqual([
       { role: "user", content: "Why are my queries slow on Cluster0?" },
@@ -285,6 +299,27 @@ describe("portQueryInsightsCase", () => {
     expect(ported.case.input.messages[0].content).toBe("Which query should I fix first?");
   });
 
+  it("replaces the source reference when given one", () => {
+    const { case: ported } = portQueryInsightsCase(source(), {
+      id: "07",
+      reference: {
+        queryOverview: "This query finds loans by `memberId`.",
+        areasWorthInvestigating: [
+          { leadSentence: "Add an index on `memberId`.", elaboration: "It avoids a scan." },
+        ],
+      },
+    });
+
+    expect(ported.expected.custom.queryInsights.reference).toBe(
+      [
+        "Query overview: This query finds loans by `memberId`.",
+        "",
+        "Areas worth investigating:",
+        "1. Add an index on `memberId`. It avoids a scan.",
+      ].join("\n"),
+    );
+  });
+
   it("throws on what it cannot convert", () => {
     expect(() =>
       portQueryInsightsCase(source({ stats: { namespace: null } }), { id: "01" }),
@@ -297,11 +332,11 @@ describe("portQueryInsightsCase", () => {
 });
 
 describe("renderQueryInsightsSeed", () => {
-  it("renders a fixture the mock Atlas schema accepts, with a header", () => {
+  it("renders a fixture the mock Atlas schema accepts, with no comments", () => {
     const { seed } = portQueryInsightsCase(source(), { id: "07" });
-    const yaml = renderQueryInsightsSeed(seed, "Converted from case_07.json.");
+    const yaml = renderQueryInsightsSeed(seed);
 
-    expect(yaml.startsWith("# Converted from case_07.json.\n")).toBe(true);
+    expect(yaml).not.toContain("#");
     expect(parse(yaml)).toEqual(seed);
     expect(() => AtlasFixtureSchema.parse(parse(yaml))).not.toThrow();
   });
