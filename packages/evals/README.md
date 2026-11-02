@@ -209,14 +209,14 @@ sharing one.
 
 56 cases for the Explorer's Atlas Admin tools, ported from the
 `mongodb-mcp-server` v3.0.5 accuracy tests. They run against the mock Atlas
-API, with the production model and 5 trials:
+API, with the production model and 3 trials:
 
 ```sh
 pnpm --filter @repo/evals eval:atlas-admin:explorer
 ```
 
 The script needs `OPENAI_API_KEY` and `BRAINTRUST_API_KEY`. A run takes about
-25 minutes. Each case in `datasets/atlas-admin.yml` was copied by
+15 minutes. Each case in `datasets/atlas-admin.yml` was copied by
 hand from the upstream test and names its source in a comment. To add one,
 copy a case of the same kind (see "Adding a case").
 
@@ -240,7 +240,8 @@ writes off (`read-only`). They check that nothing runs. Cases tagged
 `negative` expect no tool call.
 
 Baseline, mean of 5 trials with `gpt-6-luna`, and the `atlas-admin-explorer`
-validator threshold (the mean minus 0.05):
+validator threshold (the mean minus 0.05). The script runs 3 trials, which is
+faster. The thresholds keep their margin for the extra spread:
 
 | Score | Baseline | Threshold |
 | :---- | :---- | :---- |
