@@ -21,11 +21,6 @@
  * https://www.braintrust.dev/app/mongodb-education-ai/p/agents-evals/experiments/explorer%3Fmodel%3Dgpt-6-luna%26runId%3D1793306953032
  *
  * Re-run and update these when the Explorer's prompt, tools or model change.
- *
- * `ToolCallAmountCorrect` is reported but not gated. It is scored on only the 4
- * read-only write requests, and the agent sometimes reads the schema or docs
- * before declining (3 of 20 in the baseline), so the mean moved too much
- * between 3-trial runs to hold a threshold.
  */
 export const DB_TOOLS_EXPLORER_BASELINE = {
   AnswerMatches: 1,
