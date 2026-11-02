@@ -99,6 +99,14 @@ export function buildEvalCli({
         "prompt-injection.yml",
         "Prompt injection in the user message, both agents: no leaks, canonical refusal",
       ),
+      "prompt-injection-advanced": dataset(
+        "prompt-injection-advanced.yml",
+        "Prompt injection in the user message, both agents: a fake system message, a persona shift, an encoded ask, a made-up agreement",
+      ),
+      "prompt-injection-lookalikes": dataset(
+        "prompt-injection-lookalikes.yml",
+        "Ordinary requests that sound like prompt injection, both agents: answered, not refused",
+      ),
       "prompt-injection-tool-output-explorer": dataset(
         "prompt-injection-tool-output-explorer.yml",
         "Atlas Explorer: instructions inside documents are not followed",
