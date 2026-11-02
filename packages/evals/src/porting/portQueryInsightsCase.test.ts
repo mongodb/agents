@@ -220,14 +220,14 @@ describe("portQueryInsightsCase", () => {
     const ported = portQueryInsightsCase(source({ stats: { namespace: null } }), {
       id: "01",
       namespace: "shop.visits",
-      planSummary: "IXSCAN { visitorId: 1 }",
+      planSummary: "IXSCAN { memberId: 1 }",
       message: "Which query should I fix first?",
     });
 
     const [{ namespace, line }] = slowLogLines(ported.seed);
     expect(namespace).toBe("shop.visits");
     expect(line.command).toMatchObject({ find: "visits", $db: "shop" });
-    expect(line.planSummary).toBe("IXSCAN { visitorId: 1 }");
+    expect(line.planSummary).toBe("IXSCAN { memberId: 1 }");
     expect(ported.case.input.messages[0].content).toBe("Which query should I fix first?");
   });
 
