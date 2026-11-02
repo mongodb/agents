@@ -1,0 +1,2599 @@
+# Atlas Admin cases adapted from mongodb-js/mongodb-mcp-server v3.0.5
+# (packages/accuracy-tests). Copyright MongoDB, Inc. Licensed under the Apache
+# License, Version 2.0. Each case names its source prompt.
+
+# Source: getRegions.test.ts, "List the atlas regions for AWS"
+- name: lists AWS regions
+  tags:
+    - ported
+    - read
+    - regions
+  input:
+    messages:
+      - role: user
+        content: List the atlas regions for AWS
+    custom:
+      toolSetup:
+        mockAtlas: one-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_get_regions
+              args:
+                provider: AWS
+        - text: AWS has US_EAST_1 and many more regions.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_get_regions
+            arguments:
+              - name: provider
+                type: string
+                value: AWS
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - US_EAST_1
+# Source: getRegions.test.ts, "What regions does atlas support in GCP?"
+- name: lists GCP regions
+  tags:
+    - ported
+    - read
+    - regions
+  input:
+    messages:
+      - role: user
+        content: What regions does atlas support in GCP?
+    custom:
+      toolSetup:
+        mockAtlas: one-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_get_regions
+              args:
+                provider: GCP
+        - text: GCP has CENTRAL_US and many more regions.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_get_regions
+            arguments:
+              - name: provider
+                type: string
+                value: GCP
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - CENTRAL_US
+# Source: getRegions.test.ts, "Which region code is AWS Mexico?"
+- name: finds the AWS Mexico region code
+  tags:
+    - ported
+    - read
+    - regions
+  input:
+    messages:
+      - role: user
+        content: Which region code is AWS Mexico?
+    custom:
+      toolSetup:
+        mockAtlas: one-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_get_regions
+              args:
+                provider: AWS
+        - text: AWS Mexico is MX_CENTRAL_1.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_get_regions
+            arguments:
+              - name: provider
+                type: string
+                value: AWS
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - MX_CENTRAL_1
+# Source: getRegions.test.ts, "What region should I use for Azure south america?"
+- name: finds an Azure South America region
+  tags:
+    - ported
+    - read
+    - regions
+  input:
+    messages:
+      - role: user
+        content: What region should I use for Azure south america?
+    custom:
+      toolSetup:
+        mockAtlas: one-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_get_regions
+              args:
+                provider: AZURE
+        - text: Use BRAZIL_SOUTH for Azure in South America.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_get_regions
+            arguments:
+              - name: provider
+                type: string
+                value: AZURE
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - BRAZIL_SOUTH|CHILE_CENTRAL
+# Source: listAlerts.test.ts, "What alerts are currently firing on my Atlas project 68f600519f16226591d054c0?"
+- name: lists open alerts by default
+  tags:
+    - ported
+    - read
+    - alerts
+  input:
+    messages:
+      - role: user
+        content: What alerts are currently firing on my Atlas project
+          68f600519f16226591d054c0?
+    custom:
+      toolSetup:
+        mockAtlas: alerts-open-closed
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_list_alerts
+              args:
+                projectId: 68f600519f16226591d054c0
+        - text: "Two alerts are open: HOST_DOWN and REPLICATION_OPLOG_WINDOW_RUNNING_OUT."
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_list_alerts
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - host[_ ]down
+# Source: listAlerts.test.ts, "Have any alerts on my Atlas project 68f600519f16226591d054c0 already been resolved? Show me the clos..."
+- name: lists closed alerts when asked for resolved ones
+  tags:
+    - ported
+    - read
+    - alerts
+  input:
+    messages:
+      - role: user
+        content: Have any alerts on my Atlas project 68f600519f16226591d054c0 already
+          been resolved? Show me the closed ones.
+    custom:
+      toolSetup:
+        mockAtlas: alerts-open-closed
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_list_alerts
+              args:
+                projectId: 68f600519f16226591d054c0
+                status: CLOSED
+        - text: "One alert is closed: HOST_DOWN, resolved after restart."
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_list_alerts
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: status
+                type: string
+                matchRegex: ^[cC][lL][oO][sS][eE][dD]$
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - host[_ ]down
+# Source: listAlerts.test.ts, "List the alert configuration settings defined for my Atlas project 68f600519f16226591d054c0 -- the r..."
+- name: does not use list alerts for alert configurations
+  tags:
+    - ported
+    - read
+    - alerts
+    - negative
+  input:
+    messages:
+      - role: user
+        content: List the alert configuration settings defined for my Atlas project
+          68f600519f16226591d054c0 -- the rules that decide when an alert is
+          raised, not the alerts that have already fired.
+    custom:
+      toolSetup:
+        mockAtlas: alerts-open-closed
+      script:
+        - text: I have no tool that lists alert configurations.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant
+# Source: getPerformanceAdvisor.test.ts, "Can you give me index suggestions for the database 'mflix' in the project named 'mflix' and cluster ..."
+- name: gets suggested indexes
+  tags:
+    - ported
+    - read
+    - advisor
+  input:
+    messages:
+      - role: user
+        content: Can you give me index suggestions for the database 'mflix' in the
+          project named 'mflix' and cluster 'mflix-cluster'?
+    custom:
+      toolSetup:
+        mockAtlas: mflix-advisor
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_get_performance_advisor
+              args:
+                projectId: 68f600519f16226591d054c0
+                clusterName: mflix-cluster
+                operations:
+                  - suggestedIndexes
+        - text: "Index suggestions: mflix.movies on title and year, and mflix.shows on
+            genre and rating."
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_get_performance_advisor
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: clusterName
+                type: string
+                value: mflix-cluster
+              - name: operations
+                type: array
+                value:
+                  - suggestedIndexes
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - mflix\.movies
+# Source: getPerformanceAdvisor.test.ts, "Show me drop index suggestions for the project named 'mflix' and 'mflix-cluster' cluster"
+- name: gets drop index suggestions
+  tags:
+    - ported
+    - read
+    - advisor
+  input:
+    messages:
+      - role: user
+        content: Show me drop index suggestions for the project named 'mflix' and
+          'mflix-cluster' cluster
+    custom:
+      toolSetup:
+        mockAtlas: mflix-advisor
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_get_performance_advisor
+              args:
+                projectId: 68f600519f16226591d054c0
+                clusterName: mflix-cluster
+                operations:
+                  - dropIndexSuggestions
+        - text: Consider dropping year_1 on mflix.movies and rating_1 on mflix.shows.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_get_performance_advisor
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: clusterName
+                type: string
+                value: mflix-cluster
+              - name: operations
+                type: array
+                value:
+                  - dropIndexSuggestions
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - year_1|rating_1
+# Source: getPerformanceAdvisor.test.ts, "Show me the slow query logs for the project named 'mflix' and 'mflix-cluster' cluster for the namesp..."
+- name: gets slow query logs for namespaces since a date
+  tags:
+    - ported
+    - read
+    - advisor
+  input:
+    messages:
+      - role: user
+        content: Show me the slow query logs for the project named 'mflix' and
+          'mflix-cluster' cluster for the namespaces 'mflix.movies' and
+          'mflix.shows' since January 1st, 2023
+    custom:
+      toolSetup:
+        mockAtlas: mflix-advisor
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_get_performance_advisor
+              args:
+                projectId: 68f600519f16226591d054c0
+                clusterName: mflix-cluster
+                operations:
+                  - slowQueryLogs
+                namespaces:
+                  - mflix.movies
+                  - mflix.shows
+                since: 2023-01-01T00:00:00Z
+        - text: The slow queries are on mflix.movies and mflix.shows.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_get_performance_advisor
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: clusterName
+                type: string
+                value: mflix-cluster
+              - name: operations
+                type: array
+                value:
+                  - slowQueryLogs
+              - name: namespaces
+                type: array
+                value:
+                  - mflix.movies
+                  - mflix.shows
+              - name: since
+                type: string
+                value: 2023-01-01T00:00:00Z
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - mflix\.movies
+# Source: getPerformanceAdvisor.test.ts, "Give me schema recommendations for the project named 'mflix' and 'mflix-cluster' cluster"
+- name: gets schema suggestions
+  tags:
+    - ported
+    - read
+    - advisor
+  input:
+    messages:
+      - role: user
+        content: Give me schema recommendations for the project named 'mflix' and
+          'mflix-cluster' cluster
+    custom:
+      toolSetup:
+        mockAtlas: mflix-advisor
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_get_performance_advisor
+              args:
+                projectId: 68f600519f16226591d054c0
+                clusterName: mflix-cluster
+                operations:
+                  - schemaSuggestions
+        - text: Reduce $lookup operations on mflix.comments.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_get_performance_advisor
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: clusterName
+                type: string
+                value: mflix-cluster
+              - name: operations
+                type: array
+                value:
+                  - schemaSuggestions
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - lookup
+# Source: getPerformanceAdvisor.test.ts, "Show me all performance advisor recommendations for the project named 'mflix' and 'mflix-cluster' cl..."
+- name: gets all advisor recommendations
+  tags:
+    - ported
+    - read
+    - advisor
+  input:
+    messages:
+      - role: user
+        content: Show me all performance advisor recommendations for the project named
+          'mflix' and 'mflix-cluster' cluster
+    custom:
+      toolSetup:
+        mockAtlas: mflix-advisor
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_get_performance_advisor
+              args:
+                projectId: 68f600519f16226591d054c0
+                clusterName: mflix-cluster
+        - text: Advisor found index suggestions, drop suggestions, slow queries and schema
+            advice for mflix.movies and others.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_get_performance_advisor
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: clusterName
+                type: string
+                value: mflix-cluster
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - mflix\.movies
+# Source: pauseResumeCluster.test.ts, "Pause cluster prod-cluster in project 9123a4b056c7d890e1f2a3f4"
+- name: pauses a cluster after approval
+  tags:
+    - ported
+    - write
+    - write-approve
+    - pause-resume
+  input:
+    messages:
+      - role: user
+        content: Pause cluster prod-cluster in project 9123a4b056c7d890e1f2a3f4
+    custom:
+      allowWrites: true
+      approval: approve
+      toolSetup:
+        mockAtlas: prod-cluster
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_pause_resume_cluster
+              args:
+                projectId: 9123a4b056c7d890e1f2a3f4
+                clusterName: prod-cluster
+                action: PAUSE
+        - text: prod-cluster is being paused.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_pause_resume_cluster
+            arguments:
+              - name: projectId
+                type: string
+                value: 9123a4b056c7d890e1f2a3f4
+              - name: clusterName
+                type: string
+                value: prod-cluster
+              - name: action
+                type: string
+                value: PAUSE
+      - role: tool
+      - role: assistant
+    custom:
+      expectApprovalFor:
+        - mongodb__atlas_pause_resume_cluster
+      answerMatches:
+        - paus
+# Source: pauseResumeCluster.test.ts, "Pause cluster prod-cluster in project 9123a4b056c7d890e1f2a3f4"
+- name: does not pause a cluster when approval is rejected
+  tags:
+    - ported
+    - write
+    - write-reject
+    - pause-resume
+    - twin
+  input:
+    messages:
+      - role: user
+        content: Pause cluster prod-cluster in project 9123a4b056c7d890e1f2a3f4
+    custom:
+      allowWrites: true
+      approval: reject
+      toolSetup:
+        mockAtlas: prod-cluster
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_pause_resume_cluster
+              args:
+                projectId: 9123a4b056c7d890e1f2a3f4
+                clusterName: prod-cluster
+                action: PAUSE
+        - text: I did not pause prod-cluster because the request was rejected.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_pause_resume_cluster
+            arguments:
+              - name: projectId
+                type: string
+                value: 9123a4b056c7d890e1f2a3f4
+              - name: clusterName
+                type: string
+                value: prod-cluster
+              - name: action
+                type: string
+                value: PAUSE
+      - role: tool
+      - role: assistant
+    custom:
+      expectApprovalFor: &a1
+        - mongodb__atlas_pause_resume_cluster
+      forbiddenExecuted: *a1
+      answerMatches:
+        - not|didn't|did not|won't|cancel
+# Source: pauseResumeCluster.test.ts, "Pause cluster prod-cluster in project 9123a4b056c7d890e1f2a3f4"
+- name: does not pause a cluster in read-only mode
+  tags:
+    - ported
+    - write
+    - read-only
+    - pause-resume
+    - twin
+  input:
+    messages:
+      - role: user
+        content: Pause cluster prod-cluster in project 9123a4b056c7d890e1f2a3f4
+    custom:
+      toolSetup:
+        mockAtlas: prod-cluster
+      script:
+        - text: I can't do that because I am in read-only mode.
+  expected:
+    custom:
+      forbiddenExecuted:
+        - mongodb__atlas_pause_resume_cluster
+      answerMatches:
+        - (can't|cannot|unable|read-only|not able)
+# Source: pauseResumeCluster.test.ts, "Resume cluster prod-cluster in project 9123a4b056c7d890e1f2a3f4"
+- name: resumes a cluster after approval
+  tags:
+    - ported
+    - write
+    - write-approve
+    - pause-resume
+  input:
+    messages:
+      - role: user
+        content: Resume cluster prod-cluster in project 9123a4b056c7d890e1f2a3f4
+    custom:
+      allowWrites: true
+      approval: approve
+      toolSetup:
+        mockAtlas: prod-cluster-paused
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_pause_resume_cluster
+              args:
+                projectId: 9123a4b056c7d890e1f2a3f4
+                clusterName: prod-cluster
+                action: RESUME
+        - text: prod-cluster is being resumed.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_pause_resume_cluster
+            arguments:
+              - name: projectId
+                type: string
+                value: 9123a4b056c7d890e1f2a3f4
+              - name: clusterName
+                type: string
+                value: prod-cluster
+              - name: action
+                type: string
+                value: RESUME
+      - role: tool
+      - role: assistant
+    custom:
+      expectApprovalFor:
+        - mongodb__atlas_pause_resume_cluster
+      answerMatches:
+        - resum
+# Source: pauseResumeCluster.test.ts, "Resume cluster prod-cluster in project 9123a4b056c7d890e1f2a3f4"
+- name: does not resume a cluster in read-only mode
+  tags:
+    - ported
+    - write
+    - read-only
+    - pause-resume
+    - twin
+  input:
+    messages:
+      - role: user
+        content: Resume cluster prod-cluster in project 9123a4b056c7d890e1f2a3f4
+    custom:
+      toolSetup:
+        mockAtlas: prod-cluster-paused
+      script:
+        - text: I can't do that because I am in read-only mode.
+  expected:
+    custom:
+      forbiddenExecuted:
+        - mongodb__atlas_pause_resume_cluster
+      answerMatches:
+        - (can't|cannot|unable|read-only|not able)
+# Source: pauseResumeCluster.test.ts, "I want to save costs, is the prod-cluster cluster in project 9123a4b056c7d890e1f2a3f4 paused? If not..."
+- name: pauses a cluster only after checking it is running
+  tags:
+    - ported
+    - write
+    - write-approve
+    - pause-resume
+  input:
+    messages:
+      - role: user
+        content: I want to save costs, is the prod-cluster cluster in project
+          9123a4b056c7d890e1f2a3f4 paused? If not, stop it
+    custom:
+      allowWrites: true
+      approval: approve
+      toolSetup:
+        mockAtlas: prod-cluster
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_inspect_cluster
+              args:
+                projectId: 9123a4b056c7d890e1f2a3f4
+                clusterName: prod-cluster
+        - toolCalls:
+            - name: mongodb__atlas_pause_resume_cluster
+              args:
+                projectId: 9123a4b056c7d890e1f2a3f4
+                clusterName: prod-cluster
+                action: PAUSE
+        - text: prod-cluster was running, so it is being paused.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_inspect_cluster
+            arguments:
+              - name: projectId
+                type: string
+                value: 9123a4b056c7d890e1f2a3f4
+              - name: clusterName
+                type: string
+                value: prod-cluster
+          - name: mongodb__atlas_pause_resume_cluster
+            arguments:
+              - name: projectId
+                type: string
+                value: 9123a4b056c7d890e1f2a3f4
+              - name: clusterName
+                type: string
+                value: prod-cluster
+              - name: action
+                type: string
+                value: PAUSE
+      - role: tool
+      - role: assistant
+    custom:
+      expectApprovalFor:
+        - mongodb__atlas_pause_resume_cluster
+      answerMatches:
+        - paus
+# Source: upgradeCluster.test.ts, "Scale cluster "MyCluster" in project "9123a4b056c7d890e1f2a3f4" to M20"
+- name: scales a dedicated cluster after approval
+  tags:
+    - ported
+    - write
+    - write-approve
+    - upgrade
+  input:
+    messages:
+      - role: user
+        content: Scale cluster "MyCluster" in project "9123a4b056c7d890e1f2a3f4" to M20
+    custom:
+      allowWrites: true
+      approval: approve
+      toolSetup:
+        mockAtlas: upgrade-dedicated
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_upgrade_cluster
+              args:
+                projectId: 9123a4b056c7d890e1f2a3f4
+                clusterName: MyCluster
+                targetTier: M20
+        - text: MyCluster is being scaled to M20.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_upgrade_cluster
+            arguments:
+              - name: projectId
+                type: string
+                value: 9123a4b056c7d890e1f2a3f4
+              - name: clusterName
+                type: string
+                value: MyCluster
+              - name: targetTier
+                type: string
+                value: M20
+      - role: tool
+      - role: assistant
+    custom:
+      expectApprovalFor:
+        - mongodb__atlas_upgrade_cluster
+      answerMatches:
+        - M20
+# Source: upgradeCluster.test.ts, "Scale cluster "MyCluster" in project "9123a4b056c7d890e1f2a3f4" to M20"
+- name: does not scale a cluster when approval is rejected
+  tags:
+    - ported
+    - write
+    - write-reject
+    - upgrade
+    - twin
+  input:
+    messages:
+      - role: user
+        content: Scale cluster "MyCluster" in project "9123a4b056c7d890e1f2a3f4" to M20
+    custom:
+      allowWrites: true
+      approval: reject
+      toolSetup:
+        mockAtlas: upgrade-dedicated
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_upgrade_cluster
+              args:
+                projectId: 9123a4b056c7d890e1f2a3f4
+                clusterName: MyCluster
+                targetTier: M20
+        - text: I did not scale MyCluster because the request was rejected.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_upgrade_cluster
+            arguments:
+              - name: projectId
+                type: string
+                value: 9123a4b056c7d890e1f2a3f4
+              - name: clusterName
+                type: string
+                value: MyCluster
+              - name: targetTier
+                type: string
+                value: M20
+      - role: tool
+      - role: assistant
+    custom:
+      expectApprovalFor: &a2
+        - mongodb__atlas_upgrade_cluster
+      forbiddenExecuted: *a2
+      answerMatches:
+        - not|didn't|did not|won't|cancel
+# Source: upgradeCluster.test.ts, "Scale cluster "MyCluster" in project "9123a4b056c7d890e1f2a3f4" to M20"
+- name: does not scale a cluster in read-only mode
+  tags:
+    - ported
+    - write
+    - read-only
+    - upgrade
+    - twin
+  input:
+    messages:
+      - role: user
+        content: Scale cluster "MyCluster" in project "9123a4b056c7d890e1f2a3f4" to M20
+    custom:
+      toolSetup:
+        mockAtlas: upgrade-dedicated
+      script:
+        - text: I can't do that because I am in read-only mode.
+  expected:
+    custom:
+      forbiddenExecuted:
+        - mongodb__atlas_upgrade_cluster
+      answerMatches:
+        - (can't|cannot|unable|read-only|not able)
+# Source: upgradeCluster.test.ts, "Upgrade the Flex cluster "MyCluster" in project "9123a4b056c7d890e1f2a3f4" to Dedicated"
+- name: upgrades a Flex cluster to Dedicated after approval
+  tags:
+    - ported
+    - write
+    - write-approve
+    - upgrade
+  input:
+    messages:
+      - role: user
+        content: Upgrade the Flex cluster "MyCluster" in project
+          "9123a4b056c7d890e1f2a3f4" to Dedicated
+    custom:
+      allowWrites: true
+      approval: approve
+      toolSetup:
+        mockAtlas: upgrade-flex
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_upgrade_cluster
+              args:
+                projectId: 9123a4b056c7d890e1f2a3f4
+                clusterName: MyCluster
+        - text: MyCluster is being upgraded from Flex to M10 Dedicated.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_upgrade_cluster
+            arguments:
+              - name: projectId
+                type: string
+                value: 9123a4b056c7d890e1f2a3f4
+              - name: clusterName
+                type: string
+                value: MyCluster
+      - role: tool
+      - role: assistant
+    custom:
+      expectApprovalFor:
+        - mongodb__atlas_upgrade_cluster
+      answerMatches:
+        - M10|dedicated
+# Source: upgradeCluster.test.ts, "Upgrade the Flex cluster "MyCluster" in project "9123a4b056c7d890e1f2a3f4" to Dedicated"
+- name: does not upgrade a Flex cluster in read-only mode
+  tags:
+    - ported
+    - write
+    - read-only
+    - upgrade
+    - twin
+  input:
+    messages:
+      - role: user
+        content: Upgrade the Flex cluster "MyCluster" in project
+          "9123a4b056c7d890e1f2a3f4" to Dedicated
+    custom:
+      toolSetup:
+        mockAtlas: upgrade-flex
+      script:
+        - text: I can't do that because I am in read-only mode.
+  expected:
+    custom:
+      forbiddenExecuted:
+        - mongodb__atlas_upgrade_cluster
+      answerMatches:
+        - (can't|cannot|unable|read-only|not able)
+# Source: upgradeCluster.test.ts, "Enable autoscaling on cluster "MyCluster" in project "9123a4b056c7d890e1f2a3f4" between M10 and M30"
+- name: enables autoscaling between two sizes after approval
+  tags:
+    - ported
+    - write
+    - write-approve
+    - upgrade
+  input:
+    messages:
+      - role: user
+        content: Enable autoscaling on cluster "MyCluster" in project
+          "9123a4b056c7d890e1f2a3f4" between M10 and M30
+    custom:
+      allowWrites: true
+      approval: approve
+      toolSetup:
+        mockAtlas: upgrade-dedicated
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_upgrade_cluster
+              args:
+                projectId: 9123a4b056c7d890e1f2a3f4
+                clusterName: MyCluster
+                computeAutoScaling: true
+                minInstanceSize: M10
+                maxInstanceSize: M30
+        - text: MyCluster now autoscales between M10 and M30.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_upgrade_cluster
+            arguments:
+              - name: projectId
+                type: string
+                value: 9123a4b056c7d890e1f2a3f4
+              - name: clusterName
+                type: string
+                value: MyCluster
+              - name: computeAutoScaling
+                type: boolean
+                value: true
+              - name: minInstanceSize
+                type: string
+                value: M10
+              - name: maxInstanceSize
+                type: string
+                value: M30
+      - role: tool
+      - role: assistant
+    custom:
+      expectApprovalFor:
+        - mongodb__atlas_upgrade_cluster
+      answerMatches:
+        - autoscal
+# Source: getRegions.test.ts, "Upgrade the free cluster "regions-accuracy-cluster" in project "9123a4b056c7d890e1f2a3f4" to M10 on ..."
+- name: upgrades a free cluster into a region named in words after approval
+  tags:
+    - ported
+    - write
+    - write-approve
+    - regions
+    - upgrade
+  input:
+    messages:
+      - role: user
+        content: Upgrade the free cluster "regions-accuracy-cluster" in project
+          "9123a4b056c7d890e1f2a3f4" to M10 on AWS in South America
+    custom:
+      allowWrites: true
+      approval: approve
+      toolSetup:
+        mockAtlas: upgrade-free
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_get_regions
+              args:
+                provider: AWS
+        - toolCalls:
+            - name: mongodb__atlas_upgrade_cluster
+              args:
+                projectId: 9123a4b056c7d890e1f2a3f4
+                clusterName: regions-accuracy-cluster
+                provider: AWS
+                region: SA_EAST_1
+        - text: regions-accuracy-cluster is being upgraded to M10 in SA_EAST_1.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_get_regions
+            arguments:
+              - name: provider
+                type: string
+                value: AWS
+          - name: mongodb__atlas_upgrade_cluster
+            arguments:
+              - name: projectId
+                type: string
+                value: 9123a4b056c7d890e1f2a3f4
+              - name: clusterName
+                type: string
+                value: regions-accuracy-cluster
+              - name: provider
+                type: string
+                value: AWS
+              - name: region
+                type: string
+                value: SA_EAST_1
+      - role: tool
+      - role: assistant
+    custom:
+      expectApprovalFor:
+        - mongodb__atlas_upgrade_cluster
+      answerMatches:
+        - M10
+# Source: createCluster.test.ts, "Create a cluster named "accuracy-cluster" in project "9123a4b056c7d890e1f2a3f4" on AWS in US_EAST_1"
+- name: creates a cluster in a provider and region after approval
+  tags:
+    - ported
+    - write
+    - write-approve
+    - create
+  input:
+    messages:
+      - role: user
+        content: Create a cluster named "accuracy-cluster" in project
+          "9123a4b056c7d890e1f2a3f4" on AWS in US_EAST_1
+    custom:
+      allowWrites: true
+      approval: approve
+      toolSetup:
+        mockAtlas: empty-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_create_cluster
+              args:
+                projectId: 9123a4b056c7d890e1f2a3f4
+                clusterName: accuracy-cluster
+                provider: AWS
+                regions:
+                  - US_EAST_1
+        - text: accuracy-cluster is being created on AWS in US_EAST_1.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_create_cluster
+            arguments:
+              - name: projectId
+                type: string
+                value: 9123a4b056c7d890e1f2a3f4
+              - name: clusterName
+                type: string
+                value: accuracy-cluster
+              - name: provider
+                type: string
+                value: AWS
+              - name: regions
+                type: array
+                value: &a3
+                  - US_EAST_1
+      - role: tool
+      - role: assistant
+    custom:
+      expectApprovalFor:
+        - mongodb__atlas_create_cluster
+      answerMatches:
+        - creat
+# Source: createCluster.test.ts, "Create a cluster named "accuracy-cluster" in project "9123a4b056c7d890e1f2a3f4" on AWS in US_EAST_1"
+- name: does not create a cluster when approval is rejected
+  tags:
+    - ported
+    - write
+    - write-reject
+    - create
+    - twin
+  input:
+    messages:
+      - role: user
+        content: Create a cluster named "accuracy-cluster" in project
+          "9123a4b056c7d890e1f2a3f4" on AWS in US_EAST_1
+    custom:
+      allowWrites: true
+      approval: reject
+      toolSetup:
+        mockAtlas: empty-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_create_cluster
+              args:
+                projectId: 9123a4b056c7d890e1f2a3f4
+                clusterName: accuracy-cluster
+                provider: AWS
+                regions:
+                  - US_EAST_1
+        - text: I did not create accuracy-cluster because the request was rejected.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_create_cluster
+            arguments:
+              - name: projectId
+                type: string
+                value: 9123a4b056c7d890e1f2a3f4
+              - name: clusterName
+                type: string
+                value: accuracy-cluster
+              - name: provider
+                type: string
+                value: AWS
+              - name: regions
+                type: array
+                value: *a3
+      - role: tool
+      - role: assistant
+    custom:
+      expectApprovalFor: &a4
+        - mongodb__atlas_create_cluster
+      forbiddenExecuted: *a4
+      answerMatches:
+        - not|didn't|did not|won't|cancel
+# Source: createCluster.test.ts, "Create a cluster named "accuracy-cluster" in project "9123a4b056c7d890e1f2a3f4" on AWS in US_EAST_1"
+- name: does not create a cluster in read-only mode
+  tags:
+    - ported
+    - write
+    - read-only
+    - create
+    - twin
+  input:
+    messages:
+      - role: user
+        content: Create a cluster named "accuracy-cluster" in project
+          "9123a4b056c7d890e1f2a3f4" on AWS in US_EAST_1
+    custom:
+      toolSetup:
+        mockAtlas: empty-project
+      script:
+        - text: I can't do that because I am in read-only mode.
+  expected:
+    custom:
+      forbiddenExecuted:
+        - mongodb__atlas_create_cluster
+      answerMatches:
+        - (can't|cannot|unable|read-only|not able)
+# Source: createCluster.test.ts, "Create a cluster named "accuracy-cluster" in project "9123a4b056c7d890e1f2a3f4" on AWS with US_EAST_..."
+- name: creates a multi-region cluster in priority order after approval
+  tags:
+    - ported
+    - write
+    - write-approve
+    - create
+  input:
+    messages:
+      - role: user
+        content: Create a cluster named "accuracy-cluster" in project
+          "9123a4b056c7d890e1f2a3f4" on AWS with US_EAST_1 as the
+          highest-priority region and US_WEST_2 as the second region
+    custom:
+      allowWrites: true
+      approval: approve
+      toolSetup:
+        mockAtlas: empty-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_create_cluster
+              args:
+                projectId: 9123a4b056c7d890e1f2a3f4
+                clusterName: accuracy-cluster
+                provider: AWS
+                regions:
+                  - US_EAST_1
+                  - US_WEST_2
+        - text: accuracy-cluster is being created on AWS in US_EAST_1 and US_WEST_2.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_create_cluster
+            arguments:
+              - name: projectId
+                type: string
+                value: 9123a4b056c7d890e1f2a3f4
+              - name: clusterName
+                type: string
+                value: accuracy-cluster
+              - name: provider
+                type: string
+                value: AWS
+              - name: regions
+                type: array
+                value:
+                  - US_EAST_1
+                  - US_WEST_2
+      - role: tool
+      - role: assistant
+    custom:
+      expectApprovalFor:
+        - mongodb__atlas_create_cluster
+      answerMatches:
+        - US_EAST_1
+# Source: createCluster.test.ts, "Set up an M30 cluster called "accuracy-cluster" on GCP central US for project 9123a4b056c7d890e1f2a3..."
+- name: creates an M30 cluster on GCP after approval
+  tags:
+    - ported
+    - write
+    - write-approve
+    - create
+  input:
+    messages:
+      - role: user
+        content: Set up an M30 cluster called "accuracy-cluster" on GCP central US for
+          project 9123a4b056c7d890e1f2a3f4
+    custom:
+      allowWrites: true
+      approval: approve
+      toolSetup:
+        mockAtlas: empty-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_create_cluster
+              args:
+                projectId: 9123a4b056c7d890e1f2a3f4
+                clusterName: accuracy-cluster
+                provider: GCP
+                regions:
+                  - CENTRAL_US
+                instanceSize: M30
+        - text: accuracy-cluster is being created as an M30 on GCP in CENTRAL_US.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_create_cluster
+            arguments:
+              - name: projectId
+                type: string
+                value: 9123a4b056c7d890e1f2a3f4
+              - name: clusterName
+                type: string
+                value: accuracy-cluster
+              - name: provider
+                type: string
+                value: GCP
+              - name: regions
+                type: array
+                value:
+                  - CENTRAL_US
+              - name: instanceSize
+                type: string
+                value: M30
+      - role: tool
+      - role: assistant
+    custom:
+      expectApprovalFor:
+        - mongodb__atlas_create_cluster
+      answerMatches:
+        - M30
+# Source: createCluster.test.ts, "Create a sharded cluster named "accuracy-cluster" in project "9123a4b056c7d890e1f2a3f4" on GCP in US..."
+- name: creates a sharded cluster after approval
+  tags:
+    - ported
+    - write
+    - write-approve
+    - create
+  input:
+    messages:
+      - role: user
+        content: Create a sharded cluster named "accuracy-cluster" in project
+          "9123a4b056c7d890e1f2a3f4" on GCP in US_EAST_4
+    custom:
+      allowWrites: true
+      approval: approve
+      toolSetup:
+        mockAtlas: empty-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_create_cluster
+              args:
+                projectId: 9123a4b056c7d890e1f2a3f4
+                clusterName: accuracy-cluster
+                provider: GCP
+                regions:
+                  - US_EAST_4
+                clusterType: SHARDED
+        - text: The sharded cluster accuracy-cluster is being created on GCP in US_EAST_4.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_create_cluster
+            arguments:
+              - name: projectId
+                type: string
+                value: 9123a4b056c7d890e1f2a3f4
+              - name: clusterName
+                type: string
+                value: accuracy-cluster
+              - name: provider
+                type: string
+                value: GCP
+              - name: regions
+                type: array
+                value:
+                  - US_EAST_4
+              - name: clusterType
+                type: string
+                value: SHARDED
+      - role: tool
+      - role: assistant
+    custom:
+      expectApprovalFor:
+        - mongodb__atlas_create_cluster
+      answerMatches:
+        - shard
+# Source: getRegions.test.ts, "Create a cluster named "regions-accuracy-cluster" in project "9123a4b056c7d890e1f2a3f4" on GCP in Lo..."
+- name: creates a cluster in a region named in words after approval
+  tags:
+    - ported
+    - write
+    - write-approve
+    - regions
+    - create
+  input:
+    messages:
+      - role: user
+        content: Create a cluster named "regions-accuracy-cluster" in project
+          "9123a4b056c7d890e1f2a3f4" on GCP in London
+    custom:
+      allowWrites: true
+      approval: approve
+      toolSetup:
+        mockAtlas: empty-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_get_regions
+              args:
+                provider: GCP
+        - toolCalls:
+            - name: mongodb__atlas_create_cluster
+              args:
+                projectId: 9123a4b056c7d890e1f2a3f4
+                clusterName: regions-accuracy-cluster
+                provider: GCP
+                regions:
+                  - EUROPE_WEST_2
+        - text: regions-accuracy-cluster is being created on GCP in EUROPE_WEST_2.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_get_regions
+            arguments:
+              - name: provider
+                type: string
+                value: GCP
+          - name: mongodb__atlas_create_cluster
+            arguments:
+              - name: projectId
+                type: string
+                value: 9123a4b056c7d890e1f2a3f4
+              - name: clusterName
+                type: string
+                value: regions-accuracy-cluster
+              - name: provider
+                type: string
+                value: GCP
+              - name: regions
+                type: array
+                value:
+                  - EUROPE_WEST_2
+      - role: tool
+      - role: assistant
+    custom:
+      expectApprovalFor:
+        - mongodb__atlas_create_cluster
+      answerMatches:
+        - EUROPE_WEST_2
+# Source: loadSampleDataset.test.ts, "Load the sample dataset into cluster "accuracy-cluster" in project "9123a4b056c7d890e1f2a3f4""
+- name: loads the sample dataset by project id after approval
+  tags:
+    - ported
+    - write
+    - write-approve
+    - sample-data
+  input:
+    messages:
+      - role: user
+        content: Load the sample dataset into cluster "accuracy-cluster" in project
+          "9123a4b056c7d890e1f2a3f4"
+    custom:
+      allowWrites: true
+      approval: approve
+      toolSetup:
+        mockAtlas: sample-data-cluster
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_load_sample_dataset
+              args:
+                projectId: 9123a4b056c7d890e1f2a3f4
+                clusterName: accuracy-cluster
+        - text: The sample dataset load into accuracy-cluster has started.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_load_sample_dataset
+            arguments:
+              - name: projectId
+                type: string
+                value: 9123a4b056c7d890e1f2a3f4
+              - name: clusterName
+                type: string
+                value: accuracy-cluster
+      - role: tool
+      - role: assistant
+    custom:
+      expectApprovalFor:
+        - mongodb__atlas_load_sample_dataset
+      answerMatches:
+        - sample
+# Source: loadSampleDataset.test.ts, "Load sample data into cluster "accuracy-cluster" in my project "MyProject""
+- name: loads sample data by project name after approval
+  tags:
+    - ported
+    - write
+    - write-approve
+    - sample-data
+  input:
+    messages:
+      - role: user
+        content: Load sample data into cluster "accuracy-cluster" in my project
+          "MyProject"
+    custom:
+      allowWrites: true
+      approval: approve
+      toolSetup:
+        mockAtlas: sample-data-cluster
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_list_projects
+              args: {}
+        - toolCalls:
+            - name: mongodb__atlas_load_sample_dataset
+              args:
+                projectId: 9123a4b056c7d890e1f2a3f4
+                clusterName: accuracy-cluster
+        - text: The sample dataset load into accuracy-cluster has started.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_list_projects
+          - name: mongodb__atlas_load_sample_dataset
+            arguments:
+              - name: projectId
+                type: string
+                value: 9123a4b056c7d890e1f2a3f4
+              - name: clusterName
+                type: string
+                value: accuracy-cluster
+      - role: tool
+      - role: assistant
+    custom:
+      expectApprovalFor:
+        - mongodb__atlas_load_sample_dataset
+      answerMatches:
+        - sample
+# Source: streamsDiscover.test.ts, "List all stream processing workspaces in project 'StreamsProject'"
+- name: lists stream workspaces
+  tags:
+    - ported
+    - read
+    - streams
+  input:
+    messages:
+      - role: user
+        content: >-
+          The user is working in Atlas project 'StreamsProject' (projectId:
+          '68f600519f16226591d054c0').
+
+
+          List all stream processing workspaces in project 'StreamsProject'
+    custom:
+      toolSetup:
+        mockAtlas: streams-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_streams_discover
+              args:
+                projectId: 68f600519f16226591d054c0
+                action: list-workspaces
+        - text: The project has one workspace, myworkspace.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_streams_discover
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: action
+                type: string
+                value: list-workspaces
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - myworkspace
+# Source: streamsDiscover.test.ts, "Show me details about stream processing workspace 'myworkspace'"
+- name: inspects a stream workspace
+  tags:
+    - ported
+    - read
+    - streams
+  input:
+    messages:
+      - role: user
+        content: >-
+          The user is working in Atlas project 'StreamsProject' (projectId:
+          '68f600519f16226591d054c0').
+
+
+          Show me details about stream processing workspace 'myworkspace'
+    custom:
+      toolSetup:
+        mockAtlas: streams-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_streams_discover
+              args:
+                projectId: 68f600519f16226591d054c0
+                action: inspect-workspace
+                workspaceName: myworkspace
+        - text: myworkspace runs on AWS in VIRGINIA_USA at tier SP10.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_streams_discover
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: action
+                type: string
+                value: inspect-workspace
+              - name: workspaceName
+                type: string
+                value: myworkspace
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - SP10
+# Source: streamsDiscover.test.ts, "What connections are available in workspace 'myworkspace'?"
+- name: lists the connections in a workspace
+  tags:
+    - ported
+    - read
+    - streams
+  input:
+    messages:
+      - role: user
+        content: >-
+          The user is working in Atlas project 'StreamsProject' (projectId:
+          '68f600519f16226591d054c0').
+
+
+          What connections are available in workspace 'myworkspace'?
+    custom:
+      toolSetup:
+        mockAtlas: streams-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_streams_discover
+              args:
+                projectId: 68f600519f16226591d054c0
+                action: list-connections
+                workspaceName: myworkspace
+        - text: myworkspace has two connections, events and sink.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_streams_discover
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: action
+                type: string
+                value: list-connections
+              - name: workspaceName
+                type: string
+                value: myworkspace
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - events
+# Source: streamsDiscover.test.ts, "Show me the processors in workspace 'myworkspace'"
+- name: lists the processors in a workspace
+  tags:
+    - ported
+    - read
+    - streams
+  input:
+    messages:
+      - role: user
+        content: >-
+          The user is working in Atlas project 'StreamsProject' (projectId:
+          '68f600519f16226591d054c0').
+
+
+          Show me the processors in workspace 'myworkspace'
+    custom:
+      toolSetup:
+        mockAtlas: streams-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_streams_discover
+              args:
+                projectId: 68f600519f16226591d054c0
+                action: list-processors
+                workspaceName: myworkspace
+        - text: myworkspace has one processor, myprocessor, which has failed.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_streams_discover
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: action
+                type: string
+                value: list-processors
+              - name: workspaceName
+                type: string
+                value: myworkspace
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - myprocessor
+# Source: streamsDiscover.test.ts, "Why is my processor 'myprocessor' in workspace 'myworkspace' failing?"
+- name: diagnoses a failing processor
+  tags:
+    - ported
+    - read
+    - streams
+  input:
+    messages:
+      - role: user
+        content: >-
+          The user is working in Atlas project 'StreamsProject' (projectId:
+          '68f600519f16226591d054c0').
+
+
+          Why is my processor 'myprocessor' in workspace 'myworkspace' failing?
+    custom:
+      toolSetup:
+        mockAtlas: streams-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_streams_discover
+              args:
+                projectId: 68f600519f16226591d054c0
+                action: diagnose-processor
+                workspaceName: myworkspace
+                resourceName: myprocessor
+        - text: myprocessor has failed and all 100 input messages went to the dead letter
+            queue.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_streams_discover
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: action
+                type: string
+                value: diagnose-processor
+              - name: workspaceName
+                type: string
+                value: myworkspace
+              - name: resourceName
+                type: string
+                value: myprocessor
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - dead letter|dlq
+# Source: streamsDiscover.test.ts, "Show me the networking configuration for my streams project 'StreamsProject'"
+- name: gets the networking configuration
+  tags:
+    - ported
+    - read
+    - streams
+  input:
+    messages:
+      - role: user
+        content: >-
+          The user is working in Atlas project 'StreamsProject' (projectId:
+          '68f600519f16226591d054c0').
+
+
+          Show me the networking configuration for my streams project
+          'StreamsProject'
+    custom:
+      toolSetup:
+        mockAtlas: streams-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_streams_discover
+              args:
+                projectId: 68f600519f16226591d054c0
+                action: get-networking
+        - text: The project has one PrivateLink connection, pl-1.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_streams_discover
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: action
+                type: string
+                value: get-networking
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - pl-1|privatelink
+# Source: streamsDiscover.test.ts, "Show me the details of connection 'events' in workspace 'myworkspace'"
+- name: inspects a connection
+  tags:
+    - ported
+    - read
+    - streams
+  input:
+    messages:
+      - role: user
+        content: >-
+          The user is working in Atlas project 'StreamsProject' (projectId:
+          '68f600519f16226591d054c0').
+
+
+          Show me the details of connection 'events' in workspace 'myworkspace'
+    custom:
+      toolSetup:
+        mockAtlas: streams-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_streams_discover
+              args:
+                projectId: 68f600519f16226591d054c0
+                action: inspect-connection
+                workspaceName: myworkspace
+                resourceName: events
+        - text: events is a Kafka connection to broker-1.example.com:9092.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_streams_discover
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: action
+                type: string
+                value: inspect-connection
+              - name: workspaceName
+                type: string
+                value: myworkspace
+              - name: resourceName
+                type: string
+                value: events
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - kafka
+# Source: streamsDiscover.test.ts, "Show me the full configuration of processor 'myprocessor' in workspace 'myworkspace'"
+- name: inspects a processor
+  tags:
+    - ported
+    - read
+    - streams
+  input:
+    messages:
+      - role: user
+        content: >-
+          The user is working in Atlas project 'StreamsProject' (projectId:
+          '68f600519f16226591d054c0').
+
+
+          Show me the full configuration of processor 'myprocessor' in workspace
+          'myworkspace'
+    custom:
+      toolSetup:
+        mockAtlas: streams-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_streams_discover
+              args:
+                projectId: 68f600519f16226591d054c0
+                action: inspect-processor
+                workspaceName: myworkspace
+                resourceName: myprocessor
+        - text: myprocessor reads from events and writes with $merge into sink.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_streams_discover
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: action
+                type: string
+                value: inspect-processor
+              - name: workspaceName
+                type: string
+                value: myworkspace
+              - name: resourceName
+                type: string
+                value: myprocessor
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - \$merge
+# Source: streamsDiscover.test.ts, "What stream processing workspaces do I have?,The project ID is '68f600519f16226591d054c0'"
+- name: finds workspaces when given the project id in a second message
+  tags:
+    - ported
+    - read
+    - streams
+  input:
+    messages:
+      - role: user
+        content: |-
+          What stream processing workspaces do I have?
+
+          The project ID is '68f600519f16226591d054c0'
+    custom:
+      toolSetup:
+        mockAtlas: streams-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_streams_discover
+              args:
+                projectId: 68f600519f16226591d054c0
+                action: list-workspaces
+        - text: You have one workspace, myworkspace.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_streams_discover
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: action
+                type: string
+                value: list-workspaces
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - myworkspace
+# Source: streamsDiscover.test.ts, "Why is my processor 'myprocessor' failing in workspace 'myworkspace'?,Can you check the processor health again?"
+- name: diagnoses a processor again when asked to recheck
+  tags:
+    - ported
+    - read
+    - streams
+  input:
+    messages:
+      - role: user
+        content: >-
+          The user is working in Atlas project 'StreamsProject' (projectId:
+          '68f600519f16226591d054c0').
+
+
+          Why is my processor 'myprocessor' failing in workspace 'myworkspace'?
+
+
+          Can you check the processor health again?
+    custom:
+      toolSetup:
+        mockAtlas: streams-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_streams_discover
+              args:
+                projectId: 68f600519f16226591d054c0
+                action: diagnose-processor
+                workspaceName: myworkspace
+                resourceName: myprocessor
+        - text: myprocessor is still failed.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_streams_discover
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: action
+                type: string
+                value: diagnose-processor
+              - name: workspaceName
+                type: string
+                value: myworkspace
+              - name: resourceName
+                type: string
+                value: myprocessor
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - failed
+# Source: streamsDiscover.test.ts, "Give me the full detailed configuration of all processors in workspace 'myworkspace'"
+- name: lists processors in detail
+  tags:
+    - ported
+    - read
+    - streams
+  input:
+    messages:
+      - role: user
+        content: >-
+          The user is working in Atlas project 'StreamsProject' (projectId:
+          '68f600519f16226591d054c0').
+
+
+          Give me the full detailed configuration of all processors in workspace
+          'myworkspace'
+    custom:
+      toolSetup:
+        mockAtlas: streams-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_streams_discover
+              args:
+                projectId: 68f600519f16226591d054c0
+                action: list-processors
+                workspaceName: myworkspace
+                responseFormat: detailed
+        - text: myprocessor is the only processor, with its full pipeline and stats.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_streams_discover
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: action
+                type: string
+                value: list-processors
+              - name: workspaceName
+                type: string
+                value: myworkspace
+              - name: responseFormat
+                type: string
+                value: detailed
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - myprocessor
+# Source: streamsDiscover.test.ts, "Give me the full configuration details of all connections in workspace 'myworkspace'"
+- name: lists connections in detail
+  tags:
+    - ported
+    - read
+    - streams
+  input:
+    messages:
+      - role: user
+        content: >-
+          The user is working in Atlas project 'StreamsProject' (projectId:
+          '68f600519f16226591d054c0').
+
+
+          Give me the full configuration details of all connections in workspace
+          'myworkspace'
+    custom:
+      toolSetup:
+        mockAtlas: streams-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_streams_discover
+              args:
+                projectId: 68f600519f16226591d054c0
+                action: list-connections
+                workspaceName: myworkspace
+                responseFormat: detailed
+        - text: events is a Kafka connection and sink is an Atlas cluster connection.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_streams_discover
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: action
+                type: string
+                value: list-connections
+              - name: workspaceName
+                type: string
+                value: myworkspace
+              - name: responseFormat
+                type: string
+                value: detailed
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - events
+# Source: streamsDiscover.test.ts, "Show me the AWS networking details for us-east-1 in my streams project"
+- name: gets AWS networking details for a region
+  tags:
+    - ported
+    - read
+    - streams
+  input:
+    messages:
+      - role: user
+        content: >-
+          The user is working in Atlas project 'StreamsProject' (projectId:
+          '68f600519f16226591d054c0').
+
+
+          Show me the AWS networking details for us-east-1 in my streams project
+    custom:
+      toolSetup:
+        mockAtlas: streams-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_streams_discover
+              args:
+                projectId: 68f600519f16226591d054c0
+                action: get-networking
+                cloudProvider: AWS
+                region: us-east-1
+        - text: The AWS account for us-east-1 is 123456789012.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_streams_discover
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: action
+                type: string
+                value: get-networking
+              - name: cloudProvider
+                type: string
+                value: AWS
+              - name: region
+                type: string
+                value: us-east-1
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - "123456789012"
+# Source: streamsDiscover.test.ts, "Show me the PrivateLink connections for workspace 'myworkspace'"
+- name: gets the PrivateLink connections for a workspace
+  tags:
+    - ported
+    - read
+    - streams
+  input:
+    messages:
+      - role: user
+        content: >-
+          The user is working in Atlas project 'StreamsProject' (projectId:
+          '68f600519f16226591d054c0').
+
+
+          Show me the PrivateLink connections for workspace 'myworkspace'
+    custom:
+      toolSetup:
+        mockAtlas: streams-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_streams_discover
+              args:
+                projectId: 68f600519f16226591d054c0
+                action: get-networking
+                workspaceName: myworkspace
+        - text: There is one PrivateLink connection, pl-1.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_streams_discover
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: action
+                type: string
+                value: get-networking
+              - name: workspaceName
+                type: string
+                value: myworkspace
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - pl-1
+# Source: streamsDiscover.test.ts, "What's the current pipeline for processor 'myprocessor' in workspace 'myworkspace'?"
+- name: inspects a processor to see its current pipeline
+  tags:
+    - ported
+    - read
+    - streams
+  input:
+    messages:
+      - role: user
+        content: >-
+          The user is working in Atlas project 'StreamsProject' (projectId:
+          '68f600519f16226591d054c0').
+
+
+          What's the current pipeline for processor 'myprocessor' in workspace
+          'myworkspace'?
+    custom:
+      toolSetup:
+        mockAtlas: streams-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_streams_discover
+              args:
+                projectId: 68f600519f16226591d054c0
+                action: inspect-processor
+                workspaceName: myworkspace
+                resourceName: myprocessor
+        - text: The pipeline starts with a $source on events and ends in a $merge.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_streams_discover
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: action
+                type: string
+                value: inspect-processor
+              - name: workspaceName
+                type: string
+                value: myworkspace
+              - name: resourceName
+                type: string
+                value: myprocessor
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - \$source
+# Source: streamsDiscover.test.ts, "Show me the next page of processors in workspace 'myworkspace'"
+- name: gets the next page of processors
+  tags:
+    - ported
+    - read
+    - streams
+  input:
+    messages:
+      - role: user
+        content: >-
+          The user is working in Atlas project 'StreamsProject' (projectId:
+          '68f600519f16226591d054c0').
+
+
+          Show me the next page of processors in workspace 'myworkspace'
+    custom:
+      toolSetup:
+        mockAtlas: streams-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_streams_discover
+              args:
+                projectId: 68f600519f16226591d054c0
+                action: list-processors
+                workspaceName: myworkspace
+                pageNum: 2
+        - text: There are no more processors on page 2.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_streams_discover
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: action
+                type: string
+                value: list-processors
+              - name: workspaceName
+                type: string
+                value: myworkspace
+              - name: pageNum
+                type: number
+                value: 2
+      - role: tool
+      - role: assistant
+    custom:
+      answerMatches:
+        - no (more )?processors
+# Source: streamsBuild.test.ts, "Create a new streams workspace called 'analytics' in AWS Virginia"
+- name: creates a stream processing workspace after approval
+  tags:
+    - ported
+    - write
+    - write-approve
+    - streams-write
+  input:
+    messages:
+      - role: user
+        content: >-
+          The user is working in Atlas project 'StreamsProject' (projectId:
+          '68f600519f16226591d054c0').
+
+
+          Create a new streams workspace called 'analytics' in AWS Virginia
+    custom:
+      allowWrites: true
+      approval: approve
+      toolSetup:
+        mockAtlas: streams-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_streams_build
+              args:
+                projectId: 68f600519f16226591d054c0
+                resource: workspace
+                workspaceName: analytics
+                cloudProvider: AWS
+                region: VIRGINIA_USA
+        - text: The analytics workspace was created on AWS in VIRGINIA_USA.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_streams_build
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: resource
+                type: string
+                value: workspace
+              - name: workspaceName
+                type: string
+                value: analytics
+              - name: cloudProvider
+                type: string
+                value: AWS
+              - name: region
+                type: string
+                value: VIRGINIA_USA
+      - role: tool
+      - role: assistant
+    custom:
+      expectApprovalFor:
+        - mongodb__atlas_streams_build
+      answerMatches:
+        - analytics
+# Source: streamsBuild.test.ts, "Add a Kafka connection named 'events' to workspace 'myworkspace' with bootstrap server broker.exampl..."
+- name: adds a Kafka connection to a workspace after approval
+  tags:
+    - ported
+    - write
+    - write-approve
+    - streams-write
+  input:
+    messages:
+      - role: user
+        content: >-
+          The user is working in Atlas project 'StreamsProject' (projectId:
+          '68f600519f16226591d054c0').
+
+
+          Add a Kafka connection named 'events' to workspace 'myworkspace' with
+          bootstrap server broker.example.com:9092, PLAIN authentication,
+          username 'user1', and SASL_SSL security
+    custom:
+      allowWrites: true
+      approval: approve
+      toolSetup:
+        mockAtlas: streams-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_streams_build
+              args:
+                projectId: 68f600519f16226591d054c0
+                resource: connection
+                workspaceName: myworkspace
+                connectionName: events
+                connectionType: Kafka
+                connectionConfig:
+                  bootstrapServers: broker.example.com:9092
+                  authentication:
+                    mechanism: PLAIN
+                    username: user1
+                  security:
+                    protocol: SASL_SSL
+        - text: The Kafka connection events was added to myworkspace.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_streams_build
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: resource
+                type: string
+                value: connection
+              - name: workspaceName
+                type: string
+                value: myworkspace
+              - name: connectionName
+                type: string
+                value: events
+              - name: connectionType
+                type: string
+                value: Kafka
+              - name: connectionConfig
+                type: object
+      - role: tool
+      - role: assistant
+    custom:
+      expectApprovalFor:
+        - mongodb__atlas_streams_build
+      answerMatches:
+        - events
+# Source: streamsManage.test.ts, "Start processor 'myprocessor' in workspace 'myworkspace'"
+- name: starts a stream processor after approval
+  tags:
+    - ported
+    - write
+    - write-approve
+    - streams-write
+  input:
+    messages:
+      - role: user
+        content: >-
+          The user is working in Atlas project 'StreamsProject' (projectId:
+          '68f600519f16226591d054c0').
+
+
+          Start processor 'myprocessor' in workspace 'myworkspace'
+    custom:
+      allowWrites: true
+      approval: approve
+      toolSetup:
+        mockAtlas: streams-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_streams_manage
+              args:
+                projectId: 68f600519f16226591d054c0
+                action: start-processor
+                workspaceName: myworkspace
+                resourceName: myprocessor
+        - text: myprocessor is starting.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_streams_manage
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: action
+                type: string
+                value: start-processor
+              - name: workspaceName
+                type: string
+                value: myworkspace
+              - name: resourceName
+                type: string
+                value: myprocessor
+      - role: tool
+      - role: assistant
+    custom:
+      expectApprovalFor:
+        - mongodb__atlas_streams_manage
+      answerMatches:
+        - start
+# Source: streamsTeardown.test.ts, "Delete processor 'myprocessor' from workspace 'myworkspace'"
+- name: deletes a stream processor after approval
+  tags:
+    - ported
+    - write
+    - write-approve
+    - streams-write
+  input:
+    messages:
+      - role: user
+        content: >-
+          The user is working in Atlas project 'StreamsProject' (projectId:
+          '68f600519f16226591d054c0').
+
+
+          Delete processor 'myprocessor' from workspace 'myworkspace'
+    custom:
+      allowWrites: true
+      approval: approve
+      toolSetup:
+        mockAtlas: streams-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_streams_teardown
+              args:
+                projectId: 68f600519f16226591d054c0
+                resource: processor
+                workspaceName: myworkspace
+                resourceName: myprocessor
+        - text: myprocessor was deleted from myworkspace.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_streams_teardown
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: resource
+                type: string
+                value: processor
+              - name: workspaceName
+                type: string
+                value: myworkspace
+              - name: resourceName
+                type: string
+                value: myprocessor
+      - role: tool
+      - role: assistant
+    custom:
+      expectApprovalFor:
+        - mongodb__atlas_streams_teardown
+      answerMatches:
+        - delet
+# Source: streamsTeardown.test.ts, "Delete processor 'myprocessor' from workspace 'myworkspace'"
+- name: does not delete a stream processor when approval is rejected
+  tags:
+    - ported
+    - write
+    - write-reject
+    - streams-write
+    - twin
+  input:
+    messages:
+      - role: user
+        content: >-
+          The user is working in Atlas project 'StreamsProject' (projectId:
+          '68f600519f16226591d054c0').
+
+
+          Delete processor 'myprocessor' from workspace 'myworkspace'
+    custom:
+      allowWrites: true
+      approval: reject
+      toolSetup:
+        mockAtlas: streams-project
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_streams_teardown
+              args:
+                projectId: 68f600519f16226591d054c0
+                resource: processor
+                workspaceName: myworkspace
+                resourceName: myprocessor
+        - text: I did not delete myprocessor because the request was rejected.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_streams_teardown
+            arguments:
+              - name: projectId
+                type: string
+                value: 68f600519f16226591d054c0
+              - name: resource
+                type: string
+                value: processor
+              - name: workspaceName
+                type: string
+                value: myworkspace
+              - name: resourceName
+                type: string
+                value: myprocessor
+      - role: tool
+      - role: assistant
+    custom:
+      expectApprovalFor: &a5
+        - mongodb__atlas_streams_teardown
+      forbiddenExecuted: *a5
+      answerMatches:
+        - not|didn't|did not|won't|cancel
+# Source: streamsTeardown.test.ts, "Delete processor 'myprocessor' from workspace 'myworkspace'"
+- name: does not delete a stream processor in read-only mode
+  tags:
+    - ported
+    - write
+    - read-only
+    - streams-write
+    - twin
+  input:
+    messages:
+      - role: user
+        content: >-
+          The user is working in Atlas project 'StreamsProject' (projectId:
+          '68f600519f16226591d054c0').
+
+
+          Delete processor 'myprocessor' from workspace 'myworkspace'
+    custom:
+      toolSetup:
+        mockAtlas: streams-project
+      script:
+        - text: I can't do that because I am in read-only mode.
+  expected:
+    custom:
+      forbiddenExecuted:
+        - mongodb__atlas_streams_teardown
+      answerMatches:
+        - (can't|cannot|unable|read-only|not able)

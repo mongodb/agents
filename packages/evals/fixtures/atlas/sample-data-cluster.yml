@@ -1,0 +1,10 @@
+# One project (MyProject) with one idle cluster (accuracy-cluster). The ids
+# and name follow the mongodb-mcp-server loadSampleDataset accuracy test.
+orgs:
+  - { id: "9123a4b056c7d890e1f2a3f0", name: Acme }
+projects:
+  - id: "9123a4b056c7d890e1f2a3f4"
+    name: MyProject
+    orgId: "9123a4b056c7d890e1f2a3f0"
+    clusters:
+      - { name: accuracy-cluster, instanceSize: M10 }

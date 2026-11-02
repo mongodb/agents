@@ -16,14 +16,38 @@
 
 import { describe, expect, it } from "vitest";
 
-import { createTestAtlas, OTHER_PROJECT, PROJECT } from "../testSupport.js";
+import {
+  baseFixture,
+  createTestAtlas,
+  OTHER_PROJECT,
+  PROJECT,
+} from "../testSupport.js";
 
 describe("GET /groups/:groupId/flexClusters", () => {
-  it("is always empty", async () => {
+  it("is empty for a project without flex clusters", async () => {
     const res = await createTestAtlas().get(`/groups/${PROJECT}/flexClusters`);
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual({ results: [], totalCount: 0, links: [] });
+  });
+
+  it("lists the project's flex clusters", async () => {
+    const atlas = createTestAtlas({
+      ...baseFixture,
+      projects: [
+        {
+          ...baseFixture.projects[0],
+          flexClusters: [{ name: "f1" }, { name: "f2" }],
+        },
+      ],
+    });
+    const res = await atlas.get(`/groups/${PROJECT}/flexClusters`);
+
+    expect(res.body.results.map((f: { name: string }) => f.name)).toEqual([
+      "f1",
+      "f2",
+    ]);
+    expect(res.body.totalCount).toBe(2);
   });
 
   it("answers 404 for an unknown project", async () => {

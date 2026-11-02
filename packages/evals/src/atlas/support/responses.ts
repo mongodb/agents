@@ -14,11 +14,33 @@
  * limitations under the License.
  */
 
-import type { MockCluster, MockProject } from "../fixtures.js";
+import type {
+  MockCluster,
+  MockFlexCluster,
+  MockProject,
+  MockStreamWorkspace,
+} from "../fixtures.js";
 
 /** Atlas wraps every list in a page. The mock never has a second page. */
 export function atlasPage<T>(items: readonly T[]) {
   return { results: items, totalCount: items.length, links: [] };
+}
+
+/**
+ * A page of a list, cut from `pageNum` and `itemsPerPage` (1-based, default
+ * 20 per page). `totalCount` is the size of the whole list.
+ */
+export function pagedAtlasPage<T>(
+  items: readonly T[],
+  query: { pageNum?: string; itemsPerPage?: string },
+) {
+  const perPage = Number(query.itemsPerPage) || 20;
+  const page = Number(query.pageNum) || 1;
+  return {
+    results: items.slice((page - 1) * perPage, page * perPage),
+    totalCount: items.length,
+    links: [],
+  };
 }
 
 /** `host:port` of each node. The slow query endpoint is keyed by these. */
@@ -40,12 +62,33 @@ export function projectSummary(project: MockProject) {
   };
 }
 
+export function flexClusterJson(project: MockProject, flex: MockFlexCluster) {
+  return {
+    id: flex.id,
+    groupId: project.id,
+    name: flex.name,
+    stateName: flex.state,
+    mongoDBVersion: flex.mongoDBVersion,
+    clusterType: "REPLICASET",
+    providerSettings: {
+      providerName: "FLEX",
+      backingProviderName: flex.provider,
+      regionName: flex.region,
+    },
+    connectionStrings: {
+      standard: `mongodb://${flex.name}-shard-00-00.mock.mongodb.net:27017/?ssl=true`,
+      standardSrv: `mongodb+srv://${flex.name}.mock.mongodb.net`,
+    },
+  };
+}
+
 export function clusterJson(project: MockProject, cluster: MockCluster) {
+  const isFree = cluster.instanceSize === "M0";
   return {
     id: cluster.id,
     groupId: project.id,
     name: cluster.name,
-    clusterType: "REPLICASET",
+    clusterType: cluster.clusterType,
     stateName: cluster.state,
     paused: cluster.paused,
     mongoDBVersion: cluster.mongoDBVersion,
@@ -55,19 +98,51 @@ export function clusterJson(project: MockProject, cluster: MockCluster) {
     },
     replicationSpecs: [
       {
-        regionConfigs: [
-          {
-            providerName: cluster.provider,
+        regionConfigs: (cluster.regions ?? [cluster.region]).map(
+          (regionName, i) => ({
+            providerName: isFree ? "TENANT" : cluster.provider,
             backingProviderName: cluster.provider,
-            regionName: cluster.region,
-            priority: 7,
+            regionName,
+            priority: 7 - i,
             electableSpecs: {
               instanceSize: cluster.instanceSize,
               nodeCount: 3,
             },
-          },
-        ],
+            ...(cluster.autoScaling && {
+              autoScaling: {
+                compute: {
+                  enabled: cluster.autoScaling.enabled,
+                  scaleDownEnabled: cluster.autoScaling.enabled,
+                  minInstanceSize: cluster.autoScaling.minInstanceSize,
+                  maxInstanceSize: cluster.autoScaling.maxInstanceSize,
+                },
+                diskGB: { enabled: true },
+              },
+            }),
+          }),
+        ),
       },
     ],
+  };
+}
+
+export function streamWorkspaceJson(
+  project: MockProject,
+  workspace: MockStreamWorkspace,
+  { includeConnections }: { includeConnections: boolean },
+) {
+  return {
+    name: workspace.name,
+    groupId: project.id,
+    dataProcessRegion: {
+      cloudProvider: workspace.cloudProvider,
+      region: workspace.region,
+    },
+    streamConfig: {
+      tier: workspace.tier,
+      maxTierSize: workspace.maxTierSize,
+    },
+    hostnames: [`${workspace.name}.mock.mongodb.net`],
+    ...(includeConnections && { connections: workspace.connections }),
   };
 }
