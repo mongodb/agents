@@ -31,6 +31,14 @@ const ClusterSchema = z.object({
   region: z.string().default("US_EAST_1"),
   mongoDBVersion: z.string().default("8.0.4"),
   paused: z.boolean().default(false),
+  /** Compute autoscaling. `M0` is a free cluster, which has none. */
+  autoScaling: z
+    .object({
+      enabled: z.boolean(),
+      minInstanceSize: z.string().optional(),
+      maxInstanceSize: z.string().optional(),
+    })
+    .optional(),
   state: z.enum(["IDLE", "CREATING", "UPDATING", "REPAIRING"]).default("IDLE"),
   /** `host:port` of each node. The slow query endpoint is keyed by these. */
   hosts: z.array(z.string()).min(1).optional(),
@@ -51,6 +59,15 @@ const ClusterSchema = z.object({
     .prefault({}),
 });
 
+const FlexClusterSchema = z.object({
+  id: z.string().default(() => randomUUID()),
+  name: z.string().regex(/^[a-zA-Z0-9_-]{1,64}$/),
+  provider: z.string().default("AWS"),
+  region: z.string().default("US_EAST_1"),
+  mongoDBVersion: z.string().default("8.0.4"),
+  state: z.enum(["IDLE", "CREATING", "UPDATING", "REPAIRING"]).default("IDLE"),
+});
+
 const AlertSchema = z.object({
   id: z.string(),
   status: z.enum(["OPEN", "TRACKING", "CLOSED"]).default("OPEN"),
@@ -66,12 +83,14 @@ const ProjectSchema = z
     name: z.string(),
     orgId: objectId,
     clusters: z.array(ClusterSchema).default([]),
+    flexClusters: z.array(FlexClusterSchema).default([]),
     alerts: z.array(AlertSchema).default([]),
   })
   .refine(
     (project) =>
-      new Set(project.clusters.map((c) => c.name)).size ===
-      project.clusters.length,
+      new Set([...project.clusters, ...project.flexClusters].map((c) => c.name))
+        .size ===
+      project.clusters.length + project.flexClusters.length,
     { message: "Cluster names must be unique within a project" },
   );
 
@@ -85,3 +104,4 @@ export type AtlasFixtureInput = z.input<typeof AtlasFixtureSchema>;
 export type AtlasFixture = z.output<typeof AtlasFixtureSchema>;
 export type MockProject = AtlasFixture["projects"][number];
 export type MockCluster = MockProject["clusters"][number];
+export type MockFlexCluster = MockProject["flexClusters"][number];
