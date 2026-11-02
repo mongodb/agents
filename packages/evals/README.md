@@ -205,6 +205,36 @@ for example `count` before `delete_many`. Another agent's prompt may call for
 different expected trajectories, so copy a dataset and edit it instead of
 sharing one.
 
+## Atlas Admin suite
+
+Cases for the Explorer's Atlas Admin tools, copied from the
+[`mongodb-mcp-server` accuracy tests](https://github.com/mongodb-js/mongodb-mcp-server/tree/v3.0.5/packages/accuracy-tests/src)
+(v3.0.5). They run against the mock Atlas API, with the production model and
+3 trials:
+
+```sh
+pnpm --filter @repo/evals eval:atlas-admin:explorer
+```
+
+The script needs `OPENAI_API_KEY` and `BRAINTRUST_API_KEY`. A run takes about
+15 minutes. Each case in `datasets/atlas-admin.yml` was copied by
+hand from the upstream test and names its source in a comment. To add one,
+copy a case of the same kind (see "Adding a case").
+
+Scoring looks at tool calls only. The mock Atlas keeps no end state to check.
+
+| Tag | Cases | Tools |
+| :---- | :---- | :---- |
+| `regions` | 6 | `atlas-get-regions` |
+| `alerts` | 3 | `atlas-list-alerts` |
+| `advisor` | 5 | `atlas-get-performance-advisor` |
+| `pause-resume` | 6 | `atlas-pause-resume-cluster` |
+| `upgrade` | 7 | `atlas-upgrade-cluster` |
+| `create` | 7 | `atlas-create-cluster` and its access list calls |
+| `sample-data` | 2 | `atlas-load-sample-dataset` |
+| `streams` | 16 | `atlas-streams-discover` |
+| `streams-write` | 6 | `atlas-streams-build`, `-manage`, `-teardown` |
+
 ## Adding a case
 
 Cases are YAML in `datasets/`. `input.custom` holds `script` (turns for

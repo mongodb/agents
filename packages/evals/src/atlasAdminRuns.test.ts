@@ -105,6 +105,8 @@ describe("atlas-admin dataset, scripted run", () => {
         "atlas-admin",
         "--model",
         "scripted",
+        "--validate",
+        "atlas-admin-explorer",
         "--task-concurrency",
         "2",
         "--trial-count",
