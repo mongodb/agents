@@ -60,7 +60,7 @@ describe("eval:db-tools:explorer script", () => {
     expect(args[args.indexOf("--model") + 1]).toBe("gpt-6-luna");
     expect(args[args.indexOf("--trial-count") + 1]).toBe("3");
     expect(args[args.indexOf("--validate") + 1]).toBe("db-tools-explorer");
-    expect(args[args.indexOf("--task-concurrency") + 1]).toBe("2");
+    expect(args[args.indexOf("--task-concurrency") + 1]).toBe("4");
   });
 });
 

@@ -38,6 +38,18 @@ export const DB_TOOLS_EXPLORER_BASELINE = {
 /** How far below the baseline a run may fall before the validator fails. */
 export const DB_TOOLS_EXPLORER_MARGIN = 0.05;
 
+/**
+ * Scores with a wider margin. `ToolCallAmountCorrect` is scored on only the
+ * 4 read-only write requests. At 3 trials that is 12 results with a baseline
+ * of 0.85, so the standard 0.05 margin (a threshold of 0.80)
+ * failed about 27% of runs by chance, resampling the 5-trial baseline run.
+ * 0.30 sets the threshold at 0.55, so 7 of 12 pass and the chance failure rate
+ * is about 0.3%. It still catches an agent that stops declining.
+ */
+export const DB_TOOLS_EXPLORER_MARGIN_OVERRIDES: Readonly<
+  Record<string, number>
+> = { ToolCallAmountCorrect: 0.3 };
+
 function floorToHundredth(value: number): number {
   return Math.floor(value * 100 + 1e-9) / 100;
 }
@@ -46,6 +58,10 @@ export const DB_TOOLS_EXPLORER_THRESHOLDS: Readonly<Record<string, number>> =
   Object.fromEntries(
     Object.entries(DB_TOOLS_EXPLORER_BASELINE).map(([name, mean]) => [
       name,
-      floorToHundredth(mean - DB_TOOLS_EXPLORER_MARGIN),
+      floorToHundredth(
+        mean -
+          (DB_TOOLS_EXPLORER_MARGIN_OVERRIDES[name] ??
+            DB_TOOLS_EXPLORER_MARGIN),
+      ),
     ]),
   );

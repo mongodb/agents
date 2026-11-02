@@ -65,8 +65,8 @@ offline.
 
 The library runs 10 cases at once by default. Each case starts its own MCP
 server and the agent logs large traces, so a busy machine can run out of
-memory. The smoke scripts and tests pass `--task-concurrency 2`. Do the same
-for big datasets.
+memory. The smoke scripts and tests pass `--task-concurrency 2`. The suite
+scripts pass 4, which peaked at about 3 GB in a measured run.
 
 The unit tests run the same commands against a mock Braintrust server, so
 `pnpm test` needs no keys.
@@ -158,7 +158,9 @@ minutes. Each case that allows writes starts its own `mongod`.
 
 The script ends with `--validate db-tools-explorer`, which fails the run when
 a mean score falls more than 0.05 below the baseline in
-`src/dbToolsThresholds.ts`.
+`src/dbToolsThresholds.ts`. `ToolCallAmountCorrect` has a 0.30 margin instead,
+because it is scored on only 4 cases and 0.05 failed about 27% of 3-trial runs
+by chance.
 
 What the scores mean:
 
@@ -305,3 +307,32 @@ and closes it after. That is fine for a handful of small fixtures. A suite
 with many cases, or checks that run in parallel against a shared database,
 would open one connection per check at once. Share a pooled client if that
 becomes a problem.
+
+## CI
+
+`.github/workflows/evals-atlas-explorer.yml` runs the Explorer suites as three
+parallel jobs, one per script, so a failure names its suite:
+
+| Job | Script | Cases | 3 trials |
+| :---- | :---- | :---- | :---- |
+| `explorer-guardrail` | `eval:guardrail:explorer` | 41 | about 4 min |
+| `explorer-db-tools` | `eval:db-tools:explorer` | 50 | about 6 min |
+| `explorer-atlas-admin` | `eval:atlas-admin:explorer` | 56 | about 7 min |
+
+`.github/workflows/evals-atlas-query-insights.yml` runs
+`eval:guardrail:query-insights`, the only Query Insights suite so far.
+
+Each workflow runs when its agent, `agent-engine-core`, `packages/evals`, the
+lockfile or the workflow itself changes, and on `workflow_dispatch`. It also
+runs weekly on `main`. A new push to the same ref cancels the old run.
+
+- Repository secrets: `OPENAI_API_KEY` and `BRAINTRUST_API_KEY`.
+- The knowledge suite is not in CI. It has no validator or baseline yet.
+- Fork PRs skip the jobs, because forks cannot read secrets.
+- A run that throws (a provider or network error) is retried once. A run that
+  misses a threshold is not, and the job summary says which kind it was.
+- The job summary lists the Braintrust experiment URLs and the validation
+  result. The full log is uploaded as an artifact.
+- Do not run a random subset of a suite against its baseline thresholds. At
+  half the cases, resampling the baseline runs fails 20 to 35% of runs by
+  chance. Run whole suites, or set thresholds for the subset.

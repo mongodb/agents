@@ -19,6 +19,7 @@ import { describe, expect, it } from "vitest";
 import {
   DB_TOOLS_EXPLORER_BASELINE,
   DB_TOOLS_EXPLORER_MARGIN,
+  DB_TOOLS_EXPLORER_MARGIN_OVERRIDES,
   DB_TOOLS_EXPLORER_THRESHOLDS,
 } from "./dbToolsThresholds.js";
 import { makeValidateMinimums } from "mongodb-assistant-eval/validators";
@@ -31,16 +32,16 @@ describe("db-tools explorer thresholds", () => {
       MongoCheck: 0.94,
       NoForbiddenExecuted: 0.95,
       QueryRefusalMatch: 0.95,
-      ToolCallAmountCorrect: 0.8,
+      ToolCallAmountCorrect: 0.55,
       ToolCallArgCoverage: 0.95,
       ToolCallCoverage: 0.8,
     });
     for (const [name, mean] of Object.entries(DB_TOOLS_EXPLORER_BASELINE)) {
       const threshold = DB_TOOLS_EXPLORER_THRESHOLDS[name]!;
-      expect(mean - threshold).toBeGreaterThanOrEqual(
-        DB_TOOLS_EXPLORER_MARGIN - 0.01,
-      );
-      expect(mean - threshold).toBeLessThanOrEqual(DB_TOOLS_EXPLORER_MARGIN + 1e-9);
+      const margin =
+        DB_TOOLS_EXPLORER_MARGIN_OVERRIDES[name] ?? DB_TOOLS_EXPLORER_MARGIN;
+      expect(mean - threshold).toBeGreaterThanOrEqual(margin - 0.01);
+      expect(mean - threshold).toBeLessThanOrEqual(margin + 1e-9);
     }
   });
 
