@@ -14,11 +14,33 @@
  * limitations under the License.
  */
 
-import type { MockCluster, MockFlexCluster, MockProject } from "../fixtures.js";
+import type {
+  MockCluster,
+  MockFlexCluster,
+  MockProject,
+  MockStreamWorkspace,
+} from "../fixtures.js";
 
 /** Atlas wraps every list in a page. The mock never has a second page. */
 export function atlasPage<T>(items: readonly T[]) {
   return { results: items, totalCount: items.length, links: [] };
+}
+
+/**
+ * A page of a list, cut from `pageNum` and `itemsPerPage` (1-based, default
+ * 20 per page). `totalCount` is the size of the whole list.
+ */
+export function pagedAtlasPage<T>(
+  items: readonly T[],
+  query: { pageNum?: string; itemsPerPage?: string },
+) {
+  const perPage = Number(query.itemsPerPage) || 20;
+  const page = Number(query.pageNum) || 1;
+  return {
+    results: items.slice((page - 1) * perPage, page * perPage),
+    totalCount: items.length,
+    links: [],
+  };
 }
 
 /** `host:port` of each node. The slow query endpoint is keyed by these. */
@@ -101,5 +123,26 @@ export function clusterJson(project: MockProject, cluster: MockCluster) {
         ),
       },
     ],
+  };
+}
+
+export function streamWorkspaceJson(
+  project: MockProject,
+  workspace: MockStreamWorkspace,
+  { includeConnections }: { includeConnections: boolean },
+) {
+  return {
+    name: workspace.name,
+    groupId: project.id,
+    dataProcessRegion: {
+      cloudProvider: workspace.cloudProvider,
+      region: workspace.region,
+    },
+    streamConfig: {
+      tier: workspace.tier,
+      maxTierSize: workspace.maxTierSize,
+    },
+    hostnames: [`${workspace.name}.mock.mongodb.net`],
+    ...(includeConnections && { connections: workspace.connections }),
   };
 }
