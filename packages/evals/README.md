@@ -207,9 +207,10 @@ sharing one.
 
 ## Atlas Admin suite
 
-56 cases for the Explorer's Atlas Admin tools, ported from the
-`mongodb-mcp-server` v3.0.5 accuracy tests. They run against the mock Atlas
-API, with the production model and 3 trials:
+Cases for the Explorer's Atlas Admin tools, copied from the
+[`mongodb-mcp-server` accuracy tests](https://github.com/mongodb-js/mongodb-mcp-server/tree/v3.0.5/packages/accuracy-tests/src)
+(v3.0.5). They run against the mock Atlas API, with the production model and
+3 trials:
 
 ```sh
 pnpm --filter @repo/evals eval:atlas-admin:explorer
