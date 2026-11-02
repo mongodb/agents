@@ -75,6 +75,13 @@ const FlexClusterSchema = z.object({
   state: z.enum(["IDLE", "CREATING", "UPDATING", "REPAIRING"]).default("IDLE"),
 });
 
+const SampleDatasetLoadSchema = z.object({
+  id: objectId,
+  clusterName: z.string(),
+  state: z.enum(["WORKING", "COMPLETED", "FAILED"]).default("WORKING"),
+  createDate: z.string(),
+});
+
 const AccessListEntrySchema = z.object({
   ipAddress: z.string(),
   comment: z.string().default(""),
@@ -96,6 +103,8 @@ const ProjectSchema = z
     orgId: objectId,
     clusters: z.array(ClusterSchema).default([]),
     flexClusters: z.array(FlexClusterSchema).default([]),
+    /** Sample dataset loads requested so far. The mock never finishes one. */
+    sampleDatasetLoads: z.array(SampleDatasetLoadSchema).default([]),
     /** IP addresses allowed to connect to the project's clusters. */
     accessList: z.array(AccessListEntrySchema).default([]),
     alerts: z.array(AlertSchema).default([]),
