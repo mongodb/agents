@@ -72,6 +72,25 @@ export const CustomExpectedSchema = z.object({
   expectApprovalFor: z.array(z.string()).optional(),
   /** Regular expressions the final answer must match, ignoring case. */
   answerMatches: z.array(z.string()).optional(),
+  /** What a Query Insights report should hold. Read by the report scorers. */
+  queryInsights: z
+    .object({
+      /**
+       * The indexes the case's Performance Advisor suggests, in the order it
+       * lists them. Empty when it suggests none, so the report must not
+       * invent one.
+       */
+      suggestedIndexes: z.array(
+        z.object({
+          namespace: z.string(),
+          /** One `{ field: direction }` entry per key, in key order. */
+          index: z.array(z.record(z.string(), z.union([z.number(), z.string()]))),
+        }),
+      ),
+      /** What a good report says. Graded by the reference judge. */
+      reference: z.string().optional(),
+    })
+    .optional(),
 });
 
 export type CustomExpected = z.infer<typeof CustomExpectedSchema>;
