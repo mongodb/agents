@@ -144,3 +144,64 @@ export const SuggestedIndexUsage: Scorer = ({ output, expected }) => {
   }
   return checksScore("SuggestedIndexUsage", checks);
 };
+
+/**
+ * Whole numbers up to this are left out of the number check. The summary must say
+ * how many shapes the sample held and how many were analyzed, and those
+ * counts are not printed in the tool output.
+ */
+const MAX_IGNORED_COUNT = 10;
+
+/** A number not part of a word: `18,960` and `2.5` count, `M10` and `v8.0` do not. */
+const NUMBER = /(?<![\w$.])(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?/g;
+
+function isSmallCount(n: number): boolean {
+  return Number.isInteger(n) && n <= MAX_IGNORED_COUNT;
+}
+
+function numbersIn(text: string): number[] {
+  return [...text.matchAll(NUMBER)].map(([n]) => Number(n.replace(/,/g, "")));
+}
+
+/**
+ * The parts of a report where a number is not a cited metric: code blocks
+ * (the query and `createIndex`), shape headings, list markers and links.
+ */
+function proseOf(report: string): string {
+  return report
+    .replace(/```[\s\S]*?(```|$)/g, "")
+    .replace(/^###\s+Shape\s+\d+:/gm, "")
+    .replace(/^\s{0,3}\d+[.)]\s+/gm, "")
+    .replace(/\]\([^)]*\)/g, "]")
+    .replace(/https?:\/\/\S+/g, "");
+}
+
+/**
+ * 1 when every number the report cites appears in the tool output, 0 when it
+ * cites one that does not (`NO_NEW_COMPUTED_NUMBERS`, `PRESERVE_UNITS`): a
+ * lifetime total, a ratio, a percentage or a unit conversion such as 2300 ms
+ * as 2.3 s. A number may be restated with thousands separators.
+ *
+ * Small counts, code blocks, shape headings, list markers and links are not
+ * checked (see `proseOf`). The new numbers are in the metadata. Runs on
+ * cases with `expected.custom.queryInsights`.
+ */
+export const NoNewComputedNumbers: Scorer = ({ output, expected }) => {
+  if (!expected.custom?.queryInsights) {
+    return { name: "NoNewComputedNumbers", score: null };
+  }
+  const printed = new Set(
+    output.messages
+      .filter((m) => m.role === "tool")
+      .flatMap((m) => numbersIn(String(m.content ?? ""))),
+  );
+  const cited = numbersIn(proseOf(output.assistantMessageContent));
+  const newNumbers = [
+    ...new Set(cited.filter((n) => !isSmallCount(n) && !printed.has(n))),
+  ];
+  return {
+    name: "NoNewComputedNumbers",
+    score: newNumbers.length ? 0 : 1,
+    metadata: { newNumbers },
+  };
+};

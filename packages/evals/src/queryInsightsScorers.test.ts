@@ -17,7 +17,11 @@
 import { describe, expect, it } from "vitest";
 
 import { createIndexKeys, parseQueryInsightsReport } from "./queryInsightsReport.js";
-import { ReportShape, SuggestedIndexUsage } from "./queryInsightsScorers.js";
+import {
+  NoNewComputedNumbers,
+  ReportShape,
+  SuggestedIndexUsage,
+} from "./queryInsightsScorers.js";
 import type { CustomExpected } from "./schemas.js";
 
 type Args = Parameters<typeof ReportShape>[0];
@@ -30,12 +34,13 @@ const LOANS_INDEX: QueryInsightsExpected["suggestedIndexes"][number] = { namespa
 function args(
   text: string,
   queryInsights: QueryInsightsExpected | null = { suggestedIndexes: [LOANS_INDEX] },
+  toolOutputs: string[] = [],
 ): Args {
   return {
     input: { messages: [] },
     expected: { custom: queryInsights ? { queryInsights } : undefined },
     output: {
-      messages: [],
+      messages: toolOutputs.map((content) => ({ role: "tool", content })),
       assistantMessageContent: text,
       allowedQuery: true,
       custom: { executed: [], approvalRequests: [], state: undefined, knowledgeErrors: [] },
@@ -82,6 +87,8 @@ db.loans.find({ memberId: "<specified string>" })
 
 const reportShape = (a: Args) => ReportShape(a) as Result;
 const suggestedIndexUsage = (a: Args) => SuggestedIndexUsage(a) as Result;
+const noNewComputedNumbers = (a: Args) =>
+  NoNewComputedNumbers(a) as Result & { metadata?: { newNumbers: number[] } };
 
 describe("parseQueryInsightsReport", () => {
   it("splits the summary, sections and areas", () => {
@@ -197,5 +204,58 @@ describe("SuggestedIndexUsage", () => {
 
   it("does not run on cases without Query Insights expectations", () => {
     expect(suggestedIndexUsage(args(WITH_SUGGESTION, null)).score).toBeNull();
+  });
+});
+
+describe("NoNewComputedNumbers", () => {
+  const TOOL_OUTPUT = JSON.stringify({
+    slowQueryLogs: [
+      {
+        namespace: "library.loans",
+        line: JSON.stringify({ planSummary: "COLLSCAN", docsExamined: 20000, nreturned: 10, millis: 2300 }),
+      },
+    ],
+    note: "limited to the most recent 50 slow query logs",
+  });
+  const report = (prose: string) => `${prose}
+
+### Shape 1: find on library.loans
+
+\`\`\`javascript
+db.loans.find({ memberId: "<specified string>" }).limit(25)
+\`\`\`
+
+12. **Lead.** See [the docs](https://www.mongodb.com/docs/v8.0/indexes/).
+`;
+
+  it("scores 1 when every cited number is printed in the tool output", () => {
+    const text = report(
+      "A sample of at most 50 logs, 2 shapes. One log shows 20,000 documents examined for 10 returned in 2300 ms on an M10.",
+    );
+    expect(noNewComputedNumbers(args(text, undefined, [TOOL_OUTPUT]))).toEqual({
+      name: "NoNewComputedNumbers",
+      score: 1,
+      metadata: { newNumbers: [] },
+    });
+  });
+
+  it("fails lifetime totals, ratios and unit conversions", () => {
+    const text = report(
+      "The shape examined 400,000 documents across all runs, a 2000:1 ratio, taking 2.3 s, 99.9% of the time.",
+    );
+    expect(noNewComputedNumbers(args(text, undefined, [TOOL_OUTPUT]))).toMatchObject({
+      score: 0,
+      metadata: { newNumbers: [400000, 2000, 2.3, 99.9] },
+    });
+  });
+
+  it("treats every number above the small counts as new without tool output", () => {
+    expect(noNewComputedNumbers(args(report("It took 2300 ms."))).metadata?.newNumbers).toEqual([
+      2300,
+    ]);
+  });
+
+  it("does not run on cases without Query Insights expectations", () => {
+    expect(noNewComputedNumbers(args("400,000", null)).score).toBeNull();
   });
 });
