@@ -66,7 +66,7 @@ export function clusterJson(project: MockProject, cluster: MockCluster) {
     id: cluster.id,
     groupId: project.id,
     name: cluster.name,
-    clusterType: "REPLICASET",
+    clusterType: cluster.clusterType,
     stateName: cluster.state,
     paused: cluster.paused,
     mongoDBVersion: cluster.mongoDBVersion,
@@ -76,12 +76,12 @@ export function clusterJson(project: MockProject, cluster: MockCluster) {
     },
     replicationSpecs: [
       {
-        regionConfigs: [
-          {
+        regionConfigs: (cluster.regions ?? [cluster.region]).map(
+          (regionName, i) => ({
             providerName: isFree ? "TENANT" : cluster.provider,
             backingProviderName: cluster.provider,
-            regionName: cluster.region,
-            priority: 7,
+            regionName,
+            priority: 7 - i,
             electableSpecs: {
               instanceSize: cluster.instanceSize,
               nodeCount: 3,
@@ -97,8 +97,8 @@ export function clusterJson(project: MockProject, cluster: MockCluster) {
                 diskGB: { enabled: true },
               },
             }),
-          },
-        ],
+          }),
+        ),
       },
     ],
   };

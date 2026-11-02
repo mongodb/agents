@@ -17,8 +17,11 @@
 import { Hono } from "hono";
 
 import type { AtlasEnv } from "../support/env.js";
+import { accessListRoute } from "./accessList.js";
+import { createClusterRoute } from "./createCluster.js";
 import { getClusterRoute } from "./getCluster.js";
 import { getDropIndexSuggestionsRoute } from "./getDropIndexSuggestions.js";
+import { getEncryptionAtRestRoute } from "./getEncryptionAtRest.js";
 import { getFlexClusterRoute } from "./getFlexCluster.js";
 import { getProjectRoute } from "./getProject.js";
 import { getSchemaAdviceRoute } from "./getSchemaAdvice.js";
@@ -44,12 +47,15 @@ export const atlasRoutes = new Hono<AtlasEnv>()
   .route("/", getProjectRoute)
   .route("/", listClustersRoute)
   .route("/", listFlexClustersRoute)
+  .route("/", createClusterRoute)
   .route("/", getClusterRoute)
   .route("/", getFlexClusterRoute)
   .route("/", updateClusterRoute)
   .route("/", upgradeFreeClusterRoute)
   .route("/", upgradeFlexClusterRoute)
   .route("/", listAlertsRoute)
+  .route("/", accessListRoute)
+  .route("/", getEncryptionAtRestRoute)
   .route("/", getSuggestedIndexesRoute)
   .route("/", getDropIndexSuggestionsRoute)
   .route("/", getSchemaAdviceRoute)

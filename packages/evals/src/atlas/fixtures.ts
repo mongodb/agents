@@ -31,6 +31,13 @@ const ClusterSchema = z.object({
   region: z.string().default("US_EAST_1"),
   mongoDBVersion: z.string().default("8.0.4"),
   paused: z.boolean().default(false),
+  /** `REPLICASET`, or `SHARDED` for a single-shard cluster. */
+  clusterType: z.enum(["REPLICASET", "SHARDED"]).default("REPLICASET"),
+  /**
+   * Every region, highest priority first. The first is `region`. Leave it out
+   * for a single-region cluster.
+   */
+  regions: z.array(z.string()).min(1).optional(),
   /** Compute autoscaling. `M0` is a free cluster, which has none. */
   autoScaling: z
     .object({
@@ -68,6 +75,11 @@ const FlexClusterSchema = z.object({
   state: z.enum(["IDLE", "CREATING", "UPDATING", "REPAIRING"]).default("IDLE"),
 });
 
+const AccessListEntrySchema = z.object({
+  ipAddress: z.string(),
+  comment: z.string().default(""),
+});
+
 const AlertSchema = z.object({
   id: z.string(),
   status: z.enum(["OPEN", "TRACKING", "CLOSED"]).default("OPEN"),
@@ -84,6 +96,8 @@ const ProjectSchema = z
     orgId: objectId,
     clusters: z.array(ClusterSchema).default([]),
     flexClusters: z.array(FlexClusterSchema).default([]),
+    /** IP addresses allowed to connect to the project's clusters. */
+    accessList: z.array(AccessListEntrySchema).default([]),
     alerts: z.array(AlertSchema).default([]),
   })
   .refine(
@@ -104,4 +118,10 @@ export type AtlasFixtureInput = z.input<typeof AtlasFixtureSchema>;
 export type AtlasFixture = z.output<typeof AtlasFixtureSchema>;
 export type MockProject = AtlasFixture["projects"][number];
 export type MockCluster = MockProject["clusters"][number];
+export type MockAccessListEntry = MockProject["accessList"][number];
 export type MockFlexCluster = MockProject["flexClusters"][number];
+
+/** A cluster a write route creates, with the fixture defaults filled in. */
+export function newMockCluster(input: z.input<typeof ClusterSchema>): MockCluster {
+  return ClusterSchema.parse(input);
+}
