@@ -324,7 +324,8 @@ The workflow runs when the agent, `agent-engine-core`, `packages/evals`, the
 lockfile or the workflow itself changes, and on `workflow_dispatch`. It also
 runs weekly on `main`. A new push to the same ref cancels the old run.
 
-- Repository secrets: `OPENAI_API_KEY` and `BRAINTRUST_API_KEY`.
+- Repository secrets: `OPENAI_API_KEY`, `OPENAI_BASE_URL` and
+  `BRAINTRUST_API_KEY`.
 - The knowledge suite is not in CI. It has no validator or baseline yet.
 - Fork PRs skip the jobs, because forks cannot read secrets.
 - A run that throws (a provider or network error) is retried once. A run that
