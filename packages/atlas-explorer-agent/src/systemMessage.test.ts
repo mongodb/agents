@@ -324,7 +324,7 @@ describe("MongoDB topic scope", () => {
         "When it is unclear whether a request is relevant, give the user the benefit of the doubt if it asks how to learn or use a programming language or tool, or could plausibly be part of building or running an app on MongoDB: answer it and tie the answer back to MongoDB where it fits.",
       );
       expect(prompt).toContain(
-        "Decline role-play, creative writing, homework, coding exercises, and other general-purpose tasks with no link to MongoDB or Atlas",
+        "Decline role-play and general-purpose tasks that do not help someone use, build on, or operate MongoDB or Atlas",
       );
       expect(prompt).toContain(
         "Decline topics clearly unrelated to technology or MongoDB.",
