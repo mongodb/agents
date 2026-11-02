@@ -1,0 +1,8 @@
+# One project (MyProject) with no clusters. The ids follow the
+# mongodb-mcp-server createCluster accuracy test.
+orgs:
+  - { id: "9123a4b056c7d890e1f2a3f0", name: Acme }
+projects:
+  - id: "9123a4b056c7d890e1f2a3f4"
+    name: MyProject
+    orgId: "9123a4b056c7d890e1f2a3f0"

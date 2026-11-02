@@ -16,10 +16,42 @@
 
 import { describe, expect, it } from "vitest";
 
-import { createTestAtlas, OTHER_PROJECT, PROJECT } from "../testSupport.js";
+import {
+  baseFixture,
+  createTestAtlas,
+  OTHER_PROJECT,
+  PROJECT,
+} from "../testSupport.js";
+
+const withFlex = () =>
+  createTestAtlas({
+    ...baseFixture,
+    projects: [
+      {
+        ...baseFixture.projects[0],
+        flexClusters: [{ name: "f1", provider: "GCP", region: "CENTRAL_US" }],
+      },
+    ],
+  });
 
 describe("GET /groups/:groupId/flexClusters/:clusterName", () => {
-  it("always answers 404 CLUSTER_NOT_FOUND", async () => {
+  it("returns a flex cluster in the Atlas shape", async () => {
+    const res = await withFlex().get(`/groups/${PROJECT}/flexClusters/f1`);
+
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({
+      name: "f1",
+      groupId: PROJECT,
+      stateName: "IDLE",
+      providerSettings: {
+        providerName: "FLEX",
+        backingProviderName: "GCP",
+        regionName: "CENTRAL_US",
+      },
+    });
+  });
+
+  it("answers 404 CLUSTER_NOT_FOUND for another name", async () => {
     const res = await createTestAtlas().get(
       `/groups/${PROJECT}/flexClusters/c1`,
     );
