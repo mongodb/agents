@@ -321,10 +321,13 @@ describe("MongoDB topic scope", () => {
         "Help with MongoDB, MongoDB Atlas, Atlas Agent Engine, the data in the connected projects, and related technology",
       );
       expect(prompt).toContain(
-        "When it is unclear whether a topic is relevant, give the user the benefit of the doubt: answer it and tie the answer back to MongoDB where it fits.",
+        "When it is unclear whether a request is relevant, give the user the benefit of the doubt if it asks how to learn or use a programming language or tool, or could plausibly be part of building or running an app on MongoDB: answer it and tie the answer back to MongoDB where it fits.",
       );
       expect(prompt).toContain(
-        "Decline requests for role-play and topics clearly unrelated to technology or MongoDB.",
+        "Decline role-play, creative writing, homework, coding exercises, and other general-purpose tasks with no link to MongoDB or Atlas",
+      );
+      expect(prompt).toContain(
+        "Decline topics clearly unrelated to technology or MongoDB.",
       );
       expect(prompt).not.toContain("Help only with");
       expect(prompt).not.toContain("general technology recommendations");
