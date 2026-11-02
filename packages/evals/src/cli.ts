@@ -29,6 +29,10 @@ import { atlasExplorerAgent } from "./agents/atlasExplorer.js";
 import { atlasQueryInsightsAgent } from "./agents/atlasQueryInsights.js";
 import { loadAgentCasesFromFile } from "./cases.js";
 import { DB_TOOLS_EXPLORER_THRESHOLDS } from "./dbToolsThresholds.js";
+import {
+  GUARDRAIL_EXPLORER_THRESHOLDS,
+  GUARDRAIL_QUERY_INSIGHTS_THRESHOLDS,
+} from "./guardrailThresholds.js";
 import { judgeModelConfig } from "./judge.js";
 import type { ModelConfig } from "./models.js";
 import { scorers } from "./scorers.js";
@@ -183,6 +187,13 @@ export function buildEvalCli({
       // Baseline minus a margin, for the four db-tools datasets together.
       "db-tools-explorer": makeValidateMinimums({
         scoreThresholds: { ...DB_TOOLS_EXPLORER_THRESHOLDS },
+      }),
+      // Baseline minus a margin, for the agent's five guardrail datasets together.
+      "guardrail-explorer": makeValidateMinimums({
+        scoreThresholds: { ...GUARDRAIL_EXPLORER_THRESHOLDS },
+      }),
+      "guardrail-query-insights": makeValidateMinimums({
+        scoreThresholds: { ...GUARDRAIL_QUERY_INSIGHTS_THRESHOLDS },
       }),
       // Each threshold is the mean of a 5-trial gpt-6-luna run over the
       // dataset, minus 0.05. ToolCallAmountCorrect has no threshold. It is
