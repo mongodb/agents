@@ -235,11 +235,6 @@ Scoring looks at tool calls only. The mock Atlas keeps no end state to check.
 | `streams` | 16 | `atlas-streams-discover` |
 | `streams-write` | 6 | `atlas-streams-build`, `-manage`, `-teardown` |
 
-Two region cases also carry the `upgrade` or `create` tag, so the counts add
-up to 58. Cases tagged `twin` repeat a write case with approval rejected, or with
-writes off (`read-only`). They check that nothing runs. Cases tagged
-`negative` expect no tool call.
-
 ## Adding a case
 
 Cases are YAML in `datasets/`. `input.custom` holds `script` (turns for
