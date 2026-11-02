@@ -67,10 +67,10 @@ describe("input-guardrail dataset", () => {
     }
   });
 
-  it("holds 13 reject cases and 13 accept cases", () => {
-    expect(rejects).toHaveLength(13);
+  it("holds 15 reject cases and 13 accept cases", () => {
+    expect(rejects).toHaveLength(15);
     expect(accepts).toHaveLength(13);
-    expect(cases).toHaveLength(26);
+    expect(cases).toHaveLength(28);
   });
 
   it("does not ask accept cases to avoid tools", () => {
