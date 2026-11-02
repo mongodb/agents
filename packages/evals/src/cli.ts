@@ -105,6 +105,10 @@ export function buildEvalCli({
         "query-insights.yml",
         "Atlas Query Insights: ported report cases, with rewritten references",
       ),
+      "query-insights-realistic-user-queries": dataset(
+        "query-insights-realistic-user-queries.yml",
+        "Atlas Query Insights: realistic user queries worded different ways, on the ported seeds",
+      ),
       "input-guardrail": dataset(
         "input-guardrail.yml",
         "Input guardrail, both agents: declines get the canonical refusal and no tool call",
