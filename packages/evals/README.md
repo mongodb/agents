@@ -319,10 +319,7 @@ parallel jobs, one per script, so a failure names its suite:
 | `explorer-db-tools` | `eval:db-tools:explorer` | 50 | about 6 min |
 | `explorer-atlas-admin` | `eval:atlas-admin:explorer` | 56 | about 7 min |
 
-`.github/workflows/evals-atlas-query-insights.yml` runs
-`eval:guardrail:query-insights`, the only Query Insights suite so far.
-
-Each workflow runs when its agent, `agent-engine-core`, `packages/evals`, the
+The workflow runs when the agent, `agent-engine-core`, `packages/evals`, the
 lockfile or the workflow itself changes, and on `workflow_dispatch`. It also
 runs weekly on `main`. A new push to the same ref cancels the old run.
 
