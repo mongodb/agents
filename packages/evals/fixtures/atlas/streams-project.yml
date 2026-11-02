@@ -1,0 +1,53 @@
+# One project (StreamsProject) with one Stream Processing workspace
+# (myworkspace). It has an Apache Kafka connection (events), an Atlas cluster
+# connection (sink), and a failed processor (myprocessor) whose messages all
+# went to the dead letter queue. The names and ids follow the
+# mongodb-mcp-server streamsDiscover accuracy test.
+orgs:
+  - { id: "68f600589f16226591d054c1", name: Acme }
+projects:
+  - id: "68f600519f16226591d054c0"
+    name: StreamsProject
+    orgId: "68f600589f16226591d054c1"
+    streams:
+      workspaces:
+        - name: myworkspace
+          cloudProvider: AWS
+          region: VIRGINIA_USA
+          tier: SP10
+          maxTierSize: SP50
+          connections:
+            - name: events
+              type: Kafka
+              state: READY
+              bootstrapServers: broker-1.example.com:9092
+            - name: sink
+              type: Cluster
+              state: READY
+              clusterName: Cluster0
+          processors:
+            - name: myprocessor
+              state: FAILED
+              tier: SP10
+              effectiveTier: SP10
+              pipeline:
+                - { $source: { connectionName: events } }
+                - { $merge: { into: { connectionName: sink, db: shop, coll: orders } } }
+              stats:
+                inputMessageCount: 100
+                outputMessageCount: 0
+                dlqMessageCount: 100
+              options:
+                dlq: { connectionName: sink, db: shop, coll: dlq }
+      privateLinks:
+        - _id: pl-1
+          provider: AWS
+          region: us-east-1
+          state: DONE
+          vendor: MSK
+      accountDetails:
+        - cloudProvider: AWS
+          regionName: us-east-1
+          awsAccountId: "123456789012"
+          vpcId: vpc-0abc1234
+          cidrBlock: 192.168.248.0/21

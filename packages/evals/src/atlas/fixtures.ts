@@ -82,6 +82,40 @@ const SampleDatasetLoadSchema = z.object({
   createDate: z.string(),
 });
 
+/** A connection or processor keeps whatever fields the fixture gives it. */
+const StreamConnectionSchema = z.looseObject({
+  name: z.string(),
+  type: z.string(),
+});
+
+const StreamProcessorSchema = z.looseObject({
+  name: z.string(),
+  state: z.enum(["CREATED", "STARTED", "STOPPED", "FAILED"]).default("CREATED"),
+  tier: z.string().default("SP10"),
+});
+
+const StreamWorkspaceSchema = z.object({
+  name: z.string(),
+  cloudProvider: z.string().default("AWS"),
+  region: z.string().default("VIRGINIA_USA"),
+  tier: z.string().default("SP10"),
+  maxTierSize: z.string().default("SP50"),
+  connections: z.array(StreamConnectionSchema).default([]),
+  processors: z.array(StreamProcessorSchema).default([]),
+});
+
+const StreamsSchema = z.object({
+  workspaces: z.array(StreamWorkspaceSchema).default([]),
+  /** PrivateLink connections, in the shape Atlas returns them. */
+  privateLinks: z.array(z.looseObject({ _id: z.string() })).default([]),
+  /** Atlas account details per cloud provider and region. */
+  accountDetails: z
+    .array(
+      z.looseObject({ cloudProvider: z.string(), regionName: z.string() }),
+    )
+    .default([]),
+});
+
 const AccessListEntrySchema = z.object({
   ipAddress: z.string(),
   comment: z.string().default(""),
@@ -108,6 +142,8 @@ const ProjectSchema = z
     /** IP addresses allowed to connect to the project's clusters. */
     accessList: z.array(AccessListEntrySchema).default([]),
     alerts: z.array(AlertSchema).default([]),
+    /** Atlas Stream Processing workspaces and networking. */
+    streams: StreamsSchema.prefault({}),
   })
   .refine(
     (project) =>
@@ -128,6 +164,7 @@ export type AtlasFixture = z.output<typeof AtlasFixtureSchema>;
 export type MockProject = AtlasFixture["projects"][number];
 export type MockCluster = MockProject["clusters"][number];
 export type MockAccessListEntry = MockProject["accessList"][number];
+export type MockStreamWorkspace = MockProject["streams"]["workspaces"][number];
 export type MockFlexCluster = MockProject["flexClusters"][number];
 
 /** A cluster a write route creates, with the fixture defaults filled in. */
