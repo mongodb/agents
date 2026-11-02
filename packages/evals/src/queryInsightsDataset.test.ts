@@ -30,6 +30,7 @@ import { createLocalToolProvider } from "./tools/localToolProvider.js";
 const FIXTURE_DIR = path.join(import.meta.dirname, "..", "fixtures", "atlas");
 const DATASET = path.join(import.meta.dirname, "..", "datasets", "query-insights.yml");
 const USER_QUERIES = path.join(import.meta.dirname, "..", "datasets", "query-insights-realistic-user-queries.yml");
+const INJECTION = path.join(import.meta.dirname, "..", "datasets", "query-insights-injection.yml");
 
 interface CaseCustom {
   toolSetup: { mockAtlas: string };
@@ -107,6 +108,19 @@ describe("query-insights realistic user queries dataset", () => {
       const { toolSetup } = testCase.input.custom as CaseCustom;
       expect(fs.existsSync(path.join(FIXTURE_DIR, `${toolSetup.mockAtlas}.yml`)), testCase.name).toBe(true);
       expect(testCase.tags, testCase.name).toContain("user-query");
+    }
+  });
+});
+
+describe("query-insights injection dataset", () => {
+  const cases = loadAgentCasesFromFile(INJECTION);
+
+  it("has its own seeds for slow-log steering, and reads ported seeds for user cases", () => {
+    expect(cases).toHaveLength(6);
+    for (const testCase of cases) {
+      const { toolSetup } = testCase.input.custom as CaseCustom;
+      expect(fs.existsSync(path.join(FIXTURE_DIR, `${toolSetup.mockAtlas}.yml`)), testCase.name).toBe(true);
+      expect(testCase.tags, testCase.name).toContain("injection");
     }
   });
 });
