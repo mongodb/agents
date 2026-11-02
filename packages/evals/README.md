@@ -330,7 +330,7 @@ runs weekly on `main`. A new push to the same ref cancels the old run.
 - A run that throws (a provider or network error) is retried once. A run that
   misses a threshold is not, and the job summary says which kind it was.
 - The job summary lists the Braintrust experiment URLs and the validation
-  result. The full log is uploaded as an artifact.
+  result.
 - Do not run a random subset of a suite against its baseline thresholds. At
   half the cases, resampling the baseline runs fails 20 to 35% of runs by
   chance. Run whole suites, or set thresholds for the subset.

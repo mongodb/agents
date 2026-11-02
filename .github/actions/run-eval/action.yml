@@ -2,7 +2,7 @@ name: Run eval
 description: >-
   Run one @repo/evals script, retry once if the run hit an infrastructure
   error, write the Braintrust experiment URLs and the result to the job
-  summary, and upload the log
+  summary
 
 inputs:
   script:
@@ -103,10 +103,3 @@ runs:
             fi
           fi
         } >> "$GITHUB_STEP_SUMMARY"
-
-    - uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: ${{ inputs.name }}-eval-log
-        path: ${{ runner.temp }}/eval-logs
-        if-no-files-found: ignore
