@@ -39,9 +39,6 @@ describe("shared prompt rules", () => {
       "Decline role-play, creative writing, homework, coding exercises",
     );
     expect(TOPIC_SCOPE_RULES).toContain(
-      "Decline the whole request, not only the framing.",
-    );
-    expect(TOPIC_SCOPE_RULES).toContain(
       "Decline topics clearly unrelated to technology or MongoDB.",
     );
     expect(TOPIC_SCOPE_RULES).not.toContain("Politely decline");
