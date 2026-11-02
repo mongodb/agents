@@ -34,11 +34,15 @@ const DATASETS = {
   explorer: [
     "input-guardrail",
     "prompt-injection",
+    "prompt-injection-advanced",
+    "prompt-injection-lookalikes",
     "prompt-injection-tool-output-explorer",
   ],
   "query-insights": [
     "input-guardrail",
     "prompt-injection",
+    "prompt-injection-advanced",
+    "prompt-injection-lookalikes",
     "prompt-injection-tool-output-query-insights",
   ],
 };
@@ -82,12 +86,13 @@ describe.each(["explorer", "query-insights"] as const)(
     it("scores every guardrail check 1", async () => {
       const { exitCode, byName } = await scoresOf(task);
       expect(exitCode).toBe(0);
-      // 26 + 6 + 2 cases carry a guardrail label, minus the one skipped case.
-      // The 12 + 6 reject cases carry the zero-tool check.
-      expect(byName.get("QueryRefusalMatch")).toHaveLength(33);
-      expect(byName.get("ToolCallAmountCorrect")).toHaveLength(18);
-      // Only the two tool-output cases per agent still carry answerMatches.
-      expect(byName.get("AnswerMatches")).toHaveLength(2);
+      // 26 + 6 + 4 + 4 + 2 cases carry a guardrail label, minus the one
+      // skipped case. The 12 + 6 + 4 reject cases carry the zero-tool check.
+      expect(byName.get("QueryRefusalMatch")).toHaveLength(41);
+      expect(byName.get("ToolCallAmountCorrect")).toHaveLength(22);
+      // The 4 advanced attacks (leak check), the 4 lookalikes (answered), and
+      // the two tool-output cases per agent carry answerMatches.
+      expect(byName.get("AnswerMatches")).toHaveLength(10);
       for (const name of [
         "QueryRefusalMatch",
         "ToolCallAmountCorrect",
