@@ -31,6 +31,9 @@ const cases = loadAgentCasesFromFile(
 
 const local = createLocalToolProvider();
 const atlasRequests: RecordedRequest[] = [];
+const readOnlyCaseWrites: RecordedRequest[] = [];
+
+const isWrite = (r: RecordedRequest) => r.method !== "GET";
 
 /** Keeps each case's mock Atlas request log, which is gone once the case ends. */
 const provider: ToolProvider = {
@@ -45,6 +48,9 @@ const provider: ToolProvider = {
           atlasRequests: RecordedRequest[];
         };
         atlasRequests.push(...state.atlasRequests);
+        if (!request.allowWrites) {
+          readOnlyCaseWrites.push(...state.atlasRequests.filter(isWrite));
+        }
         await caseTools.dispose();
       },
     };
@@ -110,9 +116,25 @@ describe("atlas-admin dataset, scripted run", () => {
     expect(byName.get("ToolCallAmountCorrect") ?? []).toHaveLength(
       expected((c) => callsNoTool(c)),
     );
+    expect(byName.get("ApprovalRequested") ?? []).toHaveLength(
+      expected((c) => custom(c)?.expectApprovalFor !== undefined),
+    );
+    expect(byName.get("NoForbiddenExecuted") ?? []).toHaveLength(
+      expected((c) => custom(c)?.forbiddenExecuted !== undefined),
+    );
     for (const [name, scores] of byName) {
       expect(scores.every((s) => s === 1), `${name} is 1 on every case`).toBe(true);
     }
+
+    // Cases without write tools never reach a write route, and each approved
+    // case does reach one.
+    expect(readOnlyCaseWrites, "writes from read-only cases").toEqual([]);
+    const approved = expected(
+      (c) =>
+        (c.input.custom as Record<string, unknown> | undefined)?.approval ===
+        "approve",
+    );
+    expect(atlasRequests.filter(isWrite).length).toBeGreaterThanOrEqual(approved);
 
     // A request the mock could not serve is a missing route, which is a bug in
     // the mock and not something the agent did.
