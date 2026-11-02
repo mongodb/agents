@@ -30,7 +30,7 @@ export const QUERY_INSIGHTS_PROJECT_ID = "6a0000000000000000000001";
 export const QUERY_INSIGHTS_CLUSTER = "Cluster0";
 
 /**
- * Slow-log lines per seed. Enough to read as a sample, few enough that the
+ * Slow-log lines per shape. Enough to read as a sample, few enough that the
  * tool output stays short. A shape that ran fewer times gets fewer lines.
  */
 const MAX_SLOW_LOG_LINES = 3;
@@ -97,6 +97,17 @@ export interface QueryInsightsPortOptions {
   readonly reference?: ReferenceAnswer;
 }
 
+export interface QueryInsightsCombinedPortOptions {
+  /** Short id for the seed and case names, such as `multi-01`. */
+  readonly id: string;
+  /** The expert reference for all the shapes together, in priority order. */
+  readonly reference: ReferenceAnswer;
+  /** Replaces the default user message. */
+  readonly message?: string;
+  /** How many shape sections the report should have. */
+  readonly expectedShapes?: number;
+}
+
 export interface PortedQueryInsightsCase {
   name: string;
   tags: string[];
@@ -124,6 +135,21 @@ export interface PortedQueryInsightsFixture {
   readonly case: PortedQueryInsightsCase;
 }
 
+type SuggestedIndex = {
+  namespace: string;
+  index: Record<string, number | string>[];
+};
+
+type SlowQuery = { namespace: string; line: string };
+
+/** One converted query shape: its slow-log lines, its suggestion and its tags. */
+interface ConvertedShape {
+  readonly slowQueries: SlowQuery[];
+  readonly suggestedIndex?: SuggestedIndex;
+  readonly tags: string[];
+  readonly reference: ReferenceAnswer;
+}
+
 /** `{"a": 1, "b": -1}` as `[{ a: 1 }, { b: -1 }]`, the shape Atlas returns. */
 function indexKeys(indexSpec: string): Record<string, number | string>[] {
   const spec = JSON.parse(indexSpec) as Record<string, number | string>;
@@ -142,38 +168,16 @@ function renderReference(reference: ReferenceAnswer): string {
   ].join("\n");
 }
 
-/**
- * Turns one source eval case into a mock Atlas seed and an eval case for
- * Atlas Query Insights that names it.
- *
- * The seed holds the scenario. The source stats are lifetime totals: counters
- * summed over every execution of the query shape, such as 1,328,412
- * `docsExamined` over an `execCount` of 20. The agent never sees those sums.
- * It reads slow-log lines, one per execution, so each line carries the
- * per-execution value (`docsExamined / execCount`, here 66,421), with the times
- * varying around the average. The query shape's `?string`-style placeholders
- * become made-up literals, as in a live line. A Performance Advisor suggestion
- * becomes the cluster's one suggested index.
- *
- * The case stays small: the user message, the expected Performance Advisor
- * call, the suggested indexes the report scorers check, and the reference.
- * The source reference answer quotes those lifetime totals ("1.33 M documents
- * examined across 20 executions"), which the agent cannot reproduce from
- * slow-log lines. So the CLI requires a rewritten `reference` for every case,
- * without the totals. The script replays the Performance Advisor call for the
- * offline scripted run.
- *
- * It throws on anything it cannot convert faithfully.
- */
-export function portQueryInsightsCase(
+function convertShape(
   source: unknown,
-  options: QueryInsightsPortOptions,
-): PortedQueryInsightsFixture {
-  const label = `case ${options.id}`;
+  label: string,
+  overrides: { namespace?: string; planSummary?: string },
+  shapeIndex: number,
+): ConvertedShape {
   const { stats, binMetadata, paSuggestion, referenceAnswer } =
     SourceQueryInsightsCaseSchema.parse(source);
 
-  const namespace = options.namespace ?? stats.namespace;
+  const namespace = overrides.namespace ?? stats.namespace;
   if (!namespace) {
     throw new Error(`${label}: the source has no namespace, so pass one`);
   }
@@ -190,7 +194,7 @@ export function portQueryInsightsCase(
   const slowLog: SlowLogShape = {
     namespace,
     queryShapeText: stats.queryShape,
-    planSummary: options.planSummary ?? (binMetadata.usesIndex ? "IXSCAN" : "COLLSCAN"),
+    planSummary: overrides.planSummary ?? (binMetadata.usesIndex ? "IXSCAN" : "COLLSCAN"),
     keysExamined: perExecution(stats.keysExamined),
     docsExamined: perExecution(stats.docsExamined),
     nreturned: perExecution(stats.docsReturned),
@@ -201,9 +205,47 @@ export function portQueryInsightsCase(
   const line = (i: number) => slowLogLine(slowLog, command, i);
   const lineCount = Math.min(MAX_SLOW_LOG_LINES, Math.max(1, Math.round(stats.execCount)));
 
-  const suggestedIndexes = paSuggestion
-    ? [{ namespace: paSuggestion.namespace, index: indexKeys(paSuggestion.indexSpec) }]
-    : [];
+  return {
+    slowQueries: Array.from({ length: lineCount }, (_, i) => ({
+      namespace,
+      line: line(shapeIndex * MAX_SLOW_LOG_LINES + i),
+    })),
+    suggestedIndex: paSuggestion
+      ? { namespace: paSuggestion.namespace, index: indexKeys(paSuggestion.indexSpec) }
+      : undefined,
+    tags: [
+      stats.command,
+      paSuggestion ? "advisor-index" : "no-advisor-index",
+      ...(binMetadata.hasSortStage ? ["sort"] : []),
+    ],
+    reference: referenceAnswer,
+  };
+}
+
+function portShapes(
+  sources: readonly unknown[],
+  options: QueryInsightsPortOptions & { expectedShapes?: number },
+): PortedQueryInsightsFixture {
+  const label = `case ${options.id}`;
+  const single = sources.length === 1;
+  if (!single && (options.namespace || options.planSummary)) {
+    throw new Error(`${label}: namespace and planSummary apply to one source only`);
+  }
+  if (!single && !options.reference) {
+    throw new Error(`${label}: several sources need a reference`);
+  }
+
+  const shapes = sources.map((source, index) =>
+    convertShape(
+      source,
+      label,
+      { namespace: options.namespace, planSummary: options.planSummary },
+      index,
+    ),
+  );
+  const suggestedIndexes = shapes.flatMap((shape) =>
+    shape.suggestedIndex ? [shape.suggestedIndex] : [],
+  );
 
   const seedName = `query-insights-case-${options.id}`;
   const seed: AtlasFixtureInput = {
@@ -223,7 +265,7 @@ export function portQueryInsightsCase(
                 weight: 1,
                 impact: [`query-shape-${i + 1}`],
               })),
-              slowQueries: Array.from({ length: lineCount }, (_, i) => ({ namespace, line: line(i) })),
+              slowQueries: shapes.flatMap((shape) => shape.slowQueries),
             },
           },
         ],
@@ -231,17 +273,14 @@ export function portQueryInsightsCase(
     ],
   };
 
-  const tags = [
-    stats.command,
-    suggestedIndexes.length ? "advisor-index" : "no-advisor-index",
-    ...(binMetadata.hasSortStage ? ["sort"] : []),
-  ];
+  const tags = [...new Set(shapes.flatMap((shape) => shape.tags))];
+  const reference = options.reference ?? shapes[0].reference;
   return {
     seedName,
     seed,
     case: {
       name: seedName,
-      tags,
+      tags: single ? tags : ["multi-shape", ...tags],
       input: {
         messages: [
           {
@@ -293,12 +332,60 @@ export function portQueryInsightsCase(
         custom: {
           queryInsights: {
             suggestedIndexes,
-            reference: renderReference(options.reference ?? referenceAnswer),
+            reference: renderReference(reference),
+            ...(options.expectedShapes !== undefined && {
+              expectedShapes: options.expectedShapes,
+            }),
           },
         },
       },
     },
   };
+}
+
+/**
+ * Turns one source eval case into a mock Atlas seed and an eval case for
+ * Atlas Query Insights that names it.
+ *
+ * The seed holds the scenario. The source stats are lifetime totals: counters
+ * summed over every execution of the query shape, such as 1,328,412
+ * `docsExamined` over an `execCount` of 20. The agent never sees those sums.
+ * It reads slow-log lines, one per execution, so each line carries the
+ * per-execution value (`docsExamined / execCount`, here 66,421), with the times
+ * varying around the average. The query shape's `?string`-style placeholders
+ * become made-up literals, as in a live line. A Performance Advisor suggestion
+ * becomes the cluster's one suggested index.
+ *
+ * The case stays small: the user message, the expected Performance Advisor
+ * call, the suggested indexes the report scorers check, and the reference.
+ * The source reference answer quotes those lifetime totals ("1.33 M documents
+ * examined across 20 executions"), which the agent cannot reproduce from
+ * slow-log lines. So the CLI requires a rewritten `reference` for every case,
+ * without the totals. The script replays the Performance Advisor call for the
+ * offline scripted run.
+ *
+ * It throws on anything it cannot convert faithfully.
+ */
+export function portQueryInsightsCase(
+  source: unknown,
+  options: QueryInsightsPortOptions,
+): PortedQueryInsightsFixture {
+  return portShapes([source], options);
+}
+
+/**
+ * Puts several source eval cases on one cluster, so the report has
+ * to cover several shapes. Each source keeps its own namespace and suggested
+ * index. The reference is written for the set, so it must be given.
+ */
+export function portQueryInsightsCombined(
+  sources: readonly unknown[],
+  options: QueryInsightsCombinedPortOptions,
+): PortedQueryInsightsFixture {
+  if (sources.length < 2) {
+    throw new Error(`case ${options.id}: a combined case needs two or more sources`);
+  }
+  return portShapes(sources, options);
 }
 
 /** Renders a converted seed as a mock Atlas fixture. */

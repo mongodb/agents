@@ -181,6 +181,17 @@ describe("ReportShape", () => {
     ]);
   });
 
+  it("checks the section count when the case sets one", () => {
+    const counted = { suggestedIndexes: [LOANS_INDEX], expectedShapes: 2 };
+    expect(reportShape(args(WITH_SUGGESTION, counted)).metadata?.failedChecks).toEqual([
+      "2 shape sections",
+    ]);
+    expect(
+      reportShape(args(WITH_SUGGESTION, { ...counted, expectedShapes: 1 })).metadata
+        ?.failedChecks,
+    ).toEqual([]);
+  });
+
   it("does not run on cases without Query Insights expectations", () => {
     expect(reportShape(args(WITH_SUGGESTION, null)).score).toBeNull();
   });

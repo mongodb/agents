@@ -24,30 +24,43 @@ import { z } from "zod";
 import { renderPortedCases } from "./portAssistantCase.js";
 import {
   portQueryInsightsCase,
+  portQueryInsightsCombined,
   renderQueryInsightsSeed,
+  type PortedQueryInsightsFixture,
 } from "./portQueryInsightsCase.js";
 
 const ATLAS_FIXTURE_DIR = path.join(import.meta.dirname, "..", "..", "fixtures", "atlas");
 
-const SelectionSchema = z.object({
-  cases: z.array(
-    z.object({
-      /** File name in the source directory, such as `case_08.json`. */
-      file: z.string(),
-      /** Seed and case id. Defaults to the number in the file name. */
-      id: z.string().optional(),
-      namespace: z.string().optional(),
-      /** Required: the source's reference quotes lifetime totals. */
-      reference: z.object({
-        queryOverview: z.string(),
-        areasWorthInvestigating: z.array(
-          z.object({ leadSentence: z.string(), elaboration: z.string() }),
-        ),
-      }),
-      planSummary: z.string().optional(),
-      message: z.string().optional(),
-    }),
+const ReferenceSchema = z.object({
+  queryOverview: z.string(),
+  areasWorthInvestigating: z.array(
+    z.object({ leadSentence: z.string(), elaboration: z.string() }),
   ),
+});
+
+/** Required: the source's reference quotes lifetime totals. */
+const SingleSchema = z.object({
+  /** File name in the source directory, such as `case_08.json`. */
+  file: z.string(),
+  /** Seed and case id. Defaults to the number in the file name. */
+  id: z.string().optional(),
+  namespace: z.string().optional(),
+  planSummary: z.string().optional(),
+  message: z.string().optional(),
+  reference: ReferenceSchema,
+});
+
+/** Several sources on one cluster. The id is required, and so is the reference. */
+const CombinedSchema = z.object({
+  files: z.array(z.string()).min(2),
+  id: z.string(),
+  message: z.string().optional(),
+  expectedShapes: z.number().int().positive().optional(),
+  reference: ReferenceSchema,
+});
+
+const SelectionSchema = z.object({
+  cases: z.array(z.union([CombinedSchema, SingleSchema])),
 });
 
 const DATASET_HEADER = `Atlas Query Insights cases converted from the source eval cases.
@@ -66,6 +79,10 @@ Writes one mock Atlas seed per case to fixtures/atlas, and the cases to
     - file: case_01.json
       namespace: shop.visits
       reference: { queryOverview: "...", areasWorthInvestigating: [...] }
+    - files: [case_22_synthetic.json, case_24_synthetic.json]
+      id: multi-01
+      expectedShapes: 2
+      reference: { queryOverview: "...", areasWorthInvestigating: [...] }
 
 --source-dir is the directory that holds the source eval case JSON files.
 
@@ -77,6 +94,36 @@ function defaultId(file: string): string {
   const match = /^case_(\d+[a-z]?)/.exec(path.basename(file));
   if (!match) throw new Error(`${file}: pass an id, none in the file name`);
   return match[1];
+}
+
+function readSource(sourceDir: string, file: string): unknown {
+  return JSON.parse(fs.readFileSync(path.join(sourceDir, file), "utf8"));
+}
+
+function portEntry(
+  sourceDir: string,
+  entry: z.infer<typeof SelectionSchema>["cases"][number],
+): { file: string; fixture: PortedQueryInsightsFixture } {
+  if ("files" in entry) {
+    const fixture = portQueryInsightsCombined(
+      entry.files.map((file) => readSource(sourceDir, file)),
+      {
+        id: entry.id,
+        reference: entry.reference,
+        message: entry.message,
+        expectedShapes: entry.expectedShapes,
+      },
+    );
+    return { file: entry.files.join(" + "), fixture };
+  }
+  const fixture = portQueryInsightsCase(readSource(sourceDir, entry.file), {
+    id: entry.id ?? defaultId(entry.file),
+    namespace: entry.namespace,
+    planSummary: entry.planSummary,
+    message: entry.message,
+    reference: entry.reference,
+  });
+  return { file: entry.file, fixture };
 }
 
 function main() {
@@ -95,16 +142,13 @@ function main() {
   const selection = SelectionSchema.parse(
     parse(fs.readFileSync(values.select, "utf8")),
   );
-  const ported = selection.cases.map(({ file, id, ...options }) => {
-    const source: unknown = JSON.parse(
-      fs.readFileSync(path.join(values["source-dir"]!, file), "utf8"),
-    );
-    const result = portQueryInsightsCase(source, { id: id ?? defaultId(file), ...options });
+  const ported = selection.cases.map((entry) => {
+    const { file, fixture } = portEntry(values["source-dir"]!, entry);
     fs.writeFileSync(
-      path.join(ATLAS_FIXTURE_DIR, `${result.seedName}.yml`),
-      renderQueryInsightsSeed(result.seed),
+      path.join(ATLAS_FIXTURE_DIR, `${fixture.seedName}.yml`),
+      renderQueryInsightsSeed(fixture.seed),
     );
-    return { file, case: result.case };
+    return { file, case: fixture.case };
   });
 
   const yaml = renderPortedCases(ported, DATASET_HEADER, { sourceComments: false });
