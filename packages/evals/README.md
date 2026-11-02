@@ -80,6 +80,12 @@ pnpm --filter @repo/evals eval:guardrail:explorer
 pnpm --filter @repo/evals eval:guardrail:query-insights
 ```
 
+Each script ends with `--validate guardrail-explorer` or
+`--validate guardrail-query-insights`, which fails the run when a mean score
+falls more than 0.05 below the baseline in `src/guardrailThresholds.ts`.
+Re-run the script with 5 trials and update the baseline when a prompt, tool or
+model changes.
+
 The model names in those scripts match each agent's `config.ts`. Change both
 together. The scripts need `OPENAI_API_KEY` and `BRAINTRUST_API_KEY`.
 
