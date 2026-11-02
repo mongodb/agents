@@ -1,0 +1,47 @@
+# One project (mflix) with one cluster (mflix-cluster) that has Performance
+# Advisor data of every kind. The ids and names follow the mongodb-mcp-server
+# getPerformanceAdvisor accuracy test.
+orgs:
+  - { id: "68f600589f16226591d054c1", name: Acme }
+projects:
+  - id: "68f600519f16226591d054c0"
+    name: mflix
+    orgId: "68f600589f16226591d054c1"
+    clusters:
+      - name: mflix-cluster
+        advisor:
+          suggestedIndexes:
+            - id: idx1
+              namespace: mflix.movies
+              index: [{ title: 1 }, { year: 1 }]
+              weight: 0.8
+              impact: [query-shape-1]
+            - id: idx2
+              namespace: mflix.shows
+              index: [{ genre: 1 }, { rating: 1 }]
+              weight: 0.6
+              impact: [query-shape-2]
+          dropIndexSuggestions:
+            redundantIndexes:
+              - accessCount: 0
+                namespace: mflix.movies
+                name: year_1
+                sinceDate: "2025-01-01T00:00:00Z"
+            unusedIndexes:
+              - accessCount: 0
+                namespace: mflix.shows
+                name: rating_1
+                sinceDate: "2025-01-01T00:00:00Z"
+          schemaAdvice:
+            - recommendation: REDUCE_LOOKUP_OPS
+              description: Reduce $lookup operations on mflix.comments.
+              affectedNamespaces:
+                - namespace: mflix.comments
+                  triggers:
+                    - triggerType: PERCENT_QUERIES_USE_LOOKUP
+                      description: 40% of queries use $lookup.
+          slowQueries:
+            - namespace: mflix.movies
+              line: '{"command":{"find":"movies","filter":{"title":"Heat"}},"planSummary":"COLLSCAN","docsExamined":23000,"nreturned":1,"millis":410}'
+            - namespace: mflix.shows
+              line: '{"command":{"find":"shows","filter":{"genre":"drama"}},"planSummary":"COLLSCAN","docsExamined":9000,"nreturned":300,"millis":220}'
