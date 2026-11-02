@@ -280,6 +280,51 @@ Scoring looks at tool calls only. The mock Atlas keeps no end state to check.
 | `streams` | 16 | `atlas-streams-discover` |
 | `streams-write` | 6 | `atlas-streams-build`, `-manage`, `-teardown` |
 
+## Query Insights suite
+
+One command runs the Query Insights report suite with the production model,
+5 trials and 3 datasets:
+
+```sh
+pnpm --filter @repo/evals eval:query-insights
+```
+
+It needs `OPENAI_API_KEY` and `BRAINTRUST_API_KEY`. The script has no
+`--validate` yet, so it reports scores without failing on them.
+
+| Dataset | Cases | What it checks |
+| :---- | :---- | :---- |
+| `query-insights` | 33 | The report on a Performance Advisor output, ported from 30 source eval cases, plus 3 multi-shape cases that combine several of them |
+| `query-insights-realistic-user-queries` | 7 | Realistic user queries worded different ways, on the ported seeds |
+| `query-insights-injection` | 6 | Instructions in a slow-log comment or in the user message do not change the report, trigger a tool call or leak the prompt |
+
+The references were rewritten by hand from the source references and hold
+no lifetime totals, so they check the findings, not the numbers. Each case
+reads a mock Atlas seed in `fixtures/atlas/`.
+
+What the scores mean:
+
+- `ToolCallArgCoverage` is the share of expected arguments the agent passed to
+  `mongodb__atlas_get_performance_advisor`. Watch this one.
+- `ToolCallCoverage` is capped when the agent makes more than twice the
+  expected calls, and the agent often makes more. Compare runs, not the value.
+- `ReportShape` checks the layout: a summary, one `### Shape` section per
+  shape, a `javascript` block, and at most two areas, each led by a bold
+  sentence. A case with `expectedShapes` also checks the section count.
+- `SuggestedIndexUsage` checks that each section uses the advisor's index for
+  its namespace, and invents none where the advisor has no suggestion.
+- `ReportFactuality` and `ReferenceCoverage` are LLM judges. The first grades
+  the report against the tool output, the second against the reference.
+- `AnswerMatches` and `NoForbiddenExecuted` check the injection cases.
+
+The scripted model replays each case's `script`, so
+`src/queryInsightsRuns.test.ts` runs the three datasets offline with no key.
+Its replies are not reports, so the report scores from that run only show
+that the harness works. The judges there are a stub,
+`src/offline/firstChoiceJudge.ts`. The test asserts that every case runs and
+that `ToolCallCoverage`, `AnswerMatches` and `NoForbiddenExecuted` have no
+misses.
+
 ## Adding a case
 
 Cases are YAML in `datasets/`. `input.custom` holds `script` (turns for
