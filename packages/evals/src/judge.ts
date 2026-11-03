@@ -27,6 +27,13 @@ export const DEFAULT_JUDGE_MODEL = "gpt-6-luna";
 /** Used when no endpoint is configured, as `buildLLM` does for the agent. */
 export const DEFAULT_JUDGE_ENDPOINT = "https://api.openai.com/v1";
 
+/**
+ * Factuality asks the judge to call a function. Reasoning models reject
+ * function tools on `/v1/chat/completions` unless reasoning is off, and the
+ * library gives no way to set it, so the judge client sets it on each request.
+ */
+export const DEFAULT_JUDGE_REASONING_EFFORT = "none";
+
 /** Judge settings. Each one overrides the environment variable named after it. */
 export interface JudgeModelOptions {
   /** Defaults to `EVAL_JUDGE_MODEL`, then `DEFAULT_JUDGE_MODEL`. */
@@ -38,6 +45,12 @@ export interface JudgeModelOptions {
    * gateway the agent uses), then `DEFAULT_JUDGE_ENDPOINT`.
    */
   readonly endpoint?: string;
+  /**
+   * Sent as `reasoning_effort` on every judge request. Defaults to
+   * `EVAL_JUDGE_REASONING_EFFORT`, then `DEFAULT_JUDGE_REASONING_EFFORT`. An
+   * empty string leaves it out, for models that reject the parameter.
+   */
+  readonly reasoningEffort?: string;
 }
 
 /**
@@ -74,6 +87,11 @@ export function judgeModelConfig(
     );
   };
 
+  const reasoningEffort = () =>
+    options.reasoningEffort ??
+    env.EVAL_JUDGE_REASONING_EFFORT ??
+    DEFAULT_JUDGE_REASONING_EFFORT;
+
   let client: JudgeModelConfig["client"] | undefined;
 
   return {
@@ -82,10 +100,10 @@ export function judgeModelConfig(
       // The library's types come from the CommonJS build of `openai` and ours
       // from the ESM build. They are the same package, and TypeScript treats
       // the two private class brands as different.
-      client ??= new OpenAI({
-        apiKey: apiKey(),
-        ...connection(),
-      }) as unknown as JudgeModelConfig["client"];
+      client ??= withReasoningEffort(
+        new OpenAI({ apiKey: apiKey(), ...connection() }),
+        reasoningEffort(),
+      ) as unknown as JudgeModelConfig["client"];
       return client;
     },
     // Factuality does not read this. The library's AI SDK judge helper
@@ -95,4 +113,16 @@ export function judgeModelConfig(
       return { apiKey: apiKey(), endpoint: connection().baseURL };
     },
   };
+}
+
+function withReasoningEffort(client: OpenAI, effort: string): OpenAI {
+  if (!effort) return client;
+  const completions = client.chat.completions;
+  const create = completions.create.bind(completions) as (
+    body: object,
+    options?: object,
+  ) => unknown;
+  completions.create = ((body: object, options?: object) =>
+    create({ reasoning_effort: effort, ...body }, options)) as never;
+  return client;
 }

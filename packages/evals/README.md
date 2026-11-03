@@ -87,6 +87,7 @@ judge key because Grove rejects it.
 | `EVAL_JUDGE_MODEL` | `gpt-6-luna` | Judge model. Separate from the agent's `--model`. |
 | `EVAL_JUDGE_API_KEY` | `OPENAI_API_KEY` | Key for the judge endpoint. |
 | `EVAL_JUDGE_ENDPOINT` | `OPENAI_BASE_URL` | Judge endpoint, for example the Grove URL. Without either, the judge calls `https://api.openai.com/v1`. |
+| `EVAL_JUDGE_REASONING_EFFORT` | `none` | Sent as `reasoning_effort`. Factuality calls a function, and reasoning models reject that on chat completions unless this is `none`. Set it empty to omit it for models that reject the parameter. |
 
 `pnpm --filter @repo/evals eval:knowledge:explorer` runs the `knowledge`
 dataset, the only one with reference answers, so it is the one that exercises

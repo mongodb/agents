@@ -135,6 +135,7 @@ interface JudgeRequest {
   url: string;
   authorization: string | undefined;
   model: string;
+  reasoningEffort: string | undefined;
 }
 
 /** A stand-in for the Grove gateway that always picks one grading choice. */
@@ -148,6 +149,7 @@ function startFakeGateway(choice: string) {
         url: req.url ?? "",
         authorization: req.headers.authorization,
         model: JSON.parse(body).model,
+        reasoningEffort: JSON.parse(body).reasoning_effort,
       });
       res.setHeader("content-type", "application/json");
       res.end(
@@ -231,7 +233,25 @@ describe("Factuality with the judge config", () => {
       url: "/v1/chat/completions",
       authorization: "Bearer test-key",
       model: "gpt-6-luna",
+      reasoningEffort: "none",
     });
+  });
+
+  it("sends the configured reasoning effort, or none when it is empty", async () => {
+    const run = async (reasoningEffort: string) =>
+      makeFactuality(
+        judgeModelConfig(
+          { endpoint: gateway.url, reasoningEffort },
+          { OPENAI_API_KEY: "test-key" },
+        ),
+      )(args("A replica set is a group of mongod processes."));
+
+    await run("low");
+    await run("");
+    expect(gateway.requests.map((r) => r.reasoningEffort)).toEqual([
+      "low",
+      undefined,
+    ]);
   });
 
   it("skips a case with no reference answer without calling the judge", async () => {
