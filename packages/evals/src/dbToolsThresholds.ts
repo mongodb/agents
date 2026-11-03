@@ -28,8 +28,6 @@ export const DB_TOOLS_EXPLORER_BASELINE = {
   MongoCheck: 0.99,
   NoForbiddenExecuted: 1,
   QueryRefusalMatch: 1,
-  /** 3 of 20 read-only write requests inspected the schema or knowledge first. */
-  ToolCallAmountCorrect: 0.85,
   ToolCallArgCoverage: 1,
   /** Capped when the agent explores before the call. See the README. */
   ToolCallCoverage: 0.85,

@@ -305,3 +305,15 @@ and closes it after. That is fine for a handful of small fixtures. A suite
 with many cases, or checks that run in parallel against a shared database,
 would open one connection per check at once. Share a pooled client if that
 becomes a problem.
+
+## CI
+
+- Suites:
+  - Atlas Explorer: `.github/workflows/evals-atlas-explorer.yml` runs the guardrail, db-tools and
+    atlas-admin Explorer suites.
+    - Runs on: 
+      - pull requests that touch the agent or this
+    package
+    - Runs weekly on `main`.
+- Evals in CI needs the secrets `OPENAI_API_KEY`, `OPENAI_BASE_URL` and `BRAINTRUST_API_KEY`.
+- Fork PRs skip evals, because forks cannot read secrets.

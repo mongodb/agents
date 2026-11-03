@@ -1,0 +1,105 @@
+name: Run eval
+description: >-
+  Run one @repo/evals script, retry once if the run hit an infrastructure
+  error, write the Braintrust experiment URLs and the result to the job
+  summary
+
+inputs:
+  script:
+    description: "@repo/evals package script to run, for example eval:db-tools:explorer"
+    required: true
+  name:
+    description: Short name used for the summary heading and the artifact
+    required: true
+  run-id:
+    description: Run id passed to the eval CLI with --run-id
+    required: true
+  args:
+    description: Extra arguments appended to the script, for example --trial-count 1
+    required: false
+    default: ""
+
+runs:
+  using: composite
+  steps:
+    - name: Run ${{ inputs.script }}
+      id: run
+      shell: bash
+      env:
+        EVAL_SCRIPT: ${{ inputs.script }}
+        EVAL_RUN_ID: ${{ inputs.run-id }}
+        EVAL_ARGS: ${{ inputs.args }}
+      run: |
+        mkdir -p "$RUNNER_TEMP/eval-logs"
+        log="$RUNNER_TEMP/eval-logs/eval.log"
+        : > "$log"
+        # The library CLI prints "Evaluation Error" or "Unknown Error" when a
+        # run throws (a provider outage, a network drop), and the validator's
+        # own name when a score is too low. Only the first kind is worth a
+        # rerun. A score failure would fail again after another long run.
+        for attempt in 1 2; do
+          run_id="$EVAL_RUN_ID"
+          if [ "$attempt" -gt 1 ]; then run_id="$EVAL_RUN_ID-retry"; fi
+          echo "::group::Attempt $attempt ($run_id)"
+          attempt_log="$RUNNER_TEMP/eval-logs/attempt-$attempt.log"
+          set +e
+          # shellcheck disable=SC2086
+          pnpm --filter @repo/evals run "$EVAL_SCRIPT" --run-id "$run_id" \
+            $EVAL_ARGS 2>&1 | tee "$attempt_log"
+          status=${PIPESTATUS[0]}
+          set -e
+          echo "::endgroup::"
+          cat "$attempt_log" >> "$log"
+          echo "attempts=$attempt" >> "$GITHUB_OUTPUT"
+          if [ "$status" -eq 0 ]; then break; fi
+          if ! grep -qE '\| (Evaluation Error|Unknown Error) \| FAIL' "$attempt_log"; then
+            echo "kind=score" >> "$GITHUB_OUTPUT"
+            break
+          fi
+          echo "kind=infrastructure" >> "$GITHUB_OUTPUT"
+        done
+        echo "status=$status" >> "$GITHUB_OUTPUT"
+        exit "$status"
+
+    - name: Write job summary
+      if: always()
+      shell: bash
+      env:
+        EVAL_NAME: ${{ inputs.name }}
+        EVAL_SCRIPT: ${{ inputs.script }}
+        EVAL_RUN_ID: ${{ inputs.run-id }}
+        EVAL_STATUS: ${{ steps.run.outputs.status }}
+        EVAL_KIND: ${{ steps.run.outputs.kind }}
+        EVAL_ATTEMPTS: ${{ steps.run.outputs.attempts }}
+      run: |
+        log="$RUNNER_TEMP/eval-logs/eval.log"
+        {
+          echo "## Evals: $EVAL_NAME"
+          echo
+          echo "- Script: \`$EVAL_SCRIPT\`"
+          echo "- Run id: \`$EVAL_RUN_ID\`"
+          if [ "$EVAL_STATUS" = "0" ]; then
+            echo "- Result: passed (${EVAL_ATTEMPTS:-0} attempt(s))"
+          elif [ "$EVAL_KIND" = "infrastructure" ]; then
+            echo "- Result: infrastructure failure after ${EVAL_ATTEMPTS:-0} attempt(s). A provider or network error stopped the run, so this says nothing about scores."
+          else
+            echo "- Result: score failure. A validator threshold was missed."
+          fi
+          echo
+          if [ -f "$log" ]; then
+            urls=$(grep -oE 'See results at [^ ]+' "$log" | sort -u || true)
+            if [ -n "$urls" ]; then
+              echo "### Braintrust experiments"
+              echo
+              echo "$urls" | sed 's/^See results at /- /'
+              echo
+            fi
+            if grep -q "Validation Summary" "$log"; then
+              echo "### Validation"
+              echo
+              echo '```'
+              awk '/Validation Summary/{found=1} found' "$log" | tail -n 60
+              echo '```'
+            fi
+          fi
+        } >> "$GITHUB_STEP_SUMMARY"

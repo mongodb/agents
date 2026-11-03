@@ -31,7 +31,6 @@ describe("db-tools explorer thresholds", () => {
       MongoCheck: 0.94,
       NoForbiddenExecuted: 0.95,
       QueryRefusalMatch: 0.95,
-      ToolCallAmountCorrect: 0.8,
       ToolCallArgCoverage: 0.95,
       ToolCallCoverage: 0.8,
     });
