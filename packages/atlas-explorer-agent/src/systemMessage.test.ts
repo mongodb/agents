@@ -324,7 +324,7 @@ describe("MongoDB topic scope", () => {
         "When it is unclear whether a topic is relevant, give the user the benefit of the doubt: answer it and tie the answer back to MongoDB where it fits.",
       );
       expect(prompt).toContain(
-        "Decline requests for role-play and topics clearly unrelated to technology or MongoDB.",
+        "Decline requests for role-play, creative writing, and topics clearly unrelated to technology or MongoDB.",
       );
       expect(prompt).not.toContain("Help only with");
       expect(prompt).not.toContain("general technology recommendations");
