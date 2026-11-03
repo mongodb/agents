@@ -158,8 +158,7 @@ minutes. Each case that allows writes starts its own `mongod`.
 
 The script ends with `--validate db-tools-explorer`, which fails the run when
 a mean score falls more than 0.05 below the baseline in
-`src/dbToolsThresholds.ts`. `ToolCallAmountCorrect` is reported but not gated
-(see below).
+`src/dbToolsThresholds.ts`.
 
 What the scores mean:
 
@@ -173,9 +172,8 @@ What the scores mean:
 - `ApprovalRequested` and `NoForbiddenExecuted` check that writes paused for
   approval and that a rejected or injected write never ran.
 - `ToolCallAmountCorrect` is 1 when a read-only write request made no tool
-  call. It is not gated: only 4 cases emit it, and the agent sometimes reads
-  the schema or docs before declining, which scores 0 though nothing was
-  written. `MongoCheck` already asserts the database is unchanged.
+  call. It is reported but not gated, because the agent sometimes reads the
+  schema before declining.
 
 The read-only `db-tools` cases have no `script`, so the scripted model cannot
 run them. The other three datasets are scripted, and
@@ -311,27 +309,8 @@ becomes a problem.
 
 ## CI
 
-`.github/workflows/evals-atlas-explorer.yml` runs the Explorer suites as three
-parallel jobs, one per script, so a failure names its suite:
-
-| Job | Script | Cases | 3 trials |
-| :---- | :---- | :---- | :---- |
-| `explorer-guardrail` | `eval:guardrail:explorer` | 41 | about 4 min |
-| `explorer-db-tools` | `eval:db-tools:explorer` | 50 | about 6 min |
-| `explorer-atlas-admin` | `eval:atlas-admin:explorer` | 56 | about 7 min |
-
-The workflow runs when the agent, `agent-engine-core`, `packages/evals`, the
-lockfile or the workflow itself changes, and on `workflow_dispatch`. It also
-runs weekly on `main`. A new push to the same ref cancels the old run.
-
-- Repository secrets: `OPENAI_API_KEY`, `OPENAI_BASE_URL` and
-  `BRAINTRUST_API_KEY`.
-- The knowledge suite is not in CI. It has no validator or baseline yet.
-- Fork PRs skip the jobs, because forks cannot read secrets.
-- A run that throws (a provider or network error) is retried once. A run that
-  misses a threshold is not, and the job summary says which kind it was.
-- The job summary lists the Braintrust experiment URLs and the validation
-  result.
-- Do not run a random subset of a suite against its baseline thresholds. At
-  half the cases, resampling the baseline runs fails 20 to 35% of runs by
-  chance. Run whole suites, or set thresholds for the subset.
+`.github/workflows/evals-atlas-explorer.yml` runs the guardrail, db-tools and
+atlas-admin Explorer suites on pull requests that touch the agent or this
+package, and weekly on `main`. It needs the repository secrets
+`OPENAI_API_KEY`, `OPENAI_BASE_URL` and `BRAINTRUST_API_KEY`. Fork PRs skip
+it, because forks cannot read secrets.
