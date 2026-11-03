@@ -34,6 +34,7 @@ import {
   GUARDRAIL_QUERY_INSIGHTS_THRESHOLDS,
 } from "./guardrailThresholds.js";
 import { judgeModelConfig } from "./judge.js";
+import { KNOWLEDGE_EXPLORER_THRESHOLDS } from "./knowledgeThresholds.js";
 import type { ModelConfig } from "./models.js";
 import { scorers } from "./scorers.js";
 import { makeAgentTask } from "./task.js";
@@ -206,6 +207,10 @@ export function buildEvalCli({
           ApprovalRequested: 0.95,
           NoForbiddenExecuted: 0.95,
         },
+      }),
+      // Baseline minus a margin, for the knowledge dataset.
+      "knowledge-explorer": makeValidateMinimums({
+        scoreThresholds: { ...KNOWLEDGE_EXPLORER_THRESHOLDS },
       }),
       "smoke-query-insights": makeValidateMinimums({
         scoreThresholds: {

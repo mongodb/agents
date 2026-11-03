@@ -334,11 +334,31 @@ with many cases, or checks that run in parallel against a shared database,
 would open one connection per check at once. Share a pooled client if that
 becomes a problem.
 
+## Knowledge suite
+
+`eval:knowledge:explorer` runs the 37 `knowledge` cases against the
+Explorer with `gpt-6-luna`. It fails when a score falls below its threshold
+in `src/knowledgeThresholds.ts`:
+
+- `ReferenceAlignment`: the judge's grade of the answer against the case's
+  `referenceAnswer`. It is `Factuality` with two grades raised (0.4 to 0.75,
+  0.6 to 0.9). `Factuality` itself is not gated.
+- `BinaryNdcgAt5`: how high the URLs `search_knowledge` returned rank against
+  the case's `links`. Only 22 cases have `links`. The live search rarely
+  returns the exact URLs, so the baseline is low (0.17).
+- `ToolCallCoverage`: the agent called `search_knowledge`.
+
+The agent calls the live `knowledge.mongodb.com` API. If it is down, the
+searches fail, the scores drop and the job fails like a score miss. Re-run
+the job. Re-run the script with 5 trials and update the baseline when the
+prompt, the knowledge tools or the judge change, or when the docs change
+enough to move the scores.
+
 ## CI
 
 - Suites:
-  - Atlas Explorer: `.github/workflows/evals-atlas-explorer.yml` runs the guardrail, db-tools and
-    atlas-admin Explorer suites.
+  - Atlas Explorer: `.github/workflows/evals-atlas-explorer.yml` runs the guardrail, db-tools,
+    atlas-admin and knowledge Explorer suites.
     - Runs on: 
       - pull requests that touch the agent or this
     package
