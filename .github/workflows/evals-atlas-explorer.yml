@@ -57,6 +57,8 @@ jobs:
             script: eval:db-tools:explorer
           - name: explorer-atlas-admin
             script: eval:atlas-admin:explorer
+          - name: explorer-knowledge
+            script: eval:knowledge:explorer
     env:
       COREPACK_ENABLE_DOWNLOAD_PROMPT: "0"
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}

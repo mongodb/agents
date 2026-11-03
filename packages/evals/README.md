@@ -88,6 +88,11 @@ judge key because Grove rejects it.
 | `EVAL_JUDGE_API_KEY` | `OPENAI_API_KEY` | Key for the judge endpoint. |
 | `EVAL_JUDGE_ENDPOINT` | `OPENAI_BASE_URL` | Judge endpoint, for example the Grove URL. Without either, the judge calls `https://api.openai.com/v1`. |
 
+`pnpm --filter @repo/evals eval:knowledge:explorer` runs the `knowledge`
+dataset, the only one with reference answers, so it is the one that exercises
+the judge. CI runs it as `explorer-knowledge` and prints the Factuality mean in
+the job summary. It has no pass/fail threshold yet.
+
 Set `OPENAI_BASE_URL` and `OPENAI_API_KEY` to the Grove values, as for the
 agent, and the judge needs nothing else. Set `EVAL_JUDGE_*` only to grade with
 a different model or endpoint than the agent. Runs whose cases have no
