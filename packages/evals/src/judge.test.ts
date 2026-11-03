@@ -185,6 +185,7 @@ describe("Factuality with the judge config", () => {
     )) as unknown as { name: string; score: number | null }[];
 
     expect(scores.find((s) => s.name === "Factuality")?.score).toBe(1);
+    expect(scores.find((s) => s.name === "ReferenceAlignment")?.score).toBe(1);
     expect(proxy.requests).toHaveLength(1);
     expect(proxy.requests[0]).toEqual({
       url: "/v1/chat/completions",
