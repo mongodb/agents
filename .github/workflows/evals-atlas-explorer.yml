@@ -64,8 +64,6 @@ jobs:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
       BRAINTRUST_API_KEY: ${{ secrets.BRAINTRUST_API_KEY }}
-      EVAL_JUDGE_ENDPOINT: ${{ secrets.OPENAI_BASE_URL }}
-      EVAL_JUDGE_API_KEY: ${{ secrets.OPENAI_API_KEY }}
     steps:
       - uses: actions/checkout@v7
 
