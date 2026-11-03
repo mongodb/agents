@@ -19,6 +19,7 @@ import path from "node:path";
 import { config } from "dotenv";
 
 import { buildEvalCli } from "./cli.js";
+import "./disableHttpKeepAlive.js";
 import { REPO_ROOT } from "./paths.js";
 
 // BRAINTRUST_API_KEY and OPENAI_API_KEY may live in the repo's root .env.

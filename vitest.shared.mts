@@ -30,6 +30,7 @@ export type PackageVitestOverrides = {
   hookTimeout?: number;
   fileParallelism?: boolean;
   sequence?: { concurrent: boolean };
+  setupFiles?: string[];
 };
 
 const sharedTest = {

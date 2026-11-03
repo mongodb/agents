@@ -21,4 +21,5 @@ export default defineConfig(definePackageVitestConfig({
     // Contract tests start real mongodb-mcp-server processes.
     testTimeout: 30_000,
     hookTimeout: 30_000,
+    setupFiles: ["./src/disableHttpKeepAlive.ts"],
   }));

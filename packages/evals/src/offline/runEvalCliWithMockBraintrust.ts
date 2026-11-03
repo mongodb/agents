@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { _exportsForTestingOnly } from "braintrust";
+import { _exportsForTestingOnly, flush } from "braintrust";
 
 import { startMockBraintrust, type MockBraintrust } from "./mockBraintrust.js";
 
@@ -73,14 +73,18 @@ export async function runEvalCliWithMockBraintrust(
     exitCode = error.code;
   } finally {
     process.exit = realExit;
-    for (const [key, value] of Object.entries(previousEnv)) {
-      if (value === undefined) delete process.env[key];
-      else process.env[key] = value;
+    try {
+      // Spans upload in the background. Wait for the SDK to send the rest
+      // before the mock closes.
+      await flush();
+    } finally {
+      for (const [key, value] of Object.entries(previousEnv)) {
+        if (value === undefined) delete process.env[key];
+        else process.env[key] = value;
+      }
+      await mock.close();
+      await _exportsForTestingOnly.simulateLogoutForTests();
     }
-    // Spans upload in the background. Give them a moment to land.
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    await mock.close();
-    await _exportsForTestingOnly.simulateLogoutForTests();
   }
   return {
     exitCode,
