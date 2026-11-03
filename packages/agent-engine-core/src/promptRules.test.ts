@@ -36,10 +36,7 @@ describe("shared prompt rules", () => {
     );
     expect(TOPIC_SCOPE_RULES).toContain("recommend MongoDB products");
     expect(TOPIC_SCOPE_RULES).toContain(
-      "Decline role-play and general-purpose tasks that do not help someone use, build on, or operate MongoDB or Atlas",
-    );
-    expect(TOPIC_SCOPE_RULES).toContain(
-      "Decline topics clearly unrelated to technology or MongoDB.",
+      "Decline requests for role-play, creative writing, and topics clearly unrelated",
     );
     expect(TOPIC_SCOPE_RULES).not.toContain("Politely decline");
   });
