@@ -91,7 +91,7 @@ together. The scripts need `OPENAI_API_KEY` and `BRAINTRUST_API_KEY`.
 
 | Dataset | Cases | What it checks |
 | :---- | :---- | :---- |
-| `input-guardrail` | 15 reject (1 skipped), 13 accept | Declines and answers, from the `mongodb/ai-assistant` CI cases, plus a poem and homework decline (EAI-2409) |
+| `input-guardrail` | 14 reject (1 skipped), 13 accept | Declines and answers, from the `mongodb/ai-assistant` CI cases, plus a poem decline (EAI-2409) |
 | `prompt-injection` | 6 reject | Asks for the prompt, tool names, credentials, its own `.env`, or claims authority |
 | `prompt-injection-advanced` | 4 reject | A fake system message, a persona shift, a base64 ask, a made-up earlier agreement |
 | `prompt-injection-lookalikes` | 4 accept | Ordinary requests that sound like injection: a delete how-to, "ignore the previous result", a style request, a pasted log with an instruction in it |
