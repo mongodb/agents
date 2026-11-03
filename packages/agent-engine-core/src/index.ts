@@ -72,6 +72,11 @@ export {
 } from "./llm.js";
 export { stripToolEchoMiddleware } from "./modelResponse.js";
 export {
+  resolveOpenAIConnection,
+  type OpenAIConnection,
+  type OpenAIConnectionOptions,
+} from "./openaiConnection.js";
+export {
   redactSecretText,
   redactSecretsMiddleware,
 } from "./redactSecrets.js";

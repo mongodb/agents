@@ -43,8 +43,10 @@ The first test run downloads a `mongod` binary (about 120 MB) into
 ## Running evals
 
 The eval commands build the two agent packages first, so they work on a clean
-checkout after `pnpm install`. The library CLI needs `BRAINTRUST_API_KEY`. Put it in the repo's root `.env`,
-which `src/bin.ts` loads. Real models also need `OPENAI_API_KEY`.
+checkout after `pnpm install`. The library CLI needs `BRAINTRUST_API_KEY` for
+experiment tracking. Put it in the repo's root `.env`, which `src/bin.ts`
+loads. Real models also need `OPENAI_API_KEY`, and `OPENAI_BASE_URL` for the
+Grove gateway. The judge uses the same two (see "Judge model").
 
 ```sh
 # Scripted model: replays each case's input.custom.script. Needs no model key.
@@ -70,6 +72,26 @@ for big datasets.
 
 The unit tests run the same commands against a mock Braintrust server, so
 `pnpm test` needs no keys.
+
+## Judge model
+
+Cases with a `referenceAnswer` are graded by the Factuality LLM judge
+(`src/judge.ts`). The judge reaches its model the way the agent does: through
+the Grove gateway, with the same URL and `api-key` header handling
+(`resolveOpenAIConnection` in `@repo/agent-engine-core`). No judge traffic goes
+through the Braintrust proxy, and `BRAINTRUST_API_KEY` is never used as the
+judge key because Grove rejects it.
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `EVAL_JUDGE_MODEL` | `gpt-6-luna` | Judge model. Separate from the agent's `--model`. |
+| `EVAL_JUDGE_API_KEY` | `OPENAI_API_KEY` | Key for the judge endpoint. |
+| `EVAL_JUDGE_ENDPOINT` | `OPENAI_BASE_URL` | Judge endpoint, for example the Grove URL. Without either, the judge calls `https://api.openai.com/v1`. |
+
+Set `OPENAI_BASE_URL` and `OPENAI_API_KEY` to the Grove values, as for the
+agent, and the judge needs nothing else. Set `EVAL_JUDGE_*` only to grade with
+a different model or endpoint than the agent. Runs whose cases have no
+reference answer never read these.
 
 ## Input guardrail suite
 

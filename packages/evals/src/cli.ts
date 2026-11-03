@@ -65,7 +65,7 @@ export interface EvalCliOptions {
   readonly toolProvider?: ToolProvider;
   /** Datasets added to the shipped ones. Tests use it for scripted cases. */
   readonly extraDatasets?: Record<string, ReturnType<typeof dataset>>;
-  /** Defaults to `gpt-6-luna` through the Braintrust proxy. Tests pass a stub. */
+  /** Defaults to `gpt-6-luna` through the Grove gateway. Tests pass a stub. */
   readonly judge?: JudgeModelConfig;
 }
 
