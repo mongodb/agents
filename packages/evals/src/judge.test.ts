@@ -23,7 +23,6 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   DEFAULT_JUDGE_ENDPOINT,
   DEFAULT_JUDGE_MODEL,
-  gatewayOptions,
   judgeModelConfig,
 } from "./judge.js";
 
@@ -151,23 +150,6 @@ function startFakeProxy(choice: string) {
       ),
   );
 }
-
-describe("gatewayOptions", () => {
-  it("uses an ordinary endpoint as is", () => {
-    expect(gatewayOptions("https://api.braintrust.dev/v1/proxy", "k")).toEqual({
-      baseURL: "https://api.braintrust.dev/v1/proxy",
-    });
-  });
-
-  it("sends the key in an api-key header to the grove gateway and cuts the path after /v1", () => {
-    expect(
-      gatewayOptions("https://x.grove-foundry.example/openai/v1/chat/", "k"),
-    ).toEqual({
-      baseURL: "https://x.grove-foundry.example/openai/v1",
-      defaultHeaders: { "api-key": "k" },
-    });
-  });
-});
 
 describe("Factuality with the judge config", () => {
   let proxy: Awaited<ReturnType<typeof startFakeProxy>>;

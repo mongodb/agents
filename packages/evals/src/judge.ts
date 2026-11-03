@@ -44,22 +44,6 @@ export interface JudgeModelOptions {
 }
 
 /**
- * The gateway the agents reach through `OPENAI_BASE_URL` in CI wants the key
- * in an `api-key` header and the base URL cut after `/v1`, the same as
- * `buildLLM` in `@repo/agent-engine-core`. Any other endpoint is used as is.
- */
-export function gatewayOptions(
-  endpoint: string,
-  apiKey: string,
-): { baseURL: string; defaultHeaders?: Record<string, string> } {
-  if (!endpoint.includes("grove-foundry")) return { baseURL: endpoint };
-  return {
-    baseURL: endpoint.replace(/\/$/, "").split("/v1")[0] + "/v1",
-    defaultHeaders: { "api-key": apiKey },
-  };
-}
-
-/**
  * Judge model settings for the LLM-judge scorers.
  *
  * Nothing is read until a scorer asks for the client, so runs whose cases need
@@ -95,7 +79,7 @@ export function judgeModelConfig(
       // the two private class brands as different.
       client ??= new OpenAI({
         apiKey: apiKey(),
-        ...gatewayOptions(endpoint(), apiKey()),
+        baseURL: endpoint(),
       }) as unknown as JudgeModelConfig["client"];
       return client;
     },
