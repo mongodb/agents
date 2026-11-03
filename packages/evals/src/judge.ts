@@ -15,6 +15,7 @@
  */
 
 import { resolveOpenAIConnection } from "@repo/agent-engine-core";
+import { wrapOpenAI } from "braintrust";
 import type { JudgeModelConfig } from "mongodb-assistant-eval/scorers";
 import OpenAI from "openai";
 
@@ -100,9 +101,15 @@ export function judgeModelConfig(
       // The library's types come from the CommonJS build of `openai` and ours
       // from the ESM build. They are the same package, and TypeScript treats
       // the two private class brands as different.
-      client ??= withReasoningEffort(
-        new OpenAI({ apiKey: apiKey(), ...connection() }),
-        reasoningEffort(),
+      // Inside a Braintrust run, autoevals adds a `span_info` field that only
+      // the Braintrust wrapper understands and strips. Without the wrapper, the
+      // gateway rejects the request as an unknown parameter. The wrapper also
+      // logs each judge call as a span in the run.
+      client ??= wrapOpenAI(
+        withReasoningEffort(
+          new OpenAI({ apiKey: apiKey(), ...connection() }),
+          reasoningEffort(),
+        ),
       ) as unknown as JudgeModelConfig["client"];
       return client;
     },

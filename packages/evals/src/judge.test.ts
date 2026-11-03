@@ -136,6 +136,7 @@ interface JudgeRequest {
   authorization: string | undefined;
   model: string;
   reasoningEffort: string | undefined;
+  hasSpanInfo: boolean;
 }
 
 /** A stand-in for the Grove gateway that always picks one grading choice. */
@@ -150,6 +151,7 @@ function startFakeGateway(choice: string) {
         authorization: req.headers.authorization,
         model: JSON.parse(body).model,
         reasoningEffort: JSON.parse(body).reasoning_effort,
+        hasSpanInfo: "span_info" in JSON.parse(body),
       });
       res.setHeader("content-type", "application/json");
       res.end(
@@ -234,7 +236,20 @@ describe("Factuality with the judge config", () => {
       authorization: "Bearer test-key",
       model: "gpt-6-luna",
       reasoningEffort: "none",
+      hasSpanInfo: false,
     });
+  });
+
+  it("does not leak the span_info autoevals adds inside a Braintrust run", async () => {
+    const flag = "__inherited_braintrust_wrap_openai";
+    const g = globalThis as Record<string, unknown>;
+    g[flag] = true;
+    try {
+      await factuality()(args("A replica set is a group of mongod processes."));
+    } finally {
+      delete g[flag];
+    }
+    expect(gateway.requests[0]?.hasSpanInfo).toBe(false);
   });
 
   it("sends the configured reasoning effort, or none when it is empty", async () => {
