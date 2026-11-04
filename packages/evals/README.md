@@ -337,7 +337,11 @@ becomes a problem.
 ## Knowledge suite
 
 `eval:knowledge:explorer` runs the 37 `knowledge` cases against the
-Explorer with `gpt-6-luna`. It fails when a score falls below its threshold
+Explorer with `gpt-6-luna`, and `eval:knowledge:query-insights` runs them
+against Atlas Query Insights with `gpt-6.1-terra`. Each has its own baseline
+in `src/knowledgeThresholds.ts`. The Query Insights agent's
+`ToolCallCoverage` is lower (0.665 against 0.811), so it gets its own
+thresholds. Either script fails when a score falls below its threshold
 in `src/knowledgeThresholds.ts`:
 
 - `ReferenceAlignment`: the judge's grade of the answer against the case's
@@ -363,5 +367,8 @@ judge change, or when the scores move for no code reason.
       - pull requests that touch the agent or this
     package
     - Runs weekly on `main`.
+  - Atlas Query Insights: `.github/workflows/evals-atlas-query-insights.yml`
+    runs the guardrail and knowledge suites, with the same triggers. The
+    Query Insights quality suite (EAI-2397) is not in it yet.
 - Evals in CI needs the secrets `OPENAI_API_KEY`, `OPENAI_BASE_URL` and `BRAINTRUST_API_KEY`.
 - Fork PRs skip evals, because forks cannot read secrets.
