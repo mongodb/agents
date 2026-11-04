@@ -112,6 +112,20 @@ describe("createIndexKeys", () => {
 db.b.createIndex({'title': "text"}, { collation: { locale: "en" } })`),
     ).toEqual([[{ memberId: 1 }, { dueAt: -1 }], [{ title: "text" }]]);
   });
+
+  it("keeps quoted field names whole", () => {
+    expect(createIndexKeys(`createIndex({ "member-id": 1, 'due at': -1 })`)).toEqual([
+      [{ "member-id": 1 }, { "due at": -1 }],
+    ]);
+  });
+
+  it("gives an empty list for a call whose keys cannot be read", () => {
+    expect(
+      createIndexKeys(`db.a.createIndex(keys)
+db.b.createIndex ({ memberId: 1 })
+db.c.createIndex({ memberId: 1, extra: direction })`),
+    ).toEqual([[], [{ memberId: 1 }], []]);
+  });
 });
 
 describe("ReportShape", () => {
@@ -137,6 +151,26 @@ describe("ReportShape", () => {
       "shape 1: bold lead sentences",
     ]);
     expect(result.score).toBeCloseTo(4 / 7);
+  });
+
+  it("fails a section whose only javascript block is in the areas", () => {
+    const noQueryBlock = WITH_SUGGESTION.replace(
+      '```javascript\ndb.loans.find({ memberId: "<specified string>" }).sort({ dueAt: -1 })\n```',
+      "",
+    );
+    expect(reportShape(args(noQueryBlock)).metadata?.failedChecks).toEqual([
+      "shape 1: javascript query block",
+    ]);
+  });
+
+  it("fails an unclosed bold lead", () => {
+    const unclosed = WITHOUT_SUGGESTION.replace(
+      "**The query examines many documents.**",
+      "**The query examines many documents.",
+    );
+    expect(reportShape(args(unclosed)).metadata?.failedChecks).toEqual([
+      "shape 1: bold lead sentences",
+    ]);
   });
 
   it("fails JSON and text with no sections", () => {

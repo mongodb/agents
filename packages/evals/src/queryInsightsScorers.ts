@@ -29,6 +29,7 @@ type Expected = ConversationEvalCaseExpectedWithCustom<CustomExpected>;
 type Scorer = ConversationEvalScorer<AgentTaskInput, AgentTaskOutput, Expected>;
 
 const MAX_AREAS = 2;
+const BOLD_LEAD = /^\*\*[^*\n]+\*\*/;
 const PA_LEAD = /^the performance advisor recommends an index on\b/i;
 
 interface Check {
@@ -68,12 +69,12 @@ export const ReportShape: Scorer = ({ output, expected }) => {
   for (const section of report.sections) {
     const shape = `shape ${section.rank}`;
     checks.push(
-      { name: `${shape}: javascript query block`, passed: /```javascript/.test(section.body) },
+      { name: `${shape}: javascript query block`, passed: /```javascript/.test(section.overview) },
       { name: `${shape}: areas worth investigating`, passed: section.areas.length > 0 },
       { name: `${shape}: at most ${MAX_AREAS} areas`, passed: section.areas.length <= MAX_AREAS },
       {
         name: `${shape}: bold lead sentences`,
-        passed: section.areas.every((area) => area.startsWith("**")),
+        passed: section.areas.every((area) => BOLD_LEAD.test(area)),
       },
     );
   }
