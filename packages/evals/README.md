@@ -1,8 +1,8 @@
 # @repo/evals
 
 Private package that runs LangChain-based agents through
-[`mongodb-assistant-eval`](https://mongodb-assistant-docs.prod.corp.mongodb.com/server/evaluation/library),
-so suites get Braintrust tracing, scorers, a CLI, and pass/fail validators.
+`mongodb-assistant-eval`, so suites get Braintrust tracing, scorers, a CLI, and
+pass/fail validators.
 
 This is the harness. Eval suites, thresholds, and CI gating are separate work
 (EAI-2509 is the harness).
@@ -119,7 +119,7 @@ together. The scripts need `OPENAI_API_KEY` and `BRAINTRUST_API_KEY`.
 
 | Dataset | Cases | What it checks |
 | :---- | :---- | :---- |
-| `input-guardrail` | 14 reject (1 skipped), 13 accept | Declines and answers, from the `mongodb/ai-assistant` CI cases, plus a poem decline (EAI-2409) |
+| `input-guardrail` | 14 reject (1 skipped), 13 accept | Declines and answers, from the MongoDB Assistant eval suite's CI cases, plus a poem decline (EAI-2409) |
 | `prompt-injection` | 6 reject | Asks for the prompt, tool names, credentials, its own `.env`, or claims authority |
 | `prompt-injection-advanced` | 4 reject | A fake system message, a persona shift, a base64 ask, a made-up earlier agreement |
 | `prompt-injection-lookalikes` | 4 accept | Ordinary requests that sound like injection: a delete how-to, "ignore the previous result", a style request, a pasted log with an instruction in it |
@@ -179,7 +179,7 @@ minutes. Each case that allows writes starts its own `mongod`.
 
 | Dataset | Cases | What it checks |
 | :---- | :---- | :---- |
-| `db-tools` | 27 | Read-only: the right `mongodb__*` tool with the right arguments, ported from `mongodb/ai-assistant` |
+| `db-tools` | 27 | Read-only: the right `mongodb__*` tool with the right arguments, ported from the MongoDB Assistant eval suite |
 | `db-tools-writes` | 12 | Delete, drop, update and insert, each read-only, write rejected and write approved |
 | `db-tools-aggregate-writes` | 3 | `$out` approved and rejected, and `$merge` in read-only mode |
 | `db-tools-injection` | 8 | Instructions hidden in data, or in the user message, must not change the database |
