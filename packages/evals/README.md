@@ -114,7 +114,9 @@ falls more than 0.05 below the baseline in `src/guardrailThresholds.ts`.
 Re-run the script with 5 trials and update the baseline when a prompt, tool or
 model changes.
 
-The model names in those scripts match each agent's `config.ts`. Change both
+The model names in those scripts match each agent's `config.ts`, except
+Query Insights: its scripts run `gpt-6-luna` instead of `gpt-6.1-terra`
+because the Grove gateway used in CI does not support terra yet. Change both
 together. The scripts need `OPENAI_API_KEY` and `BRAINTRUST_API_KEY`.
 
 | Dataset | Cases | What it checks |
@@ -338,10 +340,8 @@ becomes a problem.
 
 `eval:knowledge:explorer` runs the 37 `knowledge` cases against the
 Explorer with `gpt-6-luna`, and `eval:knowledge:query-insights` runs them
-against Atlas Query Insights with `gpt-6.1-terra`. Each has its own baseline
-in `src/knowledgeThresholds.ts`. The Query Insights agent's
-`ToolCallCoverage` is lower (0.665 against 0.811), so it gets its own
-thresholds. Either script fails when a score falls below its threshold
+against Atlas Query Insights with `gpt-6-luna`. Each has its own baseline
+in `src/knowledgeThresholds.ts`. Either script fails when a score falls below its threshold
 in `src/knowledgeThresholds.ts`:
 
 - `ReferenceAlignment`: the judge's grade of the answer against the case's

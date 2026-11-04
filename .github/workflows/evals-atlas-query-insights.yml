@@ -51,6 +51,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # The model is set in the scripts in packages/evals/package.json.
+          # Both Query Insights scripts use gpt-6-luna, not the agent's
+          # production gpt-6.1-terra, because the Grove gateway does not
+          # support terra yet. Switch them back, and re-baseline, when it does.
           - name: query-insights-guardrail
             script: eval:guardrail:query-insights
           - name: query-insights-knowledge

@@ -71,8 +71,8 @@ describe("knowledge query insights thresholds", () => {
   it("sit one margin below the baseline, in hundredths", () => {
     expect(KNOWLEDGE_QUERY_INSIGHTS_THRESHOLDS).toEqual({
       ReferenceAlignment: 0.81,
-      BinaryNdcgAt5: 0.54,
-      ToolCallCoverage: 0.61,
+      BinaryNdcgAt5: 0.48,
+      ToolCallCoverage: 0.71,
     });
   });
 
