@@ -11,3 +11,16 @@ The attached notices are provided for information only.
 
 For any licenses that require disclosure of source, sources are available at
 https://github.com/mongodb/agents.
+
+## Eval content adapted from the MongoDB Assistant eval suite
+
+The eval cases and sample data under `packages/evals/` that were adapted from
+the MongoDB Assistant eval suite remain Copyright MongoDB, Inc. and are
+licensed under the Apache License, Version 2.0
+(http://www.apache.org/licenses/LICENSE-2.0). The affected files carry a
+header and the license text once in the repository:
+
+- `packages/evals/datasets/knowledge.yml`
+- `packages/evals/datasets/db-tools.yml`
+- `packages/evals/datasets/input-guardrail.yml`
+- `packages/evals/fixtures/mongo/sample-mflix.yml`
