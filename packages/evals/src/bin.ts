@@ -22,7 +22,8 @@ import { buildEvalCli } from "./cli.js";
 import "./disableHttpKeepAlive.js";
 import { REPO_ROOT } from "./paths.js";
 
-// BRAINTRUST_API_KEY and OPENAI_API_KEY may live in the repo's root .env.
+// BRAINTRUST_API_KEY, OPENAI_API_KEY and OPENAI_BASE_URL may live in the
+// repo's root .env.
 config({ path: path.join(REPO_ROOT, ".env"), quiet: true });
 
 await buildEvalCli().parseAsync();

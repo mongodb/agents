@@ -43,8 +43,10 @@ The first test run downloads a `mongod` binary (about 120 MB) into
 ## Running evals
 
 The eval commands build the two agent packages first, so they work on a clean
-checkout after `pnpm install`. The library CLI needs `BRAINTRUST_API_KEY`. Put it in the repo's root `.env`,
-which `src/bin.ts` loads. Real models also need `OPENAI_API_KEY`.
+checkout after `pnpm install`. The library CLI needs `BRAINTRUST_API_KEY` for
+experiment tracking. Put it in the repo's root `.env`, which `src/bin.ts`
+loads. Real models also need `OPENAI_API_KEY`, and `OPENAI_BASE_URL` for the
+Grove gateway. The judge uses the same two (see "Judge model").
 
 ```sh
 # Scripted model: replays each case's input.custom.script. Needs no model key.
@@ -70,6 +72,32 @@ for big datasets.
 
 The unit tests run the same commands against a mock Braintrust server, so
 `pnpm test` needs no keys.
+
+## Judge model
+
+Cases with a `referenceAnswer` are graded by the Factuality LLM judge
+(`src/judge.ts`). The judge reaches its model the way the agent does: through
+the Grove gateway, with the same URL and `api-key` header handling
+(`resolveOpenAIConnection` in `@repo/agent-engine-core`). No judge traffic goes
+through the Braintrust proxy, and `BRAINTRUST_API_KEY` is never used as the
+judge key because Grove rejects it.
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `EVAL_JUDGE_MODEL` | `gpt-6-luna` | Judge model. Separate from the agent's `--model`. |
+| `EVAL_JUDGE_API_KEY` | `OPENAI_API_KEY` | Key for the judge endpoint. |
+| `EVAL_JUDGE_ENDPOINT` | `OPENAI_BASE_URL` | Judge endpoint, for example the Grove URL. Without either, the judge calls `https://api.openai.com/v1`. |
+| `EVAL_JUDGE_REASONING_EFFORT` | `none` | Sent as `reasoning_effort`. Factuality calls a function, and reasoning models reject that on chat completions unless this is `none`. Set it empty to omit it for models that reject the parameter. |
+
+`pnpm --filter @repo/evals eval:knowledge:explorer` runs the `knowledge`
+dataset, the only one with reference answers, so it is the one that exercises
+the judge. CI runs it as `explorer-knowledge`. It fails below the thresholds
+in "Knowledge suite" below.
+
+Set `OPENAI_BASE_URL` and `OPENAI_API_KEY` to the Grove values, as for the
+agent, and the judge needs nothing else. Set `EVAL_JUDGE_*` only to grade with
+a different model or endpoint than the agent. Runs whose cases have no
+reference answer never read these.
 
 ## Input guardrail suite
 
@@ -306,11 +334,31 @@ with many cases, or checks that run in parallel against a shared database,
 would open one connection per check at once. Share a pooled client if that
 becomes a problem.
 
+## Knowledge suite
+
+`eval:knowledge:explorer` runs the 37 `knowledge` cases against the
+Explorer with `gpt-6-luna`. It fails when a score falls below its threshold
+in `src/knowledgeThresholds.ts`:
+
+- `ReferenceAlignment`: the judge's grade of the answer against the case's
+  `referenceAnswer`. It is `Factuality` with two grades raised (0.4 to 0.75,
+  0.6 to 0.9). `Factuality` itself is not gated.
+- `BinaryNdcgAt5`: how high the URLs `search_knowledge` returned rank against
+  the case's `links`. Only 22 cases have `links`.
+- `ToolCallCoverage`: the agent called `search_knowledge`.
+
+The agent calls the live `knowledge.mongodb.com` API. If it is down, the
+searches fail, the scores drop and the job fails like a score miss. Re-run
+the job. The live results also drift: with the same code, `BinaryNdcgAt5`
+read 0.17 on one evening and 0.56 a few hours later. Re-run the script with 5
+trials and update the baseline when the prompt, the knowledge tools or the
+judge change, or when the scores move for no code reason.
+
 ## CI
 
 - Suites:
-  - Atlas Explorer: `.github/workflows/evals-atlas-explorer.yml` runs the guardrail, db-tools and
-    atlas-admin Explorer suites.
+  - Atlas Explorer: `.github/workflows/evals-atlas-explorer.yml` runs the guardrail, db-tools,
+    atlas-admin and knowledge Explorer suites.
     - Runs on: 
       - pull requests that touch the agent or this
     package

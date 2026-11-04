@@ -26,6 +26,8 @@ import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { ChatOpenAI } from "@langchain/openai";
 import { ChatCerebras } from "@langchain/cerebras";
 
+import { resolveOpenAIConnection } from "./openaiConnection.js";
+
 function log(prefix: string, msg: string): void {
   console.log(`[${prefix}] ${msg}`);
 }
@@ -92,26 +94,10 @@ export function buildLLM(opts: BuildLLMOptions = {}): BaseChatModel {
       ...(useResponsesApi !== undefined ? { useResponsesApi } : {}),
     };
     if (openaiBaseUrl) {
-      const headers: Record<string, string> = {};
-      let baseURL = openaiBaseUrl.replace(/\/$/, "");
-      if (openaiBaseUrl.includes("grove-foundry")) {
-        baseURL = openaiBaseUrl.split("/v1")[0] + "/v1";
-        headers["api-key"] = openaiKey;
-      }
-      const defaultQuery: Record<string, string> = {};
-      if (openaiBaseUrl.toLowerCase().includes("/openai/deployments/")) {
-        const apiVersion =
-          process.env.AZURE_OPENAI_API_VERSION ?? "2024-12-01-preview";
-        defaultQuery["api-version"] = apiVersion;
-        headers["api-key"] = openaiKey;
-      }
-      config.configuration = {
-        baseURL,
-        defaultHeaders: Object.keys(headers).length ? headers : undefined,
-        defaultQuery: Object.keys(defaultQuery).length
-          ? defaultQuery
-          : undefined,
-      };
+      config.configuration = resolveOpenAIConnection({
+        baseUrl: openaiBaseUrl,
+        apiKey: openaiKey,
+      });
     }
     return new ChatOpenAI(config);
   };

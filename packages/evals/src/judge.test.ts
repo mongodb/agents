@@ -26,27 +26,68 @@ import {
   judgeModelConfig,
 } from "./judge.js";
 
+const GROVE_URL = "https://grove-foundry.example.com/v1";
+
 describe("judgeModelConfig", () => {
-  it("uses gpt-6-luna through the Braintrust proxy by default", () => {
-    const judge = judgeModelConfig({}, { BRAINTRUST_API_KEY: "key" });
+  it("uses gpt-6-luna through the Grove gateway from OPENAI_BASE_URL", () => {
+    const judge = judgeModelConfig(
+      {},
+      { OPENAI_API_KEY: "grove-key", OPENAI_BASE_URL: `${GROVE_URL}/chat` },
+    );
     expect(judge.modelId).toBe("gpt-6-luna");
     expect(judge.modelId).toBe(DEFAULT_JUDGE_MODEL);
+    expect(judge.client.baseURL).toBe(GROVE_URL);
     expect(judge.braintrustProxy).toEqual({
-      apiKey: "key",
-      endpoint: DEFAULT_JUDGE_ENDPOINT,
+      apiKey: "grove-key",
+      endpoint: GROVE_URL,
     });
-    expect(judge.client.baseURL).toBe(DEFAULT_JUDGE_ENDPOINT);
   });
 
-  it("takes an OpenAI key when no Braintrust key is set", () => {
+  it("sends the Grove key in an api-key header", async () => {
+    const requests: Record<string, string | string[] | undefined>[] = [];
+    const server = http.createServer((req, res) => {
+      requests.push(req.headers);
+      res.setHeader("content-type", "application/json");
+      res.end(JSON.stringify({ object: "list", data: [] }));
+    });
+    await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
+    try {
+      const port = (server.address() as AddressInfo).port;
+      const judge = judgeModelConfig(
+        {},
+        {
+          OPENAI_API_KEY: "grove-key",
+          OPENAI_BASE_URL: `http://127.0.0.1:${port}/grove-foundry/v1`,
+        },
+      );
+      await judge.client.models.list();
+      expect(requests[0]?.["api-key"]).toBe("grove-key");
+    } finally {
+      server.close();
+    }
+  });
+
+  it("falls back to the OpenAI endpoint when none is configured", () => {
     const judge = judgeModelConfig({}, { OPENAI_API_KEY: "sk-test" });
-    expect(judge.braintrustProxy.apiKey).toBe("sk-test");
+    expect(judge.client.baseURL).toBe(DEFAULT_JUDGE_ENDPOINT);
+    expect(judge.braintrustProxy).toEqual({
+      apiKey: "sk-test",
+      endpoint: DEFAULT_JUDGE_ENDPOINT,
+    });
+  });
+
+  it("ignores BRAINTRUST_API_KEY, which Grove would reject", () => {
+    const judge = judgeModelConfig(
+      {},
+      { BRAINTRUST_API_KEY: "braintrust-key", OPENAI_BASE_URL: GROVE_URL },
+    );
+    expect(() => judge.client).toThrow(/needs an API key/);
   });
 
   it("points at any OpenAI-compatible endpoint", () => {
     const judge = judgeModelConfig(
       { model: "another-judge", endpoint: "https://llm.example/v1" },
-      { BRAINTRUST_API_KEY: "key" },
+      { OPENAI_API_KEY: "key" },
     );
     expect(judge.modelId).toBe("another-judge");
     expect(judge.client.baseURL).toBe("https://llm.example/v1");
@@ -58,8 +99,8 @@ describe("judgeModelConfig", () => {
 
   it("prefers the options, then the EVAL_JUDGE variables", () => {
     const env = {
-      BRAINTRUST_API_KEY: "proxy-key",
       OPENAI_API_KEY: "openai-key",
+      OPENAI_BASE_URL: GROVE_URL,
       EVAL_JUDGE_API_KEY: "eval-key",
       EVAL_JUDGE_MODEL: "env-judge",
       EVAL_JUDGE_ENDPOINT: "http://localhost:1/v1",
@@ -94,10 +135,12 @@ interface JudgeRequest {
   url: string;
   authorization: string | undefined;
   model: string;
+  reasoningEffort: string | undefined;
+  hasSpanInfo: boolean;
 }
 
-/** A stand-in for the Braintrust proxy that always picks one grading choice. */
-function startFakeProxy(choice: string) {
+/** A stand-in for the Grove gateway that always picks one grading choice. */
+function startFakeGateway(choice: string) {
   const requests: JudgeRequest[] = [];
   const server = http.createServer((req, res) => {
     let body = "";
@@ -107,6 +150,8 @@ function startFakeProxy(choice: string) {
         url: req.url ?? "",
         authorization: req.headers.authorization,
         model: JSON.parse(body).model,
+        reasoningEffort: JSON.parse(body).reasoning_effort,
+        hasSpanInfo: "span_info" in JSON.parse(body),
       });
       res.setHeader("content-type", "application/json");
       res.end(
@@ -152,11 +197,11 @@ function startFakeProxy(choice: string) {
 }
 
 describe("Factuality with the judge config", () => {
-  let proxy: Awaited<ReturnType<typeof startFakeProxy>>;
+  let gateway: Awaited<ReturnType<typeof startFakeGateway>>;
   beforeEach(async () => {
-    proxy = await startFakeProxy("C");
+    gateway = await startFakeGateway("C");
   });
-  afterEach(() => proxy.stop());
+  afterEach(() => gateway.stop());
 
   const args = (referenceAnswer: string | undefined) =>
     ({
@@ -174,23 +219,55 @@ describe("Factuality with the judge config", () => {
   const factuality = () =>
     makeFactuality(
       judgeModelConfig(
-        { endpoint: proxy.url },
-        { BRAINTRUST_API_KEY: "test-key" },
+        { endpoint: gateway.url },
+        { OPENAI_API_KEY: "test-key" },
       ),
     );
 
-  it("grades against the reference answer through the proxy", async () => {
+  it("grades against the reference answer through the gateway", async () => {
     const scores = (await factuality()(
       args("A replica set is a group of mongod processes."),
     )) as unknown as { name: string; score: number | null }[];
 
     expect(scores.find((s) => s.name === "Factuality")?.score).toBe(1);
-    expect(proxy.requests).toHaveLength(1);
-    expect(proxy.requests[0]).toEqual({
+    expect(scores.find((s) => s.name === "ReferenceAlignment")?.score).toBe(1);
+    expect(gateway.requests).toHaveLength(1);
+    expect(gateway.requests[0]).toEqual({
       url: "/v1/chat/completions",
       authorization: "Bearer test-key",
       model: "gpt-6-luna",
+      reasoningEffort: "none",
+      hasSpanInfo: false,
     });
+  });
+
+  it("does not leak the span_info autoevals adds inside a Braintrust run", async () => {
+    const flag = "__inherited_braintrust_wrap_openai";
+    const g = globalThis as Record<string, unknown>;
+    g[flag] = true;
+    try {
+      await factuality()(args("A replica set is a group of mongod processes."));
+    } finally {
+      delete g[flag];
+    }
+    expect(gateway.requests[0]?.hasSpanInfo).toBe(false);
+  });
+
+  it("sends the configured reasoning effort, or none when it is empty", async () => {
+    const run = async (reasoningEffort: string) =>
+      makeFactuality(
+        judgeModelConfig(
+          { endpoint: gateway.url, reasoningEffort },
+          { OPENAI_API_KEY: "test-key" },
+        ),
+      )(args("A replica set is a group of mongod processes."));
+
+    await run("low");
+    await run("");
+    expect(gateway.requests.map((r) => r.reasoningEffort)).toEqual([
+      "low",
+      undefined,
+    ]);
   });
 
   it("skips a case with no reference answer without calling the judge", async () => {
@@ -199,6 +276,6 @@ describe("Factuality with the judge config", () => {
     }[];
 
     expect(scores.every((s) => s.score === null)).toBe(true);
-    expect(proxy.requests).toHaveLength(0);
+    expect(gateway.requests).toHaveLength(0);
   });
 });
