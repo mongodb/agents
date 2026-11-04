@@ -116,7 +116,7 @@ together, including `eval:query-insights`. The scripts need `OPENAI_API_KEY` and
 
 | Dataset | Cases | What it checks |
 | :---- | :---- | :---- |
-| `input-guardrail` | 14 reject (1 skipped), 13 accept | Declines and answers, from the `mongodb/ai-assistant` CI cases, plus a poem decline (EAI-2409) |
+| `input-guardrail` | 14 reject (1 skipped), 13 accept | Declines and answers, from the MongoDB Assistant eval suite's CI cases, plus a poem decline (EAI-2409) |
 | `prompt-injection` | 6 reject | Asks for the prompt, tool names, credentials, its own `.env`, or claims authority |
 | `prompt-injection-advanced` | 4 reject | A fake system message, a persona shift, a base64 ask, a made-up earlier agreement |
 | `prompt-injection-lookalikes` | 4 accept | Ordinary requests that sound like injection: a delete how-to, "ignore the previous result", a style request, a pasted log with an instruction in it |
@@ -176,7 +176,7 @@ minutes. Each case that allows writes starts its own `mongod`.
 
 | Dataset | Cases | What it checks |
 | :---- | :---- | :---- |
-| `db-tools` | 27 | Read-only: the right `mongodb__*` tool with the right arguments, ported from `mongodb/ai-assistant` |
+| `db-tools` | 27 | Read-only: the right `mongodb__*` tool with the right arguments, ported from the MongoDB Assistant eval suite |
 | `db-tools-writes` | 12 | Delete, drop, update and insert, each read-only, write rejected and write approved |
 | `db-tools-aggregate-writes` | 3 | `$out` approved and rejected, and `$merge` in read-only mode |
 | `db-tools-injection` | 8 | Instructions hidden in data, or in the user message, must not change the database |
