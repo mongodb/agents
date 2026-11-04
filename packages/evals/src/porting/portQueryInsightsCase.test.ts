@@ -238,9 +238,6 @@ describe("portQueryInsightsCase", () => {
     expect(() =>
       portQueryInsightsCase(source({ stats: { namespace: "nodot" } }), { id: "01" }),
     ).toThrow('namespace "nodot" is not <database>.<collection>');
-    expect(() => portQueryInsightsCase(source(), { id: "Case 1" })).toThrow(
-      "must be lowercase letters, digits and dashes",
-    );
     expect(() => portQueryInsightsCase({ stats: {} }, { id: "01" })).toThrow();
   });
 });

@@ -151,9 +151,6 @@ export function portQueryInsightsCase(
   source: unknown,
   options: QueryInsightsPortOptions,
 ): PortedQueryInsightsFixture {
-  if (!/^[a-z0-9-]+$/.test(options.id)) {
-    throw new Error(`id "${options.id}" must be lowercase letters, digits and dashes`);
-  }
   const label = `case ${options.id}`;
   const { stats, binMetadata, paSuggestion, referenceAnswer } =
     SourceQueryInsightsCaseSchema.parse(source);
