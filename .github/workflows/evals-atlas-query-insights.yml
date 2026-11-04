@@ -40,7 +40,7 @@ jobs:
     steps:
       - run: |
           echo "Evals need repository secrets, which fork PRs cannot read." >> "$GITHUB_STEP_SUMMARY"
-          echo "A maintainer can run this workflow with workflow_dispatch on the fork's branch after review." >> "$GITHUB_STEP_SUMMARY"
+          echo "After review, a maintainer can copy the fork's commit to a branch in this repository and run this workflow on that branch with workflow_dispatch." >> "$GITHUB_STEP_SUMMARY"
 
   evals:
     name: ${{ matrix.name }}
