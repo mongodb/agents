@@ -153,7 +153,8 @@ describe("portDbToolCase", () => {
         file: "mongodb_mcp_tools_db_read_only.yml",
         case: portDbToolCase(source),
       })),
-      "Adapted from ai-assistant.",
+      "Adapted from the MongoDB Assistant suite.",
+      { sourceComments: false },
     );
 
     const cases = parseCases(yaml, "ported");

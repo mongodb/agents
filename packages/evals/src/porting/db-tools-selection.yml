@@ -1,6 +1,6 @@
 # Cases ported into datasets/db-tools.yml. Regenerate with:
 #
-#   pnpm port:cases --kind db-tools --source-dir <ai-assistant evalCases dir> \
+#   pnpm port:cases --kind db-tools --source-dir <source eval cases dir> \
 #     --select src/porting/db-tools-selection.yml \
 #     --out datasets/db-tools.yml
 #
