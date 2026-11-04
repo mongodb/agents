@@ -289,8 +289,10 @@ One command runs the Query Insights report suite with the production model,
 pnpm --filter @repo/evals eval:query-insights
 ```
 
-It needs `OPENAI_API_KEY` and `BRAINTRUST_API_KEY`. The script has no
-`--validate` yet, so it reports scores without failing on them.
+It needs `OPENAI_API_KEY` and `BRAINTRUST_API_KEY`, and takes about 12
+minutes. The script ends with `--validate query-insights`, which fails the run
+when a mean score falls more than 0.05 below the baseline in
+`src/queryInsightsThresholds.ts`.
 
 | Dataset | Cases | What it checks |
 | :---- | :---- | :---- |
@@ -316,6 +318,8 @@ What the scores mean:
 - `ReportFactuality` and `ReferenceCoverage` are LLM judges. The first grades
   the report against the tool output, the second against the reference.
 - `AnswerMatches` and `NoForbiddenExecuted` check the injection cases.
+
+`ToolCallCoverage` is not gated, because no run has reached 1 on it.
 
 The scripted model replays each case's `script`, so
 `src/queryInsightsRuns.test.ts` runs the three datasets offline with no key.

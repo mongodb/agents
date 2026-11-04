@@ -39,6 +39,7 @@ import {
   KNOWLEDGE_QUERY_INSIGHTS_THRESHOLDS,
 } from "./knowledgeThresholds.js";
 import { makeQueryInsightsJudges } from "./queryInsightsJudges.js";
+import { QUERY_INSIGHTS_THRESHOLDS } from "./queryInsightsThresholds.js";
 import type { ModelConfig } from "./models.js";
 import { scorers } from "./scorers.js";
 import { makeAgentTask } from "./task.js";
@@ -241,6 +242,11 @@ export function buildEvalCli({
       }),
       "knowledge-query-insights": makeValidateMinimums({
         scoreThresholds: { ...KNOWLEDGE_QUERY_INSIGHTS_THRESHOLDS },
+      }),
+      // Baseline minus a margin, for the three query-insights datasets together.
+      // ToolCallCoverage is not gated. See queryInsightsThresholds.ts.
+      "query-insights": makeValidateMinimums({
+        scoreThresholds: { ...QUERY_INSIGHTS_THRESHOLDS },
       }),
       "smoke-query-insights": makeValidateMinimums({
         scoreThresholds: {
