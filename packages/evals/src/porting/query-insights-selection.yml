@@ -46,10 +46,9 @@ cases:
       areasWorthInvestigating:
         - leadSentence: "The `$regex` predicate does not narrow the index scan
             effectively."
-          elaboration: "The index scan examines many keys, and every document
-            it examines is returned, so the index filters out little. Consider
-            rewriting the `$regex` as a left-anchored prefix match if that fits
-            your use case. Review [$regex index use](https://www.mongodb.com/docs/manual/reference/operator/query/regex/#index-use)
+          elaboration: "The index scan examines many keys, while every document
+            it fetches is returned. Consider rewriting the `$regex` as a
+            left-anchored prefix match if that fits your use case. Review [$regex index use](https://www.mongodb.com/docs/manual/reference/operator/query/regex/#index-use)
             for other ways to rewrite the predicate."
         - leadSentence: "Consider whether MongoDB Search is a better fit for
             this query."
