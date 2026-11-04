@@ -283,7 +283,7 @@ Scoring looks at tool calls only. The mock Atlas keeps no end state to check.
 ## Query Insights suite
 
 One command runs the Query Insights report suite with the production model,
-5 trials and 3 datasets:
+3 trials and 3 datasets:
 
 ```sh
 pnpm --filter @repo/evals eval:query-insights

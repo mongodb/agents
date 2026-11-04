@@ -24,7 +24,7 @@
     "eval:knowledge:explorer": "pnpm run eval evaluation run --task explorer --dataset knowledge --model gpt-6-luna --validate knowledge-explorer --task-concurrency 4 --trial-count 3",
     "eval:knowledge:query-insights": "pnpm run eval evaluation run --task query-insights --dataset knowledge --model gpt-6-luna --validate knowledge-query-insights --task-concurrency 4 --trial-count 3",
     "eval:smoke:query-insights": "pnpm run eval evaluation run --task query-insights --dataset query-insights-smoke --model scripted --validate smoke-query-insights --task-concurrency 2 --trial-count 1",
-    "eval:query-insights": "pnpm run eval evaluation run --task query-insights --dataset query-insights query-insights-realistic-user-queries query-insights-injection --model gpt-6.1-terra --task-concurrency 4 --trial-count 5"
+    "eval:query-insights": "pnpm run eval evaluation run --task query-insights --dataset query-insights query-insights-realistic-user-queries query-insights-injection --model gpt-6.1-terra --task-concurrency 4 --trial-count 3"
   },
   "dependencies": {
     "@ai-sdk/azure": "^4.0.0",

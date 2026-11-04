@@ -57,10 +57,10 @@ describe("eval:query-insights script", () => {
     expect(datasetsIn(args).sort()).toEqual(shipped.sort());
   });
 
-  it("runs the Query Insights agent with the production model and 5 trials", () => {
+  it("runs the Query Insights agent with the production model and 3 trials", () => {
     expect(args[args.indexOf("--task") + 1]).toBe("query-insights");
     expect(args[args.indexOf("--model") + 1]).toBe("gpt-6.1-terra");
-    expect(args[args.indexOf("--trial-count") + 1]).toBe("5");
+    expect(args[args.indexOf("--trial-count") + 1]).toBe("3");
     expect(args[args.indexOf("--task-concurrency") + 1]).toBe("4");
   });
 });
