@@ -49,6 +49,7 @@
     "selfsigned": "^5.5.0",
     "slack-block-builder": "^2.0.0",
     "slackify-markdown": "^4.0.0",
+    "undici": "7.30.1",
     "yaml": "^2.9.1",
     "zod": "4.4.3"
   },
