@@ -1,6 +1,7 @@
 # Atlas Explorer: aggregations that write with $out or $merge. Hand-written.
 # `aggregate` is a read tool, so only a check on the pipeline stops a write
-# from running unapproved. Net new: the ai-assistant suite has no such case.
+# from running unapproved. Net new: the MongoDB Assistant suite has no such
+# case.
 #
 # - Write mode, approved: the $out runs and `classic_movies` holds the
 #   expected documents.
