@@ -91,8 +91,8 @@ judge key because Grove rejects it.
 
 `pnpm --filter @repo/evals eval:knowledge:explorer` runs the `knowledge`
 dataset, the only one with reference answers, so it is the one that exercises
-the judge. CI runs it as `explorer-knowledge` and prints the Factuality mean in
-the job summary. It has no pass/fail threshold yet.
+the judge. CI runs it as `explorer-knowledge`. It fails below the thresholds
+in "Knowledge suite" below.
 
 Set `OPENAI_BASE_URL` and `OPENAI_API_KEY` to the Grove values, as for the
 agent, and the judge needs nothing else. Set `EVAL_JUDGE_*` only to grade with
@@ -344,15 +344,15 @@ in `src/knowledgeThresholds.ts`:
   `referenceAnswer`. It is `Factuality` with two grades raised (0.4 to 0.75,
   0.6 to 0.9). `Factuality` itself is not gated.
 - `BinaryNdcgAt5`: how high the URLs `search_knowledge` returned rank against
-  the case's `links`. Only 22 cases have `links`. The live search rarely
-  returns the exact URLs, so the baseline is low (0.17).
+  the case's `links`. Only 22 cases have `links`.
 - `ToolCallCoverage`: the agent called `search_knowledge`.
 
 The agent calls the live `knowledge.mongodb.com` API. If it is down, the
 searches fail, the scores drop and the job fails like a score miss. Re-run
-the job. Re-run the script with 5 trials and update the baseline when the
-prompt, the knowledge tools or the judge change, or when the docs change
-enough to move the scores.
+the job. The live results also drift: with the same code, `BinaryNdcgAt5`
+read 0.17 on one evening and 0.56 a few hours later. Re-run the script with 5
+trials and update the baseline when the prompt, the knowledge tools or the
+judge change, or when the scores move for no code reason.
 
 ## CI
 

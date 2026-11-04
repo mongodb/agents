@@ -19,9 +19,8 @@ import { makeValidateMinimums } from "mongodb-assistant-eval/validators";
 import { describe, expect, it } from "vitest";
 
 import {
-  KNOWLEDGE_DEFAULT_MARGIN,
   KNOWLEDGE_EXPLORER_BASELINE,
-  KNOWLEDGE_EXPLORER_MARGINS,
+  KNOWLEDGE_EXPLORER_MARGIN,
   KNOWLEDGE_EXPLORER_THRESHOLDS,
 } from "./knowledgeThresholds.js";
 
@@ -37,16 +36,14 @@ const summary = (scores: Record<string, number>) =>
 describe("knowledge explorer thresholds", () => {
   it("sit one margin below the baseline, in hundredths", () => {
     expect(KNOWLEDGE_EXPLORER_THRESHOLDS).toEqual({
-      ReferenceAlignment: 0.65,
-      BinaryNdcgAt5: 0.11,
-      ToolCallCoverage: 0.61,
+      ReferenceAlignment: 0.81,
+      BinaryNdcgAt5: 0.51,
+      ToolCallCoverage: 0.76,
     });
     for (const [name, mean] of Object.entries(KNOWLEDGE_EXPLORER_BASELINE)) {
-      const margin =
-        KNOWLEDGE_EXPLORER_MARGINS[name] ?? KNOWLEDGE_DEFAULT_MARGIN;
       const gap = mean - KNOWLEDGE_EXPLORER_THRESHOLDS[name]!;
-      expect(gap).toBeGreaterThanOrEqual(margin - 1e-9);
-      expect(gap).toBeLessThanOrEqual(margin + 0.01);
+      expect(gap).toBeGreaterThanOrEqual(KNOWLEDGE_EXPLORER_MARGIN - 1e-9);
+      expect(gap).toBeLessThanOrEqual(KNOWLEDGE_EXPLORER_MARGIN + 0.01);
     }
   });
 
