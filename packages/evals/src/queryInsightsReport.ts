@@ -21,6 +21,8 @@ export interface ReportSection {
   readonly namespace: string;
   /** Everything under the heading, up to the next shape heading. */
   readonly body: string;
+  /** The body before "Areas worth investigating", or all of it. */
+  readonly overview: string;
   /**
    * Each numbered item under "Areas worth investigating", code blocks
    * removed. Empty when the section has no such list.
@@ -39,6 +41,8 @@ const SHAPE_HEADING = /^###\s+Shape\s+(\d+):\s*(.+?)\s+on\s+(.+?)\s*$/gm;
 const AREAS_HEADING = /areas worth investigating/i;
 const NUMBERED_ITEM = /^\s{0,3}\d+[.)]\s+/;
 const FENCED_BLOCK = /```[\s\S]*?(```|$)/g;
+const CREATE_INDEX_CALL = /createIndex\s*\(\s*(?:\{([^}]*)\})?/g;
+const INDEX_KEY = /^\s*(?:"([^"]+)"|'([^']+)'|([\w.$]+))\s*:\s*(-?\d+|"[^"]*"|'[^']*')\s*$/;
 
 function unquote(text: string): string {
   return text.replace(/[`*]/g, "").trim();
@@ -77,6 +81,7 @@ export function parseQueryInsightsReport(text: string): QueryInsightsReport {
       command: unquote(heading[2]),
       namespace: unquote(heading[3]),
       body,
+      overview: body.split(AREAS_HEADING)[0],
       ...areasOf(body),
     };
   });
@@ -92,14 +97,22 @@ export function parseQueryInsightsReport(text: string): QueryInsightsReport {
  * empty list.
  */
 export function createIndexKeys(text: string): Record<string, number | string>[][] {
-  const calls: Record<string, number | string>[][] = [];
-  for (const match of text.matchAll(/createIndex\(\s*\{([^}]*)\}/g)) {
-    const keys = [
-      ...match[1].matchAll(/["']?([\w.$]+)["']?\s*:\s*(-?\d+|"[^"]*"|'[^']*')/g),
-    ].map(([, field, direction]) => ({
-      [field]: /^-?\d+$/.test(direction) ? Number(direction) : direction.slice(1, -1),
-    }));
-    calls.push(keys);
+  return [...text.matchAll(CREATE_INDEX_CALL)].map(([, document]) =>
+    document === undefined ? [] : keysOf(document),
+  );
+}
+
+function keysOf(document: string): Record<string, number | string>[] {
+  const keys: Record<string, number | string>[] = [];
+  for (const entry of document.split(",").filter((e) => e.trim())) {
+    const match = INDEX_KEY.exec(entry);
+    if (!match) return [];
+    const [, doubleQuoted, singleQuoted, bare, direction] = match;
+    keys.push({
+      [doubleQuoted ?? singleQuoted ?? bare]: /^-?\d+$/.test(direction)
+        ? Number(direction)
+        : direction.slice(1, -1),
+    });
   }
-  return calls;
+  return keys;
 }
