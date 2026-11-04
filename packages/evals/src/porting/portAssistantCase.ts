@@ -18,7 +18,7 @@ import { stringify, Document } from "yaml";
 import { z } from "zod";
 
 /**
- * Cases in `mongodb/ai-assistant` `evalCases/*.yml`, which the agents' eval
+ * Cases in the MongoDB Assistant eval suite, whose format the agents' eval
  * format is adapted from. Only the fields the port reads are described.
  */
 const SourceCaseSchema = z.looseObject({
@@ -67,7 +67,7 @@ export interface PortedKnowledgeCase {
 }
 
 /**
- * Turns one ai-assistant knowledge case into an eval case for the agents.
+ * Turns one MongoDB Assistant knowledge case into an eval case for the agents.
  *
  * - The case needs one user message and a reference answer.
  * - The agent must call `search_knowledge`, so the case always expects that
@@ -124,31 +124,18 @@ export function portKnowledgeCase(source: unknown): PortedKnowledgeCase {
   };
 }
 
-export interface PortedCaseWithSource {
-  /** Source file name, for the provenance comment. */
-  readonly file: string;
-  /** The case's name in the source, when `case.name` was changed. */
-  readonly sourceName?: string;
-  readonly case: { readonly name: string };
-}
-
 /**
  * Renders ported cases as a YAML dataset. `header` becomes the opening
- * comment, and each case gets a comment naming its source file and case.
+ * comment.
  */
 export function renderPortedCases(
-  cases: readonly PortedCaseWithSource[],
+  cases: readonly { readonly name: string }[],
   header: string,
 ): string {
-  const doc = new Document(cases.map((c) => c.case));
+  const doc = new Document([...cases]);
   doc.commentBefore = header
     .split("\n")
     .map((line) => ` ${line}`.trimEnd())
     .join("\n");
-  cases.forEach((c, i) => {
-    const item = (doc.contents as { items: { commentBefore?: string }[] })
-      .items[i];
-    item.commentBefore = ` Source: ${c.file}, "${c.sourceName ?? c.case.name}"`;
-  });
   return stringify(doc, { lineWidth: 80 });
 }
