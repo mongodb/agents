@@ -14,11 +14,11 @@ https://github.com/mongodb/agents.
 
 ## Eval content adapted from the MongoDB Assistant eval suite
 
-The eval cases and sample data under `packages/evals/` that were adapted from
-the MongoDB Assistant eval suite remain Copyright MongoDB, Inc. and are
+Some eval cases and sample data under `packages/evals/` are adapted from the
+MongoDB Assistant eval suite. They remain Copyright MongoDB, Inc. and are
 licensed under the Apache License, Version 2.0
-(http://www.apache.org/licenses/LICENSE-2.0). The affected files carry a
-header and the license text once in the repository:
+(http://www.apache.org/licenses/LICENSE-2.0). Each adapted file carries that
+notice in its header:
 
 - `packages/evals/datasets/knowledge.yml`
 - `packages/evals/datasets/db-tools.yml`
