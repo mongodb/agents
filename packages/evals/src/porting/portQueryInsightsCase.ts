@@ -146,18 +146,22 @@ function renderReference(reference: ReferenceAnswer): string {
  * Turns one source eval case into a mock Atlas seed and an eval case for
  * Atlas Query Insights that names it.
  *
- * The seed holds the scenario. The source stats are lifetime totals, and the
- * agent reads single slow-log lines, so each line carries the per-execution
- * values (`docsExamined / execCount` and so on), with the times varying around
- * the average. The query shape's `?string`-style placeholders become made-up
- * literals, as in a live line. A Performance Advisor suggestion becomes the
- * cluster's one suggested index.
+ * The seed holds the scenario. The source stats are lifetime totals: counters
+ * summed over every execution of the query shape, such as 1,328,412
+ * `docsExamined` over an `execCount` of 20. The agent never sees those sums.
+ * It reads slow-log lines, one per execution, so each line carries the
+ * per-execution value (`docsExamined / execCount`, here 66,421), with the times
+ * varying around the average. The query shape's `?string`-style placeholders
+ * become made-up literals, as in a live line. A Performance Advisor suggestion
+ * becomes the cluster's one suggested index.
  *
  * The case stays small: the user message, the expected Performance Advisor
  * call, the suggested indexes the report scorers check, and the reference.
- * The source's reference quotes lifetime totals the agent never sees, so the
- * CLI requires a rewritten `reference` for every case. The script replays the
- * Performance Advisor call for the offline scripted run.
+ * The source reference answer quotes those lifetime totals ("1.33 M documents
+ * examined across 20 executions"), which the agent cannot reproduce from
+ * slow-log lines. So the CLI requires a rewritten `reference` for every case,
+ * without the totals. The script replays the Performance Advisor call for the
+ * offline scripted run.
  *
  * It throws on anything it cannot convert faithfully.
  */
