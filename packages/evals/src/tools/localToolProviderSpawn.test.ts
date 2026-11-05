@@ -21,12 +21,49 @@ import type { McpServerProcess } from "../mcp/startMcpServer.js";
 /** Every `mongodb-mcp-server` this test's provider started. */
 const spawned: McpServerProcess[] = [];
 
+/**
+ * Lets a test make the next `startMcpServer` call fail, so the discovery
+ * server's failed start can be replayed.
+ */
+const control = vi.hoisted(() => ({ failStarts: 0, failDiscoveries: 0 }));
+
+/** How many times a started server's `stop()` was called. */
+let stopCalls = 0;
+
+vi.mock("@mongodb-js/agent-engine-runner-shared", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("@mongodb-js/agent-engine-runner-shared")>();
+  return {
+    ...actual,
+    discoverMcpTools: async (
+      ...args: Parameters<typeof actual.discoverMcpTools>
+    ) => {
+      if (control.failDiscoveries > 0) {
+        control.failDiscoveries--;
+        throw new Error("tool discovery failed");
+      }
+      return actual.discoverMcpTools(...args);
+    },
+  };
+});
+
 vi.mock("../mcp/startMcpServer.js", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../mcp/startMcpServer.js")>();
   return {
     ...actual,
     startMcpServer: async (...args: Parameters<typeof actual.startMcpServer>) => {
-      const server = await actual.startMcpServer(...args);
+      if (control.failStarts > 0) {
+        control.failStarts--;
+        throw new Error("mongodb-mcp-server exited with 1 before it was ready");
+      }
+      const started = await actual.startMcpServer(...args);
+      const server: McpServerProcess = {
+        ...started,
+        stop: () => {
+          stopCalls++;
+          return started.stop();
+        },
+      };
       spawned.push(server);
       return server;
     },
@@ -48,6 +85,7 @@ afterAll(async () => {
 
 beforeEach(() => {
   spawned.length = 0;
+  stopCalls = 0;
 });
 
 describe("servers started per case", () => {
@@ -78,5 +116,62 @@ describe("servers started per case", () => {
     const writeCase = await provider.forCase({ allowWrites: true });
     expect(spawned).toHaveLength(1);
     await writeCase.dispose();
+  });
+
+  it("retries schema discovery after a failed start", async () => {
+    // A provider of its own, so this run's discovery has not succeeded yet.
+    const fresh = createLocalToolProvider();
+    await fresh.start?.();
+    try {
+      // The first case's discovery server dies before it is ready. The mock
+      // account it registers must not outlive the failure, or every later
+      // read-only case throws "schema-discovery already exists".
+      control.failStarts = 1;
+      await expect(fresh.forCase({ allowWrites: false })).rejects.toThrow(
+        /exited with 1 before it was ready/,
+      );
+
+      const retried = await fresh.forCase({ allowWrites: false });
+      try {
+        const names = retried.tools.map((t) => t.name);
+        expect(names).toContain("mongodb__find");
+        expect(names).toContain("mongodb__atlas_list_orgs");
+      } finally {
+        await retried.dispose();
+      }
+    } finally {
+      control.failStarts = 0;
+      await fresh.stop?.();
+    }
+  });
+
+  it("stops a discovery server that started but failed discovery, then retries", async () => {
+    const fresh = createLocalToolProvider();
+    await fresh.start?.();
+    try {
+      // The server starts, then tool discovery against it fails. Without the
+      // cleanup the account stays registered and the process keeps running
+      // until the provider stops.
+      control.failDiscoveries = 1;
+      await expect(fresh.forCase({ allowWrites: false })).rejects.toThrow(
+        /tool discovery failed/,
+      );
+
+      // Stopped before any retry, and really gone: its port no longer answers.
+      expect(spawned).toHaveLength(1);
+      expect(stopCalls).toBe(1);
+      await expect(fetch(spawned[0]!.url)).rejects.toThrow();
+
+      const retried = await fresh.forCase({ allowWrites: false });
+      try {
+        expect(spawned).toHaveLength(2);
+        expect(retried.tools.map((t) => t.name)).toContain("mongodb__find");
+      } finally {
+        await retried.dispose();
+      }
+    } finally {
+      control.failDiscoveries = 0;
+      await fresh.stop?.();
+    }
   });
 });

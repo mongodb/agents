@@ -139,13 +139,25 @@ export function createLocalToolProvider(
       const clientId = "schema-discovery";
       const account = atlas!.register(clientId, {});
       readOnlyCleanups.push(() => account.release());
-      const server = await startMcpServer({
-        env: { ...atlas!.serverEnv(clientId), ...disabledToolsEnv() },
-        args: ["--readOnly"],
-        startTimeoutMs: options.serverStartTimeoutMs,
-      });
-      readOnlyCleanups.push(() => server.stop());
-      return discoverMcpTools(mcpConfig(server.url));
+      let server: McpServerProcess | undefined;
+      try {
+        server = await startMcpServer({
+          env: { ...atlas!.serverEnv(clientId), ...disabledToolsEnv() },
+          args: ["--readOnly"],
+          startTimeoutMs: options.serverStartTimeoutMs,
+        });
+        readOnlyCleanups.push(() => server!.stop());
+        return await discoverMcpTools(mcpConfig(server.url));
+      } catch (error) {
+        // The account exists before the server does, because the server needs
+        // its token. Release it now so the retry below can register the same
+        // id again; `release` is idempotent, so the queued cleanups are safe.
+        account.release();
+        // A server that did start has nothing left to discover with, and the
+        // retry starts its own.
+        await server?.stop();
+        throw error;
+      }
     })().catch((error: unknown) => {
       // Let the next case try again rather than fail every case after this one.
       readOnlySchemas = undefined;
