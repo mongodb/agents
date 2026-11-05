@@ -21,11 +21,21 @@ import type { McpServerProcess } from "../mcp/startMcpServer.js";
 /** Every `mongodb-mcp-server` this test's provider started. */
 const spawned: McpServerProcess[] = [];
 
+/**
+ * Lets a test make the next `startMcpServer` call fail, so the discovery
+ * server's failed start can be replayed.
+ */
+const control = vi.hoisted(() => ({ failStarts: 0 }));
+
 vi.mock("../mcp/startMcpServer.js", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../mcp/startMcpServer.js")>();
   return {
     ...actual,
     startMcpServer: async (...args: Parameters<typeof actual.startMcpServer>) => {
+      if (control.failStarts > 0) {
+        control.failStarts--;
+        throw new Error("mongodb-mcp-server exited with 1 before it was ready");
+      }
       const server = await actual.startMcpServer(...args);
       spawned.push(server);
       return server;
@@ -78,5 +88,32 @@ describe("servers started per case", () => {
     const writeCase = await provider.forCase({ allowWrites: true });
     expect(spawned).toHaveLength(1);
     await writeCase.dispose();
+  });
+
+  it("retries schema discovery after a failed start", async () => {
+    // A provider of its own, so this run's discovery has not succeeded yet.
+    const fresh = createLocalToolProvider();
+    await fresh.start?.();
+    try {
+      // The first case's discovery server dies before it is ready. The mock
+      // account it registers must not outlive the failure, or every later
+      // read-only case throws "schema-discovery already exists".
+      control.failStarts = 1;
+      await expect(fresh.forCase({ allowWrites: false })).rejects.toThrow(
+        /exited with 1 before it was ready/,
+      );
+
+      const retried = await fresh.forCase({ allowWrites: false });
+      try {
+        const names = retried.tools.map((t) => t.name);
+        expect(names).toContain("mongodb__find");
+        expect(names).toContain("mongodb__atlas_list_orgs");
+      } finally {
+        await retried.dispose();
+      }
+    } finally {
+      control.failStarts = 0;
+      await fresh.stop?.();
+    }
   });
 });
