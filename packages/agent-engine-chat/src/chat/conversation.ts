@@ -413,6 +413,7 @@ async function handlePendingReview(
         {
           ...uncertainRecord,
           pendingReviewState: "uncertain",
+          retentionState: "inactive",
           updatedAt: claimedAt,
         },
       );

@@ -166,7 +166,8 @@ export class MemoryThreadStore implements ThreadStore {
     const current = this.records.get(key);
     if (
       current?.pendingInterruptId !== interruptId ||
-      current.pendingReviewState !== "resuming"
+      (current.pendingReviewState !== "resuming" &&
+        current.pendingReviewState !== "uncertain")
     ) {
       return false;
     }

@@ -81,6 +81,11 @@ export interface ThreadStore {
     interruptId: string,
     claimedAt: Date,
   ): Promise<ThreadRecord | null>;
+  /**
+   * Replaces a review this caller claimed. It also matches a review marked
+   * `uncertain`, so the claiming resume can still finish when a later message
+   * gave up on it.
+   */
   replaceClaimedReview(
     interruptId: string,
     record: ThreadRecord,
