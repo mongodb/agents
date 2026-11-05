@@ -25,7 +25,27 @@ const spawned: McpServerProcess[] = [];
  * Lets a test make the next `startMcpServer` call fail, so the discovery
  * server's failed start can be replayed.
  */
-const control = vi.hoisted(() => ({ failStarts: 0 }));
+const control = vi.hoisted(() => ({ failStarts: 0, failDiscoveries: 0 }));
+
+/** How many times a started server's `stop()` was called. */
+let stopCalls = 0;
+
+vi.mock("@mongodb-js/agent-engine-runner-shared", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("@mongodb-js/agent-engine-runner-shared")>();
+  return {
+    ...actual,
+    discoverMcpTools: async (
+      ...args: Parameters<typeof actual.discoverMcpTools>
+    ) => {
+      if (control.failDiscoveries > 0) {
+        control.failDiscoveries--;
+        throw new Error("tool discovery failed");
+      }
+      return actual.discoverMcpTools(...args);
+    },
+  };
+});
 
 vi.mock("../mcp/startMcpServer.js", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../mcp/startMcpServer.js")>();
@@ -36,7 +56,14 @@ vi.mock("../mcp/startMcpServer.js", async (importOriginal) => {
         control.failStarts--;
         throw new Error("mongodb-mcp-server exited with 1 before it was ready");
       }
-      const server = await actual.startMcpServer(...args);
+      const started = await actual.startMcpServer(...args);
+      const server: McpServerProcess = {
+        ...started,
+        stop: () => {
+          stopCalls++;
+          return started.stop();
+        },
+      };
       spawned.push(server);
       return server;
     },
@@ -58,6 +85,7 @@ afterAll(async () => {
 
 beforeEach(() => {
   spawned.length = 0;
+  stopCalls = 0;
 });
 
 describe("servers started per case", () => {
@@ -113,6 +141,36 @@ describe("servers started per case", () => {
       }
     } finally {
       control.failStarts = 0;
+      await fresh.stop?.();
+    }
+  });
+
+  it("stops a discovery server that started but failed discovery, then retries", async () => {
+    const fresh = createLocalToolProvider();
+    await fresh.start?.();
+    try {
+      // The server starts, then tool discovery against it fails. Without the
+      // cleanup the account stays registered and the process keeps running
+      // until the provider stops.
+      control.failDiscoveries = 1;
+      await expect(fresh.forCase({ allowWrites: false })).rejects.toThrow(
+        /tool discovery failed/,
+      );
+
+      // Stopped before any retry, and really gone: its port no longer answers.
+      expect(spawned).toHaveLength(1);
+      expect(stopCalls).toBe(1);
+      await expect(fetch(spawned[0]!.url)).rejects.toThrow();
+
+      const retried = await fresh.forCase({ allowWrites: false });
+      try {
+        expect(spawned).toHaveLength(2);
+        expect(retried.tools.map((t) => t.name)).toContain("mongodb__find");
+      } finally {
+        await retried.dispose();
+      }
+    } finally {
+      control.failDiscoveries = 0;
       await fresh.stop?.();
     }
   });
