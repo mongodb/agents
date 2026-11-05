@@ -15,7 +15,6 @@
  */
 
 import { spawn, type ChildProcess } from "node:child_process";
-import net from "node:net";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -73,29 +72,76 @@ function serverEntryPoint(): string {
   return path.join(path.dirname(lib), "index.js");
 }
 
-function freePort(): Promise<number> {
-  return new Promise((resolve, reject) => {
-    const probe = net.createServer();
-    probe.once("error", reject);
-    probe.listen(0, "127.0.0.1", () => {
-      const { port } = probe.address() as net.AddressInfo;
-      probe.close(() => resolve(port));
-    });
-  });
+/**
+ * The line `mongodb-mcp-server` logs once its HTTP listener is bound. It is
+ * the only place the child reports the port it actually got, which is why the
+ * harness asks for port 0 and reads the port back from here instead of
+ * picking one itself.
+ */
+const LISTENING_LINE =
+  /Http server started on address: https?:\/\/127\.0\.0\.1:(\d+)/;
+
+/** The port from {@link LISTENING_LINE}, or `undefined` before it appears. */
+export function parseListeningPort(output: string): number | undefined {
+  const match = LISTENING_LINE.exec(output);
+  if (!match) return undefined;
+  const port = Number(match[1]);
+  return Number.isInteger(port) && port > 0 && port <= 65_535
+    ? port
+    : undefined;
 }
 
+function exitedError(child: ChildProcess, output: () => string): Error {
+  return new Error(
+    `mongodb-mcp-server exited with ${child.exitCode ?? child.signalCode} before it was ready:\n${output()}`,
+  );
+}
+
+/**
+ * Waits for the child to log its bound address, then for `/health` to answer.
+ *
+ * The address line arrives before the listener accepts connections, so the
+ * poll stays: it is the readiness check. A child that exits first fails at
+ * once. A child that never logs the line inside the timeout fails with the
+ * whole captured output, because the wording of that line is a pinned
+ * dependency's and an upgrade could change it.
+ */
 async function waitUntilListening(
-  port: number,
   child: ChildProcess,
   timeoutMs: number,
   output: () => string,
-): Promise<void> {
+): Promise<number> {
   const deadline = Date.now() + timeoutMs;
+  for (;;) {
+    if (child.exitCode !== null || child.signalCode !== null) {
+      throw exitedError(child, output);
+    }
+    const port = parseListeningPort(output());
+    if (port !== undefined) {
+      await waitUntilHealthy(port, child, deadline, timeoutMs, output);
+      return port;
+    }
+    if (Date.now() >= deadline) {
+      throw new Error(
+        `mongodb-mcp-server did not log "${LISTENING_LINE.source}" within ${timeoutMs} ms. ` +
+          `It logs the bound address only with --loggers stderr, and the wording ` +
+          `is mongodb-mcp-server's own; check it after an upgrade. Output so far:\n${output()}`,
+      );
+    }
+    await new Promise((resolve) => setTimeout(resolve, 25));
+  }
+}
+
+async function waitUntilHealthy(
+  port: number,
+  child: ChildProcess,
+  deadline: number,
+  timeoutMs: number,
+  output: () => string,
+): Promise<void> {
   while (Date.now() < deadline) {
     if (child.exitCode !== null || child.signalCode !== null) {
-      throw new Error(
-        `mongodb-mcp-server exited with ${child.exitCode ?? child.signalCode} before it was ready:\n${output()}`,
-      );
+      throw exitedError(child, output);
     }
     try {
       await fetch(`http://127.0.0.1:${port}/health`);
@@ -105,22 +151,25 @@ async function waitUntilListening(
     }
   }
   throw new Error(
-    `mongodb-mcp-server did not listen within ${timeoutMs} ms:\n${output()}`,
+    `mongodb-mcp-server bound port ${port} but did not answer /health within ${timeoutMs} ms:\n${output()}`,
   );
 }
 
 /**
- * Starts `mongodb-mcp-server` as a child process on a free local port, over
- * streamable HTTP like production. A process is cheap (about 0.7 s to
- * start, about 200 MB), and a separate one per case keeps each case's
- * Atlas credentials and MongoDB connection to itself.
+ * Starts `mongodb-mcp-server` as a child process over streamable HTTP like
+ * production. A process is cheap (about 0.7 s to start, about 200 MB), and a
+ * separate one per case keeps each case's Atlas credentials and MongoDB
+ * connection to itself.
+ *
+ * The child binds port 0, so the OS assigns the port inside its own
+ * `listen()`. Nothing in this process can pick a port another process takes
+ * in between, which a probe-then-spawn would allow.
  */
 export async function startMcpServer({
   env = {},
   args = [],
   startTimeoutMs = 20_000,
 }: StartMcpServerOptions = {}): Promise<McpServerProcess> {
-  const port = await freePort();
   const child = spawn(
     process.execPath,
     [
@@ -130,7 +179,11 @@ export async function startMcpServer({
       "--httpHost",
       "127.0.0.1",
       "--httpPort",
-      String(port),
+      "0",
+      // Without this the server logs to disk and MCP only, and the bound
+      // address never reaches the harness.
+      "--loggers",
+      "stderr",
       ...args,
     ],
     {
@@ -153,8 +206,9 @@ export async function startMcpServer({
   child.stderr?.on("data", capture);
   const output = () => captured;
 
+  let port: number;
   try {
-    await waitUntilListening(port, child, startTimeoutMs, output);
+    port = await waitUntilListening(child, startTimeoutMs, output);
   } catch (error) {
     child.kill("SIGKILL");
     throw error;
