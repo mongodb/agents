@@ -111,6 +111,14 @@ export interface ThreadStore {
   close(): Promise<void>;
 }
 
+/**
+ * How long a claimed turn or review is trusted to still be running. A claim
+ * older than this is treated as abandoned by a crashed handler. It must stay
+ * longer than the Agent Engine client's request timeout, so a call that is
+ * still alive can never look abandoned.
+ */
+export const CLAIM_LEASE_MS = 10 * 60 * 1_000;
+
 export function threadKey(threadId: string): string {
   return threadId;
 }
