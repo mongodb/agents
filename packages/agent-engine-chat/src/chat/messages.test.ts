@@ -64,8 +64,8 @@ describe("resolveAgentChatMessages", () => {
     expect(messages.reviewCardTitle).toBe(
       "Atlas operation requires approval",
     );
-    expect(messages.pendingReviewUncertain).toBe(
-      defaultAgentChatMessages.pendingReviewUncertain,
+    expect(messages.reviewStatusUncertain).toBe(
+      defaultAgentChatMessages.reviewStatusUncertain,
     );
     expect(messages.decisionUncertain("AtlasExplorer")).toBe(
       defaultAgentChatMessages.decisionUncertain("AtlasExplorer"),
