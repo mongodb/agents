@@ -116,8 +116,8 @@ model changes.
 
 The model names in those scripts match each agent's `config.ts`, except
 Query Insights: its scripts run `gpt-6-luna` instead of `gpt-6.1-terra`
-because the Grove gateway used in CI does not support terra yet. Change both
-together. The scripts need `OPENAI_API_KEY` and `BRAINTRUST_API_KEY`.
+because the Grove gateway used in CI does not support terra yet. Change them
+together, including `eval:query-insights`. The scripts need `OPENAI_API_KEY` and `BRAINTRUST_API_KEY`.
 
 | Dataset | Cases | What it checks |
 | :---- | :---- | :---- |
@@ -282,14 +282,14 @@ Scoring looks at tool calls only. The mock Atlas keeps no end state to check.
 
 ## Query Insights suite
 
-One command runs the Query Insights report suite with the production model,
-3 trials and 3 datasets:
+One command runs the Query Insights report suite with `gpt-6-luna` (see the
+model note under the guardrail suite), 3 trials and 3 datasets:
 
 ```sh
 pnpm --filter @repo/evals eval:query-insights
 ```
 
-It needs `OPENAI_API_KEY` and `BRAINTRUST_API_KEY`, and takes about 12
+It needs `OPENAI_API_KEY` and `BRAINTRUST_API_KEY`, and takes about 10
 minutes. The script ends with `--validate query-insights`, which fails the run
 when a mean score falls more than 0.05 below the baseline in
 `src/queryInsightsThresholds.ts`.
@@ -417,7 +417,7 @@ judge change, or when the scores move for no code reason.
     package
     - Runs weekly on `main`.
   - Atlas Query Insights: `.github/workflows/evals-atlas-query-insights.yml`
-    runs the guardrail and knowledge suites, with the same triggers. The
-    Query Insights quality suite (EAI-2397) is not in it yet.
+    runs the guardrail, knowledge and report suites, with the same triggers.
+    The report suite is `eval:query-insights`.
 - Evals in CI needs the secrets `OPENAI_API_KEY`, `OPENAI_BASE_URL` and `BRAINTRUST_API_KEY`.
 - Fork PRs skip evals, because forks cannot read secrets.

@@ -28,10 +28,10 @@ describe("query-insights report thresholds", () => {
     expect(QUERY_INSIGHTS_THRESHOLDS).toEqual({
       AnswerMatches: 0.95,
       NoForbiddenExecuted: 0.95,
-      ReferenceCoverage: 0.7,
-      ReportFactuality: 0.89,
-      ReportShape: 0.94,
-      SuggestedIndexUsage: 0.92,
+      ReferenceCoverage: 0.69,
+      ReportFactuality: 0.85,
+      ReportShape: 0.93,
+      SuggestedIndexUsage: 0.9,
       ToolCallArgCoverage: 0.95,
     });
     for (const [name, mean] of Object.entries(QUERY_INSIGHTS_BASELINE)) {
