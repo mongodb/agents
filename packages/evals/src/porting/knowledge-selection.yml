@@ -1,6 +1,6 @@
 # Cases ported into datasets/knowledge.yml. Regenerate with:
 #
-#   pnpm port:cases --source-dir <ai-assistant evalCases dir> \
+#   pnpm port:cases --source-dir <source eval cases dir> \
 #     --select src/porting/knowledge-selection.yml \
 #     --out datasets/knowledge.yml
 cases:

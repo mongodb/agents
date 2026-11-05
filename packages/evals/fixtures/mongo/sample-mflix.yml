@@ -1,10 +1,10 @@
 # A small sample_mflix database for the database tools suite (movies,
 # theaters, indexes).
 #
-# Adapted from src/eval/fixtures/mcpSampleData.ts in mongodb/ai-assistant,
-# under the Apache License, Version 2.0
-# (http://www.apache.org/licenses/LICENSE-2.0). Documents have explicit
-# integer `_id`s, so a check can compare the database to this file.
+# Adapted from the MongoDB Assistant sample-data fixture, under the Apache
+# License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0).
+# Documents have explicit integer `_id`s, so a check can compare the database
+# to this file.
 sample_mflix:
   movies:
     documents:

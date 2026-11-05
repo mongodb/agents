@@ -149,11 +149,8 @@ describe("portDbToolCase", () => {
 
   it("produces cases the loader accepts", () => {
     const yaml = renderPortedCases(
-      [LIST_DATABASES, FIND_BY_YEAR, SCHEMA_THEN_FIND].map((source) => ({
-        file: "mongodb_mcp_tools_db_read_only.yml",
-        case: portDbToolCase(source),
-      })),
-      "Adapted from ai-assistant.",
+      [LIST_DATABASES, FIND_BY_YEAR, SCHEMA_THEN_FIND].map(portDbToolCase),
+      "Adapted from the MongoDB Assistant suite.",
     );
 
     const cases = parseAgentCases(yaml, "ported");

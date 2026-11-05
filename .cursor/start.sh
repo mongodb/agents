@@ -40,11 +40,11 @@ agentengine auth login --from-refresh-token --base-url https://agentengine.mongo
 # Cursor writes ~/.gitconfig with url.<app token>.insteadOf rules that rewrite
 # every https://github.com/ URL to carry a GitHub App token scoped to this repo
 # only. Credentials embedded in the URL win over credential helpers, so
-# `git clone` and `gh repo clone` of other repos (for example
-# mongodb/ai-assistant) fail with "Repository not found" even though the
-# GH_TOKEN PAT can read them via the API. Git uses the longest matching
-# insteadOf prefix, so mapping each org prefix to itself (no embedded token)
-# overrides the app-token rule and lets the gh credential helper supply GH_TOKEN.
+# `git clone` and `gh repo clone` of other repos fail with "Repository not
+# found" even though the GH_TOKEN PAT can read them via the API. Git uses the
+# longest matching insteadOf prefix, so mapping each org prefix to itself (no
+# embedded token) overrides the app-token rule and lets the gh credential
+# helper supply GH_TOKEN.
 # The file lives under XDG config, which Cursor does not manage, and no token
 # is written to disk.
 if [[ -n "${GH_TOKEN:-}" ]]; then

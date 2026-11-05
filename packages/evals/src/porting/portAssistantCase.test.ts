@@ -148,43 +148,29 @@ describe("portKnowledgeCase", () => {
 
 describe("renderPortedCases", () => {
   const rendered = renderPortedCases(
-    [
-      { file: "conversations.yml", case: portKnowledgeCase(GENERAL) },
-      {
-        file: "version_q_and_a_conversations.yml",
-        case: portKnowledgeCase(VERSIONED),
-      },
-    ],
-    "Adapted from ai-assistant.\nApache-2.0.",
+    [portKnowledgeCase(GENERAL), portKnowledgeCase(VERSIONED)],
+    "Adapted from the MongoDB Assistant suite.\nApache-2.0.",
   );
 
-  it("opens with the header and names each case's source", () => {
-    expect(rendered.startsWith("# Adapted from ai-assistant.\n# Apache-2.0.")).toBe(
-      true,
-    );
-    expect(rendered).toContain(
-      '# Source: conversations.yml, "Explain what a replica set is"',
-    );
-    expect(rendered).toContain(
-      '# Source: version_q_and_a_conversations.yml, "new_feature_this_version"',
-    );
+  it("opens with the header", () => {
+    expect(
+      rendered.startsWith("# Adapted from the MongoDB Assistant suite.\n# Apache-2.0."),
+    ).toBe(true);
   });
 
-  it("names the source case when the ported case was renamed", () => {
+  it("does not name the source files or cases", () => {
+    expect(rendered).not.toContain("Source:");
+    expect(rendered).not.toContain("conversations.yml");
+    expect(rendered).not.toContain("version_q_and_a_conversations.yml");
+  });
+
+  it("renders a renamed case under its new name", () => {
     const text = renderPortedCases(
-      [
-        {
-          file: "version_q_and_a_conversations.yml",
-          sourceName: "new_feature_this_version",
-          case: { ...portKnowledgeCase(VERSIONED), name: "Spark 10.3 streams" },
-        },
-      ],
+      [{ ...portKnowledgeCase(VERSIONED), name: "Spark 10.3 streams" }],
       "Header.",
     );
-    expect(text).toContain(
-      '# Source: version_q_and_a_conversations.yml, "new_feature_this_version"',
-    );
     expect(text).toContain("- name: Spark 10.3 streams");
+    expect(text).not.toContain("new_feature_this_version");
   });
 
   it("produces a dataset the case loader accepts", () => {
