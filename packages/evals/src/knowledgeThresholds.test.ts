@@ -22,6 +22,8 @@ import {
   KNOWLEDGE_EXPLORER_BASELINE,
   KNOWLEDGE_EXPLORER_MARGIN,
   KNOWLEDGE_EXPLORER_THRESHOLDS,
+  KNOWLEDGE_QUERY_INSIGHTS_BASELINE,
+  KNOWLEDGE_QUERY_INSIGHTS_THRESHOLDS,
 } from "./knowledgeThresholds.js";
 
 const summary = (scores: Record<string, number>) =>
@@ -61,6 +63,34 @@ describe("knowledge explorer thresholds", () => {
       ).isValid,
     ).toBe(false);
     const { ToolCallCoverage: _omitted, ...rest } = KNOWLEDGE_EXPLORER_BASELINE;
+    expect(validate(summary({ ...rest })).isValid).toBe(false);
+  });
+});
+
+describe("knowledge query insights thresholds", () => {
+  it("sit one margin below the baseline, in hundredths", () => {
+    expect(KNOWLEDGE_QUERY_INSIGHTS_THRESHOLDS).toEqual({
+      ReferenceAlignment: 0.81,
+      BinaryNdcgAt5: 0.48,
+      ToolCallCoverage: 0.71,
+    });
+  });
+
+  it("fails a run that drops below a threshold or omits a score", () => {
+    const validate = makeValidateMinimums({
+      scoreThresholds: { ...KNOWLEDGE_QUERY_INSIGHTS_THRESHOLDS },
+    });
+
+    expect(
+      validate(summary({ ...KNOWLEDGE_QUERY_INSIGHTS_BASELINE })).isValid,
+    ).toBe(true);
+    expect(
+      validate(
+        summary({ ...KNOWLEDGE_QUERY_INSIGHTS_BASELINE, ToolCallCoverage: 0.5 }),
+      ).isValid,
+    ).toBe(false);
+    const { BinaryNdcgAt5: _omitted, ...rest } =
+      KNOWLEDGE_QUERY_INSIGHTS_BASELINE;
     expect(validate(summary({ ...rest })).isValid).toBe(false);
   });
 });

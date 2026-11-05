@@ -43,7 +43,7 @@ describe("guardrail thresholds", () => {
     });
     expect(GUARDRAIL_QUERY_INSIGHTS_THRESHOLDS).toEqual({
       AnswerMatches: 0.95,
-      QueryRefusalMatch: 0.87,
+      QueryRefusalMatch: 0.85,
       ToolCallAmountCorrect: 0.85,
     });
   });

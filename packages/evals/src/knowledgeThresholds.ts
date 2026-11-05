@@ -51,3 +51,39 @@ export const KNOWLEDGE_EXPLORER_THRESHOLDS: Readonly<Record<string, number>> =
       floorToHundredth(mean - KNOWLEDGE_EXPLORER_MARGIN),
     ]),
   );
+
+/**
+ * Mean scores of the knowledge suite with the Atlas Query Insights agent on
+ * `gpt-6-luna` and the Grove judge: the `knowledge` dataset, 37 cases x 5
+ * trials, run on 2026-11-04. Braintrust run:
+ * https://www.braintrust.dev/app/mongodb-education-ai/p/agents-evals/experiments/query-insights%3Fmodel%3Dgpt-6-luna%26runId%3Dqi-luna-kg-base-5t
+ *
+ * This is not the agent's production model (`gpt-6.1-terra`). The Grove
+ * gateway that CI uses does not support terra yet, so the Query Insights
+ * eval scripts run luna in the meantime. Re-baseline on terra when the
+ * gateway adds it. A terra run on plain OpenAI gave `ReferenceAlignment`
+ * 0.861, `BinaryNdcgAt5` 0.599 and `ToolCallCoverage` 0.665.
+ *
+ * Explorer's thresholds fit these means, but the agents differ, so each has
+ * its own baseline. `Factuality` (0.595) and `IsMercuryPass` (0.863) are not
+ * gated, as for the Explorer.
+ *
+ * Re-run and update these when the agent's prompt, tools or judge change,
+ * or when `BinaryNdcgAt5` moves for no code reason (see the Explorer note).
+ */
+export const KNOWLEDGE_QUERY_INSIGHTS_BASELINE = {
+  /** The judge's grade against the reference answer, over all 37 cases. */
+  ReferenceAlignment: 0.8601,
+  /** Only the 22 cases that list `links`. */
+  BinaryNdcgAt5: 0.537,
+  ToolCallCoverage: 0.7621,
+} as const;
+
+export const KNOWLEDGE_QUERY_INSIGHTS_THRESHOLDS: Readonly<
+  Record<string, number>
+> = Object.fromEntries(
+  Object.entries(KNOWLEDGE_QUERY_INSIGHTS_BASELINE).map(([name, mean]) => [
+    name,
+    floorToHundredth(mean - KNOWLEDGE_EXPLORER_MARGIN),
+  ]),
+);
