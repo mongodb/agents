@@ -255,6 +255,155 @@ cases:
             avoiding both. Review the index suggestion in the Performance
             Advisor."
 
+  - file: case_01.json
+    namespace: shop.visits
+    reference:
+      queryOverview: "This query finds documents where `visitorId` equals a
+        string value."
+      areasWorthInvestigating:
+        - leadSentence: "The query does a collection scan because no index is
+            used."
+          elaboration: "Adding the right index will help. Review [Indexing
+            Strategies](https://www.mongodb.com/docs/manual/applications/indexes/)."
+
+  - file: case_02.json
+    reference:
+      queryOverview: "This query finds admissions where `visitorId` equals a
+        string value."
+      areasWorthInvestigating:
+        - leadSentence: "The Performance Advisor recommends an index on
+            `visitorId`."
+          elaboration: "The query did a collection scan because no index was
+            used. Review the index suggestion in the Performance Advisor."
+
+  - file: case_03.json
+    reference:
+      queryOverview: "This query finds tasks where `status` does not equal a
+        string value, sorted by `createdAt` in descending order."
+      areasWorthInvestigating:
+        - leadSentence: "The negation on `status` has low selectivity."
+          elaboration: "A negation predicate behaves like a range predicate, so
+            the filter may not narrow the documents returned. That can explain
+            why so many documents are returned."
+        - leadSentence: "The query has an in-memory sort."
+          elaboration: "The index used does not support the sort order, so the
+            results are sorted in memory, and the cost grows with the number of
+            documents returned. An index that supports both the filter and the
+            sort may do better. See the [ESR guideline](https://www.mongodb.com/docs/manual/tutorial/equality-sort-range-guideline/)."
+
+  - file: case_04.json
+    reference:
+      queryOverview: "This query finds tasks where `priority` equals a string
+        value and `status` does not equal a string value, sorted by `createdAt`
+        in descending order."
+      areasWorthInvestigating:
+        - leadSentence: "The Performance Advisor recommends an index on
+            `priority`, `createdAt`, and `status`."
+          elaboration: "The query uses an index, but the sort runs in memory,
+            and the suggested index supports the sort. Review the index
+            suggestion in the Performance Advisor."
+        - leadSentence: "The `$ne` predicate on `status` has low selectivity."
+          elaboration: "A `$ne` predicate behaves like a range predicate, so the
+            filter may not narrow the documents returned, which can add to the
+            cost of the in-memory sort."
+
+  - file: case_08.json
+    reference:
+      queryOverview: "This query finds tasks where `priority` equals a string
+        value and sorts the results by `updatedAt` in descending order."
+      areasWorthInvestigating:
+        - leadSentence: "The Performance Advisor recommends an index on
+            `priority` and `updatedAt`."
+          elaboration: "The query targeting is already efficient, since every
+            document examined is returned. The recommended index prevents the
+            in-memory sort. Review the index suggestion in the Performance
+            Advisor."
+
+  - file: case_09.json
+    reference:
+      queryOverview: "This query finds tasks where `assigneeId` equals a string
+        value."
+      areasWorthInvestigating:
+        - leadSentence: "The query targeting is already efficient."
+          elaboration: "Every document examined is returned, and the slow log
+            lines show no collection scan or in-memory sort. The slow log lines do
+            not report bytes read, so the report should not claim a document size
+            or cache problem from them. No index change is indicated."
+
+  - file: case_10a.json
+    reference:
+      queryOverview: "This query returns the distinct `productId` values for
+        documents where `status` equals a string value."
+      areasWorthInvestigating:
+        - leadSentence: "The Performance Advisor recommends an index on `status`
+            and `productId`."
+          elaboration: "An index is already used, but every matching document
+            must still be examined to collect the distinct `productId` values. The
+            recommended index lets the distinct values be read from the index. See
+            [Index Use for distinct()](https://www.mongodb.com/docs/manual/reference/method/db.collection.distinct/#index-use).
+            Review the index suggestion in the Performance Advisor."
+
+  - file: case_10b.json
+    reference:
+      queryOverview: "This query returns the distinct `productId` values for
+        documents where `status` equals a string value."
+      areasWorthInvestigating:
+        - leadSentence: "This query examines many documents relative to the
+            number returned."
+          elaboration: "An index is already used. The Performance Advisor has no
+            suggestion, so the report should not name a new index. See [Index Use
+            for distinct()](https://www.mongodb.com/docs/manual/reference/method/db.collection.distinct/#index-use)
+            for more information."
+
+  - file: case_11.json
+    reference:
+      queryOverview: "This aggregation matches documents where `exhibitionId`
+        equals a string value. It then uses `$lookup` to join related documents
+        from `visitors` on `visitorId`."
+      areasWorthInvestigating:
+        - leadSentence: "Each input document likely triggers a scan of the
+            `visitors` collection."
+          elaboration: "Check whether the `visitorId` field in `visitors` is
+            supported by an index. The `$match` on the source collection already
+            uses an index."
+        - leadSentence: "Consider whether storing related data together would fit
+            better than repeated joins."
+          elaboration: "If visitor data is usually read together with the
+            admission, embedding it would remove the need for `$lookup`. See
+            [Embedded Data in Your MongoDB Schema](https://www.mongodb.com/docs/manual/data-modeling/embedding)."
+
+  - file: case_12.json
+    reference:
+      queryOverview: "This aggregation matches documents where `exhibitionId`
+        equals a string value. It then uses `$lookup` to join related documents
+        from `visitors` on `visitorId`."
+      areasWorthInvestigating:
+        - leadSentence: "The pipeline returns a very large result set, and the
+            latency likely comes from producing it."
+          elaboration: "Examined documents are close to the documents returned, so
+            targeting is efficient. Consider a `$limit` stage if the application
+            does not need every result."
+        - leadSentence: "Consider whether storing related data together would fit
+            better than repeated joins."
+          elaboration: "If visitor data is usually read together with the
+            admission, embedding it would remove the need for `$lookup`, if the
+            data does not need to be normalized. See [Embedded Data in Your
+            MongoDB Schema](https://www.mongodb.com/docs/manual/data-modeling/embedding)."
+
+  - file: case_13.json
+    reference:
+      queryOverview: "This aggregation sorts all documents by `submittedAt` in
+        descending order. It then matches documents where `status` equals a
+        string value and limits the results."
+      areasWorthInvestigating:
+        - leadSentence: "The Performance Advisor recommends an index on `status`
+            and `submittedAt`."
+          elaboration: "The query did a collection scan because no index was used,
+            which also led to an in-memory sort. The recommended index supports both
+            the `status` filter and the `submittedAt` sort order, and would eliminate
+            the collection scan and the in-memory sort. Review the index suggestion
+            in the Performance Advisor."
+
   # Combined: several shapes on one cluster, so the report has to cover them
   # together. Each reference is written for the whole set, in priority order.
   - files: [case_22_synthetic.json, case_24_synthetic.json, case_29_synthetic.json]
