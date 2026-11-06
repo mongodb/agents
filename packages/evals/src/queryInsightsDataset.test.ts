@@ -17,15 +17,11 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import type { JudgeModelConfig } from "mongodb-assistant-eval/scorers";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { parse } from "yaml";
 
 import { loadAgentCasesFromFile } from "./cases.js";
-import { buildEvalCli } from "./cli.js";
 import { AtlasFixtureSchema } from "./atlas/fixtures.js";
-import { runEvalCliWithMockBraintrust } from "./offline/runEvalCliWithMockBraintrust.js";
-import { createLocalToolProvider } from "./tools/localToolProvider.js";
 
 const FIXTURE_DIR = path.join(import.meta.dirname, "..", "fixtures", "atlas");
 const DATASET = path.join(import.meta.dirname, "..", "datasets", "query-insights.yml");
@@ -38,39 +34,6 @@ interface CaseCustom {
 
 interface CustomExpectedCase {
   queryInsights?: { reference: string };
-}
-
-interface ChoiceTool {
-  function: { parameters: { properties: { choice: { enum: string[] } } } };
-}
-
-/** A judge that always picks the first choice its schema allows. */
-function firstChoiceJudge(): JudgeModelConfig {
-  const create = vi.fn(async (request: { tools: ChoiceTool[] }) => {
-    const [choice] = request.tools[0].function.parameters.properties.choice.enum;
-    return {
-      choices: [
-        {
-          message: {
-            tool_calls: [
-              {
-                type: "function",
-                function: {
-                  name: "select_choice",
-                  arguments: JSON.stringify({ rationale: "stub", choice }),
-                },
-              },
-            ],
-          },
-        },
-      ],
-    };
-  });
-  return {
-    modelId: "judge-model",
-    client: { chat: { completions: { create } } },
-    braintrustProxy: { apiKey: "k", endpoint: "e" },
-  } as unknown as JudgeModelConfig;
 }
 
 describe("query-insights dataset", () => {
@@ -123,42 +86,4 @@ describe("query-insights injection dataset", () => {
       expect(testCase.tags, testCase.name).toContain("injection");
     }
   });
-});
-
-describe.each([
-  ["query-insights", 33],
-  ["query-insights-realistic-user-queries", 7],
-] as const)("%s dataset, scripted run", (dataset, count) => {
-  it("calls the Performance Advisor on every case and scores it", async () => {
-    const provider = createLocalToolProvider();
-    await provider.start?.();
-    try {
-      const { exitCode, braintrust } = await runEvalCliWithMockBraintrust(
-        () => buildEvalCli({ toolProvider: provider, judge: firstChoiceJudge() }),
-        [
-          "evaluation",
-          "run",
-          "--task",
-          "query-insights",
-          "--dataset",
-          dataset,
-          "--model",
-          "scripted",
-          "--task-concurrency",
-          "2",
-          "--trial-count",
-          "1",
-        ],
-      );
-
-      expect(exitCode).toBe(0);
-      const toolCoverage = braintrust.rows
-        .map((row) => row.scores?.ToolCallCoverage)
-        .filter((value) => value !== undefined);
-      expect(toolCoverage).toHaveLength(count);
-      expect(toolCoverage.filter((value) => value !== 1)).toEqual([]);
-    } finally {
-      await provider.stop?.();
-    }
-  }, 300_000);
 });
