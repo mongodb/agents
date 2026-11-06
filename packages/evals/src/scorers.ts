@@ -26,6 +26,7 @@ import {
 } from "mongodb-assistant-eval/scorers";
 import { GUARDRAIL_REFUSAL_MESSAGE } from "@repo/agent-engine-core";
 
+import { ReportShape, SuggestedIndexUsage } from "./queryInsightsScorers.js";
 import type { CustomExpected } from "./schemas.js";
 import type { AgentTaskInput, AgentTaskOutput } from "./task.js";
 
@@ -159,4 +160,6 @@ export const scorers = {
   MongoCheck: { scorer: MongoCheck },
   QueryRefusalMatch: { scorer: QueryRefusalMatch },
   ToolCallAmountCorrect: { scorer: ToolCallAmountCorrect },
+  ReportShape: { scorer: ReportShape },
+  SuggestedIndexUsage: { scorer: SuggestedIndexUsage },
 };
