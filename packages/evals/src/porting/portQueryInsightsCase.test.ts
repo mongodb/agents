@@ -102,7 +102,7 @@ describe("portQueryInsightsCase", () => {
 
     const lines = slowLogLines(seed);
     expect(lines).toHaveLength(3);
-    expect(lines[0]).toEqual({
+    expect(lines[0]).toMatchObject({
       namespace: "library.loans",
       line: {
         t: { $date: "2026-11-04T12:00:00.000+00:00" },
@@ -118,7 +118,7 @@ describe("portQueryInsightsCase", () => {
           collectionType: "normal",
           command: {
             find: "loans",
-            filter: { memberId: { $eq: "?string" } },
+            filter: { memberId: { $eq: "memberId-1042" } },
             sort: { dueAt: -1 },
             limit: 10,
             $db: "library",
@@ -128,9 +128,10 @@ describe("portQueryInsightsCase", () => {
           docsExamined: 20000,
           hasSortStage: true,
           nreturned: 10,
+          queryFramework: "classic",
+          readConcern: { level: "local", provenance: "implicitDefault" },
+          writeConcern: { w: "majority", wtimeout: 0, provenance: "customDefault" },
           protocol: "op_msg",
-          workingMillis: 151,
-          durationMillis: 155,
         },
       },
     });
@@ -139,6 +140,35 @@ describe("portQueryInsightsCase", () => {
       { $date: "2026-11-04T12:07:00.000+00:00" },
       { $date: "2026-11-04T12:14:00.000+00:00" },
     ]);
+  });
+
+  it("varies the times around the average and keeps the counts", () => {
+    const { seed } = portQueryInsightsCase(source(), { id: "07" });
+
+    const attrs = slowLogLines(seed).map((l) => attrOf(l.line));
+    expect(new Set(attrs.map((a) => a.durationMillis)).size).toBeGreaterThan(1);
+    for (const attr of attrs) {
+      expect(attr.durationMillis as number).toBeGreaterThanOrEqual(Math.floor(155 * 0.88));
+      expect(attr.durationMillis as number).toBeLessThanOrEqual(Math.ceil(155 * 1.12));
+      expect(attr.workingMillis as number).toBeGreaterThanOrEqual(Math.floor(151 * 0.88));
+      expect(attr.workingMillis as number).toBeLessThanOrEqual(Math.ceil(151 * 1.12));
+      expect(attr.docsExamined).toBe(20000);
+      expect(attr.nreturned).toBe(10);
+      const yields = attr.numYields as number;
+      expect(attr.locks).toEqual({ Global: { acquireCount: { r: yields + 4 } } });
+    }
+    expect(slowLogLines(portQueryInsightsCase(source(), { id: "07" }).seed)).toEqual(
+      slowLogLines(seed),
+    );
+  });
+
+  it("writes the line as text padded the way mongod pads the header", () => {
+    const { seed } = portQueryInsightsCase(source(), { id: "07" });
+
+    const [{ line }] = AtlasFixtureSchema.parse(seed).projects[0].clusters[0].advisor.slowQueries;
+    expect(line).toMatch(
+      /^\{"t":\{"\$date":"[^"]+"\},"s":"I", {2}"c":"COMMAND", {2}"id":51803, {3}"ctx":"conn\d+","msg":"Slow query","attr":\{/,
+    );
   });
 
   it("writes a small case that names the seed", () => {
@@ -195,7 +225,7 @@ describe("portQueryInsightsCase", () => {
     expect(attrOf(line)).not.toHaveProperty("hasSortStage");
   });
 
-  it("builds aggregate and distinct commands, keeping the placeholders", () => {
+  it("builds aggregate and distinct commands, filling the placeholders", () => {
     const aggregate = portQueryInsightsCase(
       source({
         stats: {
@@ -209,7 +239,7 @@ describe("portQueryInsightsCase", () => {
     expect(attrOf(slowLogLines(aggregate.seed)[0].line).command).toEqual({
       aggregate: "loans",
       pipeline: [
-        { $match: { tags: { $in: "?array<?string>" }, open: { $eq: "?bool" } } },
+        { $match: { tags: { $in: ["tags-1042", "tags-2087"] }, open: { $eq: true } } },
         {
           $lookup: { from: "members", localField: "memberId", foreignField: "_id", as: "member" },
         },
@@ -229,7 +259,7 @@ describe("portQueryInsightsCase", () => {
     expect(attrOf(slowLogLines(distinct.seed)[0].line).command).toEqual({
       distinct: "loans",
       key: "branchId",
-      query: { copies: { $gt: "?number" } },
+      query: { copies: { $gt: 10 } },
       $db: "library",
     });
   });

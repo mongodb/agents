@@ -19,6 +19,7 @@ import { z } from "zod";
 
 import type { AtlasFixtureInput } from "../atlas/fixtures.js";
 import type { CustomExpected } from "../schemas.js";
+import { fillPlaceholders, slowLogLine, type SlowLogShape } from "./slowLog.js";
 
 const PERFORMANCE_ADVISOR = "mongodb__atlas_get_performance_advisor";
 
@@ -32,17 +33,6 @@ export const QUERY_INSIGHTS_CLUSTER = "Cluster0";
  * tool output stays short. A shape that ran fewer times gets fewer lines.
  */
 const MAX_SLOW_LOG_LINES = 3;
-
-/**
- * Each line is a mongod structured slow-query log line, 8.2 style, cut to the
- * fields the source stats can fill. The stats hold one average per shape, so
- * only the timestamp and connection differ from line to line.
- */
-const SLOW_LOG_START_MS = Date.parse("2026-11-04T12:00:00.000Z");
-const SLOW_LOG_GAP_MS = 7 * 60 * 1000;
-const SLOW_LOG_FIRST_CONNECTION = 1204;
-
-const isoOffset = (ms: number) => new Date(ms).toISOString().replace("Z", "+00:00");
 
 const ReferenceAreaSchema = z.looseObject({
   leadSentence: z.string(),
@@ -147,10 +137,10 @@ function renderReference(
  *
  * The seed holds the scenario. The source stats are lifetime totals, and the
  * agent reads single slow-log lines, so each line carries the per-execution
- * values (`docsExamined / execCount` and so on). The query shape keeps its
- * `?string`-style placeholders, which the agent's prompt tells it how to
- * read, so no literal values are invented. A Performance Advisor suggestion
- * becomes the cluster's one suggested index.
+ * values (`docsExamined / execCount` and so on), with the times varying around
+ * the average. The query shape's `?string`-style placeholders become made-up
+ * literals, as in a live line. A Performance Advisor suggestion becomes the
+ * cluster's one suggested index.
  *
  * The case stays small: the user message, the expected Performance Advisor
  * call, the suggested indexes the report scorers check, and the reference.
@@ -178,33 +168,21 @@ export function portQueryInsightsCase(
   const database = namespace.slice(0, dot);
   const collection = namespace.slice(dot + 1);
 
-  const shape = JSON.parse(stats.queryShape) as Record<string, unknown>;
+  const shape = fillPlaceholders(JSON.parse(stats.queryShape)) as Record<string, unknown>;
+  const command = { [stats.command]: collection, ...shape, $db: database };
   const perExecution = (total: number) => Math.round(total / stats.execCount);
-  const attr = {
-    type: "command",
-    isFromUserConnection: true,
-    ns: namespace,
-    collectionType: "normal",
-    command: { [stats.command]: collection, ...shape, $db: database },
+  const slowLog: SlowLogShape = {
+    namespace,
+    queryShapeText: stats.queryShape,
     planSummary: options.planSummary ?? (binMetadata.usesIndex ? "IXSCAN" : "COLLSCAN"),
     keysExamined: perExecution(stats.keysExamined),
     docsExamined: perExecution(stats.docsExamined),
-    ...(binMetadata.hasSortStage && { hasSortStage: true }),
     nreturned: perExecution(stats.docsReturned),
-    protocol: "op_msg",
-    workingMillis: Math.round(stats.avgWorkingMillis),
-    durationMillis: Math.round(stats.totalTimeToResponseMicros / stats.execCount / 1000),
+    hasSortStage: binMetadata.hasSortStage,
+    workingMillis: stats.avgWorkingMillis,
+    durationMillis: stats.totalTimeToResponseMicros / stats.execCount / 1000,
   };
-  const line = (i: number) =>
-    JSON.stringify({
-      t: { $date: isoOffset(SLOW_LOG_START_MS + i * SLOW_LOG_GAP_MS) },
-      s: "I",
-      c: "COMMAND",
-      id: 51803,
-      ctx: `conn${SLOW_LOG_FIRST_CONNECTION + i}`,
-      msg: "Slow query",
-      attr,
-    });
+  const line = (i: number) => slowLogLine(slowLog, command, i);
   const lineCount = Math.min(MAX_SLOW_LOG_LINES, Math.max(1, Math.round(stats.execCount)));
 
   const suggestedIndexes = paSuggestion
