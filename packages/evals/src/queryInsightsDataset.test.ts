@@ -74,8 +74,8 @@ function firstChoiceJudge(): JudgeModelConfig {
 describe("query-insights dataset", () => {
   const cases = loadAgentCasesFromFile(DATASET);
 
-  it("has one case per ported source, each reading its own valid seed", () => {
-    expect(cases).toHaveLength(19);
+  it("has one case per ported source or combined set, each reading its own valid seed", () => {
+    expect(cases).toHaveLength(22);
     for (const testCase of cases) {
       const { toolSetup } = testCase.input.custom as CaseCustom;
       const seedName = toolSetup.mockAtlas;
@@ -124,7 +124,7 @@ describe("query-insights dataset, scripted run", () => {
       const toolCoverage = braintrust.rows
         .map((row) => row.scores?.ToolCallCoverage)
         .filter((value) => value !== undefined);
-      expect(toolCoverage).toHaveLength(19);
+      expect(toolCoverage).toHaveLength(22);
       expect(toolCoverage.filter((value) => value !== 1)).toEqual([]);
     } finally {
       await provider.stop?.();

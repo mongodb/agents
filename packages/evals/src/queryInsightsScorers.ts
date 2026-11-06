@@ -66,6 +66,13 @@ export const ReportShape: Scorer = ({ output, expected }) => {
     { name: "at least one shape section", passed: report.sections.length > 0 },
     { name: "no JSON", passed: !/```json/i.test(text) && !isJson(text) },
   ];
+  const { expectedShapes } = expected.custom.queryInsights;
+  if (expectedShapes !== undefined) {
+    checks.push({
+      name: `${expectedShapes} shape sections`,
+      passed: report.sections.length === expectedShapes,
+    });
+  }
   for (const section of report.sections) {
     const shape = `shape ${section.rank}`;
     checks.push(

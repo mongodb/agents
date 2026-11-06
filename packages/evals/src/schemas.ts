@@ -89,6 +89,12 @@ export const CustomExpectedSchema = z.object({
       ),
       /** What a good report says. Graded by the reference judge. */
       reference: z.string().optional(),
+      /**
+       * How many shape sections the report must have. Unset means any number.
+       * Set when the cluster has more shapes than the report covers, so the
+       * report must pick the top ones.
+       */
+      expectedShapes: z.number().int().positive().optional(),
     })
     .optional(),
 });

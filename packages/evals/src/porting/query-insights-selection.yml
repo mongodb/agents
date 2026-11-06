@@ -254,3 +254,87 @@ cases:
             The recommended index would lower the average working time by
             avoiding both. Review the index suggestion in the Performance
             Advisor."
+
+  # Combined: several shapes on one cluster, so the report has to cover them
+  # together. Each reference is written for the whole set, in priority order.
+  - files: [case_22_synthetic.json, case_24_synthetic.json, case_29_synthetic.json]
+    id: multi-01
+    expectedShapes: 3
+    reference:
+      queryOverview: "Three query shapes on this cluster, all doing collection
+        scans. Ranked by documents examined, the `$or` query on
+        `taskManagement.tasksOrUnindexedBranch` is the heaviest, then the `$in`
+        query on `orderFulfillment.ordersUnindexedIn`, then the nested array
+        query on `orderFulfillment.ordersNestedArray`."
+      areasWorthInvestigating:
+        - leadSentence: "The `$or` query on `taskManagement.tasksOrUnindexedBranch`
+            is the largest cost, and the Performance Advisor recommends an index
+            on `watcherId`."
+          elaboration: "The suggested index removes the collection scan only if
+            every `$or` branch is supported, so check whether the `assigneeId`
+            branch has one. Review the index suggestion in the Performance
+            Advisor."
+        - leadSentence: "The Performance Advisor recommends an index on
+            `promoCode` for `orderFulfillment.ordersUnindexedIn`."
+          elaboration: "The query did a collection scan because no index was
+            used. Review the index suggestion in the Performance Advisor."
+        - leadSentence: "The Performance Advisor recommends an index on
+            `items.quantity` for `orderFulfillment.ordersNestedArray`."
+          elaboration: "The query did a collection scan because no index was
+            used. Review the index suggestion in the Performance Advisor."
+
+  # Four shapes, so the report covers the top three and leaves out the lightest.
+  - files: [case_22_synthetic.json, case_19_synthetic.json, case_24_synthetic.json, case_26_synthetic.json]
+    id: multi-02
+    expectedShapes: 3
+    reference:
+      queryOverview: "Four query shapes on this cluster, all doing collection
+        scans. The three heaviest are covered. The lightest, a status filter on
+        `supportPortal.ticketsExtraKeysStatus`, is left out, as the report can
+        cover only three shapes."
+      areasWorthInvestigating:
+        - leadSentence: "The `$or` query on `taskManagement.tasksOrUnindexedBranch`
+            is the heaviest, and the Performance Advisor recommends an index on
+            `watcherId`."
+          elaboration: "The suggested index removes the collection scan only if
+            every `$or` branch is supported, so check whether the `assigneeId`
+            branch has one. Review the index suggestion in the Performance
+            Advisor."
+        - leadSentence: "The `find` on `taskManagement.tasksUnindexedArchived`
+            does a collection scan because no index is used."
+          elaboration: "Adding the right index will help. Consider a partial
+            index that supports the `$exists` predicate."
+        - leadSentence: "The Performance Advisor recommends an index on
+            `promoCode` for `orderFulfillment.ordersUnindexedIn`."
+          elaboration: "The query did a collection scan because no index was
+            used. Review the index suggestion in the Performance Advisor."
+
+  # The lightest shape comes first in the sample, so the report must rank the
+  # heaviest one ahead of it, not follow the order of the slow logs.
+  - files: [case_26_synthetic.json, case_27_synthetic.json, case_19_synthetic.json]
+    id: multi-03
+    expectedShapes: 3
+    reference:
+      queryOverview: "Three query shapes on this cluster, all doing collection
+        scans. Ranked by documents examined, the `archivedAt` query on
+        `taskManagement.tasksUnindexedArchived` is the heaviest, then the
+        `$group` aggregation on `languageLearning.lessonAttemptsGroupByLesson`,
+        then the status filter on `supportPortal.ticketsExtraKeysStatus`."
+      areasWorthInvestigating:
+        - leadSentence: "The query on `taskManagement.tasksUnindexedArchived`
+            does a collection scan because no index is used."
+          elaboration: "Consider a partial index that supports the `$exists`
+            predicate on `archivedAt`. The Performance Advisor has no suggestion
+            for this shape."
+        - leadSentence: "The aggregation on
+            `languageLearning.lessonAttemptsGroupByLesson` does a collection scan
+            because no index is used."
+          elaboration: "Adding the right index will help, since it reduces the
+            documents that reach the `$group` stage. The Performance Advisor has
+            no suggestion for this shape."
+        - leadSentence: "The Performance Advisor recommends an index on
+            `status`, `tenantId`, `userId`, and `createdAt` for
+            `supportPortal.ticketsExtraKeysStatus`."
+          elaboration: "The query did a collection scan, and the recommended
+            index would remove it. The index includes fields this query does not
+            filter on, so it may also serve other queries."
