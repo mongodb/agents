@@ -22,6 +22,7 @@ import { describe, expect, it } from "vitest";
 import { buildEvalCli } from "./cli.js";
 import { firstChoiceJudge } from "./offline/firstChoiceJudge.js";
 import { runEvalCliWithMockBraintrust } from "./offline/runEvalCliWithMockBraintrust.js";
+import { QUERY_INSIGHTS_THRESHOLDS } from "./queryInsightsThresholds.js";
 import { createLocalToolProvider } from "./tools/localToolProvider.js";
 
 const PACKAGE_JSON = path.join(import.meta.dirname, "..", "package.json");
@@ -62,6 +63,7 @@ describe("eval:query-insights script", () => {
     expect(args[args.indexOf("--model") + 1]).toBe("gpt-6.1-terra");
     expect(args[args.indexOf("--trial-count") + 1]).toBe("3");
     expect(args[args.indexOf("--task-concurrency") + 1]).toBe("4");
+    expect(args[args.indexOf("--validate") + 1]).toBe("query-insights");
   });
 });
 
@@ -96,6 +98,9 @@ describe("query-insights report datasets, scripted run", () => {
         }
       }
       expect(byScore.get("ToolCallCoverage")).toHaveLength(40);
+      expect([...byScore.keys()]).toEqual(
+        expect.arrayContaining(Object.keys(QUERY_INSIGHTS_THRESHOLDS)),
+      );
       for (const name of ["ToolCallCoverage", "AnswerMatches", "NoForbiddenExecuted"]) {
         expect({ name, misses: (byScore.get(name) ?? []).filter((v) => v !== 1) }).toEqual({
           name,
