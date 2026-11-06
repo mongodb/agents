@@ -1,0 +1,25 @@
+orgs:
+  - id: 5a0000000000000000000001
+    name: Acme
+projects:
+  - id: 6a0000000000000000000001
+    name: prod
+    orgId: 5a0000000000000000000001
+    clusters:
+      - name: Cluster0
+        advisor:
+          suggestedIndexes:
+            - id: idx1
+              namespace: corporateExpenses.expenseReportsSelectiveNin
+              index:
+                - amountCents: 1
+              weight: 1
+              impact:
+                - query-shape-1
+          slowQueries:
+            - namespace: corporateExpenses.expenseReportsSelectiveNin
+              line: '{"t":{"$date":"2026-11-04T12:00:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1204","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"corporateExpenses.expenseReportsSelectiveNin","collectionType":"normal","queryShapeHash":"5343EAF74441431626F5D11C7011FEE4E471BFF2384EF61D70A8517D1738A7D0","command":{"find":"expenseReportsSelectiveNin","filter":{},"sort":{"amountCents":1},"limit":10,"$db":"corporateExpenses"},"planSummary":"COLLSCAN","keysExamined":0,"docsExamined":180000,"hasSortStage":true,"cursorExhausted":true,"numYields":23,"nreturned":40000,"planCacheShapeHash":"5343EAF7","queryHash":"5343EAF7","planCacheKey":"44414316","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":27}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":224,"durationMillis":206}}'
+            - namespace: corporateExpenses.expenseReportsSelectiveNin
+              line: '{"t":{"$date":"2026-11-04T12:07:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1205","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"corporateExpenses.expenseReportsSelectiveNin","collectionType":"normal","queryShapeHash":"5343EAF74441431626F5D11C7011FEE4E471BFF2384EF61D70A8517D1738A7D0","command":{"find":"expenseReportsSelectiveNin","filter":{},"sort":{"amountCents":1},"limit":10,"$db":"corporateExpenses"},"planSummary":"COLLSCAN","keysExamined":0,"docsExamined":180000,"hasSortStage":true,"cursorExhausted":true,"numYields":23,"nreturned":40000,"planCacheShapeHash":"5343EAF7","queryHash":"5343EAF7","planCacheKey":"44414316","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":27}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":225,"durationMillis":207}}'
+            - namespace: corporateExpenses.expenseReportsSelectiveNin
+              line: '{"t":{"$date":"2026-11-04T12:14:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1206","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"corporateExpenses.expenseReportsSelectiveNin","collectionType":"normal","queryShapeHash":"5343EAF74441431626F5D11C7011FEE4E471BFF2384EF61D70A8517D1738A7D0","command":{"find":"expenseReportsSelectiveNin","filter":{},"sort":{"amountCents":1},"limit":10,"$db":"corporateExpenses"},"planSummary":"COLLSCAN","keysExamined":0,"docsExamined":180000,"hasSortStage":true,"cursorExhausted":true,"numYields":24,"nreturned":40000,"planCacheShapeHash":"5343EAF7","queryHash":"5343EAF7","planCacheKey":"44414316","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":28}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":229,"durationMillis":211}}'

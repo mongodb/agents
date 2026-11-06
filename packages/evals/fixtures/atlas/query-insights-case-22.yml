@@ -1,0 +1,25 @@
+orgs:
+  - id: 5a0000000000000000000001
+    name: Acme
+projects:
+  - id: 6a0000000000000000000001
+    name: prod
+    orgId: 5a0000000000000000000001
+    clusters:
+      - name: Cluster0
+        advisor:
+          suggestedIndexes:
+            - id: idx1
+              namespace: taskManagement.tasksOrUnindexedBranch
+              index:
+                - watcherId: 1
+              weight: 1
+              impact:
+                - query-shape-1
+          slowQueries:
+            - namespace: taskManagement.tasksOrUnindexedBranch
+              line: '{"t":{"$date":"2026-11-04T12:00:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1204","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"taskManagement.tasksOrUnindexedBranch","collectionType":"normal","queryShapeHash":"A00B91EBC7C0EE5DF9B1AEE375CA637A4A742FE6FCDCE8FF15BE257DE862F468","command":{"find":"tasksOrUnindexedBranch","filter":{"$or":[{"assigneeId":{"$eq":"assigneeId-1042"}},{"watcherId":{"$eq":"watcherId-1042"}}]},"$db":"taskManagement"},"planSummary":"COLLSCAN","keysExamined":0,"docsExamined":2000000,"cursorExhausted":true,"numYields":244,"nreturned":2025,"planCacheShapeHash":"A00B91EB","queryHash":"A00B91EB","planCacheKey":"C7C0EE5D","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":248}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":1819,"durationMillis":1820}}'
+            - namespace: taskManagement.tasksOrUnindexedBranch
+              line: '{"t":{"$date":"2026-11-04T12:07:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1205","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"taskManagement.tasksOrUnindexedBranch","collectionType":"normal","queryShapeHash":"A00B91EBC7C0EE5DF9B1AEE375CA637A4A742FE6FCDCE8FF15BE257DE862F468","command":{"find":"tasksOrUnindexedBranch","filter":{"$or":[{"assigneeId":{"$eq":"assigneeId-1042"}},{"watcherId":{"$eq":"watcherId-1042"}}]},"$db":"taskManagement"},"planSummary":"COLLSCAN","keysExamined":0,"docsExamined":2000000,"cursorExhausted":true,"numYields":246,"nreturned":2025,"planCacheShapeHash":"A00B91EB","queryHash":"A00B91EB","planCacheKey":"C7C0EE5D","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":250}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":1838,"durationMillis":1838}}'
+            - namespace: taskManagement.tasksOrUnindexedBranch
+              line: '{"t":{"$date":"2026-11-04T12:14:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1206","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"taskManagement.tasksOrUnindexedBranch","collectionType":"normal","queryShapeHash":"A00B91EBC7C0EE5DF9B1AEE375CA637A4A742FE6FCDCE8FF15BE257DE862F468","command":{"find":"tasksOrUnindexedBranch","filter":{"$or":[{"assigneeId":{"$eq":"assigneeId-1042"}},{"watcherId":{"$eq":"watcherId-1042"}}]},"$db":"taskManagement"},"planSummary":"COLLSCAN","keysExamined":0,"docsExamined":2000000,"cursorExhausted":true,"numYields":264,"nreturned":2025,"planCacheShapeHash":"A00B91EB","queryHash":"A00B91EB","planCacheKey":"C7C0EE5D","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":268}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":1972,"durationMillis":1972}}'

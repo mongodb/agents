@@ -1,0 +1,25 @@
+orgs:
+  - id: 5a0000000000000000000001
+    name: Acme
+projects:
+  - id: 6a0000000000000000000001
+    name: prod
+    orgId: 5a0000000000000000000001
+    clusters:
+      - name: Cluster0
+        advisor:
+          suggestedIndexes:
+            - id: idx1
+              namespace: orderFulfillment.ordersUnindexedIn
+              index:
+                - promoCode: 1
+              weight: 1
+              impact:
+                - query-shape-1
+          slowQueries:
+            - namespace: orderFulfillment.ordersUnindexedIn
+              line: '{"t":{"$date":"2026-11-04T12:00:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1204","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"orderFulfillment.ordersUnindexedIn","collectionType":"normal","queryShapeHash":"46F141D2E45CF67C58200A48615F363457019E005EFB4A4A5E4F7F2125603CEA","command":{"find":"ordersUnindexedIn","filter":{"promoCode":{"$in":["promoCode-1042","promoCode-2087"]}},"$db":"orderFulfillment"},"planSummary":"COLLSCAN","keysExamined":0,"docsExamined":2000000,"cursorExhausted":true,"numYields":255,"nreturned":5067,"planCacheShapeHash":"46F141D2","queryHash":"46F141D2","planCacheKey":"E45CF67C","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":259}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":1197,"durationMillis":1197}}'
+            - namespace: orderFulfillment.ordersUnindexedIn
+              line: '{"t":{"$date":"2026-11-04T12:07:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1205","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"orderFulfillment.ordersUnindexedIn","collectionType":"normal","queryShapeHash":"46F141D2E45CF67C58200A48615F363457019E005EFB4A4A5E4F7F2125603CEA","command":{"find":"ordersUnindexedIn","filter":{"promoCode":{"$in":["promoCode-1042","promoCode-2087"]}},"$db":"orderFulfillment"},"planSummary":"COLLSCAN","keysExamined":0,"docsExamined":2000000,"cursorExhausted":true,"numYields":267,"nreturned":5067,"planCacheShapeHash":"46F141D2","queryHash":"46F141D2","planCacheKey":"E45CF67C","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":271}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":1250,"durationMillis":1250}}'
+            - namespace: orderFulfillment.ordersUnindexedIn
+              line: '{"t":{"$date":"2026-11-04T12:14:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1206","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"orderFulfillment.ordersUnindexedIn","collectionType":"normal","queryShapeHash":"46F141D2E45CF67C58200A48615F363457019E005EFB4A4A5E4F7F2125603CEA","command":{"find":"ordersUnindexedIn","filter":{"promoCode":{"$in":["promoCode-1042","promoCode-2087"]}},"$db":"orderFulfillment"},"planSummary":"COLLSCAN","keysExamined":0,"docsExamined":2000000,"cursorExhausted":true,"numYields":264,"nreturned":5067,"planCacheShapeHash":"46F141D2","queryHash":"46F141D2","planCacheKey":"E45CF67C","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":268}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":1237,"durationMillis":1237}}'

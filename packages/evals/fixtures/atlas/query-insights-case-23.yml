@@ -1,0 +1,26 @@
+orgs:
+  - id: 5a0000000000000000000001
+    name: Acme
+projects:
+  - id: 6a0000000000000000000001
+    name: prod
+    orgId: 5a0000000000000000000001
+    clusters:
+      - name: Cluster0
+        advisor:
+          suggestedIndexes:
+            - id: idx1
+              namespace: taskManagement.tasksOrBlockingSortV2
+              index:
+                - reporterId: 1
+                - updatedAt: -1
+              weight: 1
+              impact:
+                - query-shape-1
+          slowQueries:
+            - namespace: taskManagement.tasksOrBlockingSortV2
+              line: '{"t":{"$date":"2026-11-04T12:00:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1204","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"taskManagement.tasksOrBlockingSortV2","collectionType":"normal","queryShapeHash":"3D72027E0BDF0192A7B12348B82944A1D48A574965377DAD1061403C56DB3353","command":{"find":"tasksOrBlockingSortV2","filter":{"$or":[{"assigneeId":{"$eq":"assigneeId-1042"}},{"reporterId":{"$eq":"reporterId-1042"}}]},"sort":{"updatedAt":-1},"limit":10,"$db":"taskManagement"},"planSummary":"IXSCAN","keysExamined":201828,"docsExamined":196751,"hasSortStage":true,"cursorExhausted":true,"numYields":22,"nreturned":20,"planCacheShapeHash":"3D72027E","queryHash":"3D72027E","planCacheKey":"0BDF0192","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":26}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":601,"durationMillis":602}}'
+            - namespace: taskManagement.tasksOrBlockingSortV2
+              line: '{"t":{"$date":"2026-11-04T12:07:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1205","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"taskManagement.tasksOrBlockingSortV2","collectionType":"normal","queryShapeHash":"3D72027E0BDF0192A7B12348B82944A1D48A574965377DAD1061403C56DB3353","command":{"find":"tasksOrBlockingSortV2","filter":{"$or":[{"assigneeId":{"$eq":"assigneeId-1042"}},{"reporterId":{"$eq":"reporterId-1042"}}]},"sort":{"updatedAt":-1},"limit":10,"$db":"taskManagement"},"planSummary":"IXSCAN","keysExamined":201828,"docsExamined":196751,"hasSortStage":true,"cursorExhausted":true,"numYields":27,"nreturned":20,"planCacheShapeHash":"3D72027E","queryHash":"3D72027E","planCacheKey":"0BDF0192","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":31}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":734,"durationMillis":735}}'
+            - namespace: taskManagement.tasksOrBlockingSortV2
+              line: '{"t":{"$date":"2026-11-04T12:14:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1206","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"taskManagement.tasksOrBlockingSortV2","collectionType":"normal","queryShapeHash":"3D72027E0BDF0192A7B12348B82944A1D48A574965377DAD1061403C56DB3353","command":{"find":"tasksOrBlockingSortV2","filter":{"$or":[{"assigneeId":{"$eq":"assigneeId-1042"}},{"reporterId":{"$eq":"reporterId-1042"}}]},"sort":{"updatedAt":-1},"limit":10,"$db":"taskManagement"},"planSummary":"IXSCAN","keysExamined":201828,"docsExamined":196751,"hasSortStage":true,"cursorExhausted":true,"numYields":25,"nreturned":20,"planCacheShapeHash":"3D72027E","queryHash":"3D72027E","planCacheKey":"0BDF0192","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":29}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":674,"durationMillis":675}}'

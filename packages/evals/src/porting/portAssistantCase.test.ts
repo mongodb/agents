@@ -187,6 +187,17 @@ describe("renderPortedCases", () => {
     expect(text).toContain("- name: Spark 10.3 streams");
   });
 
+  it("leaves out the source comments when asked", () => {
+    const text = renderPortedCases(
+      [{ file: "conversations.yml", case: portKnowledgeCase(GENERAL) }],
+      "Header.",
+      { sourceComments: false },
+    );
+    expect(text.startsWith("# Header.\n")).toBe(true);
+    expect(text).not.toContain("Source:");
+    expect(text).toContain("- name: Explain what a replica set is");
+  });
+
   it("produces a dataset the case loader accepts", () => {
     const cases = parseAgentCases(rendered, "ported.yml");
     expect(cases.map((c) => c.name)).toEqual([

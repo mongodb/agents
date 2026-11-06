@@ -22,6 +22,7 @@ import type { CustomExpected } from "../schemas.js";
 import { fillPlaceholders, slowLogLine, type SlowLogShape } from "./slowLog.js";
 
 const PERFORMANCE_ADVISOR = "mongodb__atlas_get_performance_advisor";
+const SCRIPTED_REPLY = "Scripted reply for offline runs. A real model writes the report.";
 
 /** Every converted seed has one org, one project and one cluster. */
 export const QUERY_INSIGHTS_ORG_ID = "5a0000000000000000000001";
@@ -74,6 +75,12 @@ const SourceQueryInsightsCaseSchema = z.looseObject({
     .optional(),
 });
 
+/** The source's `referenceAnswer`, without its extra fields. */
+export interface ReferenceAnswer {
+  queryOverview: string;
+  areasWorthInvestigating: { leadSentence: string; elaboration: string }[];
+}
+
 export interface QueryInsightsPortOptions {
   /** Short id for the seed and case names, such as `08`. */
   readonly id: string;
@@ -86,6 +93,8 @@ export interface QueryInsightsPortOptions {
   readonly planSummary?: string;
   /** Replaces the default user message. */
   readonly message?: string;
+  /** Replaces the source's reference answer, which quotes lifetime totals. */
+  readonly reference?: ReferenceAnswer;
 }
 
 export interface PortedQueryInsightsCase {
@@ -96,6 +105,10 @@ export interface PortedQueryInsightsCase {
     custom: {
       defaultData: { projectId: string; clusterName: string };
       toolSetup: { mockAtlas: string };
+      script: (
+        | { toolCalls: { name: string; args: Record<string, string> }[] }
+        | { text: string }
+      )[];
     };
   };
   expected: {
@@ -117,9 +130,7 @@ function indexKeys(indexSpec: string): Record<string, number | string>[] {
   return Object.entries(spec).map(([field, direction]) => ({ [field]: direction }));
 }
 
-function renderReference(
-  reference: z.infer<typeof SourceQueryInsightsCaseSchema>["referenceAnswer"],
-): string {
+function renderReference(reference: ReferenceAnswer): string {
   const areas = reference.areasWorthInvestigating.map(
     (area, i) => `${i + 1}. ${area.leadSentence} ${area.elaboration}`,
   );
@@ -135,17 +146,22 @@ function renderReference(
  * Turns one source eval case into a mock Atlas seed and an eval case for
  * Atlas Query Insights that names it.
  *
- * The seed holds the scenario. The source stats are lifetime totals, and the
- * agent reads single slow-log lines, so each line carries the per-execution
- * values (`docsExamined / execCount` and so on), with the times varying around
- * the average. The query shape's `?string`-style placeholders become made-up
- * literals, as in a live line. A Performance Advisor suggestion becomes the
- * cluster's one suggested index.
+ * The seed holds the scenario. The source stats are lifetime totals: counters
+ * summed over every execution of the query shape, such as 1,328,412
+ * `docsExamined` over an `execCount` of 20. The agent never sees those sums.
+ * It reads slow-log lines, one per execution, so each line carries the
+ * per-execution value (`docsExamined / execCount`, here 66,421), with the times
+ * varying around the average. The query shape's `?string`-style placeholders
+ * become made-up literals, as in a live line. A Performance Advisor suggestion
+ * becomes the cluster's one suggested index.
  *
  * The case stays small: the user message, the expected Performance Advisor
  * call, the suggested indexes the report scorers check, and the reference.
- * The reference is the source's as written. It quotes lifetime totals the
- * agent never sees, so it must be rewritten before a case is committed.
+ * The source reference answer quotes those lifetime totals ("1.33 M documents
+ * examined across 20 executions"), which the agent cannot reproduce from
+ * slow-log lines. So the CLI requires a rewritten `reference` for every case,
+ * without the totals. The script replays the Performance Advisor call for the
+ * offline scripted run.
  *
  * It throws on anything it cannot convert faithfully.
  */
@@ -240,6 +256,20 @@ export function portQueryInsightsCase(
             clusterName: QUERY_INSIGHTS_CLUSTER,
           },
           toolSetup: { mockAtlas: seedName },
+          script: [
+            {
+              toolCalls: [
+                {
+                  name: PERFORMANCE_ADVISOR,
+                  args: {
+                    projectId: QUERY_INSIGHTS_PROJECT_ID,
+                    clusterName: QUERY_INSIGHTS_CLUSTER,
+                  },
+                },
+              ],
+            },
+            { text: SCRIPTED_REPLY },
+          ],
         },
       },
       expected: {
@@ -263,7 +293,7 @@ export function portQueryInsightsCase(
         custom: {
           queryInsights: {
             suggestedIndexes,
-            reference: renderReference(referenceAnswer),
+            reference: renderReference(options.reference ?? referenceAnswer),
           },
         },
       },
@@ -271,12 +301,7 @@ export function portQueryInsightsCase(
   };
 }
 
-/** Renders a converted seed as a mock Atlas fixture, with `header` as its opening comment. */
-export function renderQueryInsightsSeed(seed: AtlasFixtureInput, header: string): string {
-  const doc = new Document(seed);
-  doc.commentBefore = header
-    .split("\n")
-    .map((line) => ` ${line}`.trimEnd())
-    .join("\n");
-  return stringify(doc, { lineWidth: 0 });
+/** Renders a converted seed as a mock Atlas fixture. */
+export function renderQueryInsightsSeed(seed: AtlasFixtureInput): string {
+  return stringify(new Document(seed), { lineWidth: 0 });
 }

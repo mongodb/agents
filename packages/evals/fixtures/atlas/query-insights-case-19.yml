@@ -1,0 +1,18 @@
+orgs:
+  - id: 5a0000000000000000000001
+    name: Acme
+projects:
+  - id: 6a0000000000000000000001
+    name: prod
+    orgId: 5a0000000000000000000001
+    clusters:
+      - name: Cluster0
+        advisor:
+          suggestedIndexes: []
+          slowQueries:
+            - namespace: taskManagement.tasksUnindexedArchived
+              line: '{"t":{"$date":"2026-11-04T12:00:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1204","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"taskManagement.tasksUnindexedArchived","collectionType":"normal","queryShapeHash":"8DA46C58AAD6228CCB8834DA5D6CBE6D41CB94012A6C445071FB950873E874F2","command":{"find":"tasksUnindexedArchived","filter":{"$and":[{"taskType":{"$eq":"taskType-1042"}},{"archivedAt":{"$exists":true}}]},"$db":"taskManagement"},"planSummary":"COLLSCAN","keysExamined":0,"docsExamined":2000000,"cursorExhausted":true,"numYields":257,"nreturned":4936,"planCacheShapeHash":"8DA46C58","queryHash":"8DA46C58","planCacheKey":"AAD6228C","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":261}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":1501,"durationMillis":1501}}'
+            - namespace: taskManagement.tasksUnindexedArchived
+              line: '{"t":{"$date":"2026-11-04T12:07:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1205","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"taskManagement.tasksUnindexedArchived","collectionType":"normal","queryShapeHash":"8DA46C58AAD6228CCB8834DA5D6CBE6D41CB94012A6C445071FB950873E874F2","command":{"find":"tasksUnindexedArchived","filter":{"$and":[{"taskType":{"$eq":"taskType-1042"}},{"archivedAt":{"$exists":true}}]},"$db":"taskManagement"},"planSummary":"COLLSCAN","keysExamined":0,"docsExamined":2000000,"cursorExhausted":true,"numYields":279,"nreturned":4936,"planCacheShapeHash":"8DA46C58","queryHash":"8DA46C58","planCacheKey":"AAD6228C","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":283}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":1629,"durationMillis":1629}}'
+            - namespace: taskManagement.tasksUnindexedArchived
+              line: '{"t":{"$date":"2026-11-04T12:14:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1206","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"taskManagement.tasksUnindexedArchived","collectionType":"normal","queryShapeHash":"8DA46C58AAD6228CCB8834DA5D6CBE6D41CB94012A6C445071FB950873E874F2","command":{"find":"tasksUnindexedArchived","filter":{"$and":[{"taskType":{"$eq":"taskType-1042"}},{"archivedAt":{"$exists":true}}]},"$db":"taskManagement"},"planSummary":"COLLSCAN","keysExamined":0,"docsExamined":2000000,"cursorExhausted":true,"numYields":232,"nreturned":4936,"planCacheShapeHash":"8DA46C58","queryHash":"8DA46C58","planCacheKey":"AAD6228C","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":236}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":1358,"durationMillis":1357}}'
