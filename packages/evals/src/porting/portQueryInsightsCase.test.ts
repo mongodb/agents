@@ -53,6 +53,7 @@ function source(overrides: {
       docsReturned: 200.0,
       avgWorkingMillis: 151.4,
       totalWorkingMillis: 3028.0,
+      totalTimeToResponseMicros: 3100000.0,
       ...overrides.stats,
     },
     binMetadata: {
@@ -66,6 +67,10 @@ function source(overrides: {
         ? overrides.paSuggestion
         : { namespace: "library.loans", indexSpec: '{"memberId": 1, "dueAt": -1}' },
   };
+}
+
+function attrOf(line: Record<string, unknown>) {
+  return line.attr as Record<string, unknown>;
 }
 
 function slowLogLines(seed: ReturnType<typeof portQueryInsightsCase>["seed"]) {
@@ -100,21 +105,40 @@ describe("portQueryInsightsCase", () => {
     expect(lines[0]).toEqual({
       namespace: "library.loans",
       line: {
-        command: {
-          find: "loans",
-          filter: { memberId: { $eq: "?string" } },
-          sort: { dueAt: -1 },
-          limit: 10,
-          $db: "library",
+        t: { $date: "2026-11-04T12:00:00.000+00:00" },
+        s: "I",
+        c: "COMMAND",
+        id: 51803,
+        ctx: "conn1204",
+        msg: "Slow query",
+        attr: {
+          type: "command",
+          isFromUserConnection: true,
+          ns: "library.loans",
+          collectionType: "normal",
+          command: {
+            find: "loans",
+            filter: { memberId: { $eq: "?string" } },
+            sort: { dueAt: -1 },
+            limit: 10,
+            $db: "library",
+          },
+          planSummary: "COLLSCAN",
+          keysExamined: 0,
+          docsExamined: 20000,
+          hasSortStage: true,
+          nreturned: 10,
+          protocol: "op_msg",
+          workingMillis: 151,
+          durationMillis: 155,
         },
-        planSummary: "COLLSCAN",
-        keysExamined: 0,
-        docsExamined: 20000,
-        nreturned: 10,
-        millis: 151,
-        hasSortStage: true,
       },
     });
+    expect(lines.map((l) => l.line.t)).toEqual([
+      { $date: "2026-11-04T12:00:00.000+00:00" },
+      { $date: "2026-11-04T12:07:00.000+00:00" },
+      { $date: "2026-11-04T12:14:00.000+00:00" },
+    ]);
   });
 
   it("writes a small case that names the seed", () => {
@@ -167,8 +191,8 @@ describe("portQueryInsightsCase", () => {
     expect(ported.expected.custom.queryInsights.suggestedIndexes).toEqual([]);
     expect(ported.tags).toEqual(["find", "no-advisor-index"]);
     const { line } = slowLogLines(seed)[0];
-    expect(line.planSummary).toBe("IXSCAN");
-    expect(line).not.toHaveProperty("hasSortStage");
+    expect(attrOf(line).planSummary).toBe("IXSCAN");
+    expect(attrOf(line)).not.toHaveProperty("hasSortStage");
   });
 
   it("builds aggregate and distinct commands, keeping the placeholders", () => {
@@ -182,7 +206,7 @@ describe("portQueryInsightsCase", () => {
       }),
       { id: "11" },
     );
-    expect(slowLogLines(aggregate.seed)[0].line.command).toEqual({
+    expect(attrOf(slowLogLines(aggregate.seed)[0].line).command).toEqual({
       aggregate: "loans",
       pipeline: [
         { $match: { tags: { $in: "?array<?string>" }, open: { $eq: "?bool" } } },
@@ -202,7 +226,7 @@ describe("portQueryInsightsCase", () => {
       }),
       { id: "12" },
     );
-    expect(slowLogLines(distinct.seed)[0].line.command).toEqual({
+    expect(attrOf(slowLogLines(distinct.seed)[0].line).command).toEqual({
       distinct: "loans",
       key: "branchId",
       query: { copies: { $gt: "?number" } },
@@ -213,7 +237,7 @@ describe("portQueryInsightsCase", () => {
   it("writes one line per execution, up to three", () => {
     const once = portQueryInsightsCase(source({ stats: { execCount: 1 } }), { id: "a" });
     expect(slowLogLines(once.seed)).toHaveLength(1);
-    expect(slowLogLines(once.seed)[0].line.docsExamined).toBe(400000);
+    expect(attrOf(slowLogLines(once.seed)[0].line).docsExamined).toBe(400000);
   });
 
   it("takes overrides for the namespace, plan summary and message", () => {
@@ -226,8 +250,8 @@ describe("portQueryInsightsCase", () => {
 
     const [{ namespace, line }] = slowLogLines(ported.seed);
     expect(namespace).toBe("shop.visits");
-    expect(line.command).toMatchObject({ find: "visits", $db: "shop" });
-    expect(line.planSummary).toBe("IXSCAN { memberId: 1 }");
+    expect(attrOf(line).command).toMatchObject({ find: "visits", $db: "shop" });
+    expect(attrOf(line).planSummary).toBe("IXSCAN { memberId: 1 }");
     expect(ported.case.input.messages[0].content).toBe("Which query should I fix first?");
   });
 

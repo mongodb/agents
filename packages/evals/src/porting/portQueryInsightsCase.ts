@@ -33,6 +33,17 @@ export const QUERY_INSIGHTS_CLUSTER = "Cluster0";
  */
 const MAX_SLOW_LOG_LINES = 3;
 
+/**
+ * Each line is a mongod structured slow-query log line, 8.2 style, cut to the
+ * fields the source stats can fill. The stats hold one average per shape, so
+ * only the timestamp and connection differ from line to line.
+ */
+const SLOW_LOG_START_MS = Date.parse("2026-11-04T12:00:00.000Z");
+const SLOW_LOG_GAP_MS = 7 * 60 * 1000;
+const SLOW_LOG_FIRST_CONNECTION = 1204;
+
+const isoOffset = (ms: number) => new Date(ms).toISOString().replace("Z", "+00:00");
+
 const ReferenceAreaSchema = z.looseObject({
   leadSentence: z.string(),
   elaboration: z.string(),
@@ -57,6 +68,7 @@ const SourceQueryInsightsCaseSchema = z.looseObject({
     docsReturned: z.number().nonnegative(),
     keysExamined: z.number().nonnegative(),
     avgWorkingMillis: z.number().nonnegative(),
+    totalTimeToResponseMicros: z.number().nonnegative(),
   }),
   binMetadata: z.looseObject({
     usesIndex: z.boolean(),
@@ -168,15 +180,31 @@ export function portQueryInsightsCase(
 
   const shape = JSON.parse(stats.queryShape) as Record<string, unknown>;
   const perExecution = (total: number) => Math.round(total / stats.execCount);
-  const line = JSON.stringify({
+  const attr = {
+    type: "command",
+    isFromUserConnection: true,
+    ns: namespace,
+    collectionType: "normal",
     command: { [stats.command]: collection, ...shape, $db: database },
     planSummary: options.planSummary ?? (binMetadata.usesIndex ? "IXSCAN" : "COLLSCAN"),
     keysExamined: perExecution(stats.keysExamined),
     docsExamined: perExecution(stats.docsExamined),
-    nreturned: perExecution(stats.docsReturned),
-    millis: Math.round(stats.avgWorkingMillis),
     ...(binMetadata.hasSortStage && { hasSortStage: true }),
-  });
+    nreturned: perExecution(stats.docsReturned),
+    protocol: "op_msg",
+    workingMillis: Math.round(stats.avgWorkingMillis),
+    durationMillis: Math.round(stats.totalTimeToResponseMicros / stats.execCount / 1000),
+  };
+  const line = (i: number) =>
+    JSON.stringify({
+      t: { $date: isoOffset(SLOW_LOG_START_MS + i * SLOW_LOG_GAP_MS) },
+      s: "I",
+      c: "COMMAND",
+      id: 51803,
+      ctx: `conn${SLOW_LOG_FIRST_CONNECTION + i}`,
+      msg: "Slow query",
+      attr,
+    });
   const lineCount = Math.min(MAX_SLOW_LOG_LINES, Math.max(1, Math.round(stats.execCount)));
 
   const suggestedIndexes = paSuggestion
@@ -201,7 +229,7 @@ export function portQueryInsightsCase(
                 weight: 1,
                 impact: [`query-shape-${i + 1}`],
               })),
-              slowQueries: Array.from({ length: lineCount }, () => ({ namespace, line })),
+              slowQueries: Array.from({ length: lineCount }, (_, i) => ({ namespace, line: line(i) })),
             },
           },
         ],
