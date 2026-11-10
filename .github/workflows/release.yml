@@ -1,0 +1,50 @@
+# Release for the four packages published to npm.
+#
+# With pending changesets (see .changeset/README.md), this opens or updates a
+# "Version Packages" pull request. Once that pull request merges, it runs
+# `pnpm release`, which publishes the versions npm does not have yet.
+#
+# Nothing is uploaded unless the repository variable PUBLISH_DRY_RUN is set to
+# false. It defaults to true, and `pnpm release` validates it. Publishing uses
+# npm trusted publishing (short-lived OIDC, no stored token), so each package
+# needs this workflow configured as its trusted publisher on npm.
+#
+# Pull requests that this workflow opens with the default GITHUB_TOKEN do not
+# trigger other workflows. Close and reopen the Version Packages pull request
+# to run CI on it.
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    name: version or publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      pull-requests: write
+      id-token: write
+    env:
+      COREPACK_ENABLE_DOWNLOAD_PROMPT: "0"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/setup-workspace
+      - name: Use an npm that supports trusted publishing
+        run: npm install -g npm@^11.5.1
+      - uses: changesets/action@ae32849d5ba541f9ae29e40e22a623bc13562f51 # v2.1.2
+        with:
+          version-script: pnpm version-packages
+          publish-script: pnpm release
+        env:
+          PUBLISH_DRY_RUN: ${{ vars.PUBLISH_DRY_RUN || 'true' }}
