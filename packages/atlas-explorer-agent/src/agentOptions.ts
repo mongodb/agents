@@ -27,7 +27,7 @@ import {
   stampResumeClientUserMiddleware,
   stripToolEchoMiddleware,
   type DataAccessConfig,
-} from "@repo/agent-engine-core";
+} from "@mongodb-js/agent-engine-core";
 
 import type { AtlasExplorerConfig } from "./agentConfig.js";
 import { mutativeInterruptOn, selectAtlasTools } from "./agentPolicy.js";

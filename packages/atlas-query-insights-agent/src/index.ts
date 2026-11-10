@@ -50,7 +50,7 @@ export {
   type DatabaseNamesConfig,
   type DefaultDataConfig,
   type InputGuardConfig,
-} from "@repo/agent-engine-core";
+} from "@mongodb-js/agent-engine-core";
 export type { AtlasQueryInsightsConfig } from "./agentConfig.js";
 export {
   buildAtlasQueryInsightsAgentOptions,

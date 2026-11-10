@@ -17,7 +17,7 @@
 import type {
   createInputRedactor,
   createInputRefusalMiddleware,
-} from "@repo/atlas-explorer-agent";
+} from "@mongodb-js/atlas-explorer-agent";
 
 /**
  * Non-secret Atlas Explorer settings.
@@ -81,7 +81,7 @@ import type {
  * {@link createInputRedactor} and {@link createInputRefusalMiddleware}.
  */
 
-import type { AtlasExplorerConfig } from "@repo/atlas-explorer-agent";
+import type { AtlasExplorerConfig } from "@mongodb-js/atlas-explorer-agent";
 
 export const atlasExplorerConfig = {
   llm: {

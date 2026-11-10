@@ -26,7 +26,7 @@ import {
   stampResumeClientUserMiddleware,
   stripToolEchoMiddleware,
   type DataAccessConfig,
-} from "@repo/agent-engine-core";
+} from "@mongodb-js/agent-engine-core";
 
 import type { AtlasQueryInsightsConfig } from "./agentConfig.js";
 import { buildSystemPrompt } from "./systemMessage.js";

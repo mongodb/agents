@@ -47,7 +47,7 @@ export {
   type DefaultDataConfig,
   type InputGuardConfig,
   type Requester,
-} from "@repo/agent-engine-core";
+} from "@mongodb-js/agent-engine-core";
 export type { AtlasExplorerConfig } from "./agentConfig.js";
 export {
   buildAtlasExplorerAgentOptions,

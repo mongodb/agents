@@ -48,7 +48,7 @@ jobs:
       matrix:
         include:
           - name: agent-engine-chat
-            command: pnpm --filter @repo/agent-engine-chat test
+            command: pnpm --filter @mongodb-js/agent-engine-chat test
           - name: atlas-explorer-slack-bot
             command: pnpm --filter @repo/atlas-explorer-slack-bot test
     steps:

@@ -23,7 +23,7 @@ import {
   AgentEngineToolSandboxBackend,
   type DeepAgentOptions,
 } from "@mongodb-js/agent-engine-sdk-langgraph";
-import { registerKnowledgeTools } from "@repo/agent-engine-core";
+import { registerKnowledgeTools } from "@mongodb-js/agent-engine-core";
 import {
   surfaceTokenMintFailures,
   buildAtlasQueryInsightsAgentOptions,
@@ -32,7 +32,7 @@ import {
   prepareAgentInput,
   withRequesterMetadata,
   withoutShellExecution,
-} from "@repo/atlas-query-insights-agent";
+} from "@mongodb-js/atlas-query-insights-agent";
 
 import { atlasQueryInsightsConfig } from "./config.js";
 

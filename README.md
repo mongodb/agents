@@ -185,7 +185,7 @@ for the full list.
 example of how to connect a deployed agent to the tools your team already
 uses. It is a thin Slack app for Atlas Explorer built on
 [`packages/agent-engine-chat`](packages/agent-engine-chat)
-(`@repo/agent-engine-chat`), the general-purpose library that connects any
+(`@mongodb-js/agent-engine-chat`), the general-purpose library that connects any
 Agent Engine workspace to [Chat SDK](https://chat-sdk.dev) platforms. It calls
 Atlas Explorer on Agent Engine with a service account. You can ask questions in
 a channel or DM, approve or reject proposed writes, and post read-only reports

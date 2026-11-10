@@ -17,7 +17,7 @@
 import type {
   createInputRedactor,
   createInputRefusalMiddleware,
-} from "@repo/atlas-query-insights-agent";
+} from "@mongodb-js/atlas-query-insights-agent";
 
 /**
  * Non-secret Atlas Query Insights settings.
@@ -65,7 +65,7 @@ import type {
  * {@link createInputRedactor} and {@link createInputRefusalMiddleware}.
  */
 
-import type { AtlasQueryInsightsConfig } from "@repo/atlas-query-insights-agent";
+import type { AtlasQueryInsightsConfig } from "@mongodb-js/atlas-query-insights-agent";
 
 export const atlasQueryInsightsConfig = {
   llm: {
