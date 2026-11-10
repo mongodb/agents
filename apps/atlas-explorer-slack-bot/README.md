@@ -3,10 +3,10 @@
 `@AtlasExplorer` is a [Vercel Chat SDK](https://chat-sdk.dev) client for the
 [Atlas Explorer agent on Agent Engine](../../agents/atlas-explorer). It is a
 thin configuration and deployment wrapper around
-[`@repo/agent-engine-chat`](../../packages/agent-engine-chat) and the
+[`@mongodb-js/agent-engine-chat`](../../packages/agent-engine-chat) and the
 `@chat-adapter/slack` package:
 
-- **[`@repo/agent-engine-chat`](../../packages/agent-engine-chat)** owns the
+- **[`@mongodb-js/agent-engine-chat`](../../packages/agent-engine-chat)** owns the
   agent-agnostic chat integration: invoking and streaming any Agent Engine
   workspace, mapping threads to sessions in MongoDB, enforcing the rolling-hour
   session cap, filtering Slack mentions (`slackMentions`), and rendering
@@ -137,7 +137,7 @@ pnpm typecheck
 pnpm start
 ```
 
-`pnpm start` first builds `@repo/agent-engine-chat` through a `prestart` hook;
+`pnpm start` first builds `@mongodb-js/agent-engine-chat` through a `prestart` hook;
 the app's other scripts have similar `pre*` hooks.
 
 `MONGODB_URI` is optional locally. Without it,
@@ -150,7 +150,7 @@ and its data disappears during graceful shutdown. You can then:
 - Mention `@AtlasExplorer Local` in a channel; the response starts a thread.
 - Send follow-ups in a thread already owned by the bot.
 
-Channel mention routing (`slackMentions` in `@repo/agent-engine-chat`)
+Channel mention routing (`slackMentions` in `@mongodb-js/agent-engine-chat`)
 validates the Slack user ID in the raw event. A local app can therefore use a display name such as `AtlasExplorer Local` without a
 bot named `AtlasExplorer` treating that structured mention as its own.
 
@@ -234,7 +234,7 @@ Your Slack webhook URL is `$VERCEL_URL/api/webhooks/slack`.
 
 1. In the Vercel project, set the Root Directory to
    `apps/atlas-explorer-slack-bot`. Vercel installs this pnpm workspace from
-   the repository root so `@repo/agent-engine-chat` resolves. Then link
+   the repository root so `@mongodb-js/agent-engine-chat` resolves. Then link
    that app directory:
 
    ```bash
@@ -245,7 +245,7 @@ Your Slack webhook URL is `$VERCEL_URL/api/webhooks/slack`.
    ```
 
    `vercel.json` owns the API-only framework and Fluid Compute
-   settings, plus the build command `pnpm --filter @repo/agent-engine-chat
+   settings, plus the build command `pnpm --filter @mongodb-js/agent-engine-chat
    build`, which compiles the workspace library that the webhook imports.
    `package.json` pins Node.js 24.
    Deployment Protection is a project-level setting and must not protect the
@@ -477,7 +477,7 @@ READMEs.
 Register another Chat SDK adapter in `src/runtime.ts`, add its
 platform-qualified actors to `CHAT_ALLOWED_USER_IDS`, and provide a delivery
 boundary only for capabilities that are genuinely platform-specific. The
-handlers in [`@repo/agent-engine-chat`](../../packages/agent-engine-chat)
+handlers in [`@mongodb-js/agent-engine-chat`](../../packages/agent-engine-chat)
 already cover mentions, direct messages, subscribed follow-ups, cards,
 approvals, session continuity, and delivery recovery.
 

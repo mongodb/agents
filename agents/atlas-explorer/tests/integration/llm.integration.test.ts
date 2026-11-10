@@ -18,7 +18,7 @@ import "dotenv/config";
 
 import { describe, expect, it } from "vitest";
 
-import { buildLLM } from "@repo/atlas-explorer-agent";
+import { buildLLM } from "@mongodb-js/atlas-explorer-agent";
 
 import { atlasExplorerConfig } from "../../src/agent_atlas_explorer/config.js";
 

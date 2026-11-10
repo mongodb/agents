@@ -8,10 +8,10 @@ overrides:
   "@langchain/core": "1.3.6"
   # These agents declare file: dependencies so the npm install inside
   # `agentengine dev up` can parse package.json; pnpm links the workspace copies.
-  "@repo/atlas-query-insights-agent": "workspace:*"
-  "@repo/atlas-explorer-agent": "workspace:*"
-  "@repo/agent-engine-core": "workspace:*"
-  "@repo/agent-engine-chat": "workspace:*"
+  "@mongodb-js/atlas-query-insights-agent": "workspace:*"
+  "@mongodb-js/atlas-explorer-agent": "workspace:*"
+  "@mongodb-js/agent-engine-core": "workspace:*"
+  "@mongodb-js/agent-engine-chat": "workspace:*"
   "@repo/testing": "workspace:*"
 
 allowBuilds:

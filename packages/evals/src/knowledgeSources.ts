@@ -18,7 +18,7 @@ import { ToolMessage, type BaseMessage } from "@langchain/core/messages";
 import {
   LIST_KNOWLEDGE_SOURCES_TOOL_NAME,
   SEARCH_KNOWLEDGE_TOOL_NAME,
-} from "@repo/agent-engine-core";
+} from "@mongodb-js/agent-engine-core";
 import { parse } from "yaml";
 import { z } from "zod";
 

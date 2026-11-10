@@ -31,7 +31,7 @@ Project memory settings live in the repository root
 repository root with `--workspace atlas-query-insights`.
 
 Policy, prompts, and middleware live in
-[`@repo/atlas-query-insights-agent`](../../packages/atlas-query-insights-agent).
+[`@mongodb-js/atlas-query-insights-agent`](../../packages/atlas-query-insights-agent).
 
 ## Configure
 
@@ -289,7 +289,7 @@ Where to ask:
 
 ## Talk from chat platforms
 
-[`@repo/agent-engine-chat`](../../packages/agent-engine-chat) connects any
+[`@mongodb-js/agent-engine-chat`](../../packages/agent-engine-chat) connects any
 Agent Engine workspace, including `atlas-query-insights`, to Slack or other
 [Chat SDK](https://chat-sdk.dev) platforms.
 [`apps/atlas-explorer-slack-bot`](../../apps/atlas-explorer-slack-bot) is a

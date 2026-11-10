@@ -16,7 +16,7 @@
 
 import path from "node:path";
 
-import { GUARDRAIL_REFUSAL_MESSAGE } from "@repo/agent-engine-core";
+import { GUARDRAIL_REFUSAL_MESSAGE } from "@mongodb-js/agent-engine-core";
 import { describe, expect, it } from "vitest";
 
 import { loadAgentCasesFromFile } from "./cases.js";

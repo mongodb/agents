@@ -24,7 +24,7 @@ import {
   makeBinaryNdcgAtK,
   normalizeOutputMessages,
 } from "mongodb-assistant-eval/scorers";
-import { GUARDRAIL_REFUSAL_MESSAGE } from "@repo/agent-engine-core";
+import { GUARDRAIL_REFUSAL_MESSAGE } from "@mongodb-js/agent-engine-core";
 
 import type { CustomExpected } from "./schemas.js";
 import type { AgentTaskInput, AgentTaskOutput } from "./task.js";

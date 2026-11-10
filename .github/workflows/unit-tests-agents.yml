@@ -56,15 +56,15 @@ jobs:
       matrix:
         include:
           - name: agent-engine-core
-            command: pnpm --filter @repo/agent-engine-core test
+            command: pnpm --filter @mongodb-js/agent-engine-core test
           - name: testing
             command: pnpm --filter @repo/testing test
           - name: atlas-explorer-agent
-            command: pnpm --filter @repo/atlas-explorer-agent test
+            command: pnpm --filter @mongodb-js/atlas-explorer-agent test
           - name: atlas-explorer
             command: pnpm --filter atlas-explorer test
           - name: atlas-query-insights-agent
-            command: pnpm --filter @repo/atlas-query-insights-agent test
+            command: pnpm --filter @mongodb-js/atlas-query-insights-agent test
           - name: atlas-query-insights
             command: pnpm --filter atlas-query-insights test
           - name: evals
@@ -88,4 +88,4 @@ jobs:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/unit-test
         with:
-          command: pnpm --filter @repo/agent-engine-core test:knowledge
+          command: pnpm --filter @mongodb-js/agent-engine-core test:knowledge

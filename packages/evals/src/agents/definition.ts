@@ -15,7 +15,7 @@
  */
 
 import type { StructuredToolInterface } from "@langchain/core/tools";
-import type { DefaultDataConfig } from "@repo/agent-engine-core";
+import type { DefaultDataConfig } from "@mongodb-js/agent-engine-core";
 import type { AgentMiddleware } from "langchain";
 
 export interface BuildAgentOptionsArgs {

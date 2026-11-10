@@ -26,7 +26,7 @@ import {
   describeDefaultData,
   type DataAccessConfig,
   type DefaultDataConfig,
-} from "@repo/agent-engine-core";
+} from "@mongodb-js/agent-engine-core";
 
 const DEFAULT_AGENT_NAME = "Atlas Explorer";
 
