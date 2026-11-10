@@ -1,0 +1,38 @@
+# Reminds authors to add a changeset when a pull request changes one of the
+# four packages published to npm. It only warns and never fails the check.
+name: Changeset status
+
+on:
+  pull_request:
+    paths:
+      - "packages/agent-engine-core/**"
+      - "packages/atlas-explorer-agent/**"
+      - "packages/atlas-query-insights-agent/**"
+      - "packages/agent-engine-chat/**"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  status:
+    name: changeset status
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      COREPACK_ENABLE_DOWNLOAD_PROMPT: "0"
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup-workspace
+      - name: Check for a changeset
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          if ! pnpm changeset status --since="origin/${BASE_REF}"; then
+            echo "::warning title=No changeset::This pull request changes a published package without a changeset. Run 'pnpm changeset' and commit the file, or ignore this if the change needs no release."
+          fi
