@@ -1,6 +1,6 @@
 # @mongodb-js/atlas-query-insights-agent
 
-Private library for the Atlas Query Insights agent's behavior: policies, prompts,
+Library for the Atlas Query Insights agent's behavior: policies, prompts,
 and middleware.
 
 Shared LLM selection, checkpoints, and LangGraph middleware live in
@@ -11,3 +11,16 @@ Shared LLM selection, checkpoints, and LangGraph middleware live in
 call. `ALLOW_WRITE_OPERATIONS` is ignored. `aggregate` stays available for
 read pipelines. A pipeline that contains `$out` or `$merge` is rejected
 because this agent is read-only.
+
+## Install
+
+```bash
+npm install @mongodb-js/atlas-query-insights-agent langchain @langchain/core @langchain/langgraph zod \
+  @mongodb-js/agent-engine-sdk @mongodb-js/agent-engine-runner-shared \
+  @mongodb-js/mcp-tools-assistant
+```
+
+`langchain` is a peer dependency. The others are peers of
+`@mongodb-js/agent-engine-core`, which installs with this package.
+
+This package is at `0.x`. Its API is unstable and can change in any release.
