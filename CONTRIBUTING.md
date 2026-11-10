@@ -20,15 +20,27 @@ To report a bug or suggest an agent,
 Packages under [`packages/`](packages):
 
 - [`@mongodb-js/agent-engine-core`](packages/agent-engine-core): shared Agent Engine runtime (LLM builder, tool selection, requester metadata, and LangGraph middleware).
+  - Public: published to npm.
 - [`@mongodb-js/atlas-explorer-agent`](packages/atlas-explorer-agent): Atlas Explorer prompts, read-only tool allowlist, and HITL write policy, built on `@mongodb-js/agent-engine-core`.
+  - Public: published to npm.
 - [`@mongodb-js/atlas-query-insights-agent`](packages/atlas-query-insights-agent): Atlas Query Insights prompts, read-only tool allowlist, and middleware, built on `@mongodb-js/agent-engine-core`.
+  - Public: published to npm.
 - [`@mongodb-js/agent-engine-chat`](packages/agent-engine-chat): general-purpose [Chat SDK](https://chat-sdk.dev) library that connects any Agent Engine workspace to Slack or other chat platforms.
+  - Public: published to npm.
 - [`@repo/agent-engine-load-test`](packages/agent-engine-load-test): CLI for measuring sandbox reuse and Atlas MCP access-token minting.
 - [`@repo/update-skills`](packages/update-skills): CLI for refreshing each agent's vendored MongoDB Agent Skills from `mongodb/agent-skills`.
 
 Apps import each library's compiled `dist` folder. The `test`, `build`, and
 `typecheck` scripts build the libraries first. If you run `vitest` or `tsc`
 directly, build the libraries yourself first.
+
+## Publishing packages
+
+`pnpm check:packages` runs on all public packages. It packs them, lints the
+tarballs, and installs them into an empty project. CI runs it for changes to
+those packages.
+
+Publishing itself is not automated yet.
 
 ## Set up
 

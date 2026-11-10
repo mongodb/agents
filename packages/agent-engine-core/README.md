@@ -21,3 +21,11 @@ startup failed. It does not recover from the failure.
 
 Agent-specific prompts and tool allowlists stay in the agent package. Atlas
 Explorer's package is [`@mongodb-js/atlas-explorer-agent`](../atlas-explorer-agent).
+
+## Install
+
+```bash
+npm install @mongodb-js/agent-engine-core
+```
+
+Peer dependencies are installed automatically by npm 7 and later.
