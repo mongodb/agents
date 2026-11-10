@@ -18,12 +18,12 @@ agents/<name>/
 ├── src/agent_<name>/
 │   ├── main.ts                  # App entrypoint: builds the agent
 │   └── config.ts                # non-secret settings: LLM provider/model, prompt persona
-└── skills/                      # vendored MongoDB Agent Skills, loaded at runtime
+└── skills/                      # git-ignored; synced from packages/<name>-agent on build
 apps/
 └── atlas-explorer-slack-bot/    # Atlas Explorer Slack app wrapping @mongodb-js/agent-engine-chat
 packages/
-├── agent-engine-core/           # shared: LLM builder, tool policy, middleware, test client
-├── <name>-agent/                # this agent's prompt, tool allowlist, middleware
+├── agent-engine-core/           # shared: LLM builder, tool policy, middleware, skill sync
+├── <name>-agent/                # this agent's prompt, tool allowlist, middleware, canonical skills/
 └── agent-engine-chat/           # reusable Chat SDK library for any Agent Engine workspace
 ```
 
@@ -114,7 +114,7 @@ Approval pauses the session at a checkpoint and resumes it after a decision. The
 
 ## Skills
 
-`skills/` holds vendored MongoDB Agent Skills, and `skills: ["skills"]` points the agent at that directory. The runtime discovers only immediate child folders that contain a `SKILL.md`, and skips any with a missing or unparsable `name` or `description`.
+`packages/<name>-agent/skills/` holds each agent's canonical MongoDB Agent Skills (with `skills.config.json` and `skills.lock.json` alongside it), and `<name>-agent sync-skills` copies them into `agents/<name>/skills/` (and consumer `./skills/`) during `build`. `skills: ["skills"]` points the agent at that directory. The runtime discovers only immediate child folders that contain a `SKILL.md`, and skips any with a missing or unparsable `name` or `description`.
 
 These are Atlas Explorer-specific forks of `mongodb/agent-skills` (they use the `mongodb__` tool prefix). Pulling upstream drops those adaptations. These are the agent's runtime skills, not the development skills in `.agents/skills/`.
 

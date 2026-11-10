@@ -19,9 +19,13 @@
       "import": "./dist/index.js"
     }
   },
+  "bin": {
+    "atlas-explorer-agent": "./dist/cli.js"
+  },
   "files": [
     "dist",
-    "!dist/**/*.map"
+    "!dist/**/*.map",
+    "skills"
   ],
   "publishConfig": {
     "access": "public",

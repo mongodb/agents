@@ -37,6 +37,7 @@ export {
   stampResumeMessages,
   stripToolEchoMiddleware,
   surfaceTokenMintFailures,
+  syncBundledSkills,
   withRequesterMetadata,
   withoutShellExecution,
   type BuildLLMOptions,
@@ -47,7 +48,10 @@ export {
   type DefaultDataConfig,
   type InputGuardConfig,
   type Requester,
+  type SyncBundledSkillsOptions,
+  type SyncBundledSkillsResult,
 } from "@mongodb-js/agent-engine-core";
+export { ATLAS_EXPLORER_SKILLS_DIR } from "./cliRunner.js";
 export type { AtlasExplorerConfig } from "./agentConfig.js";
 export {
   buildAtlasExplorerAgentOptions,

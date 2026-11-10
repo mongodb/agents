@@ -91,7 +91,7 @@ export async function runCli(argv: string[], baseDir: string): Promise<number> {
           .positional("agentDir", {
             type: "string",
             demandOption: true,
-            describe: "Agent directory that contains skills.config.json",
+            describe: "Agent package directory that contains skills.config.json",
           })
           .option("dry-run", {
             type: "boolean",

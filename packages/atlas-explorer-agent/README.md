@@ -16,6 +16,26 @@ npm install @mongodb-js/atlas-explorer-agent langchain @langchain/core @langchai
 
 This package is at `0.x`. Its API is unstable and can change in any release.
 
+### Skills
+
+This package bundles Atlas Explorer's eight MongoDB Agent Skills and ships an
+`atlas-explorer-agent sync-skills` CLI that copies them into `./skills`.
+
+Agent Engine container builds do not copy a repository `skills/` folder and
+skip `postinstall` scripts, while `npm run build` runs during image assembly
+and persists `/app/skills` into the image. Wire `sync-skills` into your
+agent's `build` script and ignore `skills/` in git:
+
+```json
+{
+  "scripts": {
+    "build": "tsc && atlas-explorer-agent sync-skills"
+  }
+}
+```
+
+Add `skills/` to `.gitignore`. Skill updates ship as releases of this package.
+
 ## What's in it
 
 - **Tool policy.** The read-only Atlas MCP allowlist, which tools are exposed,
@@ -26,6 +46,8 @@ This package is at `0.x`. Its API is unstable and can change in any release.
   still exposed when writes are on.
 - **System prompts.** Read-only and write-enabled prompts, with an optional
   agent name and custom instructions.
+- **Skills.** Bundled MongoDB Agent Skills under `skills/` and the
+  `atlas-explorer-agent sync-skills` CLI.
 - **Shared runtime.** Re-exports from
   [`@mongodb-js/agent-engine-core`](../agent-engine-core): LLM selection, agent
   input, requester metadata, resume handling, and LangGraph middleware.

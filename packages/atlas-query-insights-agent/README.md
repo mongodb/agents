@@ -24,3 +24,24 @@ npm install @mongodb-js/atlas-query-insights-agent langchain @langchain/core @la
 `@mongodb-js/agent-engine-core`, which installs with this package.
 
 This package is at `0.x`. Its API is unstable and can change in any release.
+
+### Skills
+
+This package bundles Atlas Query Insights' five MongoDB Agent Skills and ships
+an `atlas-query-insights-agent sync-skills` CLI that copies them into
+`./skills`.
+
+Agent Engine container builds do not copy a repository `skills/` folder and
+skip `postinstall` scripts, while `npm run build` runs during image assembly
+and persists `/app/skills` into the image. Wire `sync-skills` into your
+agent's `build` script and ignore `skills/` in git:
+
+```json
+{
+  "scripts": {
+    "build": "tsc && atlas-query-insights-agent sync-skills"
+  }
+}
+```
+
+Add `skills/` to `.gitignore`. Skill updates ship as releases of this package.
