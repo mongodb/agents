@@ -23,6 +23,7 @@ import {
   QUERY_INSIGHTS_CLUSTER,
   QUERY_INSIGHTS_PROJECT_ID,
   portQueryInsightsCase,
+  portQueryInsightsCombined,
   renderQueryInsightsSeed,
 } from "./portQueryInsightsCase.js";
 
@@ -328,6 +329,63 @@ describe("portQueryInsightsCase", () => {
       portQueryInsightsCase(source({ stats: { namespace: "nodot" } }), { id: "01" }),
     ).toThrow('namespace "nodot" is not <database>.<collection>');
     expect(() => portQueryInsightsCase({ stats: {} }, { id: "01" })).toThrow();
+  });
+});
+
+describe("portQueryInsightsCombined", () => {
+  const reference = {
+    queryOverview: "Two shapes.",
+    areasWorthInvestigating: [],
+  };
+
+  it("puts every shape's slow logs and suggestion on one cluster", () => {
+    const loans = source({ stats: { namespace: "library.loans" } });
+    const returns = source({
+      stats: {
+        namespace: "library.returns",
+        queryShape: '{"filter": {"branchId": {"$eq": "?string"}}}',
+      },
+      paSuggestion: { namespace: "library.returns", indexSpec: '{"branchId": 1}' },
+    });
+    const { seedName, seed, case: ported } = portQueryInsightsCombined([loans, returns], {
+      id: "multi-01",
+      reference,
+      expectedShapes: 2,
+    });
+
+    expect(seedName).toBe("query-insights-case-multi-01");
+    const cluster = AtlasFixtureSchema.parse(seed).projects[0].clusters[0];
+    expect(cluster.advisor.suggestedIndexes.map((index) => index.namespace)).toEqual([
+      "library.loans",
+      "library.returns",
+    ]);
+    expect(slowLogLines(seed).map((entry) => entry.namespace)).toEqual([
+      "library.loans",
+      "library.loans",
+      "library.loans",
+      "library.returns",
+      "library.returns",
+      "library.returns",
+    ]);
+    expect(ported.tags[0]).toBe("multi-shape");
+    expect(ported.expected.custom.queryInsights).toMatchObject({
+      expectedShapes: 2,
+      reference: "Query overview: Two shapes.\n\nAreas worth investigating:",
+    });
+  });
+
+  it("leaves out expectedShapes unless the case sets it", () => {
+    const { case: ported } = portQueryInsightsCombined([source(), source()], {
+      id: "multi-02",
+      reference,
+    });
+    expect(ported.expected.custom.queryInsights).not.toHaveProperty("expectedShapes");
+  });
+
+  it("needs two or more sources", () => {
+    expect(() =>
+      portQueryInsightsCombined([source()], { id: "multi-03", reference }),
+    ).toThrow("case multi-03: a combined case needs two or more sources");
   });
 });
 

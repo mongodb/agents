@@ -1005,3 +1005,234 @@
           query did a collection scan and an in-memory sort. The recommended
           index would lower the average working time by avoiding both. Review
           the index suggestion in the Performance Advisor.
+- name: query-insights-case-multi-01
+  tags:
+    - multi-shape
+    - find
+    - advisor-index
+  input:
+    messages:
+      - role: user
+        content: Why are my queries slow on Cluster0?
+    custom:
+      defaultData:
+        projectId: 6a0000000000000000000001
+        clusterName: Cluster0
+      toolSetup:
+        mockAtlas: query-insights-case-multi-01
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_get_performance_advisor
+              args:
+                projectId: 6a0000000000000000000001
+                clusterName: Cluster0
+        - text: Scripted reply for offline runs. A real model writes the report.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_get_performance_advisor
+            arguments:
+              - name: projectId
+                type: string
+                value: 6a0000000000000000000001
+              - name: clusterName
+                type: string
+                value: Cluster0
+      - role: tool
+      - role: assistant
+    custom:
+      queryInsights:
+        suggestedIndexes:
+          - namespace: taskManagement.tasksOrUnindexedBranch
+            index:
+              - watcherId: 1
+          - namespace: orderFulfillment.ordersUnindexedIn
+            index:
+              - promoCode: 1
+          - namespace: orderFulfillment.ordersNestedArray
+            index:
+              - items.quantity: 1
+        reference: >-
+          Query overview: Three query shapes on this cluster, all doing
+          collection scans. Ranked by documents examined, the `$or` query on
+          `taskManagement.tasksOrUnindexedBranch` is the heaviest, then the
+          `$in` query on `orderFulfillment.ordersUnindexedIn`, then the nested
+          array query on `orderFulfillment.ordersNestedArray`.
+
+
+          Areas worth investigating:
+
+          1. The `$or` query on `taskManagement.tasksOrUnindexedBranch` is the
+          largest cost, and the Performance Advisor recommends an index on
+          `watcherId`. The suggested index removes the collection scan only if
+          every `$or` branch is supported, so check whether the `assigneeId`
+          branch has one. Review the index suggestion in the Performance
+          Advisor.
+
+          2. The Performance Advisor recommends an index on `promoCode` for
+          `orderFulfillment.ordersUnindexedIn`. The query did a collection scan
+          because no index was used. Review the index suggestion in the
+          Performance Advisor.
+
+          3. The Performance Advisor recommends an index on `items.quantity` for
+          `orderFulfillment.ordersNestedArray`. The query did a collection scan
+          because no index was used. Review the index suggestion in the
+          Performance Advisor.
+        expectedShapes: 3
+- name: query-insights-case-multi-02
+  tags:
+    - multi-shape
+    - find
+    - advisor-index
+    - no-advisor-index
+  input:
+    messages:
+      - role: user
+        content: Why are my queries slow on Cluster0?
+    custom:
+      defaultData:
+        projectId: 6a0000000000000000000001
+        clusterName: Cluster0
+      toolSetup:
+        mockAtlas: query-insights-case-multi-02
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_get_performance_advisor
+              args:
+                projectId: 6a0000000000000000000001
+                clusterName: Cluster0
+        - text: Scripted reply for offline runs. A real model writes the report.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_get_performance_advisor
+            arguments:
+              - name: projectId
+                type: string
+                value: 6a0000000000000000000001
+              - name: clusterName
+                type: string
+                value: Cluster0
+      - role: tool
+      - role: assistant
+    custom:
+      queryInsights:
+        suggestedIndexes:
+          - namespace: taskManagement.tasksOrUnindexedBranch
+            index:
+              - watcherId: 1
+          - namespace: orderFulfillment.ordersUnindexedIn
+            index:
+              - promoCode: 1
+          - namespace: supportPortal.ticketsExtraKeysStatus
+            index:
+              - status: 1
+              - tenantId: 1
+              - userId: 1
+              - createdAt: 1
+        reference: >-
+          Query overview: Four query shapes on this cluster, all doing
+          collection scans. The three heaviest are covered. The lightest, a
+          status filter on `supportPortal.ticketsExtraKeysStatus`, is left out,
+          as the report can cover only three shapes.
+
+
+          Areas worth investigating:
+
+          1. The `$or` query on `taskManagement.tasksOrUnindexedBranch` is the
+          heaviest, and the Performance Advisor recommends an index on
+          `watcherId`. The suggested index removes the collection scan only if
+          every `$or` branch is supported, so check whether the `assigneeId`
+          branch has one. Review the index suggestion in the Performance
+          Advisor.
+
+          2. The `find` on `taskManagement.tasksUnindexedArchived` does a
+          collection scan because no index is used. Adding the right index will
+          help. Consider a partial index that supports the `$exists` predicate.
+
+          3. The Performance Advisor recommends an index on `promoCode` for
+          `orderFulfillment.ordersUnindexedIn`. The query did a collection scan
+          because no index was used. Review the index suggestion in the
+          Performance Advisor.
+        expectedShapes: 3
+- name: query-insights-case-multi-03
+  tags:
+    - multi-shape
+    - find
+    - advisor-index
+    - aggregate
+    - no-advisor-index
+  input:
+    messages:
+      - role: user
+        content: Why are my queries slow on Cluster0?
+    custom:
+      defaultData:
+        projectId: 6a0000000000000000000001
+        clusterName: Cluster0
+      toolSetup:
+        mockAtlas: query-insights-case-multi-03
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_get_performance_advisor
+              args:
+                projectId: 6a0000000000000000000001
+                clusterName: Cluster0
+        - text: Scripted reply for offline runs. A real model writes the report.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_get_performance_advisor
+            arguments:
+              - name: projectId
+                type: string
+                value: 6a0000000000000000000001
+              - name: clusterName
+                type: string
+                value: Cluster0
+      - role: tool
+      - role: assistant
+    custom:
+      queryInsights:
+        suggestedIndexes:
+          - namespace: supportPortal.ticketsExtraKeysStatus
+            index:
+              - status: 1
+              - tenantId: 1
+              - userId: 1
+              - createdAt: 1
+        reference: >-
+          Query overview: Three query shapes on this cluster, all doing
+          collection scans. Ranked by documents examined, the `archivedAt` query
+          on `taskManagement.tasksUnindexedArchived` is the heaviest, then the
+          `$group` aggregation on
+          `languageLearning.lessonAttemptsGroupByLesson`, then the status filter
+          on `supportPortal.ticketsExtraKeysStatus`.
+
+
+          Areas worth investigating:
+
+          1. The query on `taskManagement.tasksUnindexedArchived` does a
+          collection scan because no index is used. Consider a partial index
+          that supports the `$exists` predicate on `archivedAt`. The Performance
+          Advisor has no suggestion for this shape.
+
+          2. The aggregation on `languageLearning.lessonAttemptsGroupByLesson`
+          does a collection scan because no index is used. Adding the right
+          index will help, since it reduces the documents that reach the
+          `$group` stage. The Performance Advisor has no suggestion for this
+          shape.
+
+          3. The Performance Advisor recommends an index on `status`,
+          `tenantId`, `userId`, and `createdAt` for
+          `supportPortal.ticketsExtraKeysStatus`. The query did a collection
+          scan, and the recommended index would remove it. The index includes
+          fields this query does not filter on, so it may also serve other
+          queries.
+        expectedShapes: 3

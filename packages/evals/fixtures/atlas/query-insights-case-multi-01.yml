@@ -1,0 +1,51 @@
+orgs:
+  - id: 5a0000000000000000000001
+    name: Acme
+projects:
+  - id: 6a0000000000000000000001
+    name: prod
+    orgId: 5a0000000000000000000001
+    clusters:
+      - name: Cluster0
+        advisor:
+          suggestedIndexes:
+            - id: idx1
+              namespace: taskManagement.tasksOrUnindexedBranch
+              index:
+                - watcherId: 1
+              weight: 1
+              impact:
+                - query-shape-1
+            - id: idx2
+              namespace: orderFulfillment.ordersUnindexedIn
+              index:
+                - promoCode: 1
+              weight: 1
+              impact:
+                - query-shape-2
+            - id: idx3
+              namespace: orderFulfillment.ordersNestedArray
+              index:
+                - items.quantity: 1
+              weight: 1
+              impact:
+                - query-shape-3
+          slowQueries:
+            - namespace: taskManagement.tasksOrUnindexedBranch
+              line: '{"t":{"$date":"2026-11-04T12:00:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1204","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"taskManagement.tasksOrUnindexedBranch","collectionType":"normal","queryShapeHash":"A00B91EBC7C0EE5DF9B1AEE375CA637A4A742FE6FCDCE8FF15BE257DE862F468","command":{"find":"tasksOrUnindexedBranch","filter":{"$or":[{"assigneeId":{"$eq":"assigneeId-1042"}},{"watcherId":{"$eq":"watcherId-1042"}}]},"$db":"taskManagement"},"planSummary":"COLLSCAN","keysExamined":0,"docsExamined":2000000,"cursorExhausted":true,"numYields":244,"nreturned":2025,"planCacheShapeHash":"A00B91EB","queryHash":"A00B91EB","planCacheKey":"C7C0EE5D","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":248}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":1819,"durationMillis":1820}}'
+            - namespace: taskManagement.tasksOrUnindexedBranch
+              line: '{"t":{"$date":"2026-11-04T12:07:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1205","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"taskManagement.tasksOrUnindexedBranch","collectionType":"normal","queryShapeHash":"A00B91EBC7C0EE5DF9B1AEE375CA637A4A742FE6FCDCE8FF15BE257DE862F468","command":{"find":"tasksOrUnindexedBranch","filter":{"$or":[{"assigneeId":{"$eq":"assigneeId-1042"}},{"watcherId":{"$eq":"watcherId-1042"}}]},"$db":"taskManagement"},"planSummary":"COLLSCAN","keysExamined":0,"docsExamined":2000000,"cursorExhausted":true,"numYields":246,"nreturned":2025,"planCacheShapeHash":"A00B91EB","queryHash":"A00B91EB","planCacheKey":"C7C0EE5D","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":250}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":1838,"durationMillis":1838}}'
+            - namespace: taskManagement.tasksOrUnindexedBranch
+              line: '{"t":{"$date":"2026-11-04T12:14:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1206","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"taskManagement.tasksOrUnindexedBranch","collectionType":"normal","queryShapeHash":"A00B91EBC7C0EE5DF9B1AEE375CA637A4A742FE6FCDCE8FF15BE257DE862F468","command":{"find":"tasksOrUnindexedBranch","filter":{"$or":[{"assigneeId":{"$eq":"assigneeId-1042"}},{"watcherId":{"$eq":"watcherId-1042"}}]},"$db":"taskManagement"},"planSummary":"COLLSCAN","keysExamined":0,"docsExamined":2000000,"cursorExhausted":true,"numYields":264,"nreturned":2025,"planCacheShapeHash":"A00B91EB","queryHash":"A00B91EB","planCacheKey":"C7C0EE5D","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":268}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":1972,"durationMillis":1972}}'
+            - namespace: orderFulfillment.ordersUnindexedIn
+              line: '{"t":{"$date":"2026-11-04T12:21:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1204","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"orderFulfillment.ordersUnindexedIn","collectionType":"normal","queryShapeHash":"46F141D2E45CF67C58200A48615F363457019E005EFB4A4A5E4F7F2125603CEA","command":{"find":"ordersUnindexedIn","filter":{"promoCode":{"$in":["promoCode-1042","promoCode-2087"]}},"$db":"orderFulfillment"},"planSummary":"COLLSCAN","keysExamined":0,"docsExamined":2000000,"cursorExhausted":true,"numYields":242,"nreturned":5067,"planCacheShapeHash":"46F141D2","queryHash":"46F141D2","planCacheKey":"E45CF67C","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":246}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":1136,"durationMillis":1136}}'
+            - namespace: orderFulfillment.ordersUnindexedIn
+              line: '{"t":{"$date":"2026-11-04T12:28:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1205","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"orderFulfillment.ordersUnindexedIn","collectionType":"normal","queryShapeHash":"46F141D2E45CF67C58200A48615F363457019E005EFB4A4A5E4F7F2125603CEA","command":{"find":"ordersUnindexedIn","filter":{"promoCode":{"$in":["promoCode-1042","promoCode-2087"]}},"$db":"orderFulfillment"},"planSummary":"COLLSCAN","keysExamined":0,"docsExamined":2000000,"cursorExhausted":true,"numYields":273,"nreturned":5067,"planCacheShapeHash":"46F141D2","queryHash":"46F141D2","planCacheKey":"E45CF67C","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":277}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":1277,"durationMillis":1277}}'
+            - namespace: orderFulfillment.ordersUnindexedIn
+              line: '{"t":{"$date":"2026-11-04T12:35:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1206","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"orderFulfillment.ordersUnindexedIn","collectionType":"normal","queryShapeHash":"46F141D2E45CF67C58200A48615F363457019E005EFB4A4A5E4F7F2125603CEA","command":{"find":"ordersUnindexedIn","filter":{"promoCode":{"$in":["promoCode-1042","promoCode-2087"]}},"$db":"orderFulfillment"},"planSummary":"COLLSCAN","keysExamined":0,"docsExamined":2000000,"cursorExhausted":true,"numYields":267,"nreturned":5067,"planCacheShapeHash":"46F141D2","queryHash":"46F141D2","planCacheKey":"E45CF67C","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":271}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":1252,"durationMillis":1252}}'
+            - namespace: orderFulfillment.ordersNestedArray
+              line: '{"t":{"$date":"2026-11-04T12:42:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1204","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"orderFulfillment.ordersNestedArray","collectionType":"normal","queryShapeHash":"6F868A949D67F61FAD55EF126778EEC7BB4BB4D49E9A27B09579AC640E15765F","command":{"find":"ordersNestedArray","filter":{"items.quantity":{"$gte":10}},"$db":"orderFulfillment"},"planSummary":"COLLSCAN","keysExamined":0,"docsExamined":1000000,"cursorExhausted":true,"numYields":119,"nreturned":10000,"planCacheShapeHash":"6F868A94","queryHash":"6F868A94","planCacheKey":"9D67F61F","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":123}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":1381,"durationMillis":1382}}'
+            - namespace: orderFulfillment.ordersNestedArray
+              line: '{"t":{"$date":"2026-11-04T12:49:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1205","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"orderFulfillment.ordersNestedArray","collectionType":"normal","queryShapeHash":"6F868A949D67F61FAD55EF126778EEC7BB4BB4D49E9A27B09579AC640E15765F","command":{"find":"ordersNestedArray","filter":{"items.quantity":{"$gte":10}},"$db":"orderFulfillment"},"planSummary":"COLLSCAN","keysExamined":0,"docsExamined":1000000,"cursorExhausted":true,"numYields":139,"nreturned":10000,"planCacheShapeHash":"6F868A94","queryHash":"6F868A94","planCacheKey":"9D67F61F","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":143}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":1609,"durationMillis":1610}}'
+            - namespace: orderFulfillment.ordersNestedArray
+              line: '{"t":{"$date":"2026-11-04T12:56:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1206","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"orderFulfillment.ordersNestedArray","collectionType":"normal","queryShapeHash":"6F868A949D67F61FAD55EF126778EEC7BB4BB4D49E9A27B09579AC640E15765F","command":{"find":"ordersNestedArray","filter":{"items.quantity":{"$gte":10}},"$db":"orderFulfillment"},"planSummary":"COLLSCAN","keysExamined":0,"docsExamined":1000000,"cursorExhausted":true,"numYields":126,"nreturned":10000,"planCacheShapeHash":"6F868A94","queryHash":"6F868A94","planCacheKey":"9D67F61F","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":130}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":1463,"durationMillis":1463}}'
