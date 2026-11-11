@@ -24,6 +24,7 @@ import {
   exercisesRoundTrip,
   exercisesSessionActivity,
   exercisesTurnClaim,
+  exercisesUncertainReviewCompletion,
 } from "./threadStore.test-helpers.js";
 
 const TEST_NOW = Date.parse("2026-09-08T12:03:00.000Z");
@@ -83,6 +84,10 @@ describe("MemoryThreadStore", () => {
 
   it("atomically claims one reviewer for the pending interrupt", async () => {
     await exercisesReviewClaim(createStore());
+  });
+
+  it("lets the claiming resume finish a review marked uncertain", async () => {
+    await exercisesUncertainReviewCompletion(createStore());
   });
 
   it("deduplicates events and serializes turns in a chat thread", async () => {

@@ -165,6 +165,9 @@ export async function handleReviewDecision(
         pendingReviewState: outcomeWasConfirmedNotApplied
           ? "pending"
           : "uncertain",
+        ...(outcomeWasConfirmedNotApplied
+          ? {}
+          : { retentionState: "inactive" as const }),
         updatedAt: dependencies.now?.() ?? new Date(),
       },
     );
