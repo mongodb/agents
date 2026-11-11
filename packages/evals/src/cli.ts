@@ -38,6 +38,7 @@ import {
   KNOWLEDGE_EXPLORER_THRESHOLDS,
   KNOWLEDGE_QUERY_INSIGHTS_THRESHOLDS,
 } from "./knowledgeThresholds.js";
+import { makeQueryInsightsJudges } from "./queryInsightsJudges.js";
 import type { ModelConfig } from "./models.js";
 import { scorers } from "./scorers.js";
 import { makeAgentTask } from "./task.js";
@@ -88,6 +89,7 @@ export function buildEvalCli({
   extraDatasets = {},
 }: EvalCliOptions = {}) {
   const toolProvider = withNamedFixtures(baseProvider);
+  const queryInsightsJudges = makeQueryInsightsJudges(judge);
   return createMongoDbAssistantEvalCli({
     projectName: "agents-evals",
     datasets: {
@@ -175,6 +177,16 @@ export function buildEvalCli({
         scorer: makeFactuality(judge),
         description:
           "LLM judge: does the answer agree with the case's referenceAnswer",
+      },
+      ReportFactuality: {
+        scorer: queryInsightsJudges.ReportFactuality,
+        description:
+          "LLM judge: is the Query Insights report grounded in the tool output",
+      },
+      ReferenceCoverage: {
+        scorer: queryInsightsJudges.ReferenceCoverage,
+        description:
+          "LLM judge: does the Query Insights report cover the case's reference",
       },
     },
     // A threshold on a score a dataset never emits counts as missing and
