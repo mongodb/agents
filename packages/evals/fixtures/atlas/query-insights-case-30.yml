@@ -1,0 +1,26 @@
+orgs:
+  - id: 5a0000000000000000000001
+    name: Acme
+projects:
+  - id: 6a0000000000000000000001
+    name: prod
+    orgId: 5a0000000000000000000001
+    clusters:
+      - name: Cluster0
+        advisor:
+          suggestedIndexes:
+            - id: idx1
+              namespace: languageLearning.lessonAttemptsMixedDirectionSort
+              index:
+                - startedAt: 1
+                - completedAt: 1
+              weight: 1
+              impact:
+                - query-shape-1
+          slowQueries:
+            - namespace: languageLearning.lessonAttemptsMixedDirectionSort
+              line: '{"t":{"$date":"2026-11-04T12:00:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1204","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"languageLearning.lessonAttemptsMixedDirectionSort","collectionType":"normal","queryShapeHash":"1FCE1055B75000D385BE6369B23F091C35650122E6BACED6A3D20AB9134AEA03","command":{"find":"lessonAttemptsMixedDirectionSort","filter":{},"sort":{"startedAt":1,"completedAt":1},"limit":10,"$db":"languageLearning"},"planSummary":"COLLSCAN","keysExamined":0,"docsExamined":300000,"hasSortStage":true,"cursorExhausted":true,"numYields":39,"nreturned":25,"planCacheShapeHash":"1FCE1055","queryHash":"1FCE1055","planCacheKey":"B75000D3","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":43}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":269,"durationMillis":136}}'
+            - namespace: languageLearning.lessonAttemptsMixedDirectionSort
+              line: '{"t":{"$date":"2026-11-04T12:07:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1205","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"languageLearning.lessonAttemptsMixedDirectionSort","collectionType":"normal","queryShapeHash":"1FCE1055B75000D385BE6369B23F091C35650122E6BACED6A3D20AB9134AEA03","command":{"find":"lessonAttemptsMixedDirectionSort","filter":{},"sort":{"startedAt":1,"completedAt":1},"limit":10,"$db":"languageLearning"},"planSummary":"COLLSCAN","keysExamined":0,"docsExamined":300000,"hasSortStage":true,"cursorExhausted":true,"numYields":38,"nreturned":25,"planCacheShapeHash":"1FCE1055","queryHash":"1FCE1055","planCacheKey":"B75000D3","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":42}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":263,"durationMillis":133}}'
+            - namespace: languageLearning.lessonAttemptsMixedDirectionSort
+              line: '{"t":{"$date":"2026-11-04T12:14:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1206","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"languageLearning.lessonAttemptsMixedDirectionSort","collectionType":"normal","queryShapeHash":"1FCE1055B75000D385BE6369B23F091C35650122E6BACED6A3D20AB9134AEA03","command":{"find":"lessonAttemptsMixedDirectionSort","filter":{},"sort":{"startedAt":1,"completedAt":1},"limit":10,"$db":"languageLearning"},"planSummary":"COLLSCAN","keysExamined":0,"docsExamined":300000,"hasSortStage":true,"cursorExhausted":true,"numYields":41,"nreturned":25,"planCacheShapeHash":"1FCE1055","queryHash":"1FCE1055","planCacheKey":"B75000D3","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":45}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":282,"durationMillis":143}}'

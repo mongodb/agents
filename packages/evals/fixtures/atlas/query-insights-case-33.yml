@@ -1,0 +1,18 @@
+orgs:
+  - id: 5a0000000000000000000001
+    name: Acme
+projects:
+  - id: 6a0000000000000000000001
+    name: prod
+    orgId: 5a0000000000000000000001
+    clusters:
+      - name: Cluster0
+        advisor:
+          suggestedIndexes: []
+          slowQueries:
+            - namespace: retailCatalog.productsStorageStatsPoll
+              line: '{"t":{"$date":"2026-11-04T12:00:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1204","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"retailCatalog.productsStorageStatsPoll","collectionType":"normal","queryShapeHash":"88D065947E1BACDA32350709683FC5FA7B84866958D74B91FD9951299BE3F454","command":{"aggregate":"productsStorageStatsPoll","pipeline":[{"$collStats":{"storageStats":{"verbose":false,"waitForLock":true,"numericOnly":false}}}],"$db":"retailCatalog"},"planSummary":"COLLSCAN","keysExamined":0,"docsExamined":0,"cursorExhausted":true,"numYields":0,"nreturned":1,"planCacheShapeHash":"88D06594","queryHash":"88D06594","planCacheKey":"7E1BACDA","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":4}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":4,"durationMillis":5}}'
+            - namespace: retailCatalog.productsStorageStatsPoll
+              line: '{"t":{"$date":"2026-11-04T12:07:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1205","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"retailCatalog.productsStorageStatsPoll","collectionType":"normal","queryShapeHash":"88D065947E1BACDA32350709683FC5FA7B84866958D74B91FD9951299BE3F454","command":{"aggregate":"productsStorageStatsPoll","pipeline":[{"$collStats":{"storageStats":{"verbose":false,"waitForLock":true,"numericOnly":false}}}],"$db":"retailCatalog"},"planSummary":"COLLSCAN","keysExamined":0,"docsExamined":0,"cursorExhausted":true,"numYields":0,"nreturned":1,"planCacheShapeHash":"88D06594","queryHash":"88D06594","planCacheKey":"7E1BACDA","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":4}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":5,"durationMillis":5}}'
+            - namespace: retailCatalog.productsStorageStatsPoll
+              line: '{"t":{"$date":"2026-11-04T12:14:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1206","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"retailCatalog.productsStorageStatsPoll","collectionType":"normal","queryShapeHash":"88D065947E1BACDA32350709683FC5FA7B84866958D74B91FD9951299BE3F454","command":{"aggregate":"productsStorageStatsPoll","pipeline":[{"$collStats":{"storageStats":{"verbose":false,"waitForLock":true,"numericOnly":false}}}],"$db":"retailCatalog"},"planSummary":"COLLSCAN","keysExamined":0,"docsExamined":0,"cursorExhausted":true,"numYields":0,"nreturned":1,"planCacheShapeHash":"88D06594","queryHash":"88D06594","planCacheKey":"7E1BACDA","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":4}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":5,"durationMillis":5}}'

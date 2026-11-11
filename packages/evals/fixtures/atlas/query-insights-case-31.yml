@@ -1,0 +1,28 @@
+orgs:
+  - id: 5a0000000000000000000001
+    name: Acme
+projects:
+  - id: 6a0000000000000000000001
+    name: prod
+    orgId: 5a0000000000000000000001
+    clusters:
+      - name: Cluster0
+        advisor:
+          suggestedIndexes:
+            - id: idx1
+              namespace: languageLearning.lessonAttemptsPartiallySupportedSort
+              index:
+                - device: 1
+                - startedAt: 1
+                - completedAt: 1
+                - score: -1
+              weight: 1
+              impact:
+                - query-shape-1
+          slowQueries:
+            - namespace: languageLearning.lessonAttemptsPartiallySupportedSort
+              line: '{"t":{"$date":"2026-11-04T12:00:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1204","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"languageLearning.lessonAttemptsPartiallySupportedSort","collectionType":"normal","queryShapeHash":"F1A6CC72B8F38DED0D75B19856900F7DD48A2DF1ED893C364A3BEB2589C16A76","command":{"find":"lessonAttemptsPartiallySupportedSort","filter":{"device":{"$eq":"device-1042"}},"sort":{"startedAt":1,"completedAt":1,"score":-1},"limit":10,"$db":"languageLearning"},"planSummary":"IXSCAN","keysExamined":99855,"docsExamined":99855,"hasSortStage":true,"cursorExhausted":true,"numYields":12,"nreturned":100,"planCacheShapeHash":"F1A6CC72","queryHash":"F1A6CC72","planCacheKey":"B8F38DED","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":16}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":300,"durationMillis":300}}'
+            - namespace: languageLearning.lessonAttemptsPartiallySupportedSort
+              line: '{"t":{"$date":"2026-11-04T12:07:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1205","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"languageLearning.lessonAttemptsPartiallySupportedSort","collectionType":"normal","queryShapeHash":"F1A6CC72B8F38DED0D75B19856900F7DD48A2DF1ED893C364A3BEB2589C16A76","command":{"find":"lessonAttemptsPartiallySupportedSort","filter":{"device":{"$eq":"device-1042"}},"sort":{"startedAt":1,"completedAt":1,"score":-1},"limit":10,"$db":"languageLearning"},"planSummary":"IXSCAN","keysExamined":99855,"docsExamined":99855,"hasSortStage":true,"cursorExhausted":true,"numYields":13,"nreturned":100,"planCacheShapeHash":"F1A6CC72","queryHash":"F1A6CC72","planCacheKey":"B8F38DED","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":17}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":339,"durationMillis":340}}'
+            - namespace: languageLearning.lessonAttemptsPartiallySupportedSort
+              line: '{"t":{"$date":"2026-11-04T12:14:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1206","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"languageLearning.lessonAttemptsPartiallySupportedSort","collectionType":"normal","queryShapeHash":"F1A6CC72B8F38DED0D75B19856900F7DD48A2DF1ED893C364A3BEB2589C16A76","command":{"find":"lessonAttemptsPartiallySupportedSort","filter":{"device":{"$eq":"device-1042"}},"sort":{"startedAt":1,"completedAt":1,"score":-1},"limit":10,"$db":"languageLearning"},"planSummary":"IXSCAN","keysExamined":99855,"docsExamined":99855,"hasSortStage":true,"cursorExhausted":true,"numYields":13,"nreturned":100,"planCacheShapeHash":"F1A6CC72","queryHash":"F1A6CC72","planCacheKey":"B8F38DED","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":17}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":340,"durationMillis":340}}'

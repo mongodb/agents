@@ -1,0 +1,25 @@
+orgs:
+  - id: 5a0000000000000000000001
+    name: Acme
+projects:
+  - id: 6a0000000000000000000001
+    name: prod
+    orgId: 5a0000000000000000000001
+    clusters:
+      - name: Cluster0
+        advisor:
+          suggestedIndexes:
+            - id: idx1
+              namespace: orderFulfillment.ordersNestedArray
+              index:
+                - items.quantity: 1
+              weight: 1
+              impact:
+                - query-shape-1
+          slowQueries:
+            - namespace: orderFulfillment.ordersNestedArray
+              line: '{"t":{"$date":"2026-11-04T12:00:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1204","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"orderFulfillment.ordersNestedArray","collectionType":"normal","queryShapeHash":"6F868A949D67F61FAD55EF126778EEC7BB4BB4D49E9A27B09579AC640E15765F","command":{"find":"ordersNestedArray","filter":{"items.quantity":{"$gte":10}},"$db":"orderFulfillment"},"planSummary":"COLLSCAN","keysExamined":0,"docsExamined":1000000,"cursorExhausted":true,"numYields":140,"nreturned":10000,"planCacheShapeHash":"6F868A94","queryHash":"6F868A94","planCacheKey":"9D67F61F","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":144}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":1619,"durationMillis":1620}}'
+            - namespace: orderFulfillment.ordersNestedArray
+              line: '{"t":{"$date":"2026-11-04T12:07:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1205","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"orderFulfillment.ordersNestedArray","collectionType":"normal","queryShapeHash":"6F868A949D67F61FAD55EF126778EEC7BB4BB4D49E9A27B09579AC640E15765F","command":{"find":"ordersNestedArray","filter":{"items.quantity":{"$gte":10}},"$db":"orderFulfillment"},"planSummary":"COLLSCAN","keysExamined":0,"docsExamined":1000000,"cursorExhausted":true,"numYields":137,"nreturned":10000,"planCacheShapeHash":"6F868A94","queryHash":"6F868A94","planCacheKey":"9D67F61F","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":141}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":1584,"durationMillis":1585}}'
+            - namespace: orderFulfillment.ordersNestedArray
+              line: '{"t":{"$date":"2026-11-04T12:14:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1206","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"orderFulfillment.ordersNestedArray","collectionType":"normal","queryShapeHash":"6F868A949D67F61FAD55EF126778EEC7BB4BB4D49E9A27B09579AC640E15765F","command":{"find":"ordersNestedArray","filter":{"items.quantity":{"$gte":10}},"$db":"orderFulfillment"},"planSummary":"COLLSCAN","keysExamined":0,"docsExamined":1000000,"cursorExhausted":true,"numYields":129,"nreturned":10000,"planCacheShapeHash":"6F868A94","queryHash":"6F868A94","planCacheKey":"9D67F61F","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":133}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":1492,"durationMillis":1493}}'

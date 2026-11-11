@@ -1,0 +1,27 @@
+orgs:
+  - id: 5a0000000000000000000001
+    name: Acme
+projects:
+  - id: 6a0000000000000000000001
+    name: prod
+    orgId: 5a0000000000000000000001
+    clusters:
+      - name: Cluster0
+        advisor:
+          suggestedIndexes:
+            - id: idx1
+              namespace: corporateExpenses.expenseReportsIndexPrefix
+              index:
+                - department: 1
+                - status: 1
+                - submittedAt: 1
+              weight: 1
+              impact:
+                - query-shape-1
+          slowQueries:
+            - namespace: corporateExpenses.expenseReportsIndexPrefix
+              line: '{"t":{"$date":"2026-11-04T12:00:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1204","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"corporateExpenses.expenseReportsIndexPrefix","collectionType":"normal","queryShapeHash":"93A5F077261C36DD83501157D76BCAFCA14B982CF71420268183B80B4C1AC623","command":{"find":"expenseReportsIndexPrefix","filter":{"$and":[{"status":{"$eq":"status-1042"}},{"department":{"$eq":"department-1042"}}]},"sort":{"submittedAt":-1},"$db":"corporateExpenses"},"planSummary":"IXSCAN","keysExamined":1915790,"docsExamined":9981,"cursorExhausted":true,"numYields":1,"nreturned":9981,"planCacheShapeHash":"93A5F077","queryHash":"93A5F077","planCacheKey":"261C36DD","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":5}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":5390,"durationMillis":62}}'
+            - namespace: corporateExpenses.expenseReportsIndexPrefix
+              line: '{"t":{"$date":"2026-11-04T12:07:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1205","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"corporateExpenses.expenseReportsIndexPrefix","collectionType":"normal","queryShapeHash":"93A5F077261C36DD83501157D76BCAFCA14B982CF71420268183B80B4C1AC623","command":{"find":"expenseReportsIndexPrefix","filter":{"$and":[{"status":{"$eq":"status-1042"}},{"department":{"$eq":"department-1042"}}]},"sort":{"submittedAt":-1},"$db":"corporateExpenses"},"planSummary":"IXSCAN","keysExamined":1915790,"docsExamined":9981,"cursorExhausted":true,"numYields":1,"nreturned":9981,"planCacheShapeHash":"93A5F077","queryHash":"93A5F077","planCacheKey":"261C36DD","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":5}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":5148,"durationMillis":60}}'
+            - namespace: corporateExpenses.expenseReportsIndexPrefix
+              line: '{"t":{"$date":"2026-11-04T12:14:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1206","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"corporateExpenses.expenseReportsIndexPrefix","collectionType":"normal","queryShapeHash":"93A5F077261C36DD83501157D76BCAFCA14B982CF71420268183B80B4C1AC623","command":{"find":"expenseReportsIndexPrefix","filter":{"$and":[{"status":{"$eq":"status-1042"}},{"department":{"$eq":"department-1042"}}]},"sort":{"submittedAt":-1},"$db":"corporateExpenses"},"planSummary":"IXSCAN","keysExamined":1915790,"docsExamined":9981,"cursorExhausted":true,"numYields":1,"nreturned":9981,"planCacheShapeHash":"93A5F077","queryHash":"93A5F077","planCacheKey":"261C36DD","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":5}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":4984,"durationMillis":58}}'
