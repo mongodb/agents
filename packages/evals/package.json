@@ -15,6 +15,7 @@
     "preeval": "pnpm run build:deps",
     "eval": "tsx src/bin.ts",
     "port:cases": "tsx src/porting/portAssistantCases.ts",
+    "port:query-insights": "tsx src/porting/portQueryInsightsCases.ts",
     "eval:smoke:explorer": "pnpm run eval evaluation run --task explorer --dataset explorer-smoke --model scripted --validate smoke-explorer --task-concurrency 2 --trial-count 1",
     "eval:atlas-admin:explorer": "pnpm run eval evaluation run --task explorer --dataset atlas-admin --model gpt-6-luna --validate atlas-admin-explorer --task-concurrency 4 --trial-count 3",
     "eval:guardrail:explorer": "pnpm run eval evaluation run --task explorer --dataset input-guardrail prompt-injection prompt-injection-advanced prompt-injection-lookalikes prompt-injection-tool-output-explorer --model gpt-6-luna --validate guardrail-explorer --task-concurrency 4 --trial-count 3",
