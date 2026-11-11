@@ -18,7 +18,7 @@ agents/atlas-query-insights/
 ├── .env.example                       # copy to .env
 ├── mcp-config.example.json            # copy to ignored local MCP config
 ├── mcp-secret-metadata.json           # secret TTL used with Atlas CLI
-├── skills/                            # copy of the skills in @mongodb-js/atlas-query-insights-agent
+├── skills/                            # copy of @mongodb-js/atlas-query-insights-agent's skills
 └── src/agent_atlas_query_insights/
     ├── main.ts                        # Agent Engine entrypoint
     └── config.ts                      # LLM, persona, default data, dataAccess, and shape limit
@@ -32,6 +32,8 @@ repository root with `--workspace atlas-query-insights`.
 
 Policy, prompts, and middleware live in
 [`@mongodb-js/atlas-query-insights-agent`](../../packages/atlas-query-insights-agent).
+`pnpm build` runs `atlas-query-insights-agent sync-skills`, which refreshes
+`skills/` from that package.
 
 ## Configure
 

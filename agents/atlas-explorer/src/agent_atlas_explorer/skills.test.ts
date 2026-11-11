@@ -41,12 +41,12 @@ function readTree(dir: string): Record<string, string> {
 
 // Agent Engine reads skills from <agent root>/skills, and a deploy builds
 // without the workspace packages, so this agent keeps a committed copy of
-// the skills that ship in @mongodb-js/atlas-explorer-agent.
+// the skills that ship in @mongodb-js/atlas-explorer-agent. `pnpm build` refreshes it.
 describe("skills", () => {
   it("match the copy in @mongodb-js/atlas-explorer-agent", () => {
     expect(
       readTree(path.join(agentRoot, "skills")),
-      "agents/atlas-explorer/skills differs from packages/atlas-explorer-agent/skills. Copy the package's skills over.",
+      "agents/atlas-explorer/skills differs from packages/atlas-explorer-agent/skills. Run `pnpm build:atlas-explorer` to refresh it.",
     ).toEqual(readTree(packageSkills));
   });
 });
