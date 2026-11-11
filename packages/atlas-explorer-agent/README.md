@@ -1,7 +1,20 @@
 # @mongodb-js/atlas-explorer-agent
 
-Private library for Atlas Explorer's agent behavior. The deployable app lives
+Library for Atlas Explorer's agent behavior. The deployable app lives
 in [`agents/atlas-explorer`](../../agents/atlas-explorer).
+
+## Install
+
+```bash
+npm install @mongodb-js/atlas-explorer-agent langchain @langchain/core @langchain/langgraph zod \
+  @mongodb-js/agent-engine-sdk @mongodb-js/agent-engine-runner-shared \
+  @mongodb-js/mcp-tools-assistant
+```
+
+`langchain` is a peer dependency. The others are peers of
+`@mongodb-js/agent-engine-core`, which installs with this package.
+
+This package is at `0.x`. Its API is unstable and can change in any release.
 
 ## What's in it
 
@@ -17,7 +30,7 @@ in [`agents/atlas-explorer`](../../agents/atlas-explorer).
   [`@mongodb-js/agent-engine-core`](../agent-engine-core): LLM selection, agent
   input, requester metadata, resume handling, and LangGraph middleware.
 
-## Install, build, and test
+## Build and test
 
 From the repository root, with Node.js 24 or newer:
 

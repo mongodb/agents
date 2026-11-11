@@ -21,3 +21,16 @@ startup failed. It does not recover from the failure.
 
 Agent-specific prompts and tool allowlists stay in the agent package. Atlas
 Explorer's package is [`@mongodb-js/atlas-explorer-agent`](../atlas-explorer-agent).
+
+## Install
+
+```bash
+npm install @mongodb-js/agent-engine-core @langchain/core @langchain/langgraph langchain zod \
+  @mongodb-js/agent-engine-sdk @mongodb-js/agent-engine-runner-shared \
+  @mongodb-js/mcp-tools-assistant
+```
+
+The SDK, LangChain, and `zod` packages are peer dependencies, so your agent
+and this package share one copy of each.
+
+This package is at `0.x`. Its API is unstable and can change in any release.

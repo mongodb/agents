@@ -26,6 +26,12 @@ Packages under [`packages/`](packages):
 - [`@repo/agent-engine-load-test`](packages/agent-engine-load-test): CLI for measuring sandbox reuse and Atlas MCP access-token minting.
 - [`@repo/update-skills`](packages/update-skills): CLI for refreshing each agent's vendored MongoDB Agent Skills from `mongodb/agent-skills`.
 
+The first four packages are meant to be published to npm under the
+`@mongodb-js` scope, at `0.x` with an unstable API. The others stay private.
+Run `pnpm check:packages` to pack them, lint the tarballs, and install them
+into an empty project, which is what CI does for changes to those packages.
+Publishing itself is not automated yet.
+
 Apps import each library's compiled `dist` folder. The `test`, `build`, and
 `typecheck` scripts build the libraries first. If you run `vitest` or `tsc`
 directly, build the libraries yourself first.
