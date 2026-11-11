@@ -109,6 +109,10 @@ export function buildEvalCli({
         "query-insights-realistic-user-queries.yml",
         "Atlas Query Insights: realistic user queries worded different ways, on the ported seeds",
       ),
+      "query-insights-injection": dataset(
+        "query-insights-injection.yml",
+        "Atlas Query Insights: instructions in slow-log comments and in user messages",
+      ),
       "input-guardrail": dataset(
         "input-guardrail.yml",
         "Input guardrail, both agents: declines get the canonical refusal and no tool call",
