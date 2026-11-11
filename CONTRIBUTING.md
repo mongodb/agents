@@ -30,7 +30,8 @@ The first four packages are meant to be published to npm under the
 `@mongodb-js` scope, at `0.x` with an unstable API. The others stay private.
 Run `pnpm check:packages` to pack them, lint the tarballs, and install them
 into an empty project, which is what CI does for changes to those packages.
-Publishing itself is not automated yet.
+Releases use [Changesets](https://github.com/changesets/changesets). See
+[Releasing](#releasing).
 
 Apps import each library's compiled `dist` folder. The `test`, `build`, and
 `typecheck` scripts build the libraries first. If you run `vitest` or `tsc`
@@ -217,3 +218,24 @@ agentengine invoke "Hello"
   `.mjs`, `.cjs`, and `.sh` files. Run `typecheck` and `build` locally before
   you open a pull request.
 - Don't edit `.agentengine/`. The `agentengine` CLI generates it.
+
+## Releasing
+
+Only the four packages above are versioned and published. They version
+independently, and stay at `0.x` for now.
+
+1. In a pull request that changes one of them, run `pnpm changeset`, pick the
+   packages and a bump type, and write a one-line summary. Commit the file it
+   creates in [`.changeset/`](.changeset). Use `minor` for a breaking change
+   and `patch` for everything else. A change to `@mongodb-js/agent-engine-core`
+   also patch-bumps the two agent packages that depend on it.
+2. When pull requests with changesets merge, the
+   [Release workflow](.github/workflows/release.yml) opens or updates a
+   "Version Packages" pull request. Merging that pull request publishes.
+3. Publishing uses npm trusted publishing and runs `pnpm check:packages`
+   first. It uploads nothing unless the repository variable
+   `PUBLISH_DRY_RUN` is `false`. It defaults to `true`, which only validates
+   the packages.
+
+Pull requests that the workflow opens do not run CI. Close and reopen the
+Version Packages pull request to run it.
