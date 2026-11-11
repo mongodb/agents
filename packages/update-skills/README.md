@@ -4,7 +4,7 @@ Refreshes an agent package's MongoDB skills from [`mongodb/agent-skills`](https:
 
 Each agent package (`packages/atlas-explorer-agent`, `packages/atlas-query-insights-agent`) keeps the skills it ships in `skills/`. This tool copies the skills named in the package's config from upstream into that directory. It doesn't touch any other skill.
 
-The template agents under `agents/` keep their own copy of those skills. After an update, copy the package's `skills/` over to the agent. The agent's tests fail until the copies match.
+The template agents under `agents/` keep their own copy of those skills. After an update, run `pnpm build:atlas-explorer` or `pnpm build:atlas-query-insights` to refresh the agent's copy. The agent's tests fail until the copies match.
 
 ## Usage
 

@@ -40,6 +40,9 @@ directly, build the libraries yourself first.
 tarballs, and installs them into an empty project. CI runs it for changes to
 those packages.
 
+The two agent packages also ship their MongoDB skills and a `sync-skills`
+command that copies them into an agent's `skills/`. See their READMEs.
+
 Releases use [Changesets](https://github.com/changesets/changesets). See
 [Releasing](#releasing).
 

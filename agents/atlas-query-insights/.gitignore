@@ -14,6 +14,7 @@ mcp-secret.json
 
 node_modules/
 dist/
+skills/
 src/agent_atlas_query_insights/main.bundle.js
 src/agent_atlas_query_insights/main.bundle.js.map
 *.tsbuildinfo
