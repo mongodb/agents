@@ -1,0 +1,14 @@
+orgs:
+  - id: 5a0000000000000000000001
+    name: Acme
+projects:
+  - id: 6a0000000000000000000001
+    name: prod
+    orgId: 5a0000000000000000000001
+    clusters:
+      - name: Cluster0
+        advisor:
+          suggestedIndexes: []
+          slowQueries:
+            - namespace: orderHistory.orders
+              line: '{"t":{"$date":"2026-11-04T12:00:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1204","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"orderHistory.orders","collectionType":"normal","queryShapeHash":"10565F3A0D26500D26B07C09E8F60D0FA62F844B077BFECFEA9103DD464CC86A","command":{"distinct":"orders","key":"productId","query":{"status":{"$eq":"status-1042"}},"$db":"orderHistory"},"planSummary":"IXSCAN","keysExamined":160338,"docsExamined":160338,"cursorExhausted":true,"numYields":20,"nreturned":2000,"planCacheShapeHash":"10565F3A","queryHash":"10565F3A","planCacheKey":"0D26500D","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":24}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":303,"durationMillis":304}}'

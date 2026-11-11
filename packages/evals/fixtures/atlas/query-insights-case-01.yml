@@ -1,0 +1,18 @@
+orgs:
+  - id: 5a0000000000000000000001
+    name: Acme
+projects:
+  - id: 6a0000000000000000000001
+    name: prod
+    orgId: 5a0000000000000000000001
+    clusters:
+      - name: Cluster0
+        advisor:
+          suggestedIndexes: []
+          slowQueries:
+            - namespace: shop.visits
+              line: '{"t":{"$date":"2026-11-04T12:00:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1204","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"shop.visits","collectionType":"normal","queryShapeHash":"B4B72D1C5BF36A6C31489344F5084ABCF4BA0921BF0EE40CE3886D1A4FD5CAA7","command":{"find":"visits","filter":{"visitorId":{"$eq":"visitorId-1042"}},"$db":"shop"},"planSummary":"COLLSCAN","keysExamined":0,"docsExamined":400000,"cursorExhausted":true,"numYields":50,"nreturned":21,"planCacheShapeHash":"B4B72D1C","queryHash":"B4B72D1C","planCacheKey":"5BF36A6C","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":54}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":206,"durationMillis":206}}'
+            - namespace: shop.visits
+              line: '{"t":{"$date":"2026-11-04T12:07:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1205","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"shop.visits","collectionType":"normal","queryShapeHash":"B4B72D1C5BF36A6C31489344F5084ABCF4BA0921BF0EE40CE3886D1A4FD5CAA7","command":{"find":"visits","filter":{"visitorId":{"$eq":"visitorId-1042"}},"$db":"shop"},"planSummary":"COLLSCAN","keysExamined":0,"docsExamined":400000,"cursorExhausted":true,"numYields":51,"nreturned":21,"planCacheShapeHash":"B4B72D1C","queryHash":"B4B72D1C","planCacheKey":"5BF36A6C","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":55}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":213,"durationMillis":213}}'
+            - namespace: shop.visits
+              line: '{"t":{"$date":"2026-11-04T12:14:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1206","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"shop.visits","collectionType":"normal","queryShapeHash":"B4B72D1C5BF36A6C31489344F5084ABCF4BA0921BF0EE40CE3886D1A4FD5CAA7","command":{"find":"visits","filter":{"visitorId":{"$eq":"visitorId-1042"}},"$db":"shop"},"planSummary":"COLLSCAN","keysExamined":0,"docsExamined":400000,"cursorExhausted":true,"numYields":52,"nreturned":21,"planCacheShapeHash":"B4B72D1C","queryHash":"B4B72D1C","planCacheKey":"5BF36A6C","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":56}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":217,"durationMillis":218}}'

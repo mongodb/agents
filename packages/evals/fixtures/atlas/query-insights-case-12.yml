@@ -1,0 +1,18 @@
+orgs:
+  - id: 5a0000000000000000000001
+    name: Acme
+projects:
+  - id: 6a0000000000000000000001
+    name: prod
+    orgId: 5a0000000000000000000001
+    clusters:
+      - name: Cluster0
+        advisor:
+          suggestedIndexes: []
+          slowQueries:
+            - namespace: museumAdmissions.admissions
+              line: '{"t":{"$date":"2026-11-04T12:00:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1204","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"museumAdmissions.admissions","collectionType":"normal","queryShapeHash":"8E08963CF6F4CDDD30641B57A8209FAEA776B8734BC86786FED36B3A59FA553D","command":{"aggregate":"admissions","pipeline":[{"$match":{"exhibitionId":{"$eq":"exhibitionId-1042"}}},{"$lookup":{"from":"visitors","as":"visitorInfo","localField":"visitorId","foreignField":"visitorId"}}],"$db":"museumAdmissions"},"planSummary":"IXSCAN","keysExamined":230000,"docsExamined":230000,"cursorExhausted":true,"numYields":30,"nreturned":115000,"planCacheShapeHash":"8E08963C","queryHash":"8E08963C","planCacheKey":"F6F4CDDD","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":34}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":1553,"durationMillis":3}}'
+            - namespace: museumAdmissions.admissions
+              line: '{"t":{"$date":"2026-11-04T12:07:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1205","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"museumAdmissions.admissions","collectionType":"normal","queryShapeHash":"8E08963CF6F4CDDD30641B57A8209FAEA776B8734BC86786FED36B3A59FA553D","command":{"aggregate":"admissions","pipeline":[{"$match":{"exhibitionId":{"$eq":"exhibitionId-1042"}}},{"$lookup":{"from":"visitors","as":"visitorInfo","localField":"visitorId","foreignField":"visitorId"}}],"$db":"museumAdmissions"},"planSummary":"IXSCAN","keysExamined":230000,"docsExamined":230000,"cursorExhausted":true,"numYields":30,"nreturned":115000,"planCacheShapeHash":"8E08963C","queryHash":"8E08963C","planCacheKey":"F6F4CDDD","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":34}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":1571,"durationMillis":3}}'
+            - namespace: museumAdmissions.admissions
+              line: '{"t":{"$date":"2026-11-04T12:14:00.000+00:00"},"s":"I",  "c":"COMMAND",  "id":51803,   "ctx":"conn1206","msg":"Slow query","attr":{"type":"command","isFromUserConnection":true,"ns":"museumAdmissions.admissions","collectionType":"normal","queryShapeHash":"8E08963CF6F4CDDD30641B57A8209FAEA776B8734BC86786FED36B3A59FA553D","command":{"aggregate":"admissions","pipeline":[{"$match":{"exhibitionId":{"$eq":"exhibitionId-1042"}}},{"$lookup":{"from":"visitors","as":"visitorInfo","localField":"visitorId","foreignField":"visitorId"}}],"$db":"museumAdmissions"},"planSummary":"IXSCAN","keysExamined":230000,"docsExamined":230000,"cursorExhausted":true,"numYields":32,"nreturned":115000,"planCacheShapeHash":"8E08963C","queryHash":"8E08963C","planCacheKey":"F6F4CDDD","queryFramework":"classic","locks":{"Global":{"acquireCount":{"r":36}}},"readConcern":{"level":"local","provenance":"implicitDefault"},"writeConcern":{"w":"majority","wtimeout":0,"provenance":"customDefault"},"storage":{},"protocol":"op_msg","workingMillis":1631,"durationMillis":3}}'
