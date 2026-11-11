@@ -25,7 +25,7 @@ import type {
   ThreadStore,
   TurnClaim,
 } from "./threadStore.js";
-import { threadKey } from "./threadStore.js";
+import { CLAIM_LEASE_MS, threadKey } from "./threadStore.js";
 
 interface StoredThreadRecord extends ThreadRecord {
   _id: string;
@@ -51,7 +51,6 @@ interface MongoThreadStoreOptions {
   legacyCollection?: Collection<LegacyStoredThreadRecord>;
 }
 
-const TURN_LEASE_MS = 10 * 60 * 1_000;
 const DELIVERY_LEASE_MS = 5 * 60 * 1_000;
 const RECENT_EVENT_LIMIT = 20;
 const COLLECTION_NAME = "chat_threads";
@@ -171,7 +170,7 @@ export class MongoThreadStore implements ThreadStore {
     await this.ensureInitialized();
     const key = threadKey(threadId);
     const staleBefore = new Date(
-      claimedAt.getTime() - TURN_LEASE_MS,
+      claimedAt.getTime() - CLAIM_LEASE_MS,
     );
     await this.findOrMigrate(threadId);
 

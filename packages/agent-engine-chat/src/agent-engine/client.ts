@@ -39,6 +39,12 @@ interface ClientOptions {
   timeoutMs?: number;
 }
 
+/**
+ * Longest a single invoke or resume may run before the client aborts it. Kept
+ * under the 300 second limit of the Vercel function that hosts the Slack bot.
+ */
+export const DEFAULT_REQUEST_TIMEOUT_MS = 280_000;
+
 export type AgenticRequestOutcome =
   | "not_sent"
   | "rejected"
@@ -88,7 +94,7 @@ export class AgentEngineClient {
             { fetchFn: this.fetchFn },
           )
         : undefined);
-    this.timeoutMs = options.timeoutMs ?? 280_000;
+    this.timeoutMs = options.timeoutMs ?? DEFAULT_REQUEST_TIMEOUT_MS;
   }
 
   invoke(input: InvokeInput): Promise<InvocationResult> {
