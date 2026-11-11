@@ -33,6 +33,7 @@ import {
   exercisesSessionActivity,
   exercisesTurnClaim,
   exercisesUncertainReviewCompletion,
+  exercisesUncertainReviewTurnClaim,
 } from "./threadStore.test-helpers.js";
 
 describe("MongoThreadStore", () => {
@@ -96,6 +97,10 @@ describe("MongoThreadStore", () => {
 
   it("lets the claiming resume finish a review marked uncertain", async () => {
     await exercisesUncertainReviewCompletion(store);
+  });
+
+  it("lets the next turn take over a review marked uncertain", async () => {
+    await exercisesUncertainReviewTurnClaim(store);
   });
 
   it("deduplicates events and serializes turns", async () => {
