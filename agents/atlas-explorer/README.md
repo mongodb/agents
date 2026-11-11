@@ -18,7 +18,7 @@ agents/atlas-explorer/
 ├── .env.example                       # copy to .env
 ├── mcp-config.example.json            # copy to ignored local MCP config
 ├── mcp-secret-metadata.json           # secret TTL used with Atlas CLI
-├── skills/                            # copy of the skills in @mongodb-js/atlas-explorer-agent
+├── skills/                            # copy of @mongodb-js/atlas-explorer-agent's skills
 └── src/agent_atlas_explorer/
     ├── main.ts                        # Agent Engine App entrypoint
     ├── index.ts                       # re-exports library helpers and main.ts
@@ -36,7 +36,8 @@ leaves out of the uploaded source.
 Policy, prompts, LLM selection, and middleware live in
 [`@mongodb-js/atlas-explorer-agent`](../../packages/atlas-explorer-agent).
 `pnpm build` bundles that library into `dist/agent_atlas_explorer/main.js`
-so Agent Engine runs one file plus this app's npm dependencies. The `build`,
+so Agent Engine runs one file plus this app's npm dependencies, then runs
+`atlas-explorer-agent sync-skills` to refresh `skills/`. The `build`,
 `test`, `typecheck`, and `dev` scripts first build that library (and
 `@mongodb-js/agent-engine-core` under it) through `pre*` hooks. See the
 [package README](../../packages/atlas-explorer-agent/README.md) for its exports.

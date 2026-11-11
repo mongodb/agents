@@ -30,6 +30,8 @@ The first four packages are meant to be published to npm under the
 `@mongodb-js` scope, at `0.x` with an unstable API. The others stay private.
 Run `pnpm check:packages` to pack them, lint the tarballs, and install them
 into an empty project, which is what CI does for changes to those packages.
+The two agent packages also ship their MongoDB skills and a `sync-skills`
+command that copies them into an agent's `skills/`. See their READMEs.
 Releases use [Changesets](https://github.com/changesets/changesets). See
 [Releasing](#releasing).
 

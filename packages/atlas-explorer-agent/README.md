@@ -32,14 +32,36 @@ This package is at `0.x`. Its API is unstable and can change in any release.
 
 ## Skills
 
-`skills/` holds the 8 MongoDB Agent Skills this agent uses, and ships in the
-npm package. `skills.config.json` lists them, and
+The package ships the 8 MongoDB Agent Skills that Atlas Explorer uses, in
+`skills/`. Agent Engine reads an agent's skills from `<agent root>/skills`, so
+copy them there in your agent's `build` script:
+
+```json
+{
+  "scripts": {
+    "build": "tsc && atlas-explorer-agent sync-skills"
+  }
+}
+```
+
+Then add `skills/` to your agent's `.gitignore`.
+
+- `sync-skills` replaces each bundled skill directory and leaves other
+  directories in `./skills` alone. If you keep your own skills there too,
+  ignore only the bundled ones, such as `skills/mongodb-*/`.
+- `--dir <path>` copies the skills somewhere other than `./skills`.
+- Run it from `build`, not `postinstall`. `agentengine` container builds
+  block install scripts, but they run `npm run build` and keep its output in
+  the image.
+- Skill updates ship as new releases of this package.
+
+In this repository, `skills.config.json` lists the skills, and
 `pnpm update-skills packages/atlas-explorer-agent` refreshes them from
 [`mongodb/agent-skills`](https://github.com/mongodb/agent-skills).
-
-[`agents/atlas-explorer`](../../agents/atlas-explorer) keeps a copy in its own `skills/`,
-because Agent Engine reads skills from the agent root. A test in that agent
-fails if the copy differs from this one.
+[`agents/atlas-explorer`](../../agents/atlas-explorer) keeps a committed
+copy, because a deploy builds it without the workspace packages. Its
+`pnpm build` runs `sync-skills` to refresh that copy, and a test fails if the
+two differ.
 
 ## Build and test
 
