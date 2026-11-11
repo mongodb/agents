@@ -30,6 +30,17 @@ This package is at `0.x`. Its API is unstable and can change in any release.
   [`@mongodb-js/agent-engine-core`](../agent-engine-core): LLM selection, agent
   input, requester metadata, resume handling, and LangGraph middleware.
 
+## Skills
+
+`skills/` holds the 8 MongoDB Agent Skills this agent uses, and ships in the
+npm package. `skills.config.json` lists them, and
+`pnpm update-skills packages/atlas-explorer-agent` refreshes them from
+[`mongodb/agent-skills`](https://github.com/mongodb/agent-skills).
+
+[`agents/atlas-explorer`](../../agents/atlas-explorer) keeps a copy in its own `skills/`,
+because Agent Engine reads skills from the agent root. A test in that agent
+fails if the copy differs from this one.
+
 ## Build and test
 
 From the repository root, with Node.js 24 or newer:

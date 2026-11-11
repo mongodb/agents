@@ -318,7 +318,7 @@ describe("makeAgentTask", () => {
 
   it("keeps filesystem writes in the case and off the disk", async () => {
     const skillFile = path.join(
-      atlasExplorerAgent.agentDir,
+      atlasExplorerAgent.packageDir,
       "skills",
       "eval-scratch.md",
     );

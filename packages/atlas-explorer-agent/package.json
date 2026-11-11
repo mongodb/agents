@@ -21,7 +21,8 @@
   },
   "files": [
     "dist",
-    "!dist/**/*.map"
+    "!dist/**/*.map",
+    "skills"
   ],
   "publishConfig": {
     "access": "public",
