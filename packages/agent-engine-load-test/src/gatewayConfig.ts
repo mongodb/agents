@@ -16,7 +16,7 @@
 
 import { config as loadDotenv } from "dotenv";
 
-import type { AgentEngineClientConfig } from "@repo/agent-engine-chat/agent-engine";
+import type { AgentEngineClientConfig } from "@mongodb-js/agent-engine-chat/agent-engine";
 
 const DEFAULT_BASE_URL = "https://agentengine.mongodb.com";
 

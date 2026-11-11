@@ -29,7 +29,7 @@ import {
   stampClientUser,
   stampResumeClientUserMiddleware,
   WRITE_ENABLED_SYSTEM_PROMPT,
-} from "@repo/atlas-explorer-agent";
+} from "@mongodb-js/atlas-explorer-agent";
 
 import { atlasExplorerConfig } from "./config.js";
 
@@ -146,9 +146,9 @@ vi.mock("@mongodb-js/agent-engine-sdk-langgraph", () => ({
   },
 }));
 
-vi.mock("@repo/atlas-explorer-agent", async (importOriginal) => {
+vi.mock("@mongodb-js/atlas-explorer-agent", async (importOriginal) => {
   const actual = await importOriginal<
-    typeof import("@repo/atlas-explorer-agent")
+    typeof import("@mongodb-js/atlas-explorer-agent")
   >();
   return {
     ...actual,

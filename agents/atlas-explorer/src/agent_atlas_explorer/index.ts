@@ -30,5 +30,5 @@ export {
   withRequesterMetadata,
   withoutShellExecution,
   writeOperationsAllowed,
-} from "@repo/atlas-explorer-agent";
+} from "@mongodb-js/atlas-explorer-agent";
 export * from "./main.js";

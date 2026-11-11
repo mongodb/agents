@@ -78,7 +78,7 @@ The unit tests run the same commands against a mock Braintrust server, so
 Cases with a `referenceAnswer` are graded by the Factuality LLM judge
 (`src/judge.ts`). The judge reaches its model the way the agent does: through
 the Grove gateway, with the same URL and `api-key` header handling
-(`resolveOpenAIConnection` in `@repo/agent-engine-core`). No judge traffic goes
+(`resolveOpenAIConnection` in `@mongodb-js/agent-engine-core`). No judge traffic goes
 through the Braintrust proxy, and `BRAINTRUST_API_KEY` is never used as the
 judge key because Grove rejects it.
 
@@ -160,7 +160,7 @@ model. Real-model runs ignore `script`.
 ### Adding the suite to a new agent
 
 1. Add the agent's system prompt rule `GUARDRAIL_REFUSAL_RULE` from
-   `@repo/agent-engine-core`.
+   `@mongodb-js/agent-engine-core`.
 2. Register the agent's task in `src/cli.ts`. The shared datasets
    (`input-guardrail`, `prompt-injection`) need nothing else.
 3. Add a tool-output injection dataset for the agent if it reads data. Use a

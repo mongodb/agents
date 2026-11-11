@@ -17,7 +17,7 @@
 import { z } from "zod";
 
 import { slackBotConfig } from "./config.js";
-import type { AgentEngineClientConfig } from "@repo/agent-engine-chat/agent-engine";
+import type { AgentEngineClientConfig } from "@mongodb-js/agent-engine-chat/agent-engine";
 
 export type RuntimeMode = "socket" | "http";
 

@@ -20,7 +20,7 @@ agents/<name>/
 │   └── config.ts                # non-secret settings: LLM provider/model, prompt persona
 └── skills/                      # vendored MongoDB Agent Skills, loaded at runtime
 apps/
-└── atlas-explorer-slack-bot/    # Atlas Explorer Slack app wrapping @repo/agent-engine-chat
+└── atlas-explorer-slack-bot/    # Atlas Explorer Slack app wrapping @mongodb-js/agent-engine-chat
 packages/
 ├── agent-engine-core/           # shared: LLM builder, tool policy, middleware, test client
 ├── <name>-agent/                # this agent's prompt, tool allowlist, middleware

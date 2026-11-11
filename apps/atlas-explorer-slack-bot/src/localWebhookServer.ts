@@ -20,7 +20,7 @@ import {
   type ServerResponse,
 } from "node:http";
 
-import { closeSharedMongoConnection } from "@repo/agent-engine-chat/store";
+import { closeSharedMongoConnection } from "@mongodb-js/agent-engine-chat/store";
 
 import { POST } from "../api/webhooks/slack.js";
 import { getHttpRuntime, resetHttpRuntime } from "./runtime.js";

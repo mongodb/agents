@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { buildAtlasQueryInsightsAgentOptions } from "@repo/atlas-query-insights-agent";
+import { buildAtlasQueryInsightsAgentOptions } from "@mongodb-js/atlas-query-insights-agent";
 
 import { atlasQueryInsightsConfig } from "../../../../agents/atlas-query-insights/src/agent_atlas_query_insights/config.js";
 import { agentDirectory } from "../paths.js";

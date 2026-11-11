@@ -16,7 +16,7 @@
 
 import * as path from "node:path";
 
-import { AgentEngineClient } from "@repo/agent-engine-chat/agent-engine";
+import { AgentEngineClient } from "@mongodb-js/agent-engine-chat/agent-engine";
 
 import { execCommand } from "../command.js";
 import { systemClock } from "../clock.js";

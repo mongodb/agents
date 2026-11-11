@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { buildAtlasExplorerAgentOptions } from "@repo/atlas-explorer-agent";
+import { buildAtlasExplorerAgentOptions } from "@mongodb-js/atlas-explorer-agent";
 
 import { atlasExplorerConfig } from "../../../../agents/atlas-explorer/src/agent_atlas_explorer/config.js";
 import { agentDirectory } from "../paths.js";

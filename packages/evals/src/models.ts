@@ -15,7 +15,7 @@
  */
 
 import type { BaseChatModel } from "@langchain/core/language_models/chat_models";
-import { buildLLM } from "@repo/agent-engine-core";
+import { buildLLM } from "@mongodb-js/agent-engine-core";
 
 import { ScriptedChatModel } from "./scriptedModel.js";
 import type { CustomInput } from "./schemas.js";

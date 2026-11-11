@@ -16,8 +16,8 @@
 
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
-import { ATLAS_QUERY_INSIGHTS_MCP_TOOLS } from "@repo/atlas-query-insights-agent";
-import { READ_ONLY_MCP_TOOLS } from "@repo/atlas-explorer-agent";
+import { ATLAS_QUERY_INSIGHTS_MCP_TOOLS } from "@mongodb-js/atlas-query-insights-agent";
+import { READ_ONLY_MCP_TOOLS } from "@mongodb-js/atlas-explorer-agent";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { startMockAtlasApi, type MockAtlasApi } from "../atlas/mockAtlasApi.js";

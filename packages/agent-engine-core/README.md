@@ -1,4 +1,4 @@
-# @repo/agent-engine-core
+# @mongodb-js/agent-engine-core
 
 Shared Agent Engine runtime used by the agent templates: LLM selection, tool
 selection, requester metadata, and LangGraph middleware.
@@ -20,4 +20,4 @@ token. If Atlas refuses the token, the wrapper rethrows the failure as
 startup failed. It does not recover from the failure.
 
 Agent-specific prompts and tool allowlists stay in the agent package. Atlas
-Explorer's package is [`@repo/atlas-explorer-agent`](../atlas-explorer-agent).
+Explorer's package is [`@mongodb-js/atlas-explorer-agent`](../atlas-explorer-agent).

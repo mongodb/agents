@@ -23,7 +23,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 import {
   READ_ONLY_MCP_TOOLS,
   writeOperationsAllowed,
-} from "@repo/atlas-explorer-agent";
+} from "@mongodb-js/atlas-explorer-agent";
 import {
   DROP_COLLECTION_TOOL,
   invoke,

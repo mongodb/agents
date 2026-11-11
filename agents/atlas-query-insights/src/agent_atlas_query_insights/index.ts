@@ -25,5 +25,5 @@ export {
   stripToolEchoMiddleware,
   withRequesterMetadata,
   withoutShellExecution,
-} from "@repo/atlas-query-insights-agent";
+} from "@mongodb-js/atlas-query-insights-agent";
 export * from "./main.js";
