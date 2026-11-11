@@ -19,6 +19,6 @@ import path from "node:path";
 /** Repository root, resolved from this file so it works from any cwd. */
 export const REPO_ROOT = path.resolve(import.meta.dirname, "../../..");
 
-export function agentDirectory(name: string): string {
-  return path.join(REPO_ROOT, "agents", name);
+export function packageDirectory(name: string): string {
+  return path.join(REPO_ROOT, "packages", name);
 }

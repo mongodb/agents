@@ -25,6 +25,13 @@ Peer dependencies are installed automatically by npm 7 and later.
   [`@mongodb-js/agent-engine-core`](../agent-engine-core): LLM selection, agent
   input, requester metadata, resume handling, and LangGraph middleware.
 
+## Skills
+
+`skills/` holds the MongoDB Agent Skills this agent uses, and ships in the
+npm package. `skills.config.json` lists them, and
+`pnpm update-skills packages/atlas-explorer-agent` refreshes them from
+[`mongodb/agent-skills`](https://github.com/mongodb/agent-skills).
+
 ## Build and test
 
 From the repository root, with Node.js 24 or newer:

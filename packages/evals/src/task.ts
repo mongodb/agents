@@ -218,7 +218,7 @@ export function makeAgentTask(
           { redactMessage: createInputRedactor(definition.inputGuardMode) },
         );
         let result = await agent.invoke(
-          { ...input, files: readAgentFiles(definition.agentDir) },
+          { ...input, files: readAgentFiles(definition.packageDir) },
           config,
         );
 
