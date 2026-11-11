@@ -17,12 +17,12 @@
 import { buildAtlasQueryInsightsAgentOptions } from "@mongodb-js/atlas-query-insights-agent";
 
 import { atlasQueryInsightsConfig } from "../../../../agents/atlas-query-insights/src/agent_atlas_query_insights/config.js";
-import { agentDirectory } from "../paths.js";
+import { packageDirectory } from "../paths.js";
 import type { AgentDefinition } from "./definition.js";
 
 export const atlasQueryInsightsAgent: AgentDefinition = {
   name: "atlas-query-insights",
-  agentDir: agentDirectory("atlas-query-insights"),
+  packageDir: packageDirectory("atlas-query-insights-agent"),
   inputGuardMode: atlasQueryInsightsConfig.inputGuard.mode,
   supportsWrites: false,
   buildOptions({ tools, defaultData }) {

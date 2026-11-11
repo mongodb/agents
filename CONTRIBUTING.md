@@ -24,7 +24,7 @@ Packages under [`packages/`](packages):
 - [`@mongodb-js/atlas-query-insights-agent`](packages/atlas-query-insights-agent): Atlas Query Insights prompts, read-only tool allowlist, and middleware, built on `@mongodb-js/agent-engine-core`.
 - [`@mongodb-js/agent-engine-chat`](packages/agent-engine-chat): general-purpose [Chat SDK](https://chat-sdk.dev) library that connects any Agent Engine workspace to Slack or other chat platforms.
 - [`@repo/agent-engine-load-test`](packages/agent-engine-load-test): CLI for measuring sandbox reuse and Atlas MCP access-token minting.
-- [`@repo/update-skills`](packages/update-skills): CLI for refreshing each agent's vendored MongoDB Agent Skills from `mongodb/agent-skills`.
+- [`@repo/update-skills`](packages/update-skills): CLI for refreshing the MongoDB Agent Skills in each agent package from `mongodb/agent-skills`.
 
 The first four packages are meant to be published to npm under the
 `@mongodb-js` scope, at `0.x` with an unstable API. The others stay private.

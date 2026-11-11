@@ -17,12 +17,12 @@
 import { buildAtlasExplorerAgentOptions } from "@mongodb-js/atlas-explorer-agent";
 
 import { atlasExplorerConfig } from "../../../../agents/atlas-explorer/src/agent_atlas_explorer/config.js";
-import { agentDirectory } from "../paths.js";
+import { packageDirectory } from "../paths.js";
 import type { AgentDefinition } from "./definition.js";
 
 export const atlasExplorerAgent: AgentDefinition = {
   name: "atlas-explorer",
-  agentDir: agentDirectory("atlas-explorer"),
+  packageDir: packageDirectory("atlas-explorer-agent"),
   inputGuardMode: atlasExplorerConfig.inputGuard.mode,
   supportsWrites: true,
   buildOptions({ tools, allowWrites, defaultData, extraInstructions }) {

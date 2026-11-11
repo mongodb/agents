@@ -22,28 +22,28 @@ import type { FileData } from "deepagents";
 const cache = new Map<string, Record<string, FileData>>();
 
 /**
- * The agent's `skills/` directory as files for deepagents' in-memory
+ * The agent package's `skills/` directory as files for deepagents' in-memory
  * `StateBackend`, keyed by absolute virtual path (`/skills/<name>/SKILL.md`).
  * Seeding the files means a case never gets a handle on the real disk. The
  * agent can still write, but only into its own case's memory.
  *
  * Read once per directory. Skills are small markdown files.
  */
-export function readAgentFiles(agentDir: string): Record<string, FileData> {
-  const cached = cache.get(agentDir);
+export function readAgentFiles(packageDir: string): Record<string, FileData> {
+  const cached = cache.get(packageDir);
   if (cached) return cached;
 
   const files: Record<string, FileData> = {};
   const walk = (relative: string) => {
-    const dir = path.join(agentDir, relative);
+    const dir = path.join(packageDir, relative);
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
       const child = path.posix.join(relative, entry.name);
       if (entry.isDirectory()) {
         walk(child);
       } else if (entry.isFile()) {
-        const stat = fs.statSync(path.join(agentDir, child));
+        const stat = fs.statSync(path.join(packageDir, child));
         files[`/${child}`] = {
-          content: fs.readFileSync(path.join(agentDir, child), "utf8"),
+          content: fs.readFileSync(path.join(packageDir, child), "utf8"),
           mimeType: "text/plain",
           created_at: stat.birthtime.toISOString(),
           modified_at: stat.mtime.toISOString(),
@@ -53,6 +53,6 @@ export function readAgentFiles(agentDir: string): Record<string, FileData> {
   };
   walk("skills");
 
-  cache.set(agentDir, files);
+  cache.set(packageDir, files);
   return files;
 }

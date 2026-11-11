@@ -24,3 +24,14 @@ npm install @mongodb-js/atlas-query-insights-agent langchain @langchain/core @la
 `@mongodb-js/agent-engine-core`, which installs with this package.
 
 This package is at `0.x`. Its API is unstable and can change in any release.
+
+## Skills
+
+`skills/` holds the 5 MongoDB Agent Skills this agent uses, and ships in the
+npm package. `skills.config.json` lists them, and
+`pnpm update-skills packages/atlas-query-insights-agent` refreshes them from
+[`mongodb/agent-skills`](https://github.com/mongodb/agent-skills).
+
+[`agents/atlas-query-insights`](../../agents/atlas-query-insights) keeps a copy in its own `skills/`,
+because Agent Engine reads skills from the agent root. A test in that agent
+fails if the copy differs from this one.
