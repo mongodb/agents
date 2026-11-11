@@ -17,6 +17,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./sync-skills": {
+      "types": "./dist/syncSkills.d.ts",
+      "import": "./dist/syncSkills.js"
     }
   },
   "files": [

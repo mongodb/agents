@@ -20,6 +20,10 @@
 // behavior: if tsc can resolve them and tsx can load them, the published
 // package built and its exports map, types and dependencies are intact.
 import { buildLLM, registerKnowledgeTools } from "@mongodb-js/agent-engine-core";
+import {
+  runSkillsCli,
+  syncSkills,
+} from "@mongodb-js/agent-engine-core/sync-skills";
 import { AgentEngineClient } from "@mongodb-js/agent-engine-chat/agent-engine";
 import { registerChatHandlers } from "@mongodb-js/agent-engine-chat/chat";
 import { MongoThreadStore } from "@mongodb-js/agent-engine-chat/store";
@@ -29,6 +33,8 @@ import { buildAtlasQueryInsightsAgentOptions } from "@mongodb-js/atlas-query-ins
 const exportsUnderTest = {
   buildLLM,
   registerKnowledgeTools,
+  runSkillsCli,
+  syncSkills,
   AgentEngineClient,
   registerChatHandlers,
   MongoThreadStore,
