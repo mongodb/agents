@@ -139,3 +139,11 @@ export {
   prepareAgentInput,
   type PrepareAgentInputOptions,
 } from "./userRun.js";
+export {
+  formatSyncSkillsUsage,
+  runSyncSkillsCli,
+  syncBundledSkills,
+  type RunSyncSkillsCliOptions,
+  type SyncBundledSkillsOptions,
+  type SyncBundledSkillsResult,
+} from "./syncSkills.js";

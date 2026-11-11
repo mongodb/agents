@@ -83,3 +83,9 @@ npm install --ignore-scripts --legacy-peer-deps "$work"/tarballs/*.tgz $peers ty
 npx tsc --noEmit --strict --module nodenext --moduleResolution nodenext \
   --target es2022 --lib esnext --types node consumer.ts
 npx tsx consumer.ts
+./node_modules/.bin/atlas-explorer-agent sync-skills
+test -f skills/mongodb-atlas-stream-processing/SKILL.md
+test -f skills/mongodb-query-optimizer/SKILL.md
+./node_modules/.bin/atlas-query-insights-agent sync-skills query-insights-skills
+test -f query-insights-skills/mongodb-query-optimizer/SKILL.md
+test ! -e query-insights-skills/mongodb-atlas-stream-processing

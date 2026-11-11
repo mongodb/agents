@@ -18,7 +18,7 @@ agents/atlas-explorer/
 ├── .env.example                       # copy to .env
 ├── mcp-config.example.json            # copy to ignored local MCP config
 ├── mcp-secret-metadata.json           # secret TTL used with Atlas CLI
-├── skills/                            # vendored MongoDB Agent Skills
+├── skills/                            # synced from @mongodb-js/atlas-explorer-agent on build
 └── src/agent_atlas_explorer/
     ├── main.ts                        # Agent Engine App entrypoint
     ├── index.ts                       # re-exports library helpers and main.ts

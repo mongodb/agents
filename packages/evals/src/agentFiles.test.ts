@@ -17,6 +17,7 @@
 import { describe, expect, it } from "vitest";
 
 import { atlasExplorerAgent } from "./agents/atlasExplorer.js";
+import { atlasQueryInsightsAgent } from "./agents/atlasQueryInsights.js";
 import { readAgentFiles } from "./agentFiles.js";
 
 describe("readAgentFiles", () => {
@@ -29,6 +30,16 @@ describe("readAgentFiles", () => {
     for (const key of Object.keys(files)) {
       expect(key).toMatch(/^\/skills\//);
     }
+  });
+
+  it("loads Query Insights skills from its agent package", () => {
+    const queryInsightsFiles = readAgentFiles(atlasQueryInsightsAgent.agentDir);
+    expect(Object.keys(queryInsightsFiles)).toContain(
+      "/skills/mongodb-query-optimizer/SKILL.md",
+    );
+    expect(
+      queryInsightsFiles["/skills/mongodb-atlas-stream-processing/SKILL.md"],
+    ).toBeUndefined();
   });
 
   it("holds the file text", () => {

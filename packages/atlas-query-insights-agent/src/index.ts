@@ -44,13 +44,17 @@ export {
   stampClientUser,
   stampResumeClientUserMiddleware,
   stripToolEchoMiddleware,
+  syncBundledSkills,
   withRequesterMetadata,
   withoutShellExecution,
   type DataAccessConfig,
   type DatabaseNamesConfig,
   type DefaultDataConfig,
   type InputGuardConfig,
+  type SyncBundledSkillsOptions,
+  type SyncBundledSkillsResult,
 } from "@mongodb-js/agent-engine-core";
+export { ATLAS_QUERY_INSIGHTS_SKILLS_DIR } from "./cliRunner.js";
 export type { AtlasQueryInsightsConfig } from "./agentConfig.js";
 export {
   buildAtlasQueryInsightsAgentOptions,

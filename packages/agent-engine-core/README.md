@@ -17,7 +17,9 @@ rejects those calls for a read-only agent. `surfaceTokenMintFailures` wraps the
 app's `ready()`, where each agent and tool process mints its Atlas MCP access
 token. If Atlas refuses the token, the wrapper rethrows the failure as
 `McpTokenLimitError` naming the runtime and the limit, so the logs say why
-startup failed. It does not recover from the failure.
+startup failed. It does not recover from the failure. `syncBundledSkills` (also
+exported from `@mongodb-js/agent-engine-core/sync-skills`) copies an agent
+package's bundled `skills/` into `./skills` during consumer builds.
 
 Agent-specific prompts and tool allowlists stay in the agent package. Atlas
 Explorer's package is [`@mongodb-js/atlas-explorer-agent`](../atlas-explorer-agent).

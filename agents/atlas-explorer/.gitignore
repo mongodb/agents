@@ -14,8 +14,10 @@ mcp-secret.json
 
 node_modules/
 dist/
+skills/
 src/agent_atlas_explorer/main.bundle.js
 src/agent_atlas_explorer/main.bundle.js.map
+src/agent_atlas_explorer/skills.bundle/
 *.tsbuildinfo
 npm-debug.log*
 yarn-error.log*

@@ -18,7 +18,7 @@ agents/atlas-query-insights/
 ├── .env.example                       # copy to .env
 ├── mcp-config.example.json            # copy to ignored local MCP config
 ├── mcp-secret-metadata.json           # secret TTL used with Atlas CLI
-├── skills/                            # query optimizer, schema, search, querying, connection
+├── skills/                            # synced from @mongodb-js/atlas-query-insights-agent on build
 └── src/agent_atlas_query_insights/
     ├── main.ts                        # Agent Engine entrypoint
     └── config.ts                      # LLM, persona, default data, dataAccess, and shape limit

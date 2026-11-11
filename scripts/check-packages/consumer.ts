@@ -14,16 +14,29 @@
  * limitations under the License.
  */
 
-import { buildLLM, registerKnowledgeTools } from "@mongodb-js/agent-engine-core";
+import {
+  buildLLM,
+  registerKnowledgeTools,
+  syncBundledSkills,
+} from "@mongodb-js/agent-engine-core";
+import { runSyncSkillsCli } from "@mongodb-js/agent-engine-core/sync-skills";
 import { AgentEngineClient } from "@mongodb-js/agent-engine-chat/agent-engine";
 import { registerChatHandlers } from "@mongodb-js/agent-engine-chat/chat";
 import { MongoThreadStore } from "@mongodb-js/agent-engine-chat/store";
-import { buildAtlasExplorerAgentOptions } from "@mongodb-js/atlas-explorer-agent";
-import { buildAtlasQueryInsightsAgentOptions } from "@mongodb-js/atlas-query-insights-agent";
+import {
+  ATLAS_EXPLORER_SKILLS_DIR,
+  buildAtlasExplorerAgentOptions,
+} from "@mongodb-js/atlas-explorer-agent";
+import {
+  ATLAS_QUERY_INSIGHTS_SKILLS_DIR,
+  buildAtlasQueryInsightsAgentOptions,
+} from "@mongodb-js/atlas-query-insights-agent";
 
 const exportsUnderTest = {
   buildLLM,
   registerKnowledgeTools,
+  syncBundledSkills,
+  runSyncSkillsCli,
   AgentEngineClient,
   registerChatHandlers,
   MongoThreadStore,
@@ -34,6 +47,15 @@ const exportsUnderTest = {
 for (const [name, value] of Object.entries(exportsUnderTest)) {
   if (typeof value !== "function") {
     throw new Error(`${name} is not exported as a function`);
+  }
+}
+
+for (const [name, dir] of Object.entries({
+  ATLAS_EXPLORER_SKILLS_DIR,
+  ATLAS_QUERY_INSIGHTS_SKILLS_DIR,
+})) {
+  if (typeof dir !== "string" || dir.length === 0) {
+    throw new Error(`${name} is not exported as a non-empty path`);
   }
 }
 console.log(`Imported ${Object.keys(exportsUnderTest).length} exports`);
