@@ -29,6 +29,7 @@ import { createLocalToolProvider } from "./tools/localToolProvider.js";
 
 const FIXTURE_DIR = path.join(import.meta.dirname, "..", "fixtures", "atlas");
 const DATASET = path.join(import.meta.dirname, "..", "datasets", "query-insights.yml");
+const USER_QUERIES = path.join(import.meta.dirname, "..", "datasets", "query-insights-realistic-user-queries.yml");
 
 interface CaseCustom {
   toolSetup: { mockAtlas: string };
@@ -97,7 +98,23 @@ describe("query-insights dataset", () => {
   });
 });
 
-describe("query-insights dataset, scripted run", () => {
+describe("query-insights realistic user queries dataset", () => {
+  const cases = loadAgentCasesFromFile(USER_QUERIES);
+
+  it("reads the seed of a ported case, with a message of its own", () => {
+    expect(cases).toHaveLength(7);
+    for (const testCase of cases) {
+      const { toolSetup } = testCase.input.custom as CaseCustom;
+      expect(fs.existsSync(path.join(FIXTURE_DIR, `${toolSetup.mockAtlas}.yml`)), testCase.name).toBe(true);
+      expect(testCase.tags, testCase.name).toContain("user-query");
+    }
+  });
+});
+
+describe.each([
+  ["query-insights", 33],
+  ["query-insights-realistic-user-queries", 7],
+] as const)("%s dataset, scripted run", (dataset, count) => {
   it("calls the Performance Advisor on every case and scores it", async () => {
     const provider = createLocalToolProvider();
     await provider.start?.();
@@ -110,7 +127,7 @@ describe("query-insights dataset, scripted run", () => {
           "--task",
           "query-insights",
           "--dataset",
-          "query-insights",
+          dataset,
           "--model",
           "scripted",
           "--task-concurrency",
@@ -124,7 +141,7 @@ describe("query-insights dataset, scripted run", () => {
       const toolCoverage = braintrust.rows
         .map((row) => row.scores?.ToolCallCoverage)
         .filter((value) => value !== undefined);
-      expect(toolCoverage).toHaveLength(33);
+      expect(toolCoverage).toHaveLength(count);
       expect(toolCoverage.filter((value) => value !== 1)).toEqual([]);
     } finally {
       await provider.stop?.();

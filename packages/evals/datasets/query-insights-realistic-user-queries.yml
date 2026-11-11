@@ -1,0 +1,341 @@
+# Atlas Query Insights, realistic user queries. Hand-written messages on
+# the seeds of the query-insights dataset. Each case reads the seed named by
+# its source case, and its expectations are copied from that case. Keep the two
+# in step when either changes.
+- name: query-insights-user-query-visitor-lookup
+  tags:
+    - find
+    - advisor-index
+    - user-query
+  input:
+    messages:
+      - role: user
+        content: Our visitor lookups on museumAdmissions are slow and the database looks busy. What is going on?
+    custom:
+      defaultData:
+        projectId: 6a0000000000000000000001
+        clusterName: Cluster0
+      toolSetup:
+        mockAtlas: query-insights-case-02
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_get_performance_advisor
+              args:
+                projectId: 6a0000000000000000000001
+                clusterName: Cluster0
+        - text: Scripted reply for offline runs. A real model writes the report.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_get_performance_advisor
+            arguments:
+              - name: projectId
+                type: string
+                value: 6a0000000000000000000001
+              - name: clusterName
+                type: string
+                value: Cluster0
+      - role: tool
+      - role: assistant
+    custom:
+      queryInsights:
+        suggestedIndexes:
+          - namespace: museumAdmissions.admissions
+            index:
+              - visitorId: 1
+        reference: |-
+          Query overview: This query finds admissions where `visitorId` equals a string value.
+
+          Areas worth investigating:
+          1. The Performance Advisor recommends an index on `visitorId`. The query did a collection scan because no index was used. Review the index suggestion in the Performance Advisor.
+- name: query-insights-user-query-admissions-report
+  tags:
+    - aggregate
+    - no-advisor-index
+    - user-query
+  input:
+    messages:
+      - role: user
+        content: The admissions report takes about a second and a half to load. Is the database the bottleneck?
+    custom:
+      defaultData:
+        projectId: 6a0000000000000000000001
+        clusterName: Cluster0
+      toolSetup:
+        mockAtlas: query-insights-case-12
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_get_performance_advisor
+              args:
+                projectId: 6a0000000000000000000001
+                clusterName: Cluster0
+        - text: Scripted reply for offline runs. A real model writes the report.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_get_performance_advisor
+            arguments:
+              - name: projectId
+                type: string
+                value: 6a0000000000000000000001
+              - name: clusterName
+                type: string
+                value: Cluster0
+      - role: tool
+      - role: assistant
+    custom:
+      queryInsights:
+        suggestedIndexes: []
+        reference: |-
+          Query overview: This aggregation matches documents where `exhibitionId` equals a string value. It then uses `$lookup` to join related documents from `visitors` on `visitorId`.
+
+          Areas worth investigating:
+          1. The pipeline returns a very large result set, and the latency likely comes from producing it. Examined documents are close to the documents returned, so targeting is efficient. Consider a `$limit` stage if the application does not need every result.
+          2. Consider whether storing related data together would fit better than repeated joins. If visitor data is usually read together with the admission, embedding it would remove the need for `$lookup`, if the data does not need to be normalized. See [Embedded Data in Your MongoDB Schema](https://www.mongodb.com/docs/manual/data-modeling/embedding).
+- name: query-insights-user-query-task-list
+  tags:
+    - find
+    - no-advisor-index
+    - sort
+    - user-query
+  input:
+    messages:
+      - role: user
+        content: The task list is slow when I hide done tasks and sort by newest. Why?
+    custom:
+      defaultData:
+        projectId: 6a0000000000000000000001
+        clusterName: Cluster0
+      toolSetup:
+        mockAtlas: query-insights-case-03
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_get_performance_advisor
+              args:
+                projectId: 6a0000000000000000000001
+                clusterName: Cluster0
+        - text: Scripted reply for offline runs. A real model writes the report.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_get_performance_advisor
+            arguments:
+              - name: projectId
+                type: string
+                value: 6a0000000000000000000001
+              - name: clusterName
+                type: string
+                value: Cluster0
+      - role: tool
+      - role: assistant
+    custom:
+      queryInsights:
+        suggestedIndexes: []
+        reference: |-
+          Query overview: This query finds tasks where `status` does not equal a string value, sorted by `createdAt` in descending order.
+
+          Areas worth investigating:
+          1. The negation on `status` has low selectivity. A negation predicate behaves like a range predicate, so the filter may not narrow the documents returned. That can explain why so many documents are returned.
+          2. The query has an in-memory sort. The index used does not support the sort order, so the results are sorted in memory, and the cost grows with the number of documents returned. An index that supports both the filter and the sort may do better. See the [ESR guideline](https://www.mongodb.com/docs/manual/tutorial/equality-sort-range-guideline/).
+- name: query-insights-user-query-expense-api
+  tags:
+    - aggregate
+    - advisor-index
+    - sort
+    - user-query
+  input:
+    messages:
+      - role: user
+        content: Our expense report API keeps timing out. Anything in the slow query log I should fix?
+    custom:
+      defaultData:
+        projectId: 6a0000000000000000000001
+        clusterName: Cluster0
+      toolSetup:
+        mockAtlas: query-insights-case-13
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_get_performance_advisor
+              args:
+                projectId: 6a0000000000000000000001
+                clusterName: Cluster0
+        - text: Scripted reply for offline runs. A real model writes the report.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_get_performance_advisor
+            arguments:
+              - name: projectId
+                type: string
+                value: 6a0000000000000000000001
+              - name: clusterName
+                type: string
+                value: Cluster0
+      - role: tool
+      - role: assistant
+    custom:
+      queryInsights:
+        suggestedIndexes:
+          - namespace: corporateExpenses.expenseReportsSortIntoMatch
+            index:
+              - status: 1
+              - submittedAt: 1
+        reference: |-
+          Query overview: This aggregation sorts all documents by `submittedAt` in descending order. It then matches documents where `status` equals a string value and limits the results.
+
+          Areas worth investigating:
+          1. The Performance Advisor recommends an index on `status` and `submittedAt`. The query did a collection scan because no index was used, which also led to an in-memory sort. The recommended index supports both the `status` filter and the `submittedAt` sort order, and would eliminate the collection scan and the in-memory sort. Review the index suggestion in the Performance Advisor.
+- name: query-insights-user-query-distinct-products
+  tags:
+    - distinct
+    - advisor-index
+    - user-query
+  input:
+    messages:
+      - role: user
+        content: Listing the products in active orders feels slow. Check the Performance Advisor for Cluster0 and tell me what to change.
+    custom:
+      defaultData:
+        projectId: 6a0000000000000000000001
+        clusterName: Cluster0
+      toolSetup:
+        mockAtlas: query-insights-case-10a
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_get_performance_advisor
+              args:
+                projectId: 6a0000000000000000000001
+                clusterName: Cluster0
+        - text: Scripted reply for offline runs. A real model writes the report.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_get_performance_advisor
+            arguments:
+              - name: projectId
+                type: string
+                value: 6a0000000000000000000001
+              - name: clusterName
+                type: string
+                value: Cluster0
+      - role: tool
+      - role: assistant
+    custom:
+      queryInsights:
+        suggestedIndexes:
+          - namespace: orderHistory.orders
+            index:
+              - status: 1
+              - productId: 1
+        reference: |-
+          Query overview: This query returns the distinct `productId` values for documents where `status` equals a string value.
+
+          Areas worth investigating:
+          1. The Performance Advisor recommends an index on `status` and `productId`. An index is already used, but every matching document must still be examined to collect the distinct `productId` values. The recommended index lets the distinct values be read from the index. See [Index Use for distinct()](https://www.mongodb.com/docs/manual/reference/method/db.collection.distinct/#index-use). Review the index suggestion in the Performance Advisor.
+- name: query-insights-user-query-terse
+  tags:
+    - find
+    - advisor-index
+    - sort
+    - user-query
+  input:
+    messages:
+      - role: user
+        content: slow queries on cluster0 pls
+    custom:
+      defaultData:
+        projectId: 6a0000000000000000000001
+        clusterName: Cluster0
+      toolSetup:
+        mockAtlas: query-insights-case-34
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_get_performance_advisor
+              args:
+                projectId: 6a0000000000000000000001
+                clusterName: Cluster0
+        - text: Scripted reply for offline runs. A real model writes the report.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_get_performance_advisor
+            arguments:
+              - name: projectId
+                type: string
+                value: 6a0000000000000000000001
+              - name: clusterName
+                type: string
+                value: Cluster0
+      - role: tool
+      - role: assistant
+    custom:
+      queryInsights:
+        suggestedIndexes:
+          - namespace: corporateExpenses.expenseReportsSelectiveNin
+            index:
+              - amountCents: 1
+        reference: |-
+          Query overview: This query matches all documents, sorts them by `amountCents` in ascending order, and limits them to the top results.
+
+          Areas worth investigating:
+          1. The Performance Advisor recommends an index on `amountCents`. The query did a collection scan and an in-memory sort. The recommended index would lower the average working time by avoiding both. Review the index suggestion in the Performance Advisor.
+- name: query-insights-user-query-exact-command
+  tags:
+    - find
+    - advisor-index
+    - user-query
+  input:
+    messages:
+      - role: user
+        content: Give me the exact createIndex command for the slow promo code query on Cluster0.
+    custom:
+      defaultData:
+        projectId: 6a0000000000000000000001
+        clusterName: Cluster0
+      toolSetup:
+        mockAtlas: query-insights-case-24
+      script:
+        - toolCalls:
+            - name: mongodb__atlas_get_performance_advisor
+              args:
+                projectId: 6a0000000000000000000001
+                clusterName: Cluster0
+        - text: Scripted reply for offline runs. A real model writes the report.
+  expected:
+    outputMessages:
+      - role: user
+      - role: assistant-tool
+        toolCalls:
+          - name: mongodb__atlas_get_performance_advisor
+            arguments:
+              - name: projectId
+                type: string
+                value: 6a0000000000000000000001
+              - name: clusterName
+                type: string
+                value: Cluster0
+      - role: tool
+      - role: assistant
+    custom:
+      queryInsights:
+        suggestedIndexes:
+          - namespace: orderFulfillment.ordersUnindexedIn
+            index:
+              - promoCode: 1
+        reference: |-
+          Query overview: This query finds orders where `promoCode` matches any string value in the array.
+
+          Areas worth investigating:
+          1. The Performance Advisor recommends an index on `promoCode`. The query did a collection scan because no index was used. Review the index suggestion in the Performance Advisor.
