@@ -23,6 +23,9 @@ import {
 import { defaultAgentChatMessages } from "./messages.js";
 import type { ChatHandlerDependencies } from "./types.js";
 
+/** Must stay well under the 10-minute expiry in conversation.ts. */
+const REVIEW_CLAIM_RENEW_MS = 60 * 1_000;
+
 export type ReviewOutcome =
   | "completed"
   | "suspended"
@@ -127,6 +130,24 @@ export async function handleReviewDecision(
       );
     });
 
+  // The claim timestamp is the only liveness signal for a running resume.
+  // Renew it so a long approved operation is not treated as a crashed one.
+  const heartbeat = setInterval(() => {
+    dependencies.store
+      .renewPendingReview(
+        input.threadId,
+        input.interruptId,
+        dependencies.now?.() ?? new Date(),
+      )
+      .catch((error: unknown) => {
+        dependencies.logger?.warn?.(
+          "Could not renew the review claim",
+          error,
+        );
+      });
+  }, REVIEW_CLAIM_RENEW_MS);
+  heartbeat.unref?.();
+
   let result;
   try {
     result = await dependencies.agent.resumeStream(
@@ -147,6 +168,7 @@ export async function handleReviewDecision(
       ),
     );
   } catch (error) {
+    clearInterval(heartbeat);
     dependencies.logger?.error(
       `${dependencies.botName} review resume failed`,
       error,
@@ -165,6 +187,10 @@ export async function handleReviewDecision(
         pendingReviewState: outcomeWasConfirmedNotApplied
           ? "pending"
           : "uncertain",
+        // An uncertain review is terminal; let the TTL index expire it.
+        ...(outcomeWasConfirmedNotApplied
+          ? {}
+          : { retentionState: "inactive" as const }),
         updatedAt: dependencies.now?.() ?? new Date(),
       },
     );
@@ -187,6 +213,8 @@ export async function handleReviewDecision(
     );
     return "failed";
   }
+
+  clearInterval(heartbeat);
 
   try {
     const published = await publishInvocationResult(

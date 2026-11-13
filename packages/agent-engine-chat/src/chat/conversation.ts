@@ -411,6 +411,8 @@ async function handlePendingReview(
         {
           ...uncertainRecord,
           pendingReviewState: "uncertain",
+          // Terminal state; let the TTL index expire the record.
+          retentionState: "inactive",
           updatedAt: claimedAt,
         },
       );
