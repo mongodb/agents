@@ -326,6 +326,23 @@ export class MongoThreadStore implements ThreadStore {
     return result.matchedCount === 1;
   }
 
+  async renewPendingReview(
+    threadId: string,
+    interruptId: string,
+    renewedAt: Date,
+  ): Promise<boolean> {
+    await this.ensureInitialized();
+    const result = await this.collection.updateOne(
+      {
+        _id: threadKey(threadId),
+        pendingInterruptId: interruptId,
+        pendingReviewState: "resuming",
+      },
+      { $set: { pendingReviewClaimedAt: renewedAt } },
+    );
+    return result.matchedCount === 1;
+  }
+
   async clearPendingDelivery(
     threadId: string,
     deliveryId: string,
