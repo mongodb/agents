@@ -20,7 +20,7 @@ import { atlasExplorerAgent } from "./agents/atlasExplorer.js";
 import { readAgentFiles } from "./agentFiles.js";
 
 describe("readAgentFiles", () => {
-  const files = readAgentFiles(atlasExplorerAgent.agentDir);
+  const files = readAgentFiles(atlasExplorerAgent.packageDir);
 
   it("keys skill files by absolute virtual path", () => {
     expect(Object.keys(files)).toContain(
@@ -37,6 +37,6 @@ describe("readAgentFiles", () => {
   });
 
   it("returns the same files on every call", () => {
-    expect(readAgentFiles(atlasExplorerAgent.agentDir)).toBe(files);
+    expect(readAgentFiles(atlasExplorerAgent.packageDir)).toBe(files);
   });
 });

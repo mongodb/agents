@@ -19,3 +19,10 @@ npm install @mongodb-js/atlas-query-insights-agent
 ```
 
 Peer dependencies are installed automatically by npm 7 and later.
+
+## Skills
+
+`skills/` holds the MongoDB Agent Skills this agent uses, and ships in the
+npm package. `skills.config.json` lists them, and
+`pnpm update-skills packages/atlas-query-insights-agent` refreshes them from
+[`mongodb/agent-skills`](https://github.com/mongodb/agent-skills).

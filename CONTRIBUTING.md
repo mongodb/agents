@@ -28,7 +28,7 @@ Packages under [`packages/`](packages):
 - [`@mongodb-js/agent-engine-chat`](packages/agent-engine-chat): general-purpose [Chat SDK](https://chat-sdk.dev) library that connects any Agent Engine workspace to Slack or other chat platforms.
   - Public: published to npm.
 - [`@repo/agent-engine-load-test`](packages/agent-engine-load-test): CLI for measuring sandbox reuse and Atlas MCP access-token minting.
-- [`@repo/update-skills`](packages/update-skills): CLI for refreshing each agent's vendored MongoDB Agent Skills from `mongodb/agent-skills`.
+- [`@repo/update-skills`](packages/update-skills): CLI for refreshing the MongoDB Agent Skills in each agent package from `mongodb/agent-skills`.
 
 Apps import each library's compiled `dist` folder. The `test`, `build`, and
 `typecheck` scripts build the libraries first. If you run `vitest` or `tsc`
