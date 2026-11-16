@@ -18,9 +18,13 @@
     "test:atlas-query-insights": "pnpm --filter @mongodb-js/atlas-query-insights-agent test && pnpm --filter atlas-query-insights test",
     "test:load-test": "pnpm --filter @repo/agent-engine-load-test test",
     "check:packages": "bash scripts/check-packages/check.sh",
+    "changeset": "changeset",
+    "version-packages": "changeset version && pnpm install --lockfile-only",
+    "release": "bash scripts/release/release.sh",
     "update-skills": "pnpm --filter @repo/update-skills update-skills"
   },
   "devDependencies": {
+    "@changesets/cli": "3.0.3",
     "husky": "9.1.7"
   }
 }

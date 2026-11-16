@@ -40,7 +40,28 @@ directly, build the libraries yourself first.
 tarballs, and installs them into an empty project. CI runs it for changes to
 those packages.
 
-Publishing itself is not automated yet.
+Releases use [Changesets](https://github.com/changesets/changesets). See
+[Releasing](#releasing).
+
+## Releasing
+
+The public packages are versioned and published together. They always share
+one version number, so a release bumps all of them, even ones with no changes.
+
+1. In a pull request that changes a public package, run `pnpm changeset`, pick the
+   packages and a bump type, and write a one-line summary. Commit the file it
+   creates in [`.changeset/`](.changeset). Use `minor` for a breaking change
+   and `patch` for everything else.
+2. When pull requests with changesets merge, the
+   [Release workflow](.github/workflows/release.yml) opens or updates a
+   "Version Packages" pull request. Merging that pull request publishes.
+3. Publishing uses npm trusted publishing and runs `pnpm check:packages`
+   first. It uploads nothing unless the repository variable
+   `PUBLISH_DRY_RUN` is `false`. It defaults to `true`, which only validates
+   the packages.
+
+Pull requests that the workflow opens do not run CI. Close and reopen the
+Version Packages pull request to run it.
 
 ## Set up
 
