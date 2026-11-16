@@ -1,0 +1,47 @@
+name: Package check
+
+on:
+  pull_request:
+    paths:
+      - "packages/agent-engine-core/**"
+      - "packages/atlas-explorer-agent/**"
+      - "packages/atlas-query-insights-agent/**"
+      - "packages/agent-engine-chat/**"
+      - "scripts/check-packages/**"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - "tsconfig.base.json"
+      - ".github/workflows/package-check.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "packages/agent-engine-core/**"
+      - "packages/atlas-explorer-agent/**"
+      - "packages/atlas-query-insights-agent/**"
+      - "packages/agent-engine-chat/**"
+      - "scripts/check-packages/**"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - "tsconfig.base.json"
+      - ".github/workflows/package-check.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: pack and install
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      COREPACK_ENABLE_DOWNLOAD_PROMPT: "0"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-workspace
+      - name: Check published package contents
+        run: pnpm check:packages
