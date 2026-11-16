@@ -19,9 +19,13 @@
       "import": "./dist/index.js"
     }
   },
+  "bin": {
+    "atlas-query-insights-agent": "./bin/atlas-query-insights-agent.js"
+  },
   "files": [
     "dist",
     "!dist/**/*.map",
+    "bin",
     "skills"
   ],
   "publishConfig": {

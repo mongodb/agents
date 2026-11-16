@@ -83,3 +83,16 @@ npm install --ignore-scripts --legacy-peer-deps "$work"/tarballs/*.tgz $peers ty
 npx tsc --noEmit --strict --module nodenext --moduleResolution nodenext \
   --target es2022 --lib esnext --types node consumer.ts
 npx tsx consumer.ts
+
+# The agent packages ship their skills and a `sync-skills` bin that copies
+# them into the consumer's ./skills during its build.
+npx --no-install atlas-explorer-agent sync-skills
+npx --no-install atlas-query-insights-agent sync-skills --dir query-insights-skills
+for dir in skills query-insights-skills; do
+  count="$(find "$dir" -mindepth 2 -maxdepth 2 -name SKILL.md | wc -l)"
+  if [ "$count" -eq 0 ]; then
+    echo "sync-skills copied no skills into $dir" >&2
+    exit 1
+  fi
+  echo "$dir: $count skills"
+done
