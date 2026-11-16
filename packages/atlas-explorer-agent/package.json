@@ -1,15 +1,31 @@
 {
   "name": "@mongodb-js/atlas-explorer-agent",
   "version": "0.1.0",
-  "private": true,
   "description": "Atlas Explorer agent policies, prompts, and middleware",
   "license": "Apache-2.0",
+  "homepage": "https://github.com/mongodb/agents/tree/main/packages/atlas-explorer-agent#readme",
+  "bugs": {
+    "url": "https://github.com/mongodb/agents/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mongodb/agents.git",
+    "directory": "packages/atlas-explorer-agent"
+  },
   "type": "module",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     }
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.map"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   },
   "scripts": {
     "prebuild": "pnpm --filter @mongodb-js/agent-engine-core build",
@@ -19,18 +35,22 @@
     "pretest:watch": "pnpm --filter @mongodb-js/agent-engine-core build",
     "test:watch": "vitest",
     "pretypecheck": "pnpm --filter @mongodb-js/agent-engine-core build",
-    "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json --noEmit"
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json --noEmit",
+    "prepack": "pnpm run build"
+  },
+  "engines": {
+    "node": ">=24"
   },
   "dependencies": {
-    "@mongodb-js/agent-engine-core": "workspace:*",
+    "@mongodb-js/agent-engine-core": "workspace:^"
+  },
+  "peerDependencies": {
     "langchain": "^1.5.10"
   },
   "devDependencies": {
     "@types/node": "^25.0.0",
+    "langchain": "^1.5.10",
     "typescript": "^5.5.0",
     "vitest": "^4.1.11"
-  },
-  "engines": {
-    "node": ">=24"
   }
 }
