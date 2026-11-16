@@ -1,6 +1,6 @@
 # @mongodb-js/agent-engine-chat
 
-Private library that connects a [Chat SDK](https://chat-sdk.dev) app to any
+Library that connects a [Chat SDK](https://chat-sdk.dev) app to any
 Atlas Agent Engine agent. It works with both write-capable agents that pause
 for human review (such as [Atlas Explorer](../../agents/atlas-explorer)) and
 read-only agents (such as
@@ -10,6 +10,22 @@ are simply unused).
 [`apps/atlas-explorer-slack-bot`](../../apps/atlas-explorer-slack-bot) is an
 example app built on this library. It adds the Slack adapter and credentials,
 the Slack manifest and suggested prompts, and the webhook entrypoint.
+
+## Install
+
+```bash
+npm install @mongodb-js/agent-engine-chat
+```
+
+Peer dependencies are installed automatically by npm 7 and later. Two
+optional ones are not. Install them only if you use the feature:
+
+```bash
+# the /testing export
+npm install --save-dev vitest
+# the embedded MongoDB the store can start for local runs
+npm install --save-dev mongodb-memory-server-core
+```
 
 ## What's in it
 
