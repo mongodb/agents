@@ -37,8 +37,13 @@ directly, build the libraries yourself first.
 ## Publishing packages
 
 `pnpm check:packages` runs on all public packages. It packs them, lints the
-tarballs, and installs them into an empty project. CI runs it for changes to
-those packages.
+tarballs, and installs them into an empty project. There it type-checks and
+loads a sample of each package's exports, including the `sync-skills`
+subpath, then runs both agent packages' `sync-skills` commands and checks
+that skills were copied. CI runs it for changes to those packages.
+
+The two agent packages also ship their MongoDB skills and a `sync-skills`
+command that copies them into an agent's `skills/`. See their READMEs.
 
 Releases use [Changesets](https://github.com/changesets/changesets). See
 [Releasing](#releasing).

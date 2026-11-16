@@ -21,16 +21,47 @@ Peer dependencies are installed automatically by npm 7 and later.
   still exposed when writes are on.
 - **System prompts.** Read-only and write-enabled prompts, with an optional
   agent name and custom instructions.
+- **Skills.** The MongoDB Agent Skills the agent uses. See [Skills](#skills).
 - **Shared runtime.** Re-exports from
   [`@mongodb-js/agent-engine-core`](../agent-engine-core): LLM selection, agent
   input, requester metadata, resume handling, and LangGraph middleware.
 
 ## Skills
 
-`skills/` holds the MongoDB Agent Skills this agent uses, and ships in the
-npm package. `skills.config.json` lists them, and
+Installing the package does not create `./skills`. Run `sync-skills` in your
+agent's `build` script to copy the bundled skills there.
+
+The package ships the MongoDB Agent Skills that Atlas Explorer uses, in
+`skills/`. Agent Engine reads an agent's skills from `<agent root>/skills`:
+
+```json
+{
+  "scripts": {
+    "build": "tsc && atlas-explorer-agent sync-skills"
+  }
+}
+```
+
+Then add `skills/` to your agent's `.gitignore`. The generated `skills/` folder
+must be in the folder you upload when you build or deploy the agent.
+
+To try it by hand, run `npx atlas-explorer-agent sync-skills`
+in your agent's root.
+
+- `sync-skills` replaces each bundled skill directory and leaves other
+  directories in `./skills` alone. If you keep your own skills there too,
+  ignore only the bundled ones, such as `skills/mongodb-*/`.
+- `--dir <path>` copies the skills somewhere other than `./skills`.
+- Run it from `build`, not `postinstall`, so it also works where install
+  scripts are disabled. `agentengine` image builds run `npm run build` and
+  keep its output in the image.
+- Skill updates ship as new releases of this package.
+
+In this repository, `skills.config.json` lists the skills, and
 `pnpm update-skills packages/atlas-explorer-agent` refreshes them from
 [`mongodb/agent-skills`](https://github.com/mongodb/agent-skills).
+[`agents/atlas-explorer`](../../agents/atlas-explorer) generates its `skills/` from this
+package when you run `pnpm build`, and git-ignores it.
 
 ## Build and test
 

@@ -214,7 +214,7 @@ pnpm build
 agentengine agent validate
 ```
 
-`pnpm build` produces `dist/`, which is what runs on the platform. Rebuild after any source change. `agentengine agent validate` checks `agent.yaml` only (older CLIs call it `agentengine validate`). Do not edit `.agentengine/`; the CLI generates it.
+`pnpm build` produces `dist/`, which is what runs on the platform, and generates the git-ignored `skills/` folder that is uploaded with the agent. Rebuild after any source change. `agentengine agent validate` checks `agent.yaml` only (older CLIs call it `agentengine validate`). Do not edit `.agentengine/`; the CLI generates it.
 
 Review `git diff agent.yaml` before continuing and make sure every change is intended.
 

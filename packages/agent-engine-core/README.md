@@ -19,6 +19,11 @@ token. If Atlas refuses the token, the wrapper rethrows the failure as
 `McpTokenLimitError` naming the runtime and the limit, so the logs say why
 startup failed. It does not recover from the failure.
 
+`syncSkills` and `runSkillsCli`, exported from
+`@mongodb-js/agent-engine-core/sync-skills`, copy a package's bundled skills
+into an agent's `skills/` directory. The agent packages' `sync-skills`
+commands use them. That entry point does not load LangChain.
+
 Agent-specific prompts and tool allowlists stay in the agent package. Atlas
 Explorer's package is [`@mongodb-js/atlas-explorer-agent`](../atlas-explorer-agent).
 
