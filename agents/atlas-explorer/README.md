@@ -34,11 +34,11 @@ the repository root with `--workspace atlas-explorer`. The root
 leaves out of the uploaded source.
 
 Policy, prompts, LLM selection, and middleware live in
-[`@repo/atlas-explorer-agent`](../../packages/atlas-explorer-agent).
+[`@mongodb-js/atlas-explorer-agent`](../../packages/atlas-explorer-agent).
 `pnpm build` bundles that library into `dist/agent_atlas_explorer/main.js`
 so Agent Engine runs one file plus this app's npm dependencies. The `build`,
 `test`, `typecheck`, and `dev` scripts first build that library (and
-`@repo/agent-engine-core` under it) through `pre*` hooks. See the
+`@mongodb-js/agent-engine-core` under it) through `pre*` hooks. See the
 [package README](../../packages/atlas-explorer-agent/README.md) for its exports.
 
 ## Configure
@@ -427,7 +427,7 @@ The sibling [`@AtlasExplorer` Chat SDK integration](../../apps/atlas-explorer-sl
 this same Agent Engine workspace and preserves Agentic sessions per platform thread.
 Its current Slack adapter supports local Socket Mode, Vercel deployment, and
 Approve/Reject controls for this agent's mutation interrupts; the shared handlers in
-[`@repo/agent-engine-chat`](../../packages/agent-engine-chat) can be reused with
+[`@mongodb-js/agent-engine-chat`](../../packages/agent-engine-chat) can be reused with
 additional Chat SDK adapters or other Agent Engine workspaces.
 
 ## What to try
@@ -435,7 +435,7 @@ additional Chat SDK adapters or other Agent Engine workspaces.
 - Ask it to list databases or inspect a collection schema. Read-only MCP tools
   run without approval.
 - Ask it to look up MongoDB docs or best practices. `search_knowledge` and
-  `list_knowledge_sources` come from `@repo/agent-engine-core`, wrap
+  `list_knowledge_sources` come from `@mongodb-js/agent-engine-core`, wrap
   `@mongodb-js/mcp-tools-assistant`, and call the public knowledge API
   without MCP credentials.
 - Ask it to drop a collection. With the default read-only MCP identity and

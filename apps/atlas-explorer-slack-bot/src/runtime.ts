@@ -22,15 +22,15 @@ import {
   registerChatHandlers,
   type AgentGateway,
   type HandlerLogger,
-} from "@repo/agent-engine-chat/chat";
-import { AgentEngineClient } from "@repo/agent-engine-chat/agent-engine";
+} from "@mongodb-js/agent-engine-chat/chat";
+import { AgentEngineClient } from "@mongodb-js/agent-engine-chat/agent-engine";
 import {
   getSharedMongoConnection,
   MongoStateAdapter,
   MongoThreadStore,
   type MongoConnection,
   type ThreadStore,
-} from "@repo/agent-engine-chat/store";
+} from "@mongodb-js/agent-engine-chat/store";
 
 import { atlasExplorerChatMessages } from "./atlasExplorerChat.js";
 import {

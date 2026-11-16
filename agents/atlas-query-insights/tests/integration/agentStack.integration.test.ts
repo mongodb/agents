@@ -20,7 +20,7 @@ import { randomUUID } from "node:crypto";
 
 import { beforeAll, describe, expect, it } from "vitest";
 
-import { ATLAS_QUERY_INSIGHTS_MCP_TOOLS } from "@repo/atlas-query-insights-agent";
+import { ATLAS_QUERY_INSIGHTS_MCP_TOOLS } from "@mongodb-js/atlas-query-insights-agent";
 import {
   DROP_COLLECTION_TOOL,
   LIST_DATABASES_TOOL,

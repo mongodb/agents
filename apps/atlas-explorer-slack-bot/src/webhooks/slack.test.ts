@@ -73,7 +73,7 @@ describe("Slack webhook route", () => {
     );
 
     expect(vercelConfig).toMatchObject({
-      buildCommand: "pnpm --filter @repo/agent-engine-chat build",
+      buildCommand: "pnpm --filter @mongodb-js/agent-engine-chat build",
       fluid: true,
       framework: null,
     });

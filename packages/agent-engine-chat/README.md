@@ -1,4 +1,4 @@
-# @repo/agent-engine-chat
+# @mongodb-js/agent-engine-chat
 
 Private library that connects a [Chat SDK](https://chat-sdk.dev) app to any
 Atlas Agent Engine agent. It works with both write-capable agents that pause
@@ -29,9 +29,9 @@ Each export is a separate subpath of the package.
 import { createSlackAdapter } from "@chat-adapter/slack";
 import { Chat } from "chat";
 
-import { registerChatHandlers } from "@repo/agent-engine-chat/chat";
-import { AgentEngineClient } from "@repo/agent-engine-chat/agent-engine";
-import { MongoStateAdapter, MongoThreadStore } from "@repo/agent-engine-chat/store";
+import { registerChatHandlers } from "@mongodb-js/agent-engine-chat/chat";
+import { AgentEngineClient } from "@mongodb-js/agent-engine-chat/agent-engine";
+import { MongoStateAdapter, MongoThreadStore } from "@mongodb-js/agent-engine-chat/store";
 
 const uri = process.env.MONGODB_URI!;
 const databaseName = "my_agent_chat";

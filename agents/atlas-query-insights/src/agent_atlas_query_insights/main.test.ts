@@ -27,7 +27,7 @@ import {
   prepareAgentInput,
   stampClientUser,
   stampResumeClientUserMiddleware,
-} from "@repo/atlas-query-insights-agent";
+} from "@mongodb-js/atlas-query-insights-agent";
 
 import { atlasQueryInsightsConfig } from "./config.js";
 
@@ -120,9 +120,9 @@ vi.mock("@mongodb-js/agent-engine-sdk-langgraph", () => ({
   },
 }));
 
-vi.mock("@repo/atlas-query-insights-agent", async (importOriginal) => {
+vi.mock("@mongodb-js/atlas-query-insights-agent", async (importOriginal) => {
   const actual = await importOriginal<
-    typeof import("@repo/atlas-query-insights-agent")
+    typeof import("@mongodb-js/atlas-query-insights-agent")
   >();
   return {
     ...actual,

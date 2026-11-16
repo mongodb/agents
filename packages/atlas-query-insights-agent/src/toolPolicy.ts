@@ -18,11 +18,11 @@ import {
   LIST_KNOWLEDGE_SOURCES_TOOL_NAME,
   SEARCH_KNOWLEDGE_TOOL_NAME,
   selectTools,
-} from "@repo/agent-engine-core";
+} from "@mongodb-js/agent-engine-core";
 
 /**
  * Subset of Atlas MCP tools available to the Atlas Query Insights agent,
- * plus the shared knowledge tools from `@repo/agent-engine-core`.
+ * plus the shared knowledge tools from `@mongodb-js/agent-engine-core`.
  *
  * Writes are never enabled. `aggregate` stays available as a read tool.
  * A pipeline that contains `$out` or `$merge` is rejected.

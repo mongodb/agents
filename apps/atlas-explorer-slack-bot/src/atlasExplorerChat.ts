@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { AgentChatMessages } from "@repo/agent-engine-chat/chat";
+import type { AgentChatMessages } from "@mongodb-js/agent-engine-chat/chat";
 
 export const atlasExplorerChatMessages: Partial<AgentChatMessages> = {
   decisionUncertain: (botName) =>

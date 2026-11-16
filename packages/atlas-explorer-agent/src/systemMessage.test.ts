@@ -23,7 +23,7 @@ import {
   SECRETS_NON_DISCLOSURE_RULE,
   TOOL_CONFIG_NON_DISCLOSURE_RULE,
   TOPIC_SCOPE_RULES,
-} from "@repo/agent-engine-core";
+} from "@mongodb-js/agent-engine-core";
 
 import {
   READ_ONLY_SYSTEM_PROMPT,

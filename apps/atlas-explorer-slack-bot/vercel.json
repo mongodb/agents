@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "pnpm --filter @repo/agent-engine-chat build",
+  "buildCommand": "pnpm --filter @mongodb-js/agent-engine-chat build",
   "outputDirectory": ".",
   "fluid": true,
   "framework": null,

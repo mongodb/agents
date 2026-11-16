@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { resolveOpenAIConnection } from "@repo/agent-engine-core";
+import { resolveOpenAIConnection } from "@mongodb-js/agent-engine-core";
 import { wrapOpenAI } from "braintrust";
 import type { JudgeModelConfig } from "mongodb-assistant-eval/scorers";
 import OpenAI from "openai";

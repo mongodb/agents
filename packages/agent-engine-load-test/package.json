@@ -12,20 +12,20 @@
     }
   },
   "scripts": {
-    "prebuild": "pnpm --filter @repo/agent-engine-chat build",
+    "prebuild": "pnpm --filter @mongodb-js/agent-engine-chat build",
     "build": "tsc -p tsconfig.json",
-    "preload": "pnpm --filter @repo/agent-engine-chat build",
+    "preload": "pnpm --filter @mongodb-js/agent-engine-chat build",
     "load": "tsx src/cli.ts load",
     "fetch-logs": "tsx src/cli.ts fetch-logs",
     "report": "tsx src/cli.ts report",
-    "pretest": "pnpm --filter @repo/agent-engine-chat build",
+    "pretest": "pnpm --filter @mongodb-js/agent-engine-chat build",
     "test": "vitest run",
     "test:watch": "vitest",
-    "pretypecheck": "pnpm --filter @repo/agent-engine-chat build",
+    "pretypecheck": "pnpm --filter @mongodb-js/agent-engine-chat build",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json --noEmit"
   },
   "dependencies": {
-    "@repo/agent-engine-chat": "workspace:*",
+    "@mongodb-js/agent-engine-chat": "workspace:*",
     "dotenv": "^17.4.2",
     "yargs": "^17.7.2"
   },

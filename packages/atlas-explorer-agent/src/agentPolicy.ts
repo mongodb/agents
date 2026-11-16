@@ -19,7 +19,7 @@ import {
   SEARCH_KNOWLEDGE_TOOL_NAME,
   selectTools,
   writeOperationsAllowed,
-} from "@repo/agent-engine-core";
+} from "@mongodb-js/agent-engine-core";
 
 export { writeOperationsAllowed };
 
@@ -30,7 +30,7 @@ export { writeOperationsAllowed };
  * tool annotations on `app.getTools()`.
  *
  * Names follow Atlas Managed MCP `read`, `metadata`, and `connect` tools,
- * plus the shared knowledge tools from `@repo/agent-engine-core`
+ * plus the shared knowledge tools from `@mongodb-js/agent-engine-core`
  * (`search_knowledge`, `list_knowledge_sources`). Local-only tools such as
  * `mongodb-logs` and
  * `switch-connection` are omitted. `aggregate` and `aggregate-db` stay here

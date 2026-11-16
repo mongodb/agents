@@ -16,7 +16,7 @@
 
 import { describe, expect, it } from "vitest";
 
-import { GUARDRAIL_REFUSAL_MESSAGE } from "@repo/agent-engine-core";
+import { GUARDRAIL_REFUSAL_MESSAGE } from "@mongodb-js/agent-engine-core";
 
 import {
   AnswerMatches,

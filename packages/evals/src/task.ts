@@ -24,7 +24,7 @@ import { createAgentEngineDeepAgent } from "@mongodb-js/agent-engine-sdk-langgra
 import {
   prepareAgentInput,
   createInputRedactor,
-} from "@repo/agent-engine-core";
+} from "@mongodb-js/agent-engine-core";
 import { BraintrustLangChainCallbackHandler } from "braintrust";
 import type { EvalTask } from "mongodb-assistant-eval/cli";
 import type {

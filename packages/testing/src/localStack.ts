@@ -31,7 +31,7 @@ import {
   type ClientUserMetadata,
   type InvocationResult,
   type ReviewDecision,
-} from "@repo/agent-engine-chat/agent-engine";
+} from "@mongodb-js/agent-engine-chat/agent-engine";
 
 const execFileAsync = promisify(execFile);
 
