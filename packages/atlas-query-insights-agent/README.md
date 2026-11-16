@@ -22,9 +22,11 @@ Peer dependencies are installed automatically by npm 7 and later.
 
 ## Skills
 
+Installing the package does not create `./skills`. Run `sync-skills` in your
+agent's `build` script to copy the bundled skills there.
+
 The package ships the MongoDB Agent Skills that Atlas Query Insights uses, in
-`skills/`. Agent Engine reads an agent's skills from `<agent root>/skills`, so
-copy them there in your agent's `build` script:
+`skills/`. Agent Engine reads an agent's skills from `<agent root>/skills`:
 
 ```json
 {
@@ -34,15 +36,19 @@ copy them there in your agent's `build` script:
 }
 ```
 
-Then add `skills/` to your agent's `.gitignore`.
+Then add `skills/` to your agent's `.gitignore`. The generated `skills/` folder
+must be in the folder you upload when you build or deploy the agent.
+
+To try it by hand, run `npx atlas-query-insights-agent sync-skills`
+in your agent's root.
 
 - `sync-skills` replaces each bundled skill directory and leaves other
   directories in `./skills` alone. If you keep your own skills there too,
   ignore only the bundled ones, such as `skills/mongodb-*/`.
 - `--dir <path>` copies the skills somewhere other than `./skills`.
-- Run it from `build`, not `postinstall`. `agentengine` container builds
-  block install scripts, but they run `npm run build` and keep its output in
-  the image.
+- Run it from `build`, not `postinstall`, so it also works where install
+  scripts are disabled. `agentengine` image builds run `npm run build` and
+  keep its output in the image.
 - Skill updates ship as new releases of this package.
 
 In this repository, `skills.config.json` lists the skills, and
