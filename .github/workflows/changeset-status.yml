@@ -5,7 +5,7 @@ name: Changeset status
 on:
   pull_request:
     paths:
-      - "packages/agent-engine-core/**"
+      - "packages/atlas-agents-core/**"
       - "packages/atlas-explorer-agent/**"
       - "packages/atlas-query-insights-agent/**"
       - "packages/agent-engine-chat/**"

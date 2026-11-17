@@ -22,13 +22,13 @@ agents/<name>/
 apps/
 └── atlas-explorer-slack-bot/    # Atlas Explorer Slack app wrapping @mongodb-js/agent-engine-chat
 packages/
-├── agent-engine-core/           # shared: LLM builder, tool policy, middleware, test client
+├── atlas-agents-core/           # shared: LLM builder, tool policy, middleware, test client
 ├── <name>-agent/                # this agent's prompt, tool allowlist, middleware
 └── agent-engine-chat/           # reusable Chat SDK library for any Agent Engine workspace
 ```
 
 - **Behavior belongs in `packages/<name>-agent`**: system prompt, tool allowlists, approval and error middleware. `main.ts` should only assemble them.
-- **Shared behavior belongs in `packages/agent-engine-core`.** Don't copy middleware between the two agents.
+- **Shared behavior belongs in `packages/atlas-agents-core`.** Don't copy middleware between the two agents.
 - **Chat integration belongs in `packages/agent-engine-chat`.** It connects any agent in `agents/` to Slack or other Chat SDK platforms; `apps/atlas-explorer-slack-bot` is the Atlas Explorer Slack wrapper around it.
 - `pnpm build` bundles the library into `dist/agent_<name>/main.js` with esbuild, so the platform runs one file plus npm dependencies. It also copies that bundle to `src/agent_<name>/main.bundle.js`, which is git-ignored for the dev container, and runs the agent package's `sync-skills` command to generate `skills/`. Don't edit these generated files.
 - Apps import each library's compiled `dist`. Scripts at the repo root and in each agent build the libraries first. If you run `vitest` or `tsc` directly, build them yourself.
@@ -98,7 +98,7 @@ Both agents follow the same shape:
    - `app.deepAgent(llm, { tools, systemPrompt, skills: ["skills"], backend, checkpointer, middleware })` builds the agent. `backend` is `withoutShellExecution(new AgentEngineToolSandboxBackend())`, so the agent has no shell.
 3. `app.run()` starts it.
 
-`buildLLM({ provider, model })` is built in `agent-engine-core` and imported through each agent's package, with the values from `config.ts`. Keep the middleware order of the existing agents, and run the package tests if you change it.
+`buildLLM({ provider, model })` is built in `atlas-agents-core` and imported through each agent's package, with the values from `config.ts`. Keep the middleware order of the existing agents, and run the package tests if you change it.
 
 ## Tools and write policy
 
@@ -110,7 +110,7 @@ Both agents follow the same shape:
 
 ## Human approval
 
-Approval pauses the session at a checkpoint and resumes it after a decision. The decisions are approve, edit and reject (`packages/agent-engine-core/src/aggregateWriteApproval.ts`). `stampResumeClientUserMiddleware` carries the client user onto the resumed run. The Slack bot (`apps/atlas-explorer-slack-bot`) offers Approve and Reject only.
+Approval pauses the session at a checkpoint and resumes it after a decision. The decisions are approve, edit and reject (`packages/atlas-agents-core/src/aggregateWriteApproval.ts`). `stampResumeClientUserMiddleware` carries the client user onto the resumed run. The Slack bot (`apps/atlas-explorer-slack-bot`) offers Approve and Reject only.
 
 ## Skills
 
