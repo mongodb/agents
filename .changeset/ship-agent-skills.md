@@ -1,5 +1,5 @@
 ---
-"@mongodb-js/agent-engine-core": patch
+"@mongodb-js/atlas-agents-core": patch
 "@mongodb-js/atlas-explorer-agent": patch
 "@mongodb-js/atlas-query-insights-agent": patch
 ---

@@ -5,7 +5,7 @@ on:
     paths:
       - "agents/atlas-query-insights/**"
       - "packages/atlas-query-insights-agent/**"
-      - "packages/agent-engine-core/**"
+      - "packages/atlas-agents-core/**"
       - "packages/evals/**"
       - "pnpm-lock.yaml"
       - ".github/actions/run-eval/**"
@@ -16,7 +16,7 @@ on:
     paths:
       - "agents/atlas-query-insights/**"
       - "packages/atlas-query-insights-agent/**"
-      - "packages/agent-engine-core/**"
+      - "packages/atlas-agents-core/**"
       - "packages/evals/**"
       - "pnpm-lock.yaml"
       - ".github/actions/run-eval/**"

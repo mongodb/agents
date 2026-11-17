@@ -4,7 +4,7 @@ on:
   pull_request:
     paths:
       - "agents/**"
-      - "packages/agent-engine-core/**"
+      - "packages/atlas-agents-core/**"
       - "packages/atlas-explorer-agent/**"
       - "packages/atlas-query-insights-agent/**"
       - "packages/testing/**"
@@ -21,7 +21,7 @@ on:
       - main
     paths:
       - "agents/**"
-      - "packages/agent-engine-core/**"
+      - "packages/atlas-agents-core/**"
       - "packages/atlas-explorer-agent/**"
       - "packages/atlas-query-insights-agent/**"
       - "packages/testing/**"

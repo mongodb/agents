@@ -4,7 +4,7 @@ on:
   pull_request:
     paths:
       - "agents/**"
-      - "packages/agent-engine-core/**"
+      - "packages/atlas-agents-core/**"
       - "packages/atlas-explorer-agent/**"
       - "packages/atlas-query-insights-agent/**"
       - "packages/evals/**"
@@ -22,7 +22,7 @@ on:
       - main
     paths:
       - "agents/**"
-      - "packages/agent-engine-core/**"
+      - "packages/atlas-agents-core/**"
       - "packages/atlas-explorer-agent/**"
       - "packages/atlas-query-insights-agent/**"
       - "packages/evals/**"
@@ -55,8 +55,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: agent-engine-core
-            command: pnpm --filter @mongodb-js/agent-engine-core test
+          - name: atlas-agents-core
+            command: pnpm --filter @mongodb-js/atlas-agents-core test
           - name: testing
             command: pnpm --filter @repo/testing test
           - name: atlas-explorer-agent
@@ -88,4 +88,4 @@ jobs:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/unit-test
         with:
-          command: pnpm --filter @mongodb-js/agent-engine-core test:knowledge
+          command: pnpm --filter @mongodb-js/atlas-agents-core test:knowledge
