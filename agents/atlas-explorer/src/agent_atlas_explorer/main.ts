@@ -23,7 +23,7 @@ import {
   AgentEngineToolSandboxBackend,
   type DeepAgentOptions,
 } from "@mongodb-js/agent-engine-sdk-langgraph";
-import { registerKnowledgeTools } from "@mongodb-js/agent-engine-core";
+import { registerKnowledgeTools } from "@mongodb-js/atlas-agents-core";
 import {
   buildAtlasExplorerAgentOptions,
   buildLLM,

@@ -19,11 +19,11 @@ To report a bug or suggest an agent,
 
 Packages under [`packages/`](packages):
 
-- [`@mongodb-js/agent-engine-core`](packages/agent-engine-core): shared Agent Engine runtime (LLM builder, tool selection, requester metadata, and LangGraph middleware).
+- [`@mongodb-js/atlas-agents-core`](packages/atlas-agents-core): shared Agent Engine runtime (LLM builder, tool selection, requester metadata, and LangGraph middleware).
   - Public: published to npm.
-- [`@mongodb-js/atlas-explorer-agent`](packages/atlas-explorer-agent): Atlas Explorer prompts, read-only tool allowlist, and HITL write policy, built on `@mongodb-js/agent-engine-core`.
+- [`@mongodb-js/atlas-explorer-agent`](packages/atlas-explorer-agent): Atlas Explorer prompts, read-only tool allowlist, and HITL write policy, built on `@mongodb-js/atlas-agents-core`.
   - Public: published to npm.
-- [`@mongodb-js/atlas-query-insights-agent`](packages/atlas-query-insights-agent): Atlas Query Insights prompts, read-only tool allowlist, and middleware, built on `@mongodb-js/agent-engine-core`.
+- [`@mongodb-js/atlas-query-insights-agent`](packages/atlas-query-insights-agent): Atlas Query Insights prompts, read-only tool allowlist, and middleware, built on `@mongodb-js/atlas-agents-core`.
   - Public: published to npm.
 - [`@mongodb-js/agent-engine-chat`](packages/agent-engine-chat): general-purpose [Chat SDK](https://chat-sdk.dev) library that connects any Agent Engine workspace to Slack or other chat platforms.
   - Public: published to npm.
@@ -159,7 +159,7 @@ drop request that must not call a write tool, and requester metadata.
 
 CI does not run the Atlas Explorer or Atlas Query Insights local-stack suites
 above. It does run
-`pnpm --filter @mongodb-js/agent-engine-core test:knowledge`, which calls
+`pnpm --filter @mongodb-js/atlas-agents-core test:knowledge`, which calls
 `https://knowledge.mongodb.com` through the shared knowledge tools registered
 by Atlas Explorer and Atlas Query Insights. That command does not start the
 local stack. The dev-up smoke job writes dummy OpenAI and store settings,

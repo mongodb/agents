@@ -40,7 +40,7 @@ so Agent Engine runs one file plus this app's npm dependencies, then runs
 `atlas-explorer-agent sync-skills` to generate `skills/` from that package. Run it before you deploy or run
 `agentengine dev up`. The `build`,
 `test`, `typecheck`, and `dev` scripts first build that library (and
-`@mongodb-js/agent-engine-core` under it) through `pre*` hooks. See the
+`@mongodb-js/atlas-agents-core` under it) through `pre*` hooks. See the
 [package README](../../packages/atlas-explorer-agent/README.md) for its exports.
 
 ## Configure
@@ -437,7 +437,7 @@ additional Chat SDK adapters or other Agent Engine workspaces.
 - Ask it to list databases or inspect a collection schema. Read-only MCP tools
   run without approval.
 - Ask it to look up MongoDB docs or best practices. `search_knowledge` and
-  `list_knowledge_sources` come from `@mongodb-js/agent-engine-core`, wrap
+  `list_knowledge_sources` come from `@mongodb-js/atlas-agents-core`, wrap
   `@mongodb-js/mcp-tools-assistant`, and call the public knowledge API
   without MCP credentials.
 - Ask it to drop a collection. With the default read-only MCP identity and
@@ -473,7 +473,7 @@ additional Chat SDK adapters or other Agent Engine workspaces.
   before the model sees it, and refuses messages that are too long to screen.
   `inputGuard.mode` in `config.ts` is `enforce`, `monitor` or `off`. The guard
   doesn't screen tool output. See
-  [Input guard](../../packages/agent-engine-core/src/inputGuard.ts).
+  [Input guard](../../packages/atlas-agents-core/src/inputGuard.ts).
 - **Your data is in traces.** Conversations and traces in Agent Engine can
   include database names, collection names, and sampled documents. They are
   visible only inside your project, and you govern them. Your model provider

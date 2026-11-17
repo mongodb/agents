@@ -21,7 +21,7 @@ set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 packages=(
-  agent-engine-core
+  atlas-agents-core
   atlas-explorer-agent
   atlas-query-insights-agent
   agent-engine-chat

@@ -385,7 +385,7 @@ Things to know:
   sees it, and refuses messages that are too long to screen. `inputGuard` in
   `config.ts` sets `mode` (`enforce`, `monitor` or `off`). The guard doesn't
   screen the slow query logs or Performance Advisor output above. See
-  [Input guard](../../packages/agent-engine-core/src/inputGuard.ts).
+  [Input guard](../../packages/atlas-agents-core/src/inputGuard.ts).
 
 ### Roll back or shut down
 

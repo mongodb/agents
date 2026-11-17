@@ -23,7 +23,7 @@ Peer dependencies are installed automatically by npm 7 and later.
   agent name and custom instructions.
 - **Skills.** The MongoDB Agent Skills the agent uses. See [Skills](#skills).
 - **Shared runtime.** Re-exports from
-  [`@mongodb-js/agent-engine-core`](../agent-engine-core): LLM selection, agent
+  [`@mongodb-js/atlas-agents-core`](../atlas-agents-core): LLM selection, agent
   input, requester metadata, resume handling, and LangGraph middleware.
 
 ## Skills
@@ -73,6 +73,6 @@ pnpm --filter @mongodb-js/atlas-explorer-agent build
 pnpm --filter @mongodb-js/atlas-explorer-agent test
 ```
 
-`build` and `test` build `@mongodb-js/agent-engine-core` first. `typecheck`
+`build` and `test` build `@mongodb-js/atlas-agents-core` first. `typecheck`
 type-checks sources and tests without emitting files. `test:watch` runs the
 tests in watch mode.

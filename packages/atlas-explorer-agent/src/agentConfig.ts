@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { SharedAgentConfig } from "@mongodb-js/agent-engine-core";
+import type { SharedAgentConfig } from "@mongodb-js/atlas-agents-core";
 
 /** The shape of `atlasExplorerConfig` in the agent's `config.ts`. */
 export interface AtlasExplorerConfig extends SharedAgentConfig {

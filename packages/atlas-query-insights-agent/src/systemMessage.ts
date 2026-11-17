@@ -26,7 +26,7 @@ import {
   describeDefaultData,
   type DataAccessConfig,
   type DefaultDataConfig,
-} from "@mongodb-js/agent-engine-core";
+} from "@mongodb-js/atlas-agents-core";
 
 export const DEFAULT_AGENT_NAME = "Atlas Query Insights";
 export const NO_CLUSTER_CONFIGURED =

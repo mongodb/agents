@@ -1,4 +1,4 @@
-# @mongodb-js/agent-engine-core
+# @mongodb-js/atlas-agents-core
 
 Shared Agent Engine runtime used by the agent templates: LLM selection, tool
 selection, requester metadata, and LangGraph middleware.
@@ -20,7 +20,7 @@ token. If Atlas refuses the token, the wrapper rethrows the failure as
 startup failed. It does not recover from the failure.
 
 `syncSkills` and `runSkillsCli`, exported from
-`@mongodb-js/agent-engine-core/sync-skills`, copy a package's bundled skills
+`@mongodb-js/atlas-agents-core/sync-skills`, copy a package's bundled skills
 into an agent's `skills/` directory. The agent packages' `sync-skills`
 commands use them. That entry point does not load LangChain.
 
@@ -30,7 +30,7 @@ Explorer's package is [`@mongodb-js/atlas-explorer-agent`](../atlas-explorer-age
 ## Install
 
 ```bash
-npm install @mongodb-js/agent-engine-core
+npm install @mongodb-js/atlas-agents-core
 ```
 
 Peer dependencies are installed automatically by npm 7 and later.

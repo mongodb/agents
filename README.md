@@ -156,7 +156,7 @@ limits from the start.
 - **Input guard.** Each agent redacts pasted credentials from the user's
   message before the model sees it, and refuses messages that are too long to
   screen. It doesn't screen tool output. See
-  [Input guard](packages/agent-engine-core/src/inputGuard.ts).
+  [Input guard](packages/atlas-agents-core/src/inputGuard.ts).
 
 ## Why MongoDB Atlas Agent Engine
 
