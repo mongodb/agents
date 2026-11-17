@@ -2,6 +2,37 @@
 
 - When you open a pull request, fill the body from `.github/pull_request_template.md`.
 
+## Changesets and releases
+
+The public packages are `@mongodb-js/atlas-agents-core`,
+`@mongodb-js/atlas-explorer-agent`, `@mongodb-js/atlas-query-insights-agent`,
+and `@mongodb-js/agent-engine-chat`. They share one version and release
+together.
+
+- If your pull request changes a public package in a way its users should
+  see, add a changeset. Skip it for tests and internal docs.
+- Add the changeset with one command (it doesn't prompt when you pass these
+  flags):
+
+  ```bash
+  pnpm changeset --patch <package-name> \
+    -m "One-line summary of the change, written for package users."
+  ```
+
+  - Replace `<package-name>` with the full npm name of each package you
+    changed, comma-separated, e.g. `@mongodb-js/atlas-agents-core`.
+  - Use `--patch` for fixes and features, and `--minor` for breaking changes.
+    Never use `--major`.
+  - Check it with `pnpm changeset status --since=origin/main`.
+- Never edit `version` in a `package.json`. The release workflow publishes any
+  version that npm doesn't have yet, as soon as it reaches `main`.
+- Merging a changeset doesn't publish. Changesets accumulate in a pull request
+  that the release bot opens on the `changeset-release/main` branch, and
+  merging that pull request publishes. Don't create, edit, or merge it unless
+  asked.
+- Run `pnpm check:packages` when you change a public package's `exports`,
+  `files`, or dependencies.
+
 ## Writing for the user
 
 ### Who the user is

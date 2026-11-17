@@ -10,8 +10,9 @@
 # needs this workflow configured as its trusted publisher on npm.
 #
 # Pull requests that this workflow opens with the default GITHUB_TOKEN do not
-# trigger other workflows. Close and reopen the Version Packages pull request
-# to run CI on it.
+# trigger other workflows. That's fine, because `pnpm release` runs
+# `pnpm check:packages` before publishing. To run CI on the Version Packages
+# pull request anyway, close and reopen it.
 name: Release
 
 on:
