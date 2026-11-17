@@ -15,7 +15,7 @@
  */
 
 import { tool, type StructuredToolInterface } from "@langchain/core/tools";
-import { createKnowledgeTools } from "@mongodb-js/agent-engine-core";
+import { createKnowledgeTools } from "@mongodb-js/atlas-agents-core";
 
 /**
  * `search_knowledge` and `list_knowledge_sources`, the same two tools the

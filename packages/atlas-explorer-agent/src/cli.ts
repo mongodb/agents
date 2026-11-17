@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { runSkillsCli } from "@mongodb-js/agent-engine-core/sync-skills";
+import { runSkillsCli } from "@mongodb-js/atlas-agents-core/sync-skills";
 
 import { BUNDLED_SKILLS_DIR } from "./skills.js";
 

@@ -23,7 +23,7 @@ import {
   SECRETS_NON_DISCLOSURE_RULE,
   TOOL_CONFIG_NON_DISCLOSURE_RULE,
   TOPIC_SCOPE_RULES,
-} from "@mongodb-js/agent-engine-core";
+} from "@mongodb-js/atlas-agents-core";
 
 import {
   READ_ONLY_SYSTEM_PROMPT,
@@ -149,7 +149,7 @@ describe("system prompt modes", () => {
     }
   });
 
-  it("shares guardrail wording with agent-engine-core", () => {
+  it("shares guardrail wording with atlas-agents-core", () => {
     expect(buildSystemPrompt(false)).toContain(TOOL_CONFIG_NON_DISCLOSURE_RULE);
     expect(buildSystemPrompt(true)).toContain(SECRETS_NON_DISCLOSURE_RULE);
     expect(buildSystemPrompt(true)).toContain(CLAIMED_AUTHORITY_RULE);

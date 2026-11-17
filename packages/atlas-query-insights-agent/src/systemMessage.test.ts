@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import { GUARDRAIL_REFUSAL_RULE } from "@mongodb-js/agent-engine-core";
+import { GUARDRAIL_REFUSAL_RULE } from "@mongodb-js/atlas-agents-core";
 import { describe, expect, it } from "vitest";
 
-import { KNOWLEDGE_GROUNDING_RULE } from "@mongodb-js/agent-engine-core";
+import { KNOWLEDGE_GROUNDING_RULE } from "@mongodb-js/atlas-agents-core";
 
 import {
   DEFAULT_AGENT_NAME,

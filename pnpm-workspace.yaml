@@ -10,7 +10,7 @@ overrides:
   # `agentengine dev up` can parse package.json; pnpm links the workspace copies.
   "@mongodb-js/atlas-query-insights-agent": "workspace:*"
   "@mongodb-js/atlas-explorer-agent": "workspace:*"
-  "@mongodb-js/agent-engine-core": "workspace:*"
+  "@mongodb-js/atlas-agents-core": "workspace:*"
   "@mongodb-js/agent-engine-chat": "workspace:*"
   "@repo/testing": "workspace:*"
 

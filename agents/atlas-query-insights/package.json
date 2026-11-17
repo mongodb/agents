@@ -38,7 +38,7 @@
     "@mongodb-js/atlas-query-insights-agent": "file:../../packages/atlas-query-insights-agent"
   },
   "devDependencies": {
-    "@mongodb-js/agent-engine-core": "file:../../packages/agent-engine-core",
+    "@mongodb-js/atlas-agents-core": "file:../../packages/atlas-agents-core",
     "@repo/testing": "file:../../packages/testing",
     "@types/node": "^25.0.0",
     "esbuild": "^0.25.0",

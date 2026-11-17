@@ -19,11 +19,11 @@
 // entry point of each package is loaded once. They are not exercised for
 // behavior: if tsc can resolve them and tsx can load them, the published
 // package built and its exports map, types and dependencies are intact.
-import { buildLLM, registerKnowledgeTools } from "@mongodb-js/agent-engine-core";
+import { buildLLM, registerKnowledgeTools } from "@mongodb-js/atlas-agents-core";
 import {
   runSkillsCli,
   syncSkills,
-} from "@mongodb-js/agent-engine-core/sync-skills";
+} from "@mongodb-js/atlas-agents-core/sync-skills";
 import { AgentEngineClient } from "@mongodb-js/agent-engine-chat/agent-engine";
 import { registerChatHandlers } from "@mongodb-js/agent-engine-chat/chat";
 import { MongoThreadStore } from "@mongodb-js/agent-engine-chat/store";

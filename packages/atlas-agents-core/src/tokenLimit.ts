@@ -60,7 +60,7 @@ export const ACCESS_TOKEN_LIMIT_MESSAGE = "Access Token limit reached";
 export const TOKEN_RATE_LIMIT_STATUS = "HTTP 429";
 export const TOKEN_RATE_LIMIT_ERROR_CODE = "RATE_LIMITED";
 
-const logger = getLogger("agent-engine-core.tokenLimit");
+const logger = getLogger("atlas-agents-core.tokenLimit");
 
 const MAX_CAUSE_DEPTH = 3;
 
