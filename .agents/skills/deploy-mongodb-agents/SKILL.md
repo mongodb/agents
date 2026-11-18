@@ -236,3 +236,11 @@ If `status` isn't `ready`, or `invoke` fails, read [references/troubleshooting.m
 ## Report back
 
 Say what was actually done and verified: which agent and environment, which commands ran, `agentengine status` output, and whether the smoke test passed. If a step was skipped or failed, say so.
+
+## Feedback on this skill
+
+If this skill gave wrong guidance or left something out, read
+[references/skill-feedback.md](references/skill-feedback.md). It covers
+sending feedback to the maintainers as a public GitHub issue, without
+including anything that identifies the user or their environment. Make sure
+to get the user's permission first.
