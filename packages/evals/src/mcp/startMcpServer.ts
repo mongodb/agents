@@ -15,8 +15,8 @@
  */
 
 import { spawn, type ChildProcess } from "node:child_process";
-import { createRequire } from "node:module";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 /**
  * The parent's environment without the server's own settings. A developer or
@@ -68,13 +68,12 @@ export async function stopProcess(child: ChildProcess): Promise<void> {
 }
 
 /**
- * Not `import.meta.resolve`, which Vitest 5's module runner does not support.
- * The package's `require` export is `dist/cjs/lib.js`. The CLI entry point is
- * `dist/esm/index.js`.
+ * The CLI entry point, `dist/esm/index.js`, is not in the package's
+ * `exports`, so resolve the package's main entry and take its sibling.
  */
 function serverEntryPoint(): string {
-  const lib = createRequire(import.meta.url).resolve("mongodb-mcp-server");
-  return path.join(path.dirname(lib), "..", "esm", "index.js");
+  const lib = fileURLToPath(import.meta.resolve("mongodb-mcp-server"));
+  return path.join(path.dirname(lib), "index.js");
 }
 
 /**
