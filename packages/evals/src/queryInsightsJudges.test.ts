@@ -22,7 +22,7 @@ import type { JudgeModelConfig } from "mongodb-assistant-eval/scorers";
 
 import { judgeModelConfig } from "./judge.js";
 import { judgeChoice, makeQueryInsightsJudges } from "./queryInsightsJudges.js";
-import type { CustomExpected } from "./schemas.js";
+import type { QueryInsightsCustomExpected as CustomExpected } from "./queryInsightsSchemas.js";
 
 type Scorer = ReturnType<typeof makeQueryInsightsJudges>["ReportFactuality"];
 type Args = Parameters<Scorer>[0];

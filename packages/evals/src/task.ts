@@ -42,7 +42,7 @@ import {
 } from "./knowledgeSources.js";
 import { readAgentFiles } from "./agentFiles.js";
 import { makeChatModel, type ModelConfig } from "./models.js";
-import { MONGO_CHECKS, type MongoCheck } from "./mongoChecks/index.js";
+import type { MongoCheck } from "./mongoChecks/index.js";
 import type { CustomInput } from "./schemas.js";
 import type { CaseTools, ToolProvider } from "./tools/types.js";
 
@@ -78,7 +78,7 @@ export interface AgentTaskOptions {
    * nests model and tool spans under the case's task span.
    */
   readonly callbacks?: () => BaseCallbackHandler[];
-  /** Checks a case can name. Defaults to the repo's own. Tests pass stubs. */
+  /** Checks a case can name in `input.custom.mongoCheck`. Default none. */
   readonly mongoChecks?: Readonly<Record<string, MongoCheck>>;
 }
 
@@ -155,7 +155,7 @@ async function runMongoCheck(
  */
 export function makeAgentTask(
   definition: AgentDefinition,
-  { toolProvider, callbacks, mongoChecks = MONGO_CHECKS }: AgentTaskOptions,
+  { toolProvider, callbacks, mongoChecks = {} }: AgentTaskOptions,
 ): EvalTask<AgentTaskInput, AgentTaskOutput, ModelConfig> {
   return {
     description: `${definition.name} deep agent, traced to Braintrust`,

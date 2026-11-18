@@ -17,7 +17,10 @@ This is the harness. Eval suites, thresholds, and CI gating are separate work
   (`src/mongo/`). Nothing touches a real Atlas project.
 - `src/mcp/managedTools.ts` lists the server tools the harness manages. A
   contract test fails when a server upgrade adds or removes one.
-- `src/cases.ts` loads YAML datasets and rejects unknown tool names.
+- `src/cases.ts` loads YAML datasets and rejects unknown tool, fixture and
+  Mongo check names.
+- `src/suite.ts` binds the case loader to this package's `fixtures/`, Mongo
+  checks and case schema.
 - `src/scorers.ts` has the agent-specific scorers on top of the library's
   `AgentTrajectoryScorer`.
 - `datasets/` has the smoke datasets, the input guardrail suite and the
@@ -26,9 +29,10 @@ This is the harness. Eval suites, thresholds, and CI gating are separate work
   cases in `db-tools-aggregate-writes.yml` and the prompt injection cases in
   `db-tools-injection.yml`). `fixtures/` has the mock Atlas accounts and
   MongoDB seeds that cases name. `src/` holds only TypeScript.
-- `src/messageMapper.ts`, `src/scriptedModel.ts` and `src/offline/` are the
-  test support: message mapping, a keyless model that replays scripted turns,
-  and a mock Braintrust server.
+- `src/convertLangchainMessagesToAssistantEvalMessages.ts`,
+  `src/scriptedModel.ts` and `src/offline/` are the test support: message
+  mapping, a keyless model that replays scripted turns, and a mock Braintrust
+  server.
 
 ## Commands
 

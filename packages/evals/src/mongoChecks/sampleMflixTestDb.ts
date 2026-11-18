@@ -16,7 +16,7 @@
 
 import { MongoClient } from "mongodb";
 
-import { loadFixture } from "../fixtures.js";
+import { FIXTURES } from "../suite.js";
 import {
   startEphemeralMongo,
   type EphemeralMongo,
@@ -36,7 +36,7 @@ export interface SampleMflixDb {
 
 export async function startSampleMflixDb(): Promise<SampleMflixDb> {
   const seed: MongoSeed = MongoSeedSchema.parse(
-    loadFixture("localMongo", "sample-mflix"),
+    FIXTURES.load("localMongo", "sample-mflix"),
   );
   const mongo: EphemeralMongo = await startEphemeralMongo(seed);
   const client = new MongoClient(mongo.uri);

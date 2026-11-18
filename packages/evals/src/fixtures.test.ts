@@ -14,53 +14,58 @@
  * limitations under the License.
  */
 
-import { describe, expect, it } from "vitest";
+import { afterAll, describe, expect, it } from "vitest";
 
-import { AtlasFixtureSchema } from "./atlas/fixtures.js";
-import {
-  assertFixtureExists,
-  fixtureNames,
-  loadFixture,
-  resolveToolSetup,
-} from "./fixtures.js";
-import { MongoSeedSchema } from "./mongo/seed.js";
+import { tempFixtureStore } from "./testSupport/tempFixtureStore.js";
 
-describe("shipped fixtures", () => {
-  it.each(fixtureNames("mockAtlas"))("atlas/%s is a valid account", (name) => {
-    expect(() => AtlasFixtureSchema.parse(loadFixture("mockAtlas", name))).not.toThrow();
+const store = tempFixtureStore({
+  atlas: { "one-project": { orgs: [{ id: "o", name: "Acme" }] } },
+  mongo: { "shop-orders": { shop: { orders: [{ _id: 1 }] } } },
+});
+afterAll(() => store.remove());
+
+describe("names", () => {
+  it("lists each kind's fixtures, sorted", () => {
+    expect(store.names("mockAtlas")).toEqual(["one-project"]);
+    expect(store.names("localMongo")).toEqual(["shop-orders"]);
   });
 
-  it.each(fixtureNames("localMongo"))("mongo/%s is a valid seed", (name) => {
-    expect(() => MongoSeedSchema.parse(loadFixture("localMongo", name))).not.toThrow();
+  it("lists nothing for a kind with no directory", () => {
+    const empty = tempFixtureStore({});
+    try {
+      expect(empty.names("mockAtlas")).toEqual([]);
+    } finally {
+      empty.remove();
+    }
   });
 });
 
-describe("loadFixture", () => {
+describe("load", () => {
   it("returns a fresh copy each time", () => {
-    const first = loadFixture("localMongo", "shop-orders") as Record<string, unknown>;
+    const first = store.load("localMongo", "shop-orders") as Record<string, unknown>;
     delete first.shop;
-    expect(loadFixture("localMongo", "shop-orders")).toHaveProperty("shop");
+    expect(store.load("localMongo", "shop-orders")).toHaveProperty("shop");
   });
 
   it("names the available fixtures when one is unknown", () => {
-    expect(() => assertFixtureExists("mockAtlas", "nope")).toThrow(
-      /unknown mockAtlas fixture "nope". Available: .*one-project/,
+    expect(() => store.assertExists("mockAtlas", "nope")).toThrow(
+      /unknown mockAtlas fixture "nope". Available: one-project/,
     );
   });
 
   it.each(["../fixtures", "a/b", ""])("rejects the path-like name %j", (name) => {
-    expect(() => assertFixtureExists("mockAtlas", name)).toThrow(/unknown/);
+    expect(() => store.assertExists("mockAtlas", name)).toThrow(/unknown/);
   });
 });
 
 describe("resolveToolSetup", () => {
   it("swaps names for data and leaves absent fields out", () => {
-    const resolved = resolveToolSetup({ mockAtlas: "one-project" });
-    expect(resolved).toEqual({ mockAtlas: loadFixture("mockAtlas", "one-project") });
+    const resolved = store.resolveToolSetup({ mockAtlas: "one-project" });
+    expect(resolved).toEqual({ mockAtlas: store.load("mockAtlas", "one-project") });
     expect(resolved).not.toHaveProperty("localMongo");
   });
 
   it("resolves to an empty setup for a case with none", () => {
-    expect(resolveToolSetup(undefined)).toEqual({});
+    expect(store.resolveToolSetup(undefined)).toEqual({});
   });
 });

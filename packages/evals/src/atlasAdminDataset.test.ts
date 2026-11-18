@@ -19,10 +19,9 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { AtlasFixtureSchema } from "./atlas/fixtures.js";
-import { loadAgentCasesFromFile } from "./cases.js";
-import { loadFixture } from "./fixtures.js";
+import { FIXTURES, loadCases } from "./suite.js";
 
-const cases = loadAgentCasesFromFile(
+const cases = loadCases(
   path.join(import.meta.dirname, "..", "datasets", "atlas-admin.yml"),
 );
 
@@ -53,7 +52,7 @@ describe("atlas-admin dataset", () => {
         }[];
       };
       const seed = AtlasFixtureSchema.parse(
-        loadFixture("mockAtlas", custom.toolSetup.mockAtlas),
+        FIXTURES.load("mockAtlas", custom.toolSetup.mockAtlas),
       );
       for (const { name, args } of custom.script.flatMap((t) => t.toolCalls ?? [])) {
         if (typeof args.projectId !== "string") continue;

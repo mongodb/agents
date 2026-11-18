@@ -17,21 +17,32 @@
 import fs from "node:fs";
 
 import { getConversationEvalCasesFromYaml } from "mongodb-assistant-eval/datasets";
+import type { z } from "zod";
 
-import { assertFixtureExists, type FixtureField } from "./fixtures.js";
+import type { FixtureField, FixtureStore } from "./fixtures.js";
 import { agentToolName, MANAGED_MCP_TOOLS } from "./mcp/managedTools.js";
-import { assertMongoCheckExists } from "./mongoChecks/index.js";
+import { assertMongoCheckExists, type MongoCheck } from "./mongoChecks/index.js";
 import {
   AgentEvalCaseSchema,
+  type AnyAgentEvalCaseSchema,
   type CustomExpected,
   type CustomInput,
 } from "./schemas.js";
 
-type AgentEvalCase = ReturnType<
-  typeof getConversationEvalCasesFromYaml<
-    ReturnType<typeof AgentEvalCaseSchema.parse>
-  >
->[number];
+export type AgentEvalCase = z.infer<typeof AgentEvalCaseSchema>;
+
+export interface AgentCaseOptions<
+  Schema extends AnyAgentEvalCaseSchema = typeof AgentEvalCaseSchema,
+> {
+  /** Where the fixtures that cases name live. */
+  readonly fixtures: FixtureStore;
+  /** Checks a case can name in `input.custom.mongoCheck`. Default none. */
+  readonly mongoChecks?: Readonly<Record<string, MongoCheck>>;
+  /** Tool names the agent has beyond {@link KNOWN_AGENT_TOOLS}. */
+  readonly extraKnownTools?: Iterable<string>;
+  /** Defaults to {@link AgentEvalCaseSchema}. */
+  readonly schema?: Schema;
+}
 
 /**
  * Tools the deep agent always has: its virtual filesystem (skills are read
@@ -51,8 +62,8 @@ export const DEEP_AGENT_BUILT_IN_TOOLS: readonly string[] = [
 ];
 
 /**
- * Names the agent can see: the `mongodb__` tools, the knowledge tools, and
- * the deep agent's built-ins.
+ * Names every agent can see: the `mongodb__` tools, the knowledge tools, and
+ * the deep agent's built-ins. Pass others as `extraKnownTools`.
  */
 export const KNOWN_AGENT_TOOLS: ReadonlySet<string> = new Set([
   ...MANAGED_MCP_TOOLS.map(agentToolName),
@@ -86,11 +97,15 @@ function toolNamesIn(testCase: AgentEvalCase): { where: string; name: string }[]
   return found;
 }
 
-function assertFixturesExist(testCase: AgentEvalCase, label: string): void {
+function assertFixturesExist(
+  testCase: AgentEvalCase,
+  label: string,
+  fixtures: FixtureStore,
+): void {
   const input = testCase.input.custom as CustomInput | undefined;
   for (const [field, name] of Object.entries(input?.toolSetup ?? {})) {
     try {
-      assertFixtureExists(field as FixtureField, name);
+      fixtures.assertExists(field as FixtureField, name);
     } catch (error) {
       throw new Error(
         `${label}: case "${testCase.name ?? "(unnamed)"}" ${(error as Error).message}`,
@@ -99,7 +114,11 @@ function assertFixturesExist(testCase: AgentEvalCase, label: string): void {
   }
 }
 
-function assertMongoCheckValid(testCase: AgentEvalCase, label: string): void {
+function assertMongoCheckValid(
+  testCase: AgentEvalCase,
+  label: string,
+  checks: Readonly<Record<string, MongoCheck>>,
+): void {
   const input = testCase.input.custom as CustomInput | undefined;
   if (input?.mongoCheck === undefined) return;
   const where = `${label}: case "${testCase.name ?? "(unnamed)"}"`;
@@ -107,7 +126,7 @@ function assertMongoCheckValid(testCase: AgentEvalCase, label: string): void {
     throw new Error(`${where} names a mongoCheck but no toolSetup.localMongo`);
   }
   try {
-    assertMongoCheckExists(input.mongoCheck);
+    assertMongoCheckExists(input.mongoCheck, checks);
   } catch (error) {
     throw new Error(`${where} ${(error as Error).message}`);
   }
@@ -119,16 +138,28 @@ function assertMongoCheckValid(testCase: AgentEvalCase, label: string): void {
  * `forbiddenExecuted` would otherwise pass for ever, because a tool that is
  * never called is never executed.
  */
-export function parseAgentCases(yaml: string, label: string): AgentEvalCase[] {
+export function parseAgentCases<
+  Schema extends AnyAgentEvalCaseSchema = typeof AgentEvalCaseSchema,
+>(
+  yaml: string,
+  label: string,
+  {
+    fixtures,
+    mongoChecks = {},
+    extraKnownTools = [],
+    schema,
+  }: AgentCaseOptions<Schema>,
+): z.infer<Schema>[] {
+  const knownTools = new Set([...KNOWN_AGENT_TOOLS, ...extraKnownTools]);
   const cases = getConversationEvalCasesFromYaml({
     yaml,
-    schema: AgentEvalCaseSchema,
+    schema: (schema ?? AgentEvalCaseSchema) as unknown as z.ZodType<z.infer<Schema>>,
   });
   for (const testCase of cases) {
-    assertFixturesExist(testCase, label);
-    assertMongoCheckValid(testCase, label);
+    assertFixturesExist(testCase, label, fixtures);
+    assertMongoCheckValid(testCase, label, mongoChecks);
     for (const { where, name } of toolNamesIn(testCase)) {
-      if (!KNOWN_AGENT_TOOLS.has(name)) {
+      if (!knownTools.has(name)) {
         throw new Error(
           `${label}: case "${testCase.name ?? "(unnamed)"}" names unknown tool "${name}" in ${where}`,
         );
@@ -138,6 +169,8 @@ export function parseAgentCases(yaml: string, label: string): AgentEvalCase[] {
   return cases;
 }
 
-export function loadAgentCasesFromFile(file: string): AgentEvalCase[] {
-  return parseAgentCases(fs.readFileSync(file, "utf8"), file);
+export function loadAgentCasesFromFile<
+  Schema extends AnyAgentEvalCaseSchema = typeof AgentEvalCaseSchema,
+>(file: string, options: AgentCaseOptions<Schema>): z.infer<Schema>[] {
+  return parseAgentCases(fs.readFileSync(file, "utf8"), file, options);
 }

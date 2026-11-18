@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import path from "node:path";
-
 import { createMongoDbAssistantEvalCli } from "mongodb-assistant-eval/cli";
 import {
   makeFactuality,
@@ -27,7 +25,6 @@ import { atlasExplorerConfig } from "../../../agents/atlas-explorer/src/agent_at
 import { atlasQueryInsightsConfig } from "../../../agents/atlas-query-insights/src/agent_atlas_query_insights/config.js";
 import { atlasExplorerAgent } from "./agents/atlasExplorer.js";
 import { atlasQueryInsightsAgent } from "./agents/atlasQueryInsights.js";
-import { loadAgentCasesFromFile } from "./cases.js";
 import { DB_TOOLS_EXPLORER_THRESHOLDS } from "./dbToolsThresholds.js";
 import {
   GUARDRAIL_EXPLORER_THRESHOLDS,
@@ -39,20 +36,21 @@ import {
   KNOWLEDGE_QUERY_INSIGHTS_THRESHOLDS,
 } from "./knowledgeThresholds.js";
 import { makeQueryInsightsJudges } from "./queryInsightsJudges.js";
+import { ReportShape, SuggestedIndexUsage } from "./queryInsightsScorers.js";
 import { QUERY_INSIGHTS_THRESHOLDS } from "./queryInsightsThresholds.js";
 import type { ModelConfig } from "./models.js";
 import { scorers } from "./scorers.js";
+import { DATASET_DIR, FIXTURES, loadCases } from "./suite.js";
+import { MONGO_CHECKS } from "./mongoChecks/registry.js";
 import { makeAgentTask } from "./task.js";
 import { createLocalToolProvider } from "./tools/localToolProvider.js";
 import type { ToolProvider } from "./tools/types.js";
 import { withNamedFixtures } from "./tools/withNamedFixtures.js";
 
-const DATASET_DIR = path.join(import.meta.dirname, "..", "datasets");
-
 function dataset(file: string, description: string) {
   return {
     description,
-    getCases: async () => loadAgentCasesFromFile(path.join(DATASET_DIR, file)),
+    getCases: async () => loadCases(`${DATASET_DIR}/${file}`),
   };
 }
 
@@ -89,7 +87,7 @@ export function buildEvalCli({
   judge = judgeModelConfig(),
   extraDatasets = {},
 }: EvalCliOptions = {}) {
-  const toolProvider = withNamedFixtures(baseProvider);
+  const toolProvider = withNamedFixtures(baseProvider, FIXTURES);
   const queryInsightsJudges = makeQueryInsightsJudges(judge);
   return createMongoDbAssistantEvalCli({
     projectName: "agents-evals",
@@ -179,13 +177,19 @@ export function buildEvalCli({
       ),
     },
     tasks: {
-      explorer: makeAgentTask(atlasExplorerAgent, { toolProvider }),
+      explorer: makeAgentTask(atlasExplorerAgent, {
+        toolProvider,
+        mongoChecks: MONGO_CHECKS,
+      }),
       "query-insights": makeAgentTask(atlasQueryInsightsAgent, {
         toolProvider,
+        mongoChecks: MONGO_CHECKS,
       }),
     },
     scorers: {
       ...scorers,
+      ReportShape: { scorer: ReportShape },
+      SuggestedIndexUsage: { scorer: SuggestedIndexUsage },
       Factuality: {
         scorer: makeFactuality(judge),
         description:

@@ -19,7 +19,7 @@ import path from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { buildEvalCli } from "./cli.js";
-import { loadAgentCasesFromFile, parseAgentCases } from "./cases.js";
+import { loadCases, parseCases } from "./suite.js";
 import { runEvalCliWithMockBraintrust } from "./offline/runEvalCliWithMockBraintrust.js";
 import type { CustomInput } from "./schemas.js";
 import { createLocalToolProvider } from "./tools/localToolProvider.js";
@@ -45,7 +45,7 @@ const READ_TOOLS = [
 ];
 
 describe("db-tools dataset", () => {
-  const cases = loadAgentCasesFromFile(DB_TOOLS_DATASET);
+  const cases = loadCases(DB_TOOLS_DATASET);
   const calledTools = (testCase: (typeof cases)[number]) =>
     (testCase.expected?.outputMessages ?? []).flatMap((message) =>
       message.role === "assistant-tool"
@@ -139,7 +139,7 @@ describe("db-tools through the CLI", () => {
             "db-tools-scripted": {
               description: "Test only",
               getCases: async () =>
-                parseAgentCases(SCRIPTED_CASES, "db-tools-scripted"),
+                parseCases(SCRIPTED_CASES, "db-tools-scripted"),
             },
           },
         }),

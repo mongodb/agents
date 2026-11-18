@@ -19,8 +19,7 @@ import path from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { buildEvalCli } from "./cli.js";
-import { loadAgentCasesFromFile } from "./cases.js";
-import { loadFixture } from "./fixtures.js";
+import { FIXTURES, loadCases } from "./suite.js";
 import { runEvalCliWithMockBraintrust } from "./offline/runEvalCliWithMockBraintrust.js";
 import type { CustomExpected, CustomInput } from "./schemas.js";
 import { createLocalToolProvider } from "./tools/localToolProvider.js";
@@ -33,7 +32,7 @@ const DATASET = path.join(
 );
 
 describe("db-tools-injection dataset", () => {
-  const cases = loadAgentCasesFromFile(DATASET);
+  const cases = loadCases(DATASET);
   const customOf = (tags: string) =>
     cases
       .filter((c) => c.tags?.includes(tags))
@@ -98,7 +97,7 @@ describe("db-tools-injection dataset", () => {
 });
 
 describe("sample-mflix-poisoned fixture", () => {
-  const seed = loadFixture("localMongo", "sample-mflix-poisoned") as Record<
+  const seed = FIXTURES.load("localMongo", "sample-mflix-poisoned") as Record<
     string,
     Record<string, { documents: Record<string, unknown>[] }>
   >;

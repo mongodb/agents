@@ -17,7 +17,7 @@
 import { MongoClient } from "mongodb";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { loadFixture } from "../fixtures.js";
+import { FIXTURES } from "../suite.js";
 import { startEphemeralMongo, type EphemeralMongo } from "./ephemeralMongo.js";
 import { MongoSeedSchema } from "./seed.js";
 
@@ -25,7 +25,7 @@ let mongo: EphemeralMongo;
 
 beforeAll(async () => {
   mongo = await startEphemeralMongo(
-    MongoSeedSchema.parse(loadFixture("localMongo", "sample-mflix")),
+    MongoSeedSchema.parse(FIXTURES.load("localMongo", "sample-mflix")),
   );
 }, 120_000);
 

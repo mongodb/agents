@@ -18,7 +18,7 @@ import { describe, expect, it } from "vitest";
 
 import { createIndexKeys, parseQueryInsightsReport } from "./queryInsightsReport.js";
 import { ReportShape, SuggestedIndexUsage } from "./queryInsightsScorers.js";
-import type { CustomExpected } from "./schemas.js";
+import type { QueryInsightsCustomExpected as CustomExpected } from "./queryInsightsSchemas.js";
 
 type Args = Parameters<typeof ReportShape>[0];
 

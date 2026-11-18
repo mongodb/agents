@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import { describe, expect, it, vi } from "vitest";
+import { afterAll, describe, expect, it, vi } from "vitest";
 
-import { loadFixture } from "../fixtures.js";
+import { tempFixtureStore } from "../testSupport/tempFixtureStore.js";
 import type { CaseTools, CaseToolsRequest, ToolProvider } from "./types.js";
 import { withNamedFixtures } from "./withNamedFixtures.js";
 
@@ -26,10 +26,16 @@ const caseTools: CaseTools = {
   dispose: async () => {},
 };
 
+const fixtures = tempFixtureStore({
+  atlas: { "one-project": { orgs: [{ id: "o", name: "Acme" }] } },
+  mongo: { "shop-orders": { shop: { orders: [{ _id: 1 }] } } },
+});
+afterAll(() => fixtures.remove());
+
 describe("withNamedFixtures", () => {
   it("passes fixture data, not names, to the wrapped provider", async () => {
     const forCase = vi.fn(async (_request: CaseToolsRequest) => caseTools);
-    const provider = withNamedFixtures({ forCase });
+    const provider = withNamedFixtures({ forCase }, fixtures);
 
     await provider.forCase({
       allowWrites: true,
@@ -39,8 +45,8 @@ describe("withNamedFixtures", () => {
     expect(forCase).toHaveBeenCalledWith({
       allowWrites: true,
       setup: {
-        mockAtlas: loadFixture("mockAtlas", "one-project"),
-        localMongo: loadFixture("localMongo", "shop-orders"),
+        mockAtlas: fixtures.load("mockAtlas", "one-project"),
+        localMongo: fixtures.load("localMongo", "shop-orders"),
       },
     });
   });
@@ -51,7 +57,7 @@ describe("withNamedFixtures", () => {
       stop: vi.fn(async () => {}),
       forCase: async () => caseTools,
     };
-    const provider = withNamedFixtures(inner);
+    const provider = withNamedFixtures(inner, fixtures);
     await provider.start?.();
     await provider.stop?.();
     expect(inner.start).toHaveBeenCalledOnce();
@@ -59,7 +65,7 @@ describe("withNamedFixtures", () => {
   });
 
   it("fails a case that names a missing fixture", async () => {
-    const provider = withNamedFixtures({ forCase: async () => caseTools });
+    const provider = withNamedFixtures({ forCase: async () => caseTools }, fixtures);
     await expect(
       provider.forCase({ allowWrites: false, setup: { mockAtlas: "nope" } }),
     ).rejects.toThrow(/unknown mockAtlas fixture "nope"/);

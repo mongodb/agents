@@ -18,7 +18,7 @@ import { Document, stringify } from "yaml";
 import { z } from "zod";
 
 import type { AtlasFixtureInput } from "../atlas/fixtures.js";
-import type { CustomExpected } from "../schemas.js";
+import type { QueryInsightsCustomExpected as CustomExpected } from "../queryInsightsSchemas.js";
 import { fillPlaceholders, slowLogLine, type SlowLogShape } from "./slowLog.js";
 
 const PERFORMANCE_ADVISOR = "mongodb__atlas_get_performance_advisor";

@@ -20,7 +20,7 @@ import type {
 } from "mongodb-assistant-eval/eval";
 import type { JudgeModelConfig } from "mongodb-assistant-eval/scorers";
 
-import type { CustomExpected } from "./schemas.js";
+import type { QueryInsightsCustomExpected as CustomExpected } from "./queryInsightsSchemas.js";
 import type { AgentTaskInput, AgentTaskOutput } from "./task.js";
 
 type Expected = ConversationEvalCaseExpectedWithCustom<CustomExpected>;

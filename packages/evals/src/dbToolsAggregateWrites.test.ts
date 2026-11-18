@@ -19,7 +19,7 @@ import path from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { buildEvalCli } from "./cli.js";
-import { loadAgentCasesFromFile } from "./cases.js";
+import { loadCases } from "./suite.js";
 import { runEvalCliWithMockBraintrust } from "./offline/runEvalCliWithMockBraintrust.js";
 import type { CustomExpected, CustomInput } from "./schemas.js";
 import { createLocalToolProvider } from "./tools/localToolProvider.js";
@@ -32,7 +32,7 @@ const DATASET = path.join(
 );
 
 describe("db-tools-aggregate-writes dataset", () => {
-  const cases = loadAgentCasesFromFile(DATASET);
+  const cases = loadCases(DATASET);
   const byName = (name: string) => cases.find((c) => c.name === name);
   const customOf = (name: string) =>
     byName(name)?.input.custom as CustomInput | undefined;

@@ -19,11 +19,11 @@ import path from "node:path";
 import { GUARDRAIL_REFUSAL_MESSAGE } from "@mongodb-js/atlas-agents-core";
 import { describe, expect, it } from "vitest";
 
-import { loadAgentCasesFromFile } from "./cases.js";
+import { loadCases } from "./suite.js";
 import type { CustomExpected, CustomInput } from "./schemas.js";
 
 const load = (file: string) =>
-  loadAgentCasesFromFile(path.join(import.meta.dirname, "..", "datasets", file));
+  loadCases(path.join(import.meta.dirname, "..", "datasets", file));
 
 const advanced = load("prompt-injection-advanced.yml");
 const lookalikes = load("prompt-injection-lookalikes.yml");

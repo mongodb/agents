@@ -19,7 +19,7 @@ import path from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { buildEvalCli } from "./cli.js";
-import { loadAgentCasesFromFile } from "./cases.js";
+import { loadCases } from "./suite.js";
 import type { CustomExpected, CustomInput } from "./schemas.js";
 import { runEvalCliWithMockBraintrust } from "./offline/runEvalCliWithMockBraintrust.js";
 import { createLocalToolProvider } from "./tools/localToolProvider.js";
@@ -39,7 +39,7 @@ const MODES = [
 ];
 
 describe("db-tools-writes dataset", () => {
-  const cases = loadAgentCasesFromFile(DATASET);
+  const cases = loadCases(DATASET);
 
   it("has every operation in every mode", () => {
     expect(cases.map((c) => c.name).sort()).toEqual(

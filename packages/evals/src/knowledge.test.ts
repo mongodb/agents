@@ -21,7 +21,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { z } from "zod";
 
 import { buildEvalCli } from "./cli.js";
-import { loadAgentCasesFromFile, parseAgentCases } from "./cases.js";
+import { loadCases, parseCases } from "./suite.js";
 import { runEvalCliWithMockBraintrust } from "./offline/runEvalCliWithMockBraintrust.js";
 import { createLocalToolProvider } from "./tools/localToolProvider.js";
 import type { ToolProvider } from "./tools/types.js";
@@ -34,7 +34,7 @@ const KNOWLEDGE_DATASET = path.join(
 );
 
 describe("knowledge dataset", () => {
-  const cases = loadAgentCasesFromFile(KNOWLEDGE_DATASET);
+  const cases = loadCases(KNOWLEDGE_DATASET);
 
   it("has the general and the version-specific cases", () => {
     expect(cases.length).toBeGreaterThanOrEqual(35);
@@ -143,7 +143,7 @@ describe("knowledge dataset through the CLI", () => {
               "knowledge-scripted": {
                 description: "Test only",
                 getCases: async () =>
-                  parseAgentCases(SCRIPTED_CASES, "knowledge-scripted"),
+                  parseCases(SCRIPTED_CASES, "knowledge-scripted"),
               },
             },
           }),

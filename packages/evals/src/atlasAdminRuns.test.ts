@@ -21,12 +21,12 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { RecordedRequest } from "./atlas/mockAtlasApi.js";
 import { buildEvalCli } from "./cli.js";
 import { AtlasFixtureSchema } from "./atlas/fixtures.js";
-import { loadAgentCasesFromFile } from "./cases.js";
+import { loadCases } from "./suite.js";
 import { runEvalCliWithMockBraintrust } from "./offline/runEvalCliWithMockBraintrust.js";
 import { createLocalToolProvider } from "./tools/localToolProvider.js";
 import type { CaseToolsRequest, ToolProvider } from "./tools/types.js";
 
-const cases = loadAgentCasesFromFile(
+const cases = loadCases(
   path.join(import.meta.dirname, "..", "datasets", "atlas-admin.yml"),
 );
 
