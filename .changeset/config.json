@@ -7,7 +7,8 @@
       "@mongodb-js/atlas-agents-core",
       "@mongodb-js/atlas-explorer-agent",
       "@mongodb-js/atlas-query-insights-agent",
-      "@mongodb-js/agent-engine-chat"
+      "@mongodb-js/agent-engine-chat",
+      "@mongodb-js/atlas-agents-eval"
     ]
   ],
   "linked": [],

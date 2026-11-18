@@ -27,6 +27,8 @@ Packages under [`packages/`](packages):
   - Public: published to npm.
 - [`@mongodb-js/agent-engine-chat`](packages/agent-engine-chat): general-purpose [Chat SDK](https://chat-sdk.dev) library that connects any Agent Engine workspace to Slack or other chat platforms.
   - Public: published to npm.
+- [`@mongodb-js/atlas-agents-eval`](packages/atlas-agents-eval): eval harness that runs LangGraph deep agents through `mongodb-assistant-eval` against a mock Atlas Admin API and an ephemeral `mongod`.
+  - Public: published to npm.
 - [`@repo/agent-engine-load-test`](packages/agent-engine-load-test): CLI for measuring sandbox reuse and Atlas MCP access-token minting.
 - [`@repo/update-skills`](packages/update-skills): CLI for refreshing the MongoDB Agent Skills in each agent package from `mongodb/agent-skills`.
 

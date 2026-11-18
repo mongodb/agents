@@ -25,6 +25,7 @@ packages=(
   atlas-explorer-agent
   atlas-query-insights-agent
   agent-engine-chat
+  atlas-agents-eval
 )
 
 work="$(mktemp -d)"
@@ -50,7 +51,8 @@ done
 peers="$(
   cd "$root" && node -e '
     const fs = require("node:fs");
-    const found = new Set();
+    // The first package to name a dependency picks its version.
+    const found = new Map();
     const packagesUnderTest = new Set(
       process.argv.slice(1).map((dir) => `@mongodb-js/${dir}`),
     );
@@ -63,16 +65,18 @@ peers="$(
       ];
       for (const name of wanted) {
         if (pkg.peerDependenciesMeta?.[name]?.optional) continue;
-        if (packagesUnderTest.has(name)) continue;
+        if (packagesUnderTest.has(name) || found.has(name)) continue;
         const installed = JSON.parse(
           fs.readFileSync(`${pkgDir}/node_modules/${name}/package.json`, "utf8"),
         );
-        found.add(`${name}@${installed.version}`);
+        found.set(name, `${name}@${installed.version}`);
       }
     }
-    console.log([...found].join(" "));
+    console.log([...found.values()].join(" "));
   ' "${packages[@]}"
 )"
+# mongodb-assistant-eval's types import yargs without depending on its types.
+peers="$peers @types/yargs@17.0.35"
 echo "Pinned: $peers"
 
 cp "$root/scripts/check-packages/consumer.ts" "$work/consumer/consumer.ts"
@@ -81,7 +85,7 @@ echo '{"name":"consumer","private":true,"type":"module"}' > package.json
 # shellcheck disable=SC2086
 npm install --ignore-scripts --legacy-peer-deps "$work"/tarballs/*.tgz $peers typescript@5 tsx @types/node@24
 npx tsc --noEmit --strict --module nodenext --moduleResolution nodenext \
-  --target es2022 --lib esnext --types node consumer.ts
+  --target es2022 --lib esnext,dom --types node consumer.ts
 npx tsx consumer.ts
 
 # The agent packages ship their skills and a `sync-skills` bin that copies

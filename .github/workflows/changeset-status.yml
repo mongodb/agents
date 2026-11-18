@@ -9,6 +9,7 @@ on:
       - "packages/atlas-explorer-agent/**"
       - "packages/atlas-query-insights-agent/**"
       - "packages/agent-engine-chat/**"
+      - "packages/atlas-agents-eval/**"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
