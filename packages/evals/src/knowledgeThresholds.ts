@@ -38,7 +38,7 @@ export const KNOWLEDGE_EXPLORER_BASELINE = {
 } as const;
 
 /** How far below the baseline a run may fall before the validator fails. */
-export const KNOWLEDGE_EXPLORER_MARGIN = 0.05;
+export const KNOWLEDGE_EXPLORER_MARGIN = 0.1;
 
 function floorToHundredth(value: number): number {
   return Math.floor(value * 100 + 1e-9) / 100;

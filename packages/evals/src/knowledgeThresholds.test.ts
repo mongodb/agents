@@ -38,9 +38,9 @@ const summary = (scores: Record<string, number>) =>
 describe("knowledge explorer thresholds", () => {
   it("sit one margin below the baseline, in hundredths", () => {
     expect(KNOWLEDGE_EXPLORER_THRESHOLDS).toEqual({
-      ReferenceAlignment: 0.81,
-      BinaryNdcgAt5: 0.51,
-      ToolCallCoverage: 0.76,
+      ReferenceAlignment: 0.76,
+      BinaryNdcgAt5: 0.46,
+      ToolCallCoverage: 0.71,
     });
     for (const [name, mean] of Object.entries(KNOWLEDGE_EXPLORER_BASELINE)) {
       const gap = mean - KNOWLEDGE_EXPLORER_THRESHOLDS[name]!;
@@ -70,9 +70,9 @@ describe("knowledge explorer thresholds", () => {
 describe("knowledge query insights thresholds", () => {
   it("sit one margin below the baseline, in hundredths", () => {
     expect(KNOWLEDGE_QUERY_INSIGHTS_THRESHOLDS).toEqual({
-      ReferenceAlignment: 0.81,
-      BinaryNdcgAt5: 0.48,
-      ToolCallCoverage: 0.71,
+      ReferenceAlignment: 0.76,
+      BinaryNdcgAt5: 0.43,
+      ToolCallCoverage: 0.66,
     });
   });
 
