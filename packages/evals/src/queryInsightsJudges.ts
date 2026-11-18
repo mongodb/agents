@@ -21,7 +21,7 @@ import type {
 import type { JudgeModelConfig } from "mongodb-assistant-eval/scorers";
 
 import type { QueryInsightsCustomExpected as CustomExpected } from "./queryInsightsSchemas.js";
-import type { AgentTaskInput, AgentTaskOutput } from "./task.js";
+import type { AgentTaskInput, AgentTaskOutput } from "@mongodb-js/atlas-agents-eval";
 
 type Expected = ConversationEvalCaseExpectedWithCustom<CustomExpected>;
 type Scorer = ConversationEvalScorer<AgentTaskInput, AgentTaskOutput, Expected>;

@@ -7,6 +7,7 @@ on:
       - "packages/atlas-agents-core/**"
       - "packages/atlas-explorer-agent/**"
       - "packages/atlas-query-insights-agent/**"
+      - "packages/atlas-agents-eval/**"
       - "packages/evals/**"
       - "packages/testing/**"
       - "package.json"
@@ -25,6 +26,7 @@ on:
       - "packages/atlas-agents-core/**"
       - "packages/atlas-explorer-agent/**"
       - "packages/atlas-query-insights-agent/**"
+      - "packages/atlas-agents-eval/**"
       - "packages/evals/**"
       - "packages/testing/**"
       - "package.json"
@@ -67,6 +69,8 @@ jobs:
             command: pnpm --filter @mongodb-js/atlas-query-insights-agent test
           - name: atlas-query-insights
             command: pnpm --filter atlas-query-insights test
+          - name: atlas-agents-eval
+            command: pnpm --filter @mongodb-js/atlas-agents-eval test
           - name: evals
             command: pnpm --filter @repo/evals test
     steps:

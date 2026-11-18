@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { actualDump, assertDumpsEqual, seedCopy } from "./expectedDump.js";
-import type { MongoCheck } from "./types.js";
+import { actualDump, assertDumpsEqual, seedCopy } from "@mongodb-js/atlas-agents-eval/mongo";
+import type { MongoCheck } from "@mongodb-js/atlas-agents-eval/mongo";
 
 /** The theaters collection is gone. Everything else is as seeded. */
 export const theatersDropped: MongoCheck = async (mongo) => {

@@ -20,9 +20,9 @@ import { FIXTURES } from "../suite.js";
 import {
   startEphemeralMongo,
   type EphemeralMongo,
-} from "../mongo/ephemeralMongo.js";
-import { MongoSeedSchema, seedMongo, type MongoSeed } from "../mongo/seed.js";
-import type { MongoCheck } from "./types.js";
+} from "@mongodb-js/atlas-agents-eval/mongo";
+import { MongoSeedSchema, seedMongo, type MongoSeed } from "@mongodb-js/atlas-agents-eval/mongo";
+import type { MongoCheck } from "@mongodb-js/atlas-agents-eval/mongo";
 
 /** A real mongod holding `sample-mflix`, for a check's own test. */
 export interface SampleMflixDb {

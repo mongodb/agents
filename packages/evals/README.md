@@ -9,30 +9,24 @@ This is the harness. Eval suites, thresholds, and CI gating are separate work
 
 ## What's in it
 
-- `src/task.ts` builds the eval task for an agent. It runs the agent's real
-  deep agent, with its prompt, skills and middleware, against per-case tools.
-- `src/tools/` has the tool providers. `localToolProvider` starts one
-  `mongodb-mcp-server` per case. Atlas Admin API calls go to a shared mock
-  (`src/atlas/`) and database calls go to an ephemeral `mongod`
-  (`src/mongo/`). Nothing touches a real Atlas project.
-- `src/mcp/managedTools.ts` lists the server tools the harness manages. A
-  contract test fails when a server upgrade adds or removes one.
-- `src/cases.ts` loads YAML datasets and rejects unknown tool, fixture and
-  Mongo check names.
-- `src/suite.ts` binds the case loader to this package's `fixtures/`, Mongo
-  checks and case schema.
-- `src/scorers.ts` has the agent-specific scorers on top of the library's
-  `AgentTrajectoryScorer`.
+The reusable harness lives in
+[`@mongodb-js/atlas-agents-eval`](../atlas-agents-eval). It has the eval
+task, the tool providers (mock Atlas Admin API, `mongodb-mcp-server`,
+ephemeral `mongod`), the case loader, the scorers, the scripted model and
+the offline test support. This package holds the Atlas agents' suites:
+
+- `src/cli.ts` builds the eval CLI with `createAgentEvalCli`. It names the
+  agents, datasets, models, validators and the Query Insights scorers.
+- `src/suite.ts` binds the case loader to this package's `fixtures/`,
+  Mongo checks and case schema.
+- `src/queryInsightsSchemas.ts` and the Query Insights judges and scorers
+  extend the generic case schema and scorers.
 - `datasets/` has the smoke datasets, the input guardrail suite and the
   database tools suite (`db-tools.yml`, ported by `pnpm port:cases --kind
   db-tools`, the write cases in `db-tools-writes.yml`, the `$out` and `$merge`
   cases in `db-tools-aggregate-writes.yml` and the prompt injection cases in
   `db-tools-injection.yml`). `fixtures/` has the mock Atlas accounts and
   MongoDB seeds that cases name. `src/` holds only TypeScript.
-- `src/convertLangchainMessagesToAssistantEvalMessages.ts`,
-  `src/scriptedModel.ts` and `src/offline/` are the test support: message
-  mapping, a keyless model that replays scripted turns, and a mock Braintrust
-  server.
 
 ## Commands
 
@@ -329,7 +323,7 @@ The scripted model replays each case's `script`, so
 `src/queryInsightsRuns.test.ts` runs the three datasets offline with no key.
 Its replies are not reports, so the report scores from that run only show
 that the harness works. The judges there are a stub,
-`src/offline/firstChoiceJudge.ts`. The test asserts that every case runs and
+`firstChoiceJudge` from `@mongodb-js/atlas-agents-eval/testing`. The test asserts that every case runs and
 that `ToolCallCoverage`, `AnswerMatches` and `NoForbiddenExecuted` have no
 misses.
 
@@ -338,8 +332,9 @@ misses.
 Cases are YAML in `datasets/`. `input.custom` holds `script` (turns for
 the scripted model), `toolSetup` (fixture names), `allowWrites`, `approval`
 and `defaultData`. `expected.custom` holds `forbiddenExecuted`,
-`expectApprovalFor` and `answerMatches`. See `src/schemas.ts` for the exact
-shape. `answerMatches` is a regular expression, so it can also assert absence
+`expectApprovalFor` and `answerMatches`. See `schemas.ts` in
+`@mongodb-js/atlas-agents-eval` and `src/queryInsightsSchemas.ts` for the
+exact shape. `answerMatches` is a regular expression, so it can also assert absence
 with a negative lookahead, for example `^(?![\s\S]*secret)`.
 
 Cases name their fixtures and never hold the data:

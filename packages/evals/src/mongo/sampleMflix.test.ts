@@ -18,8 +18,8 @@ import { MongoClient } from "mongodb";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { FIXTURES } from "../suite.js";
-import { startEphemeralMongo, type EphemeralMongo } from "./ephemeralMongo.js";
-import { MongoSeedSchema } from "./seed.js";
+import { startEphemeralMongo, type EphemeralMongo } from "@mongodb-js/atlas-agents-eval/mongo";
+import { MongoSeedSchema } from "@mongodb-js/atlas-agents-eval/mongo";
 
 let mongo: EphemeralMongo;
 

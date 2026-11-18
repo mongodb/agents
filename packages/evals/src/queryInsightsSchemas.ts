@@ -16,7 +16,7 @@
 
 import { z } from "zod";
 
-import { CustomExpectedSchema, makeAgentEvalCaseSchema } from "./schemas.js";
+import { CustomExpectedSchema, makeAgentEvalCaseSchema } from "@mongodb-js/atlas-agents-eval";
 
 /** Query Insights' slot in `expected.custom`. */
 export const QueryInsightsExpectedShape = {

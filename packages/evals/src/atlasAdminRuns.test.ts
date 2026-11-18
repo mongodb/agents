@@ -18,13 +18,13 @@ import path from "node:path";
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import type { RecordedRequest } from "./atlas/mockAtlasApi.js";
+import type { RecordedRequest } from "@mongodb-js/atlas-agents-eval/atlas";
 import { buildEvalCli } from "./cli.js";
-import { AtlasFixtureSchema } from "./atlas/fixtures.js";
+import { AtlasFixtureSchema } from "@mongodb-js/atlas-agents-eval/atlas";
 import { loadCases } from "./suite.js";
-import { runEvalCliWithMockBraintrust } from "./offline/runEvalCliWithMockBraintrust.js";
-import { createLocalToolProvider } from "./tools/localToolProvider.js";
-import type { CaseToolsRequest, ToolProvider } from "./tools/types.js";
+import { runEvalCliWithMockBraintrust } from "@mongodb-js/atlas-agents-eval/testing";
+import { createLocalToolProvider } from "@mongodb-js/atlas-agents-eval/tools";
+import type { CaseToolsRequest, ToolProvider } from "@mongodb-js/atlas-agents-eval/tools";
 
 const cases = loadCases(
   path.join(import.meta.dirname, "..", "datasets", "atlas-admin.yml"),

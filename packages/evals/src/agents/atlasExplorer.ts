@@ -18,7 +18,7 @@ import { buildAtlasExplorerAgentOptions } from "@mongodb-js/atlas-explorer-agent
 
 import { atlasExplorerConfig } from "../../../../agents/atlas-explorer/src/agent_atlas_explorer/config.js";
 import { packageDirectory } from "../paths.js";
-import type { AgentDefinition } from "./definition.js";
+import type { AgentDefinition } from "@mongodb-js/atlas-agents-eval";
 
 export const atlasExplorerAgent: AgentDefinition = {
   name: "atlas-explorer",

@@ -17,8 +17,8 @@
 import { describe, expect, it } from "vitest";
 import { parse } from "yaml";
 
-import { AtlasFixtureSchema } from "../atlas/fixtures.js";
-import { AgentEvalCaseSchema } from "../schemas.js";
+import { AtlasFixtureSchema } from "@mongodb-js/atlas-agents-eval/atlas";
+import { AgentEvalCaseSchema } from "@mongodb-js/atlas-agents-eval";
 import {
   QUERY_INSIGHTS_CLUSTER,
   QUERY_INSIGHTS_PROJECT_ID,

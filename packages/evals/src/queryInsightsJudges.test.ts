@@ -20,7 +20,7 @@ import type { AddressInfo } from "node:net";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { JudgeModelConfig } from "mongodb-assistant-eval/scorers";
 
-import { judgeModelConfig } from "./judge.js";
+import { judgeModelConfig } from "@mongodb-js/atlas-agents-eval";
 import { judgeChoice, makeQueryInsightsJudges } from "./queryInsightsJudges.js";
 import type { QueryInsightsCustomExpected as CustomExpected } from "./queryInsightsSchemas.js";
 

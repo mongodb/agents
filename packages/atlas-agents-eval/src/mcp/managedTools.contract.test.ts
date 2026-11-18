@@ -16,8 +16,6 @@
 
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
-import { ATLAS_QUERY_INSIGHTS_MCP_TOOLS } from "@mongodb-js/atlas-query-insights-agent";
-import { READ_ONLY_MCP_TOOLS } from "@mongodb-js/atlas-explorer-agent";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { startMockAtlasApi, type MockAtlasApi } from "../atlas/mockAtlasApi.js";
@@ -26,7 +24,6 @@ import {
   MANAGED_MCP_TOOLS,
   disabledToolsEnv,
   isManagedMcpTool,
-  serverToolName,
 } from "./managedTools.js";
 import { startMcpServer, type McpServerProcess } from "./startMcpServer.js";
 
@@ -69,9 +66,6 @@ const seed = {
     },
   ],
 };
-
-/** Tools the agents allow that the local server has no equivalent for. */
-const MANAGED_SERVICE_ONLY = ["remote-atlas-connect"];
 
 let mock: MockAtlasApi;
 let server: McpServerProcess;
@@ -135,20 +129,6 @@ describe("managed tool filter", () => {
     expect(serverTools).toContain("atlas-connect-cluster");
     expect(serverTools).toContain("connect");
     expect(serverTools.filter(isManagedMcpTool)).not.toContain("connect");
-  });
-
-  it("keeps every tool the agents allow, bar the managed-only ones", () => {
-    const allowed = new Set([
-      ...READ_ONLY_MCP_TOOLS,
-      ...ATLAS_QUERY_INSIGHTS_MCP_TOOLS,
-    ]);
-    const wanted = [...allowed]
-      .map(serverToolName)
-      .filter((n): n is string => n !== undefined)
-      .filter((n) => !MANAGED_SERVICE_ONLY.includes(n));
-    expect(serverTools.filter(isManagedMcpTool)).toEqual(
-      expect.arrayContaining(wanted),
-    );
   });
 
   it("matches the reviewed tool list", () => {

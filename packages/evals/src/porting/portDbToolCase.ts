@@ -19,7 +19,7 @@ import { z } from "zod";
 import {
   agentToolName,
   MANAGED_MCP_TOOLS,
-} from "../mcp/managedTools.js";
+} from "@mongodb-js/atlas-agents-eval/tools";
 
 /**
  * The fixture every ported database tool case reads. Source cases use the

@@ -22,9 +22,9 @@ import { z } from "zod";
 
 import { buildEvalCli } from "./cli.js";
 import { loadCases, parseCases } from "./suite.js";
-import { runEvalCliWithMockBraintrust } from "./offline/runEvalCliWithMockBraintrust.js";
-import { createLocalToolProvider } from "./tools/localToolProvider.js";
-import type { ToolProvider } from "./tools/types.js";
+import { runEvalCliWithMockBraintrust } from "@mongodb-js/atlas-agents-eval/testing";
+import { createLocalToolProvider } from "@mongodb-js/atlas-agents-eval/tools";
+import type { ToolProvider } from "@mongodb-js/atlas-agents-eval/tools";
 
 const KNOWLEDGE_DATASET = path.join(
   import.meta.dirname,

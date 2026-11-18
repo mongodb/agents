@@ -18,9 +18,9 @@ import { allRatingsSetToTen } from "./allRatingsSetToTen.js";
 import { moviesBefore1950CopiedToClassicMovies } from "./moviesBefore1950CopiedToClassicMovies.js";
 import { moviesBefore1950Deleted } from "./moviesBefore1950Deleted.js";
 import { myHomeMovieInserted } from "./myHomeMovieInserted.js";
-import { seedUnchanged } from "./seedUnchanged.js";
+import { seedUnchanged } from "@mongodb-js/atlas-agents-eval/mongo";
 import { theatersDropped } from "./theatersDropped.js";
-import type { MongoCheck } from "./types.js";
+import type { MongoCheck } from "@mongodb-js/atlas-agents-eval/mongo";
 
 /**
  * Every check a case can name in `input.custom.mongoCheck`. A static map, not

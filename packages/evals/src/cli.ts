@@ -20,7 +20,7 @@ import type { JudgeModelConfig } from "mongodb-assistant-eval/scorers";
 
 import { atlasExplorerConfig } from "../../../agents/atlas-explorer/src/agent_atlas_explorer/config.js";
 import { atlasQueryInsightsConfig } from "../../../agents/atlas-query-insights/src/agent_atlas_query_insights/config.js";
-import { createAgentEvalCli, type AgentEvalDataset } from "./agentEvalCli.js";
+import { createAgentEvalCli, type AgentEvalDataset } from "@mongodb-js/atlas-agents-eval";
 import { atlasExplorerAgent } from "./agents/atlasExplorer.js";
 import { atlasQueryInsightsAgent } from "./agents/atlasQueryInsights.js";
 import { DB_TOOLS_EXPLORER_THRESHOLDS } from "./dbToolsThresholds.js";
@@ -38,7 +38,7 @@ import { RepoEvalCaseSchema } from "./queryInsightsSchemas.js";
 import { ReportShape, SuggestedIndexUsage } from "./queryInsightsScorers.js";
 import { QUERY_INSIGHTS_THRESHOLDS } from "./queryInsightsThresholds.js";
 import { DATASET_DIR, FIXTURES } from "./suite.js";
-import type { ToolProvider } from "./tools/types.js";
+import type { ToolProvider } from "@mongodb-js/atlas-agents-eval/tools";
 
 export interface EvalCliOptions {
   /** Defaults to the local servers. Tests pass stubs. */

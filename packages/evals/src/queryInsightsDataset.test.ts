@@ -21,7 +21,7 @@ import { describe, expect, it } from "vitest";
 import { parse } from "yaml";
 
 import { loadCases } from "./suite.js";
-import { AtlasFixtureSchema } from "./atlas/fixtures.js";
+import { AtlasFixtureSchema } from "@mongodb-js/atlas-agents-eval/atlas";
 
 const FIXTURE_DIR = path.join(import.meta.dirname, "..", "fixtures", "atlas");
 const DATASET = path.join(import.meta.dirname, "..", "datasets", "query-insights.yml");

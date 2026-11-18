@@ -20,8 +20,8 @@ import path from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { buildEvalCli } from "./cli.js";
-import { runEvalCliWithMockBraintrust } from "./offline/runEvalCliWithMockBraintrust.js";
-import { createLocalToolProvider } from "./tools/localToolProvider.js";
+import { runEvalCliWithMockBraintrust } from "@mongodb-js/atlas-agents-eval/testing";
+import { createLocalToolProvider } from "@mongodb-js/atlas-agents-eval/tools";
 
 const PACKAGE_JSON = path.join(import.meta.dirname, "..", "package.json");
 const DATASET_DIR = path.join(import.meta.dirname, "..", "datasets");

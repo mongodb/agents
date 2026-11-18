@@ -22,8 +22,8 @@ import {
   docsOf,
   seedCopy,
   type Doc,
-} from "./expectedDump.js";
-import type { MongoCheck } from "./types.js";
+} from "@mongodb-js/atlas-agents-eval/mongo";
+import type { MongoCheck } from "@mongodb-js/atlas-agents-eval/mongo";
 
 type SetRating = (movie: Doc) => Doc;
 
