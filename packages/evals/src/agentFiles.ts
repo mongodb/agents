@@ -22,28 +22,33 @@ import type { FileData } from "deepagents";
 const cache = new Map<string, Record<string, FileData>>();
 
 /**
- * The agent package's `skills/` directory as files for deepagents' in-memory
+ * The agent directory's `skills/` as files for deepagents' in-memory
  * `StateBackend`, keyed by absolute virtual path (`/skills/<name>/SKILL.md`).
  * Seeding the files means a case never gets a handle on the real disk. The
  * agent can still write, but only into its own case's memory.
  *
- * Read once per directory. Skills are small markdown files.
+ * Read once per directory. Skills are small markdown files. No `skills/`
+ * gives no files, so evals run before the agent's skills are synced.
  */
-export function readAgentFiles(packageDir: string): Record<string, FileData> {
-  const cached = cache.get(packageDir);
+export function readAgentFiles(agentDir: string): Record<string, FileData> {
+  const cached = cache.get(agentDir);
   if (cached) return cached;
 
   const files: Record<string, FileData> = {};
+  if (!fs.existsSync(path.join(agentDir, "skills"))) {
+    cache.set(agentDir, files);
+    return files;
+  }
   const walk = (relative: string) => {
-    const dir = path.join(packageDir, relative);
+    const dir = path.join(agentDir, relative);
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
       const child = path.posix.join(relative, entry.name);
       if (entry.isDirectory()) {
         walk(child);
       } else if (entry.isFile()) {
-        const stat = fs.statSync(path.join(packageDir, child));
+        const stat = fs.statSync(path.join(agentDir, child));
         files[`/${child}`] = {
-          content: fs.readFileSync(path.join(packageDir, child), "utf8"),
+          content: fs.readFileSync(path.join(agentDir, child), "utf8"),
           mimeType: "text/plain",
           created_at: stat.birthtime.toISOString(),
           modified_at: stat.mtime.toISOString(),
@@ -53,6 +58,6 @@ export function readAgentFiles(packageDir: string): Record<string, FileData> {
   };
   walk("skills");
 
-  cache.set(packageDir, files);
+  cache.set(agentDir, files);
   return files;
 }

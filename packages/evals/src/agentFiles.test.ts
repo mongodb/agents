@@ -14,13 +14,17 @@
  * limitations under the License.
  */
 
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+
 import { describe, expect, it } from "vitest";
 
 import { atlasExplorerAgent } from "./agents/atlasExplorer.js";
 import { readAgentFiles } from "./agentFiles.js";
 
 describe("readAgentFiles", () => {
-  const files = readAgentFiles(atlasExplorerAgent.packageDir);
+  const files = readAgentFiles(atlasExplorerAgent.agentDir);
 
   it("keys skill files by absolute virtual path", () => {
     expect(Object.keys(files)).toContain(
@@ -37,6 +41,15 @@ describe("readAgentFiles", () => {
   });
 
   it("returns the same files on every call", () => {
-    expect(readAgentFiles(atlasExplorerAgent.packageDir)).toBe(files);
+    expect(readAgentFiles(atlasExplorerAgent.agentDir)).toBe(files);
+  });
+
+  it("returns no files when the directory has no skills/", () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "agent-files-"));
+    try {
+      expect(readAgentFiles(dir)).toEqual({});
+    } finally {
+      fs.rmSync(dir, { recursive: true });
+    }
   });
 });

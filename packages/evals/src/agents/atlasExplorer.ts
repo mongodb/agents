@@ -22,7 +22,7 @@ import type { AgentDefinition } from "./definition.js";
 
 export const atlasExplorerAgent: AgentDefinition = {
   name: "atlas-explorer",
-  packageDir: packageDirectory("atlas-explorer-agent"),
+  agentDir: packageDirectory("atlas-explorer-agent"),
   inputGuardMode: atlasExplorerConfig.inputGuard.mode,
   supportsWrites: true,
   buildOptions({ tools, allowWrites, defaultData, extraInstructions }) {

@@ -43,10 +43,10 @@ export interface BuiltAgentOptions {
 export interface AgentDefinition {
   readonly name: string;
   /**
-   * The agent package, which holds the canonical `skills/`. Relative skill
-   * paths resolve against it.
+   * The directory whose `skills/` the agent reads. Relative skill paths
+   * resolve against it.
    */
-  readonly packageDir: string;
+  readonly agentDir: string;
   readonly inputGuardMode: "enforce" | "monitor" | "off";
   /** False when the agent never exposes write tools. */
   readonly supportsWrites: boolean;

@@ -15,7 +15,6 @@
  */
 
 import type { JudgeModelConfig } from "mongodb-assistant-eval/scorers";
-import { vi } from "vitest";
 
 interface ChoiceTool {
   function: { parameters: { properties: { choice: { enum: string[] } } } };
@@ -26,7 +25,7 @@ interface ChoiceTool {
  * schema allows, so the judge scorers run without a network call.
  */
 export function firstChoiceJudge(): JudgeModelConfig {
-  const create = vi.fn(async (request: { tools: ChoiceTool[] }) => {
+  const create = async (request: { tools: ChoiceTool[] }) => {
     const [choice] = request.tools[0].function.parameters.properties.choice.enum;
     return {
       choices: [
@@ -45,7 +44,7 @@ export function firstChoiceJudge(): JudgeModelConfig {
         },
       ],
     };
-  });
+  };
   return {
     modelId: "judge-model",
     client: { chat: { completions: { create } } },

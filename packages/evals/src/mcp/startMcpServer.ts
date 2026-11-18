@@ -67,6 +67,10 @@ export async function stopProcess(child: ChildProcess): Promise<void> {
   clearTimeout(force);
 }
 
+/**
+ * The CLI entry point, `dist/esm/index.js`, is not in the package's
+ * `exports`, so resolve the package's main entry and take its sibling.
+ */
 function serverEntryPoint(): string {
   const lib = fileURLToPath(import.meta.resolve("mongodb-mcp-server"));
   return path.join(path.dirname(lib), "index.js");
