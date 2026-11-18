@@ -19,7 +19,7 @@ import path from "node:path";
 import { config } from "dotenv";
 
 import { buildEvalCli } from "./cli.js";
-import "./disableHttpKeepAlive.js";
+import "@mongodb-js/atlas-agents-eval/setup";
 import { REPO_ROOT } from "./paths.js";
 
 // BRAINTRUST_API_KEY, OPENAI_API_KEY and OPENAI_BASE_URL may live in the

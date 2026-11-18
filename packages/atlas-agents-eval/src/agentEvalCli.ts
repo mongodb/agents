@@ -84,6 +84,11 @@ export interface AgentEvalCliOptions {
   readonly judge?: JudgeModelConfig;
 }
 
+/** The yargs CLI `mongodb-assistant-eval` builds. */
+export interface AgentEvalCli {
+  parseAsync(args?: string[]): Promise<unknown>;
+}
+
 /**
  * An eval CLI for a suite of agents:
  *
@@ -106,7 +111,7 @@ export function createAgentEvalCli({
   extraScorers,
   toolProvider: baseProvider = createLocalToolProvider(),
   judge = judgeModelConfig(),
-}: AgentEvalCliOptions) {
+}: AgentEvalCliOptions): AgentEvalCli {
   const toolProvider = withNamedFixtures(baseProvider, fixtures);
   const caseOptions: AgentCaseOptions = {
     fixtures,

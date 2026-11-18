@@ -24,14 +24,13 @@ import { tool, type StructuredToolInterface } from "@langchain/core/tools";
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 
-import { atlasExplorerAgent } from "./agents/atlasExplorer.js";
-import { atlasQueryInsightsAgent } from "./agents/atlasQueryInsights.js";
 import type { CustomInput } from "./schemas.js";
 import {
   makeAgentTask,
   type AgentTaskInput,
   type AgentTaskOptions,
 } from "./task.js";
+import { readOnlyTestAgent, testAgent } from "./testSupport/testAgent.js";
 import type {
   CaseTools,
   CaseToolsRequest,
@@ -124,7 +123,7 @@ function caseInput(
 }
 
 function run(
-  definition: typeof atlasExplorerAgent,
+  definition: typeof testAgent,
   input: AgentTaskInput,
   options: Partial<AgentTaskOptions> = {},
 ) {
@@ -148,7 +147,7 @@ const pauseCall = {
 describe("makeAgentTask", () => {
   it("runs the agent and maps the trajectory", async () => {
     const output = await run(
-      atlasExplorerAgent,
+      testAgent,
       caseInput("List my projects", {
         script: [
           { toolCalls: [{ name: LIST_PROJECTS, args: {} }] },
@@ -176,7 +175,7 @@ describe("makeAgentTask", () => {
 
   it("does not record a tool the agent was not given", async () => {
     const output = await run(
-      atlasExplorerAgent,
+      testAgent,
       caseInput("Pause c1", {
         script: [{ toolCalls: [pauseCall] }, { text: "Could not pause." }],
       }),
@@ -188,7 +187,7 @@ describe("makeAgentTask", () => {
 
   it("pauses a write for approval, then runs it", async () => {
     const output = await run(
-      atlasExplorerAgent,
+      testAgent,
       caseInput("Pause c1", {
         allowWrites: true,
         script: [{ toolCalls: [pauseCall] }, { text: "Paused c1." }],
@@ -210,7 +209,7 @@ describe("makeAgentTask", () => {
       },
     });
     const output = await run(
-      atlasExplorerAgent,
+      testAgent,
       caseInput("Copy both collections", {
         allowWrites: true,
         script: [
@@ -227,7 +226,7 @@ describe("makeAgentTask", () => {
 
   it("does not run a rejected write", async () => {
     const output = await run(
-      atlasExplorerAgent,
+      testAgent,
       caseInput("Pause c1", {
         allowWrites: true,
         approval: "reject",
@@ -242,7 +241,7 @@ describe("makeAgentTask", () => {
   it("puts per-case default data in the system prompt", async () => {
     const capture = new ModelInputCapture();
     await run(
-      atlasExplorerAgent,
+      testAgent,
       caseInput("How is my cluster?", {
         script: [{ text: "Fine." }],
         defaultData: { projectId: "proj-from-case", clusterName: "c-case" },
@@ -258,7 +257,7 @@ describe("makeAgentTask", () => {
   it("names the preconfigured connection when the case has a MongoDB", async () => {
     const withMongo = new ModelInputCapture();
     await run(
-      atlasExplorerAgent,
+      testAgent,
       caseInput("Count movies", {
         script: [{ text: "Done." }],
         toolSetup: { localMongo: "sample-mflix" },
@@ -267,7 +266,7 @@ describe("makeAgentTask", () => {
     );
     const withoutMongo = new ModelInputCapture();
     await run(
-      atlasExplorerAgent,
+      testAgent,
       caseInput("Count movies", { script: [{ text: "Done." }] }),
       { callbacks: () => [withoutMongo] },
     );
@@ -283,7 +282,7 @@ describe("makeAgentTask", () => {
   it("loads the agent's skills into the prompt", async () => {
     const capture = new ModelInputCapture();
     await run(
-      atlasExplorerAgent,
+      testAgent,
       caseInput("Hi", { script: [{ text: "Hello." }] }),
       { callbacks: () => [capture] },
     );
@@ -296,7 +295,7 @@ describe("makeAgentTask", () => {
 
   it("lets the agent read its skills from memory", async () => {
     const output = await run(
-      atlasExplorerAgent,
+      testAgent,
       caseInput("Read the skill", {
         script: [
           {
@@ -318,7 +317,7 @@ describe("makeAgentTask", () => {
 
   it("keeps filesystem writes in the case and off the disk", async () => {
     const skillFile = path.join(
-      atlasExplorerAgent.agentDir,
+      testAgent.agentDir,
       "skills",
       "eval-scratch.md",
     );
@@ -335,13 +334,13 @@ describe("makeAgentTask", () => {
     };
 
     const first = await run(
-      atlasExplorerAgent,
+      testAgent,
       caseInput("Write", {
         script: [{ toolCalls: [write] }, { toolCalls: [read] }, { text: "Ok" }],
       }),
     );
     const second = await run(
-      atlasExplorerAgent,
+      testAgent,
       caseInput("Read", {
         script: [{ toolCalls: [read] }, { text: "Ok" }],
       }),
@@ -359,7 +358,7 @@ describe("makeAgentTask", () => {
     const secret =
       "mongodb+srv://admin:hunter2pass@cluster0.example.mongodb.net";
     await run(
-      atlasExplorerAgent,
+      testAgent,
       caseInput(`Connect with ${secret}`, { script: [{ text: "No." }] }),
       { callbacks: () => [capture] },
     );
@@ -367,9 +366,9 @@ describe("makeAgentTask", () => {
     expect(JSON.stringify(capture.prompts)).not.toContain("hunter2pass");
   });
 
-  it("runs the query insights agent read-only", async () => {
+  it("runs a read-only agent read-only", async () => {
     const output = await run(
-      atlasQueryInsightsAgent,
+      readOnlyTestAgent,
       caseInput("Any slow queries?", {
         script: [
           {
@@ -388,7 +387,7 @@ describe("makeAgentTask", () => {
     expect(output.custom?.executed).toHaveLength(1);
     await expect(
       run(
-        atlasQueryInsightsAgent,
+        readOnlyTestAgent,
         caseInput("Pause c1", { allowWrites: true, script: [{ text: "x" }] }),
       ),
     ).rejects.toThrow(/read-only/);
@@ -396,7 +395,7 @@ describe("makeAgentTask", () => {
 
   it("rejects cases that are not a single user message", async () => {
     await expect(
-      run(atlasExplorerAgent, {
+      run(testAgent, {
         messages: [
           { role: "user", content: "a" },
           { role: "assistant", content: "b" },
@@ -409,7 +408,7 @@ describe("makeAgentTask", () => {
 
   it("needs a script for the scripted model", async () => {
     await expect(
-      run(atlasExplorerAgent, caseInput("Hi", undefined)),
+      run(testAgent, caseInput("Hi", undefined)),
     ).rejects.toThrow(/input\.custom\.script/);
   });
 
@@ -432,10 +431,10 @@ describe("makeAgentTask", () => {
     const script = { script: [{ text: "ok" }] };
 
     const [a, b] = await Promise.all([
-      run(atlasExplorerAgent, caseInput("a", script), {
+      run(testAgent, caseInput("a", script), {
         toolProvider: counting,
       }),
-      run(atlasExplorerAgent, caseInput("b", script), {
+      run(testAgent, caseInput("b", script), {
         toolProvider: counting,
       }),
     ]);
@@ -461,7 +460,7 @@ describe("makeAgentTask", () => {
     };
 
     await expect(
-      run(atlasExplorerAgent, caseInput("a", { script: [{ text: "ok" }] }), {
+      run(testAgent, caseInput("a", { script: [{ text: "ok" }] }), {
         toolProvider: failing,
       }),
     ).rejects.toThrow("state failed");
@@ -470,7 +469,7 @@ describe("makeAgentTask", () => {
 
   it("starts and stops the tool provider around the run", async () => {
     const events: string[] = [];
-    const task = makeAgentTask(atlasExplorerAgent, {
+    const task = makeAgentTask(testAgent, {
       toolProvider: {
         start: async () => void events.push("start"),
         stop: async () => void events.push("stop"),
@@ -484,7 +483,7 @@ describe("makeAgentTask", () => {
 
   it("runs with the default Braintrust callback handler", async () => {
     const output = await run(
-      atlasExplorerAgent,
+      testAgent,
       caseInput("Hi", { script: [{ text: "Hello." }] }),
       { callbacks: undefined },
     );
@@ -509,7 +508,7 @@ describe("knowledge sources in the output", () => {
 
   it("lists the URLs search_knowledge returned, in order", async () => {
     const output = await run(
-      atlasExplorerAgent,
+      testAgent,
       caseInput("What is a replica set?", {
         script: [{ toolCalls: [searchCall] }, { text: "A replica set is." }],
       }),
@@ -530,7 +529,7 @@ describe("knowledge sources in the output", () => {
 
   it("reports a failed search and no URLs", async () => {
     const output = await run(
-      atlasExplorerAgent,
+      testAgent,
       caseInput("What is a replica set?", {
         script: [{ toolCalls: [searchCall] }, { text: "I could not search." }],
       }),
@@ -552,7 +551,7 @@ describe("knowledge sources in the output", () => {
 
   it("reports no URLs when the agent never searched", async () => {
     const output = await run(
-      atlasQueryInsightsAgent,
+      readOnlyTestAgent,
       caseInput("Hi", { script: [{ text: "Hello." }] }),
     );
     expect(output.urls).toEqual([]);
@@ -579,7 +578,7 @@ describe("mongoCheck", () => {
   const named = (name: string): CustomInput => ({ ...script, mongoCheck: name });
 
   it("records a passing check", async () => {
-    const output = await run(atlasExplorerAgent, caseInput("a", named("ok")), {
+    const output = await run(testAgent, caseInput("a", named("ok")), {
       toolProvider: withDb(),
       mongoChecks: { ok: async () => {} },
     });
@@ -588,7 +587,7 @@ describe("mongoCheck", () => {
   });
 
   it("records the message of a failed assertion", async () => {
-    const output = await run(atlasExplorerAgent, caseInput("a", named("bad")), {
+    const output = await run(testAgent, caseInput("a", named("bad")), {
       toolProvider: withDb(),
       mongoChecks: {
         bad: async () => assert.equal(1, 2, "movies has 1 document, wanted 2"),
@@ -613,7 +612,7 @@ describe("mongoCheck", () => {
         };
       },
     };
-    await run(atlasExplorerAgent, caseInput("a", named("order")), {
+    await run(testAgent, caseInput("a", named("order")), {
       toolProvider: provider,
       mongoChecks: { order: async () => void events.push("check") },
     });
@@ -623,7 +622,7 @@ describe("mongoCheck", () => {
 
   it("fails the case, not the score, on an error that is not an assertion", async () => {
     await expect(
-      run(atlasExplorerAgent, caseInput("a", named("lost")), {
+      run(testAgent, caseInput("a", named("lost")), {
         toolProvider: withDb(),
         mongoChecks: {
           lost: async () => {
@@ -636,7 +635,7 @@ describe("mongoCheck", () => {
 
   it("fails the case when the check is not registered", async () => {
     await expect(
-      run(atlasExplorerAgent, caseInput("a", named("nope")), {
+      run(testAgent, caseInput("a", named("nope")), {
         toolProvider: withDb(),
         mongoChecks: {},
       }),
@@ -645,14 +644,14 @@ describe("mongoCheck", () => {
 
   it("fails the case when the tools offer no database", async () => {
     await expect(
-      run(atlasExplorerAgent, caseInput("a", named("ok")), {
+      run(testAgent, caseInput("a", named("ok")), {
         mongoChecks: { ok: async () => {} },
       }),
     ).rejects.toThrow(/needs toolSetup.localMongo/);
   });
 
   it("leaves mongoCheck out of the output when a case names none", async () => {
-    const output = await run(atlasExplorerAgent, caseInput("a", script));
+    const output = await run(testAgent, caseInput("a", script));
 
     expect(output.custom).not.toHaveProperty("mongoCheck");
   });

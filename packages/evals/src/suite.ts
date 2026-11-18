@@ -20,8 +20,8 @@ import {
   loadAgentCasesFromFile,
   parseAgentCases,
   type AgentCaseOptions,
-} from "./cases.js";
-import { createFixtureStore } from "./fixtures.js";
+} from "@mongodb-js/atlas-agents-eval";
+import { createFixtureStore } from "@mongodb-js/atlas-agents-eval";
 import { MONGO_CHECKS } from "./mongoChecks/registry.js";
 import { RepoEvalCaseSchema } from "./queryInsightsSchemas.js";
 

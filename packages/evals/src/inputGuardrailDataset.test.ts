@@ -20,7 +20,7 @@ import { GUARDRAIL_REFUSAL_MESSAGE } from "@mongodb-js/atlas-agents-core";
 import { describe, expect, it } from "vitest";
 
 import { loadCases } from "./suite.js";
-import type { CustomInput } from "./schemas.js";
+import type { CustomInput } from "@mongodb-js/atlas-agents-eval";
 
 const file = path.join(
   import.meta.dirname,

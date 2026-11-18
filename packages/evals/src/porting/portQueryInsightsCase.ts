@@ -17,7 +17,7 @@
 import { Document, stringify } from "yaml";
 import { z } from "zod";
 
-import type { AtlasFixtureInput } from "../atlas/fixtures.js";
+import type { AtlasFixtureInput } from "@mongodb-js/atlas-agents-eval/atlas";
 import type { QueryInsightsCustomExpected as CustomExpected } from "../queryInsightsSchemas.js";
 import { fillPlaceholders, slowLogLine, type SlowLogShape } from "./slowLog.js";
 

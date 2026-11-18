@@ -20,9 +20,9 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { buildEvalCli } from "./cli.js";
 import { loadCases } from "./suite.js";
-import { runEvalCliWithMockBraintrust } from "./offline/runEvalCliWithMockBraintrust.js";
-import type { CustomExpected, CustomInput } from "./schemas.js";
-import { createLocalToolProvider } from "./tools/localToolProvider.js";
+import { runEvalCliWithMockBraintrust } from "@mongodb-js/atlas-agents-eval/testing";
+import type { CustomExpected, CustomInput } from "@mongodb-js/atlas-agents-eval";
+import { createLocalToolProvider } from "@mongodb-js/atlas-agents-eval/tools";
 
 const DATASET = path.join(
   import.meta.dirname,

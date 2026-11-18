@@ -18,7 +18,7 @@ import { buildAtlasQueryInsightsAgentOptions } from "@mongodb-js/atlas-query-ins
 
 import { atlasQueryInsightsConfig } from "../../../../agents/atlas-query-insights/src/agent_atlas_query_insights/config.js";
 import { packageDirectory } from "../paths.js";
-import type { AgentDefinition } from "./definition.js";
+import type { AgentDefinition } from "@mongodb-js/atlas-agents-eval";
 
 export const atlasQueryInsightsAgent: AgentDefinition = {
   name: "atlas-query-insights",

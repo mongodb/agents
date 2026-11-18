@@ -23,7 +23,7 @@ import type {
 
 import { createIndexKeys, parseQueryInsightsReport } from "./queryInsightsReport.js";
 import type { QueryInsightsCustomExpected as CustomExpected } from "./queryInsightsSchemas.js";
-import type { AgentTaskInput, AgentTaskOutput } from "./task.js";
+import type { AgentTaskInput, AgentTaskOutput } from "@mongodb-js/atlas-agents-eval";
 
 type Expected = ConversationEvalCaseExpectedWithCustom<CustomExpected>;
 type Scorer = ConversationEvalScorer<AgentTaskInput, AgentTaskOutput, Expected>;

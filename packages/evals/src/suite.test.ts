@@ -19,9 +19,9 @@ import path from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { AtlasFixtureSchema } from "./atlas/fixtures.js";
+import { AtlasFixtureSchema } from "@mongodb-js/atlas-agents-eval/atlas";
 import { MONGO_CHECKS } from "./mongoChecks/registry.js";
-import { MongoSeedSchema } from "./mongo/seed.js";
+import { MongoSeedSchema } from "@mongodb-js/atlas-agents-eval/mongo";
 import { DATASET_DIR, FIXTURES, loadCases } from "./suite.js";
 
 describe("shipped fixtures", () => {

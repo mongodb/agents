@@ -20,10 +20,10 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { buildEvalCli } from "./cli.js";
-import { firstChoiceJudge } from "./offline/firstChoiceJudge.js";
-import { runEvalCliWithMockBraintrust } from "./offline/runEvalCliWithMockBraintrust.js";
+import { firstChoiceJudge } from "@mongodb-js/atlas-agents-eval/testing";
+import { runEvalCliWithMockBraintrust } from "@mongodb-js/atlas-agents-eval/testing";
 import { QUERY_INSIGHTS_THRESHOLDS } from "./queryInsightsThresholds.js";
-import { createLocalToolProvider } from "./tools/localToolProvider.js";
+import { createLocalToolProvider } from "@mongodb-js/atlas-agents-eval/tools";
 
 const PACKAGE_JSON = path.join(import.meta.dirname, "..", "package.json");
 const DATASET_DIR = path.join(import.meta.dirname, "..", "datasets");

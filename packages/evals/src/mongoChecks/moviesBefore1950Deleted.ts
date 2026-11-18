@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { actualDump, assertDumpsEqual, docsOf, seedCopy } from "./expectedDump.js";
-import type { MongoCheck } from "./types.js";
+import { actualDump, assertDumpsEqual, docsOf, seedCopy } from "@mongodb-js/atlas-agents-eval/mongo";
+import type { MongoCheck } from "@mongodb-js/atlas-agents-eval/mongo";
 
 /** The movies released before 1950 are gone. Everything else is as seeded. */
 export const moviesBefore1950Deleted: MongoCheck = async (mongo) => {

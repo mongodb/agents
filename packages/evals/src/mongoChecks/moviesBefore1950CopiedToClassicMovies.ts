@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { actualDump, assertDumpsEqual, docsOf, seedCopy } from "./expectedDump.js";
-import type { MongoCheck } from "./types.js";
+import { actualDump, assertDumpsEqual, docsOf, seedCopy } from "@mongodb-js/atlas-agents-eval/mongo";
+import type { MongoCheck } from "@mongodb-js/atlas-agents-eval/mongo";
 
 /**
  * `classic_movies` holds the movies released before 1950, as `$out` writes

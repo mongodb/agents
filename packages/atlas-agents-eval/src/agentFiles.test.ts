@@ -20,11 +20,11 @@ import path from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { atlasExplorerAgent } from "./agents/atlasExplorer.js";
 import { readAgentFiles } from "./agentFiles.js";
+import { testAgent } from "./testSupport/testAgent.js";
 
 describe("readAgentFiles", () => {
-  const files = readAgentFiles(atlasExplorerAgent.agentDir);
+  const files = readAgentFiles(testAgent.agentDir);
 
   it("keys skill files by absolute virtual path", () => {
     expect(Object.keys(files)).toContain(
@@ -41,7 +41,7 @@ describe("readAgentFiles", () => {
   });
 
   it("returns the same files on every call", () => {
-    expect(readAgentFiles(atlasExplorerAgent.agentDir)).toBe(files);
+    expect(readAgentFiles(testAgent.agentDir)).toBe(files);
   });
 
   it("returns no files when the directory has no skills/", () => {

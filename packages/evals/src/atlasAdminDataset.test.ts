@@ -18,7 +18,7 @@ import path from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { AtlasFixtureSchema } from "./atlas/fixtures.js";
+import { AtlasFixtureSchema } from "@mongodb-js/atlas-agents-eval/atlas";
 import { FIXTURES, loadCases } from "./suite.js";
 
 const cases = loadCases(

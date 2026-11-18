@@ -20,7 +20,7 @@ import { GUARDRAIL_REFUSAL_MESSAGE } from "@mongodb-js/atlas-agents-core";
 import { describe, expect, it } from "vitest";
 
 import { loadCases } from "./suite.js";
-import type { CustomExpected, CustomInput } from "./schemas.js";
+import type { CustomExpected, CustomInput } from "@mongodb-js/atlas-agents-eval";
 
 const load = (file: string) =>
   loadCases(path.join(import.meta.dirname, "..", "datasets", file));

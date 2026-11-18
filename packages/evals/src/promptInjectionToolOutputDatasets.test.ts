@@ -21,7 +21,7 @@ import { describe, expect, it } from "vitest";
 import { parse } from "yaml";
 
 import { loadCases } from "./suite.js";
-import type { CustomExpected, CustomInput } from "./schemas.js";
+import type { CustomExpected, CustomInput } from "@mongodb-js/atlas-agents-eval";
 
 const root = path.join(import.meta.dirname, "..");
 const load = (name: string) =>

@@ -1,0 +1,93 @@
+{
+  "name": "@mongodb-js/atlas-agents-eval",
+  "version": "0.1.1",
+  "private": true,
+  "description": "Eval harness for agents built on @mongodb-js/atlas-agents-core",
+  "license": "Apache-2.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./scorers": {
+      "types": "./dist/scorers.d.ts",
+      "import": "./dist/scorers.js"
+    },
+    "./tools": {
+      "types": "./dist/tools/index.d.ts",
+      "import": "./dist/tools/index.js"
+    },
+    "./atlas": {
+      "types": "./dist/atlas/index.d.ts",
+      "import": "./dist/atlas/index.js"
+    },
+    "./mongo": {
+      "types": "./dist/mongo/index.d.ts",
+      "import": "./dist/mongo/index.js"
+    },
+    "./testing": {
+      "types": "./dist/testing.d.ts",
+      "import": "./dist/testing.js"
+    },
+    "./setup": {
+      "types": "./dist/disableHttpKeepAlive.d.ts",
+      "import": "./dist/disableHttpKeepAlive.js"
+    }
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "prebuild": "pnpm --filter @mongodb-js/atlas-agents-core build",
+    "build": "tsc -p tsconfig.json",
+    "pretest": "pnpm --filter @mongodb-js/atlas-explorer-agent build",
+    "test": "vitest run",
+    "pretest:watch": "pnpm --filter @mongodb-js/atlas-explorer-agent build",
+    "test:watch": "vitest",
+    "pretypecheck": "pnpm --filter @mongodb-js/atlas-explorer-agent build",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json --noEmit"
+  },
+  "dependencies": {
+    "@hono/node-server": "2.1.3",
+    "hono": "4.13.11",
+    "mongodb-mcp-server": "3.0.5",
+    "mongodb-memory-server-core": "11.2.0",
+    "selfsigned": "^5.5.0",
+    "undici": "7.30.1",
+    "yaml": "^2.9.1"
+  },
+  "peerDependencies": {
+    "@langchain/core": "^1.2.11",
+    "@langchain/langgraph": "^1.3.0",
+    "@mongodb-js/agent-engine-runner-shared": "^0.11.6",
+    "@mongodb-js/agent-engine-sdk-langgraph": "^0.11.6",
+    "@mongodb-js/atlas-agents-core": "workspace:^",
+    "braintrust": "^3.35.0",
+    "deepagents": "^1.14.1",
+    "langchain": "^1.5.10",
+    "mongodb": "^6.21.0 || ^7.1.0",
+    "mongodb-assistant-eval": "^0.1.1",
+    "openai": "^6.3.0 || ^7.0.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@langchain/core": "^1.2.11",
+    "@langchain/langgraph": "^1.3.0",
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "@mongodb-js/agent-engine-runner-shared": "0.11.6",
+    "@mongodb-js/agent-engine-sdk-langgraph": "0.11.6",
+    "@mongodb-js/atlas-agents-core": "workspace:*",
+    "@mongodb-js/atlas-explorer-agent": "workspace:*",
+    "@types/node": "^25.0.0",
+    "braintrust": "^3.35.0",
+    "deepagents": "1.14.1",
+    "langchain": "^1.5.10",
+    "mongodb": "^6.21.0",
+    "mongodb-assistant-eval": "0.1.1",
+    "openai": "^7.25.0",
+    "typescript": "^5.5.0",
+    "vitest": "^4.1.11",
+    "zod": "4.4.3"
+  }
+}
