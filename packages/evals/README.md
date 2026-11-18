@@ -1,32 +1,29 @@
 # @repo/evals
 
-Private package that runs LangChain-based agents through
-[`mongodb-assistant-eval`](https://mongodb-assistant-docs.prod.corp.mongodb.com/server/evaluation/library),
-so suites get Braintrust tracing, scorers, a CLI, and pass/fail validators.
-
-This is the harness. Eval suites, thresholds, and CI gating are separate work
-(EAI-2509 is the harness).
+Private package with the eval suites for Atlas Explorer and Atlas Query
+Insights: their datasets, fixtures, thresholds and the eval CLI that CI
+runs. It runs them on the harness in
+[`@mongodb-js/atlas-agents-eval`](../atlas-agents-eval).
 
 ## What's in it
 
-The reusable harness lives in
-[`@mongodb-js/atlas-agents-eval`](../atlas-agents-eval). It has the eval
-task, the tool providers (mock Atlas Admin API, `mongodb-mcp-server`,
-ephemeral `mongod`), the case loader, the scorers, the scripted model and
-the offline test support. This package holds the Atlas agents' suites:
-
-- `src/cli.ts` builds the eval CLI with `createAgentEvalCli`. It names the
-  agents, datasets, models, validators and the Query Insights scorers.
-- `src/suite.ts` binds the case loader to this package's `fixtures/`,
-  Mongo checks and case schema.
-- `src/queryInsightsSchemas.ts` and the Query Insights judges and scorers
-  extend the generic case schema and scorers.
-- `datasets/` has the smoke datasets, the input guardrail suite and the
-  database tools suite (`db-tools.yml`, ported by `pnpm port:cases --kind
-  db-tools`, the write cases in `db-tools-writes.yml`, the `$out` and `$merge`
-  cases in `db-tools-aggregate-writes.yml` and the prompt injection cases in
-  `db-tools-injection.yml`). `fixtures/` has the mock Atlas accounts and
-  MongoDB seeds that cases name. `src/` holds only TypeScript.
+- `datasets/` has the YAML cases for each suite: smoke, Atlas admin,
+  database tools, knowledge, input guardrail, prompt injection and Query
+  Insights. `pnpm port:cases` ports the knowledge and database tools cases
+  from the MongoDB Assistant evals, and `pnpm port:query-insights` ports
+  the Query Insights cases. The scripts are in `src/porting/`.
+- `fixtures/` has the mock Atlas accounts (`atlas/`) and MongoDB seeds
+  (`mongo/`) that cases name in `toolSetup`.
+- `src/agents/` defines the two agents under test, built from the real
+  agent packages.
+- `src/cli.ts` builds the eval CLI. It names the agents, datasets, models
+  and validators.
+- `src/*Thresholds.ts` hold the pass/fail thresholds for each suite, with
+  the baseline runs they came from.
+- `src/suite.ts` binds the case loader to `fixtures/`, the Mongo checks in
+  `src/mongoChecks/` and the case schema.
+- `src/queryInsights*.ts` add the Query Insights report fields, judges and
+  scorers.
 
 ## Commands
 
