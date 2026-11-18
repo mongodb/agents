@@ -19,14 +19,14 @@ import { AssertionError } from "node:assert";
 import { MongoClient } from "mongodb";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { loadFixture } from "../fixtures.js";
+import { FIXTURES } from "../suite.js";
 import { startEphemeralMongo, type EphemeralMongo } from "../mongo/ephemeralMongo.js";
 import { MongoSeedSchema, type MongoSeed } from "../mongo/seed.js";
 import { seedUnchanged } from "./seedUnchanged.js";
 
 describe("seedUnchanged", () => {
   const seed: MongoSeed = MongoSeedSchema.parse(
-    loadFixture("localMongo", "sample-mflix"),
+    FIXTURES.load("localMongo", "sample-mflix"),
   );
   let mongo: EphemeralMongo;
   let client: MongoClient;

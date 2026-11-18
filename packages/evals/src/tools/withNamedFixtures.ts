@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { resolveToolSetup, type NamedToolSetup } from "../fixtures.js";
+import type { FixtureStore, NamedToolSetup } from "../fixtures.js";
 import type { CaseToolsRequest, ToolProvider } from "./types.js";
 
 /**
@@ -25,14 +25,19 @@ import type { CaseToolsRequest, ToolProvider } from "./types.js";
  * This covers the dataset row only. `state()` is unchanged, so the task output
  * still carries the end state for scorers, and fixtures must be synthetic.
  */
-export function withNamedFixtures(provider: ToolProvider): ToolProvider {
+export function withNamedFixtures(
+  provider: ToolProvider,
+  fixtures: FixtureStore,
+): ToolProvider {
   return {
     start: provider.start?.bind(provider),
     stop: provider.stop?.bind(provider),
     forCase: async (request: CaseToolsRequest) =>
       provider.forCase({
         ...request,
-        setup: resolveToolSetup(request.setup as NamedToolSetup | undefined),
+        setup: fixtures.resolveToolSetup(
+          request.setup as NamedToolSetup | undefined,
+        ),
       }),
   };
 }

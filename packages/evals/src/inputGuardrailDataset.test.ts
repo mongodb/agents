@@ -19,7 +19,7 @@ import path from "node:path";
 import { GUARDRAIL_REFUSAL_MESSAGE } from "@mongodb-js/atlas-agents-core";
 import { describe, expect, it } from "vitest";
 
-import { loadAgentCasesFromFile } from "./cases.js";
+import { loadCases } from "./suite.js";
 import type { CustomInput } from "./schemas.js";
 
 const file = path.join(
@@ -28,7 +28,7 @@ const file = path.join(
   "datasets",
   "input-guardrail.yml",
 );
-const cases = loadAgentCasesFromFile(file);
+const cases = loadCases(file);
 const rejects = cases.filter((c) => c.expected.guardrail?.reject === true);
 const accepts = cases.filter((c) => c.expected.guardrail?.reject === false);
 

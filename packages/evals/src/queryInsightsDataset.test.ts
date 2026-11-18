@@ -20,7 +20,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { parse } from "yaml";
 
-import { loadAgentCasesFromFile } from "./cases.js";
+import { loadCases } from "./suite.js";
 import { AtlasFixtureSchema } from "./atlas/fixtures.js";
 
 const FIXTURE_DIR = path.join(import.meta.dirname, "..", "fixtures", "atlas");
@@ -37,7 +37,7 @@ interface CustomExpectedCase {
 }
 
 describe("query-insights dataset", () => {
-  const cases = loadAgentCasesFromFile(DATASET);
+  const cases = loadCases(DATASET);
 
   it("has one case per ported source or combined set, each reading its own valid seed", () => {
     expect(cases).toHaveLength(33);
@@ -63,7 +63,7 @@ describe("query-insights dataset", () => {
 });
 
 describe("query-insights realistic user queries dataset", () => {
-  const cases = loadAgentCasesFromFile(USER_QUERIES);
+  const cases = loadCases(USER_QUERIES);
 
   it("reads the seed of a ported case, with a message of its own", () => {
     expect(cases).toHaveLength(7);
@@ -76,7 +76,7 @@ describe("query-insights realistic user queries dataset", () => {
 });
 
 describe("query-insights injection dataset", () => {
-  const cases = loadAgentCasesFromFile(INJECTION);
+  const cases = loadCases(INJECTION);
 
   it("has its own seeds for slow-log steering, and reads ported seeds for user cases", () => {
     expect(cases).toHaveLength(6);

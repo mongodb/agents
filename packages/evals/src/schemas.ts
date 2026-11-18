@@ -42,7 +42,8 @@ export const CustomInputSchema = z.object({
     })
     .optional(),
   /**
-   * Names of the fixtures in `fixtures/` the tool provider starts from.
+   * Names of the fixtures in the suite's fixture store that the tool
+   * provider starts from.
    * Names only: fixture data stays out of the dataset rows Braintrust logs.
    * The task output still carries the end state, so fixtures must be synthetic.
    */
@@ -54,8 +55,8 @@ export const CustomInputSchema = z.object({
     .strict()
     .optional(),
   /**
-   * Name of a check in `src/mongoChecks/` that runs against the case's
-   * MongoDB after the agent finishes. Needs `toolSetup.localMongo`. A name
+   * Name of a check in the suite's Mongo check registry, run against the
+   * case's MongoDB after the agent finishes. Needs `toolSetup.localMongo`. A name
    * only: it is on the input because the task, which sees only the input,
    * runs it while the database is still up. Scored by `MongoCheck`.
    */
@@ -72,36 +73,39 @@ export const CustomExpectedSchema = z.object({
   expectApprovalFor: z.array(z.string()).optional(),
   /** Regular expressions the final answer must match, ignoring case. */
   answerMatches: z.array(z.string()).optional(),
-  /** What a Query Insights report should hold. Read by the report scorers. */
-  queryInsights: z
-    .object({
-      /**
-       * The indexes the case's Performance Advisor suggests, in the order it
-       * lists them. Empty when it suggests none, so the report must not
-       * invent one.
-       */
-      suggestedIndexes: z.array(
-        z.object({
-          namespace: z.string(),
-          /** One `{ field: direction }` entry per key, in key order. */
-          index: z.array(z.record(z.string(), z.union([z.number(), z.string()]))),
-        }),
-      ),
-      /** What a good report says. Graded by the reference judge. */
-      reference: z.string().optional(),
-      /**
-       * How many shape sections the report must have. Unset means any number.
-       * Set when the cluster has more shapes than the report covers, so the
-       * report must pick the top ones.
-       */
-      expectedShapes: z.number().int().positive().optional(),
-    })
-    .optional(),
 });
 
 export type CustomExpected = z.infer<typeof CustomExpectedSchema>;
 
-export const AgentEvalCaseSchema = makeConversationEvalCaseSchema({
-  customInputSchema: CustomInputSchema,
-  customExpectedSchema: CustomExpectedSchema,
-});
+export interface AgentEvalCaseSchemaOptions<
+  Input extends z.ZodRawShape,
+  Expected extends z.ZodRawShape,
+> {
+  /** Slots added to `input.custom`, for an agent with its own case inputs. */
+  readonly customInput?: Input;
+  /** Slots added to `expected.custom`, read by the agent's own scorers. */
+  readonly customExpected?: Expected;
+}
+
+/** The case schema, with an agent's own slots added to the generic ones. */
+export function makeAgentEvalCaseSchema<
+  Input extends z.ZodRawShape = {},
+  Expected extends z.ZodRawShape = {},
+>({
+  customInput,
+  customExpected,
+}: AgentEvalCaseSchemaOptions<Input, Expected> = {}) {
+  return makeConversationEvalCaseSchema({
+    customInputSchema: CustomInputSchema.extend(customInput ?? ({} as Input)),
+    customExpectedSchema: CustomExpectedSchema.extend(
+      customExpected ?? ({} as Expected),
+    ),
+  });
+}
+
+export const AgentEvalCaseSchema = makeAgentEvalCaseSchema();
+
+/** Any schema `makeAgentEvalCaseSchema` returns. */
+export type AnyAgentEvalCaseSchema = z.ZodType<
+  z.infer<typeof AgentEvalCaseSchema>
+>;

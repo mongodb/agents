@@ -20,6 +20,7 @@ import { atlasExplorerAgent } from "../agents/atlasExplorer.js";
 import { atlasQueryInsightsAgent } from "../agents/atlasQueryInsights.js";
 import { makeAgentTask } from "../task.js";
 import { createLocalToolProvider } from "./localToolProvider.js";
+import { FIXTURES } from "../suite.js";
 import { withNamedFixtures } from "./withNamedFixtures.js";
 import type { CaseTools, ToolProvider } from "./types.js";
 
@@ -260,7 +261,7 @@ describe("with the agents", () => {
   // The agents' cases name shared fixtures, as the datasets do.
   const ADVISOR_ACCOUNT = "one-project-with-advisor";
   const FIXTURE_PROJECT = "600000000000000000000001";
-  const named = () => withNamedFixtures(provider);
+  const named = () => withNamedFixtures(provider, FIXTURES);
 
   it("lets Atlas Explorer read Atlas and MongoDB data", async () => {
     const task = makeAgentTask(atlasExplorerAgent, {

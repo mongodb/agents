@@ -17,7 +17,7 @@
 import { parse } from "yaml";
 import { describe, expect, it } from "vitest";
 
-import { parseAgentCases } from "../cases.js";
+import { parseCases } from "../suite.js";
 import { portKnowledgeCase, renderPortedCases } from "./portAssistantCase.js";
 
 const GENERAL = parse(`
@@ -199,7 +199,7 @@ describe("renderPortedCases", () => {
   });
 
   it("produces a dataset the case loader accepts", () => {
-    const cases = parseAgentCases(rendered, "ported.yml");
+    const cases = parseCases(rendered, "ported.yml");
     expect(cases.map((c) => c.name)).toEqual([
       "Explain what a replica set is",
       "new_feature_this_version",

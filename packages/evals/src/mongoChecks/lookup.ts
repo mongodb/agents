@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-import { MONGO_CHECKS } from "./registry.js";
 import type { MongoCheck } from "./types.js";
 
 export function mongoCheckNames(
-  checks: Readonly<Record<string, MongoCheck>> = MONGO_CHECKS,
+  checks: Readonly<Record<string, MongoCheck>>,
 ): string[] {
   return Object.keys(checks).sort();
 }
@@ -26,7 +25,7 @@ export function mongoCheckNames(
 /** Throws, naming the valid choices, unless `name` is a registered check. */
 export function assertMongoCheckExists(
   name: string,
-  checks: Readonly<Record<string, MongoCheck>> = MONGO_CHECKS,
+  checks: Readonly<Record<string, MongoCheck>>,
 ): void {
   if (!Object.hasOwn(checks, name)) {
     throw new Error(

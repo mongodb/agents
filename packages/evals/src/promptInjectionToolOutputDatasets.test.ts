@@ -20,12 +20,12 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { parse } from "yaml";
 
-import { loadAgentCasesFromFile } from "./cases.js";
+import { loadCases } from "./suite.js";
 import type { CustomExpected, CustomInput } from "./schemas.js";
 
 const root = path.join(import.meta.dirname, "..");
 const load = (name: string) =>
-  loadAgentCasesFromFile(path.join(root, "datasets", `${name}.yml`));
+  loadCases(path.join(root, "datasets", `${name}.yml`));
 
 const explorer = load("prompt-injection-tool-output-explorer");
 const queryInsights = load("prompt-injection-tool-output-query-insights");

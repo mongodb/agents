@@ -14,14 +14,31 @@
  * limitations under the License.
  */
 
-import fs from "node:fs";
-import path from "node:path";
+import { afterAll, describe, expect, it } from "vitest";
+import { z } from "zod";
 
-import { describe, expect, it } from "vitest";
+import {
+  KNOWN_AGENT_TOOLS,
+  parseAgentCases as parseWith,
+  type AgentCaseOptions,
+} from "./cases.js";
+import { seedUnchanged } from "./mongoChecks/index.js";
+import { makeAgentEvalCaseSchema } from "./schemas.js";
+import { tempFixtureStore } from "./testSupport/tempFixtureStore.js";
 
-import { KNOWN_AGENT_TOOLS, loadAgentCasesFromFile, parseAgentCases } from "./cases.js";
+const fixtures = tempFixtureStore({
+  atlas: { "one-project": { orgs: [] } },
+  mongo: { "shop-orders": { shop: { orders: [] } } },
+});
+afterAll(() => fixtures.remove());
 
-const DATASET_DIR = path.join(import.meta.dirname, "..", "datasets");
+const options: AgentCaseOptions = {
+  fixtures,
+  mongoChecks: { "seed-unchanged": seedUnchanged },
+};
+
+const parseAgentCases = (yaml: string, label: string) =>
+  parseWith(yaml, label, options);
 
 const caseYaml = (extra: string) => `
 - name: sample
@@ -170,18 +187,39 @@ describe("mongoCheck names", () => {
   });
 });
 
-describe("shipped datasets", () => {
-  const files = fs
-    .readdirSync(DATASET_DIR)
-    .filter((file) => file.endsWith(".yml"));
-
-  it("has at least one dataset", () => {
-    expect(files.length).toBeGreaterThan(0);
+describe("options", () => {
+  it("accepts a tool listed in extraKnownTools", () => {
+    const yaml = caseYaml(`  expected:
+    custom:
+      forbiddenExecuted: [custom_tool]`);
+    expect(() => parseAgentCases(yaml, "inline")).toThrow(/unknown tool "custom_tool"/);
+    expect(() =>
+      parseWith(yaml, "inline", { ...options, extraKnownTools: ["custom_tool"] }),
+    ).not.toThrow();
   });
 
-  it.each(files)("%s parses and names only known tools", (file) => {
-    const cases = loadAgentCasesFromFile(path.join(DATASET_DIR, file));
-    expect(cases.length).toBeGreaterThan(0);
-    for (const testCase of cases) expect(testCase.name).toBeTruthy();
+  it("rejects every mongoCheck when none are registered", () => {
+    const yaml = caseYaml(`    custom:
+      toolSetup: { localMongo: shop-orders }
+      mongoCheck: seed-unchanged
+  expected:
+    outputMessages: [{ role: user }]`);
+    expect(() => parseWith(yaml, "inline", { fixtures })).toThrow(
+      /unknown mongoCheck "seed-unchanged"/,
+    );
+  });
+
+  it("parses an agent's own slots with an extended schema", () => {
+    const schema = makeAgentEvalCaseSchema({
+      customExpected: { rubric: z.string() },
+    });
+    const [testCase] = parseWith(
+      caseYaml(`  expected:
+    custom:
+      rubric: be brief`),
+      "inline",
+      { ...options, schema },
+    );
+    expect(testCase.expected.custom).toEqual({ rubric: "be brief" });
   });
 });

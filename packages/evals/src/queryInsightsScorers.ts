@@ -22,7 +22,7 @@ import type {
 } from "mongodb-assistant-eval/eval";
 
 import { createIndexKeys, parseQueryInsightsReport } from "./queryInsightsReport.js";
-import type { CustomExpected } from "./schemas.js";
+import type { QueryInsightsCustomExpected as CustomExpected } from "./queryInsightsSchemas.js";
 import type { AgentTaskInput, AgentTaskOutput } from "./task.js";
 
 type Expected = ConversationEvalCaseExpectedWithCustom<CustomExpected>;

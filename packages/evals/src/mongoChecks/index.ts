@@ -15,5 +15,6 @@
  */
 
 export { assertMongoCheckExists, mongoCheckNames } from "./lookup.js";
-export { MONGO_CHECKS } from "./registry.js";
+export * from "./expectedDump.js";
+export { seedUnchanged } from "./seedUnchanged.js";
 export type { MongoCheck } from "./types.js";

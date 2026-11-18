@@ -17,7 +17,7 @@
 import { describe, expect, it } from "vitest";
 import { parse } from "yaml";
 
-import { parseAgentCases } from "../cases.js";
+import { parseCases } from "../suite.js";
 import { renderPortedCases } from "./portAssistantCase.js";
 import { portDbToolCase } from "./portDbToolCase.js";
 
@@ -156,7 +156,7 @@ describe("portDbToolCase", () => {
       "Adapted from ai-assistant.",
     );
 
-    const cases = parseAgentCases(yaml, "ported");
+    const cases = parseCases(yaml, "ported");
 
     expect(cases.map((c) => c.name)).toEqual([
       "list_databases_available",

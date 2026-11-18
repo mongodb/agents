@@ -27,10 +27,6 @@ describe("mongoCheckNames", () => {
     expect(mongoCheckNames(checks)).toEqual(["a-check", "b-check"]);
   });
 
-  it("lists the real registry by default", () => {
-    expect(mongoCheckNames()).toContain("seed-unchanged");
-  });
-
   it("lists nothing for an empty registry", () => {
     expect(mongoCheckNames({})).toEqual([]);
   });
@@ -39,10 +35,6 @@ describe("mongoCheckNames", () => {
 describe("assertMongoCheckExists", () => {
   it("accepts a registered name", () => {
     expect(() => assertMongoCheckExists("a-check", checks)).not.toThrow();
-  });
-
-  it("accepts a name in the real registry by default", () => {
-    expect(() => assertMongoCheckExists("seed-unchanged")).not.toThrow();
   });
 
   it.each(["nope", "../a-check", "", "constructor", "__proto__", "toString"])(
