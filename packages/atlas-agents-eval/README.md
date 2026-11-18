@@ -5,8 +5,6 @@ agent's real deep agent, with its prompt, skills and middleware, through
 [`mongodb-assistant-eval`](https://mongodb-assistant-docs.prod.corp.mongodb.com/server/evaluation/library),
 so suites get Braintrust tracing, scorers, a CLI and pass/fail validators.
 
-The Atlas agents' suites live in [`@repo/evals`](../evals).
-
 ## What's in it
 
 - `createAgentEvalCli` builds an eval CLI from agents, datasets, models,
