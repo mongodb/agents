@@ -18,8 +18,9 @@ This is the harness. Eval suites, thresholds, and CI gating are separate work
 - `src/mcp/managedTools.ts` lists the server tools the harness manages. A
   contract test fails when a server upgrade adds or removes one.
 - `src/cases.ts` loads YAML datasets and rejects unknown tool, fixture and
-  Mongo check names. `src/suite.ts` binds it to this package's `fixtures/`,
-  Mongo checks and case schema.
+  Mongo check names.
+- `src/suite.ts` binds the case loader to this package's `fixtures/`, Mongo
+  checks and case schema.
 - `src/scorers.ts` has the agent-specific scorers on top of the library's
   `AgentTrajectoryScorer`.
 - `datasets/` has the smoke datasets, the input guardrail suite and the
