@@ -77,6 +77,12 @@ export async function startMockAtlasApi(): Promise<MockAtlasApi> {
         NODE_OPTIONS: "--use-system-ca",
         SSL_CERT_FILE: tls.caCertPath,
         NODE_EXTRA_CA_CERTS: tls.caCertPath,
+        // On macOS the system store is the Keychain, which ignores both CA
+        // variables, so the child cannot trust the mock's certificate. The
+        // child only ever talks to this localhost mock.
+        ...(process.platform === "darwin" && {
+          NODE_TLS_REJECT_UNAUTHORIZED: "0",
+        }),
       };
     },
     register: (clientId, fixture) => registry.register(clientId, fixture),

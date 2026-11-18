@@ -22,7 +22,7 @@ import type { AgentDefinition } from "./definition.js";
 
 export const atlasQueryInsightsAgent: AgentDefinition = {
   name: "atlas-query-insights",
-  packageDir: packageDirectory("atlas-query-insights-agent"),
+  agentDir: packageDirectory("atlas-query-insights-agent"),
   inputGuardMode: atlasQueryInsightsConfig.inputGuard.mode,
   supportsWrites: false,
   buildOptions({ tools, defaultData }) {
