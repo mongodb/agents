@@ -27,6 +27,15 @@ import {
 import { AgentEngineClient } from "@mongodb-js/agent-engine-chat/agent-engine";
 import { registerChatHandlers } from "@mongodb-js/agent-engine-chat/chat";
 import { MongoThreadStore } from "@mongodb-js/agent-engine-chat/store";
+import {
+  createAgentEvalCli,
+  makeAgentTask,
+} from "@mongodb-js/atlas-agents-eval";
+import { startMockAtlasApi } from "@mongodb-js/atlas-agents-eval/atlas";
+import { startEphemeralMongo } from "@mongodb-js/atlas-agents-eval/mongo";
+import { AnswerMatches } from "@mongodb-js/atlas-agents-eval/scorers";
+import { createLocalToolProvider } from "@mongodb-js/atlas-agents-eval/tools";
+import { startMockBraintrust } from "@mongodb-js/atlas-agents-eval/testing";
 import { buildAtlasExplorerAgentOptions } from "@mongodb-js/atlas-explorer-agent";
 import { buildAtlasQueryInsightsAgentOptions } from "@mongodb-js/atlas-query-insights-agent";
 
@@ -40,6 +49,13 @@ const exportsUnderTest = {
   MongoThreadStore,
   buildAtlasExplorerAgentOptions,
   buildAtlasQueryInsightsAgentOptions,
+  createAgentEvalCli,
+  makeAgentTask,
+  startMockAtlasApi,
+  startEphemeralMongo,
+  AnswerMatches,
+  createLocalToolProvider,
+  startMockBraintrust,
 };
 
 for (const [name, value] of Object.entries(exportsUnderTest)) {
