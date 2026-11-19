@@ -317,7 +317,7 @@ export class MongoThreadStore implements ThreadStore {
       {
         _id: threadKey(record.threadId),
         pendingInterruptId: interruptId,
-        pendingReviewState: "resuming",
+        pendingReviewState: { $in: ["resuming", "uncertain"] },
       },
       withId(record),
       { upsert: false },
