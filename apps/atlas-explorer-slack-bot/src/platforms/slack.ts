@@ -15,13 +15,9 @@
  */
 
 import type { SlackAdapter } from "@chat-adapter/slack";
-import type { Chat } from "chat";
 
-import type { DeliveryBoundary } from "@mongodb-js/agent-engine-chat/chat";
 import {
-  createSlackDeliveryBoundary as createSharedSlackDeliveryBoundary,
   createSlackPlatformAdapter as createSharedSlackPlatformAdapter,
-  registerSlackAppHomeHandler,
   type SlackHomeView,
   type SlackPlatformOptions,
   type SlackSuggestedPrompt,
@@ -59,24 +55,6 @@ export function createSlackPlatformAdapter(
       prompts: SUGGESTED_PROMPTS,
     },
   });
-}
-
-export function createSlackDeliveryBoundary(
-  adapter: SlackAdapter,
-): DeliveryBoundary {
-  return createSharedSlackDeliveryBoundary(adapter, {
-    responseMetadataEvent: RESPONSE_METADATA_EVENT,
-  });
-}
-
-export function registerSlackPlatformHandlers(
-  chat: Chat,
-  adapter: SlackAdapter,
-  displayName: string,
-): void {
-  registerSlackAppHomeHandler(chat, adapter, () =>
-    buildSlackHomeView(displayName),
-  );
 }
 
 export function buildSlackHomeView(displayName: string): SlackHomeView {

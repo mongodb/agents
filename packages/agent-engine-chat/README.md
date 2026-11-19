@@ -37,9 +37,19 @@ Each export is a separate subpath of the package.
   thread follow-ups, and Approve/Reject review cards to an agent.
 - **`/agent-engine`.** `AgentEngineClient` invokes and resumes an agent,
   with streaming, and handles service-account tokens.
-- **`/slack`.** Slack platform helpers: `createSlackPlatformAdapter`,
-  `createSlackDeliveryBoundary`, `splitSlackResponse`,
-  `parseSlackReviewInterruptId`, and `registerSlackAppHomeHandler`.
+- **`/slack`.** Slack platform helpers:
+  - `createSlackPlatformAdapter` — creates a Slack adapter with Agent View,
+    session titles, and default Web API timeouts.
+  - `registerSlackChatHandlers` — wires chat handlers, Slack delivery, review
+    ID parsing, and optional App Home in one call.
+  - `createSlackDeliveryBoundary` — delivers markdown in chunks and reconciles
+    delivery via Slack message metadata.
+  - `splitSlackResponse` — splits markdown within Slack's 12,000-character
+    limit at natural boundaries.
+  - `parseSlackReviewInterruptId` — extracts and validates the interrupt ID
+    from legacy JSON review action values.
+  - `registerSlackAppHomeHandler` — publishes an App Home view when a user
+    opens the Home tab.
 - **`/store`.** Thread and Chat SDK state storage in MongoDB, plus an in-memory
   thread store.
 - **`/testing`.** Fakes for tests that use the handlers.
@@ -49,12 +59,10 @@ Each export is a separate subpath of the package.
 ```ts
 import { Chat } from "chat";
 
-import { registerChatHandlers } from "@mongodb-js/agent-engine-chat/chat";
 import { AgentEngineClient } from "@mongodb-js/agent-engine-chat/agent-engine";
 import {
-  createSlackDeliveryBoundary,
   createSlackPlatformAdapter,
-  parseSlackReviewInterruptId,
+  registerSlackChatHandlers,
 } from "@mongodb-js/agent-engine-chat/slack";
 import {
   MongoStateAdapter,
@@ -77,11 +85,8 @@ const bot = new Chat({
   userName: "My Agent",
 });
 
-const delivery = createSlackDeliveryBoundary(slackAdapter, {
-  responseMetadataEvent: "my_agent_responded",
-});
-
-registerChatHandlers(bot, {
+registerSlackChatHandlers(bot, {
+  adapter: slackAdapter,
   agent: new AgentEngineClient({
     baseUrl: "https://agentic-platform.mongodb.com",
     invokeTarget: "gateway",
@@ -93,12 +98,7 @@ registerChatHandlers(bot, {
     },
   }),
   botName: "My Agent",
-  deliveryForAdapter: (adapter) =>
-    adapter.name === slackAdapter.name ? delivery : undefined,
-  reviewInterruptIdForAdapter: (adapter, value, threadId) =>
-    adapter.name === slackAdapter.name
-      ? parseSlackReviewInterruptId(value, threadId)
-      : value,
+  responseMetadataEvent: "my_agent_responded",
   store: await MongoThreadStore.connect(uri, databaseName),
 });
 
@@ -106,7 +106,52 @@ export const POST = (request: Request) => bot.webhooks.slack(request);
 ```
 
 The Slack bot's [`runtime.ts`](../../apps/atlas-explorer-slack-bot/src/runtime.ts)
-shows the full version, with an allowlist and custom messages.
+shows the full version, with an allowlist, App Home view, and custom messages.
+
+### Multi-adapter or custom delivery
+
+For multi-adapter bots or custom delivery wiring, call `registerChatHandlers`
+from `/chat` directly and dispatch per adapter with the lower-level `/slack`
+helpers:
+
+```ts
+import { registerChatHandlers } from "@mongodb-js/agent-engine-chat/chat";
+import {
+  createSlackDeliveryBoundary,
+  parseSlackReviewInterruptId,
+  registerSlackAppHomeHandler,
+} from "@mongodb-js/agent-engine-chat/slack";
+
+const slackDelivery = createSlackDeliveryBoundary(slackAdapter, {
+  responseMetadataEvent: "my_agent_responded",
+});
+
+registerChatHandlers(bot, {
+  agent,
+  botName: "My Agent",
+  deliveryForAdapter: (adapter) => {
+    if (adapter.name === slackAdapter.name) {
+      return slackDelivery;
+    }
+    return undefined; // other adapters fall back to thread.post({ markdown })
+  },
+  reviewInterruptIdForAdapter: (adapter, value, threadId) =>
+    adapter.name === slackAdapter.name
+      ? parseSlackReviewInterruptId(value, threadId)
+      : value,
+  store,
+});
+
+registerSlackAppHomeHandler(bot, slackAdapter, () => ({
+  type: "home",
+  blocks: [
+    {
+      type: "section",
+      text: { type: "mrkdwn", text: "Welcome to My Agent." },
+    },
+  ],
+}));
+```
 
 ## Limit new sessions
 
