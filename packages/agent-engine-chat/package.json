@@ -22,6 +22,10 @@
       "types": "./dist/agent-engine/index.d.ts",
       "import": "./dist/agent-engine/index.js"
     },
+    "./slack": {
+      "types": "./dist/slack/index.d.ts",
+      "import": "./dist/slack/index.js"
+    },
     "./store": {
       "types": "./dist/store/index.d.ts",
       "import": "./dist/store/index.js"
@@ -54,11 +58,15 @@
     "zod": "^4.5.4"
   },
   "peerDependencies": {
+    "@chat-adapter/slack": "^4.40.0",
     "chat": "^4.40.0",
     "mongodb-memory-server-core": "^11.2.0",
     "vitest": "^4.1.11 || ^5.0.0"
   },
   "peerDependenciesMeta": {
+    "@chat-adapter/slack": {
+      "optional": true
+    },
     "mongodb-memory-server-core": {
       "optional": true
     },

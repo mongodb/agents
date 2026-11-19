@@ -56,6 +56,8 @@ peers="$(
     const packagesUnderTest = new Set(
       process.argv.slice(1).map((dir) => `@mongodb-js/${dir}`),
     );
+    // Optional peers exercised by consumer.ts stay pinned to the lockfile.
+    const optionalPeersUsedByConsumer = new Set(["@chat-adapter/slack"]);
     for (const dir of process.argv.slice(1)) {
       const pkgDir = `packages/${dir}`;
       const pkg = JSON.parse(fs.readFileSync(`${pkgDir}/package.json`, "utf8"));
@@ -64,7 +66,12 @@ peers="$(
         ...Object.keys(pkg.peerDependencies ?? {}),
       ];
       for (const name of wanted) {
-        if (pkg.peerDependenciesMeta?.[name]?.optional) continue;
+        if (
+          pkg.peerDependenciesMeta?.[name]?.optional &&
+          !optionalPeersUsedByConsumer.has(name)
+        ) {
+          continue;
+        }
         if (packagesUnderTest.has(name) || found.has(name)) continue;
         const installed = JSON.parse(
           fs.readFileSync(`${pkgDir}/node_modules/${name}/package.json`, "utf8"),
