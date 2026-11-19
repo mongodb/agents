@@ -55,20 +55,33 @@ Releases use [Changesets](https://github.com/changesets/changesets). See
 The public packages are versioned and published together. They always share
 one version number, so a release bumps all of them, even ones with no changes.
 
-1. In a pull request that changes a public package, run `pnpm changeset`, pick the
-   packages and a bump type, and write a one-line summary. Commit the file it
-   creates in [`.changeset/`](.changeset). Use `minor` for a breaking change
-   and `patch` for everything else.
+1. In a pull request that changes a public package, run `pnpm changeset`, pick
+   the packages and a bump type, and write a one-line summary. Commit the file
+   it creates in [`.changeset/`](.changeset). Use `minor` for a breaking
+   change and `patch` for everything else. To skip the prompts, pass the
+   packages and summary as flags:
+
+   ```bash
+   pnpm changeset --patch @mongodb-js/atlas-explorer-agent \
+     -m "One-line summary of the change."
+   ```
+
 2. When pull requests with changesets merge, the
    [Release workflow](.github/workflows/release.yml) opens or updates a
-   "Version Packages" pull request. Merging that pull request publishes.
+   "Version Packages" pull request. It collects every pending changeset, so
+   several pull requests can ship in one release. Merging it publishes.
 3. Publishing uses npm trusted publishing and runs `pnpm check:packages`
    first. It uploads nothing unless the repository variable
    `PUBLISH_DRY_RUN` is `false`. It defaults to `true`, which only validates
    the packages.
 
-Pull requests that the workflow opens do not run CI. Close and reopen the
-Version Packages pull request to run it.
+Don't edit `version` in a `package.json` by hand. The Release workflow
+publishes any version that npm doesn't have yet as soon as it reaches `main`.
+
+CI doesn't run on the Version Packages pull request, because the workflow
+opens it with the default `GITHUB_TOKEN`. You can merge it without CI, since
+publishing runs `pnpm check:packages` first. To run CI on it anyway, close and
+reopen it.
 
 ## Set up
 

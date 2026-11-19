@@ -2,6 +2,22 @@
 
 - When you open a pull request, fill the body from `.github/pull_request_template.md`.
 
+## Changesets and releases
+
+- If you change a public package (one under `packages/` without
+  `"private": true`) in a way its users should see, add a changeset:
+
+  ```bash
+  pnpm changeset --patch <package-name> -m "One-line summary for users."
+  ```
+
+  Use the full npm name, comma-separated for several packages. Use `--minor`
+  for breaking changes, and never `--major`.
+- Never edit `version` in a `package.json`. A new version publishes as soon
+  as it reaches `main`.
+- Don't touch the release bot's pull request (branch `changeset-release/main`)
+  unless asked.
+
 ## Writing for the user
 
 ### Who the user is
