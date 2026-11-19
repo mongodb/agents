@@ -1,5 +1,11 @@
 # @mongodb-js/atlas-explorer-agent
 
+## 0.1.3
+
+### Patch Changes
+
+- @mongodb-js/atlas-agents-core@0.1.3
+
 ## 0.1.2
 
 ### Patch Changes
