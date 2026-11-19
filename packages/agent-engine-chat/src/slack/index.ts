@@ -29,4 +29,8 @@ export {
   splitSlackResponse,
   type SlackDeliveryBoundaryOptions,
 } from "./delivery.js";
+export {
+  registerSlackChatHandlers,
+  type SlackChatHandlerOptions,
+} from "./handlers.js";
 export { parseSlackReviewInterruptId } from "./review.js";

@@ -38,8 +38,9 @@ Each export is a separate subpath of the package.
 - **`/agent-engine`.** `AgentEngineClient` invokes and resumes an agent,
   with streaming, and handles service-account tokens.
 - **`/slack`.** Slack platform helpers: `createSlackPlatformAdapter`,
-  `createSlackDeliveryBoundary`, `splitSlackResponse`,
-  `parseSlackReviewInterruptId`, and `registerSlackAppHomeHandler`.
+  `registerSlackChatHandlers`, `createSlackDeliveryBoundary`,
+  `splitSlackResponse`, `parseSlackReviewInterruptId`, and
+  `registerSlackAppHomeHandler`.
 - **`/store`.** Thread and Chat SDK state storage in MongoDB, plus an in-memory
   thread store.
 - **`/testing`.** Fakes for tests that use the handlers.
@@ -49,12 +50,10 @@ Each export is a separate subpath of the package.
 ```ts
 import { Chat } from "chat";
 
-import { registerChatHandlers } from "@mongodb-js/agent-engine-chat/chat";
 import { AgentEngineClient } from "@mongodb-js/agent-engine-chat/agent-engine";
 import {
-  createSlackDeliveryBoundary,
   createSlackPlatformAdapter,
-  parseSlackReviewInterruptId,
+  registerSlackChatHandlers,
 } from "@mongodb-js/agent-engine-chat/slack";
 import {
   MongoStateAdapter,
@@ -77,11 +76,8 @@ const bot = new Chat({
   userName: "My Agent",
 });
 
-const delivery = createSlackDeliveryBoundary(slackAdapter, {
-  responseMetadataEvent: "my_agent_responded",
-});
-
-registerChatHandlers(bot, {
+registerSlackChatHandlers(bot, {
+  adapter: slackAdapter,
   agent: new AgentEngineClient({
     baseUrl: "https://agentic-platform.mongodb.com",
     invokeTarget: "gateway",
@@ -93,20 +89,20 @@ registerChatHandlers(bot, {
     },
   }),
   botName: "My Agent",
-  deliveryForAdapter: (adapter) =>
-    adapter.name === slackAdapter.name ? delivery : undefined,
-  reviewInterruptIdForAdapter: (adapter, value, threadId) =>
-    adapter.name === slackAdapter.name
-      ? parseSlackReviewInterruptId(value, threadId)
-      : value,
+  responseMetadataEvent: "my_agent_responded",
   store: await MongoThreadStore.connect(uri, databaseName),
 });
 
 export const POST = (request: Request) => bot.webhooks.slack(request);
 ```
 
+For multi-adapter bots or custom delivery wiring, call `registerChatHandlers`
+from `/chat` directly with the lower-level `/slack` primitives
+(`createSlackDeliveryBoundary`, `parseSlackReviewInterruptId`, and
+`registerSlackAppHomeHandler`).
+
 The Slack bot's [`runtime.ts`](../../apps/atlas-explorer-slack-bot/src/runtime.ts)
-shows the full version, with an allowlist and custom messages.
+shows the full version, with an allowlist, App Home view, and custom messages.
 
 ## Limit new sessions
 

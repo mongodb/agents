@@ -19,12 +19,11 @@ import { Chat, type StateAdapter } from "chat";
 
 import {
   platformActorId,
-  registerChatHandlers,
   type AgentGateway,
   type HandlerLogger,
 } from "@mongodb-js/agent-engine-chat/chat";
 import { AgentEngineClient } from "@mongodb-js/agent-engine-chat/agent-engine";
-import { parseSlackReviewInterruptId } from "@mongodb-js/agent-engine-chat/slack";
+import { registerSlackChatHandlers } from "@mongodb-js/agent-engine-chat/slack";
 import {
   getSharedMongoConnection,
   MongoStateAdapter,
@@ -39,9 +38,9 @@ import {
   type SlackBotConfig,
 } from "./loadConfig.js";
 import {
-  createSlackDeliveryBoundary,
+  buildSlackHomeView,
   createSlackPlatformAdapter,
-  registerSlackPlatformHandlers,
+  RESPONSE_METADATA_EVENT,
 } from "./platforms/slack.js";
 
 export type AtlasExplorerChat = Chat<{
@@ -134,36 +133,23 @@ export async function createRuntime(
     state,
     userName: config.slack.botDisplayName,
   });
-  const delivery = createSlackDeliveryBoundary(slackAdapter);
-  registerChatHandlers(bot, {
+  registerSlackChatHandlers(bot, {
+    adapter: slackAdapter,
     agent: options.agent ?? new AgentEngineClient(config.agentEngine),
     authorizedActorIds: normalizeAllowedActors(
       config.chat.allowedActorIds,
     ),
     botName: config.slack.botDisplayName,
+    buildHomeView: () => buildSlackHomeView(config.slack.botDisplayName),
     logger: options.logger ?? console,
     messages: atlasExplorerChatMessages,
-    deliveryForAdapter: (adapter) =>
-      adapter.name === slackAdapter.name ? delivery : undefined,
-    reviewInterruptIdForAdapter: (
-      adapter,
-      value,
-      threadId,
-    ) =>
-      adapter.name === slackAdapter.name
-        ? parseSlackReviewInterruptId(value, threadId)
-        : value,
+    responseMetadataEvent: RESPONSE_METADATA_EVENT,
     sessionLimit: {
       idleTtlMs: config.sessionLimit.idleTtlSeconds * 1_000,
       limit: config.sessionLimit.limitPerHour,
     },
     store,
   });
-  registerSlackPlatformHandlers(
-    bot,
-    slackAdapter,
-    config.slack.botDisplayName,
-  );
 
   return {
     bot,
