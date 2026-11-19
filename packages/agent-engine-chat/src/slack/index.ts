@@ -15,14 +15,18 @@
  */
 
 export {
-  createSlackDeliveryBoundary,
   createSlackPlatformAdapter,
-  MAX_SLACK_MARKDOWN_LENGTH,
-  parseSlackReviewInterruptId,
-  registerSlackAppHomeHandler,
-  splitSlackResponse,
-  type SlackDeliveryBoundaryOptions,
-  type SlackHomeView,
   type SlackPlatformOptions,
   type SlackSuggestedPrompt,
-} from "./slack.js";
+} from "./adapter.js";
+export {
+  registerSlackAppHomeHandler,
+  type SlackHomeView,
+} from "./appHome.js";
+export {
+  createSlackDeliveryBoundary,
+  MAX_SLACK_MARKDOWN_LENGTH,
+  splitSlackResponse,
+  type SlackDeliveryBoundaryOptions,
+} from "./delivery.js";
+export { parseSlackReviewInterruptId } from "./review.js";

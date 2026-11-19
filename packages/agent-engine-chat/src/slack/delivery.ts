@@ -14,75 +14,15 @@
  * limitations under the License.
  */
 
-import {
-  createSlackAdapter,
-  type SlackAdapter,
-  type SlackAdapterConfig,
-  type SlackAdapterMode,
-  type SlackSuggestedPrompt,
-} from "@chat-adapter/slack";
-import type { AppHomeOpenedEvent, Chat } from "chat";
+import type { SlackAdapter } from "@chat-adapter/slack";
 
 import type { DeliveryBoundary } from "../chat/index.js";
 
-export type { SlackSuggestedPrompt };
-
 export const MAX_SLACK_MARKDOWN_LENGTH = 12_000;
-
-export type SlackHomeView = Parameters<SlackAdapter["publishHomeView"]>[1];
-
-export interface SlackPlatformOptions {
-  apiUrl?: string;
-  appToken?: string;
-  botToken: string;
-  displayName: string;
-  mode: SlackAdapterMode;
-  signingSecret?: string;
-  suggestedPrompts?: {
-    title: string;
-    prompts: readonly SlackSuggestedPrompt[];
-  };
-  webClientOptions?: SlackAdapterConfig["webClientOptions"];
-}
 
 export interface SlackDeliveryBoundaryOptions {
   responseMetadataEvent: string;
   maxMarkdownLength?: number;
-}
-
-const DEFAULT_WEB_CLIENT_OPTIONS = {
-  timeout: 30_000,
-  retryConfig: { retries: 0 },
-  rejectRateLimitedCalls: true,
-} as const satisfies NonNullable<SlackAdapterConfig["webClientOptions"]>;
-
-export function createSlackPlatformAdapter(
-  options: SlackPlatformOptions,
-): SlackAdapter {
-  return createSlackAdapter({
-    agentView: true,
-    botToken: options.botToken,
-    mode: options.mode,
-    userName: options.displayName,
-    sessionTitle: true,
-    webClientOptions: {
-      ...DEFAULT_WEB_CLIENT_OPTIONS,
-      ...options.webClientOptions,
-    },
-    ...(options.suggestedPrompts
-      ? {
-          suggestedPrompts: {
-            title: options.suggestedPrompts.title,
-            prompts: [...options.suggestedPrompts.prompts],
-          },
-        }
-      : {}),
-    ...(options.apiUrl ? { apiUrl: options.apiUrl } : {}),
-    ...(options.appToken ? { appToken: options.appToken } : {}),
-    ...(options.signingSecret
-      ? { signingSecret: options.signingSecret }
-      : {}),
-  });
 }
 
 export function createSlackDeliveryBoundary(
@@ -155,6 +95,22 @@ export function createSlackDeliveryBoundary(
   };
 }
 
+export function splitSlackResponse(
+  text: string,
+  maxLength: number = MAX_SLACK_MARKDOWN_LENGTH,
+): string[] {
+  assertValidMaxMarkdownLength(maxLength);
+  const chunks: string[] = [];
+  let remaining = text;
+  while (remaining.length > maxLength) {
+    const splitIndex = findSlackMarkdownSplitIndex(remaining, maxLength);
+    chunks.push(remaining.slice(0, splitIndex));
+    remaining = remaining.slice(splitIndex);
+  }
+  chunks.push(remaining);
+  return chunks;
+}
+
 async function scanSlackDeliveryMarkers(
   adapter: SlackAdapter,
   channel: string,
@@ -215,44 +171,14 @@ function chunkDeliveryMarker(
   return `${deliveryId}:chunk:${chunkIndex}:${chunkCount}`;
 }
 
-export function registerSlackAppHomeHandler(
-  chat: Chat,
-  adapter: SlackAdapter,
-  buildHomeView: (
-    event: AppHomeOpenedEvent,
-  ) => SlackHomeView | Promise<SlackHomeView>,
-): void {
-  chat.onAppHomeOpened(async (event) => {
-    if (event.adapter !== adapter || event.tab === "messages") {
-      return;
-    }
-    await adapter.publishHomeView(
-      event.userId,
-      await buildHomeView(event),
-    );
-  });
-}
-
-export function splitSlackResponse(
-  text: string,
-  maxLength: number = MAX_SLACK_MARKDOWN_LENGTH,
-): string[] {
-  assertValidMaxMarkdownLength(maxLength);
-  const chunks: string[] = [];
-  let remaining = text;
-  while (remaining.length > maxLength) {
-    const splitIndex = findSlackMarkdownSplitIndex(remaining, maxLength);
-    chunks.push(remaining.slice(0, splitIndex));
-    remaining = remaining.slice(splitIndex);
-  }
-  chunks.push(remaining);
-  return chunks;
-}
-
 function assertValidMaxMarkdownLength(maxLength: number): void {
-  if (!Number.isInteger(maxLength) || maxLength < 2) {
+  if (
+    !Number.isInteger(maxLength) ||
+    maxLength < 2 ||
+    maxLength > MAX_SLACK_MARKDOWN_LENGTH
+  ) {
     throw new RangeError(
-      "maxLength must be an integer greater than or equal to 2",
+      `maxLength must be an integer between 2 and ${MAX_SLACK_MARKDOWN_LENGTH}`,
     );
   }
 }
@@ -295,34 +221,4 @@ function findSlackMarkdownSplitIndex(
     nextCodeUnit >= 0xdc00 &&
     nextCodeUnit <= 0xdfff;
   return splitsSurrogatePair ? splitIndex - 1 : splitIndex;
-}
-
-export function parseSlackReviewInterruptId(
-  value: string,
-  signedThreadId: string,
-): string | null {
-  if (!value.startsWith("{")) {
-    return value;
-  }
-  try {
-    const parsed = JSON.parse(value) as {
-      channelId?: unknown;
-      interruptId?: unknown;
-      threadTs?: unknown;
-    };
-    if (
-      typeof parsed.channelId !== "string" ||
-      !parsed.channelId ||
-      typeof parsed.threadTs !== "string" ||
-      !parsed.threadTs ||
-      typeof parsed.interruptId !== "string" ||
-      !parsed.interruptId ||
-      `slack:${parsed.channelId}:${parsed.threadTs}` !== signedThreadId
-    ) {
-      return null;
-    }
-    return parsed.interruptId;
-  } catch {
-    return null;
-  }
 }
