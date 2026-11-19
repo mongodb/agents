@@ -37,10 +37,19 @@ Each export is a separate subpath of the package.
   thread follow-ups, and Approve/Reject review cards to an agent.
 - **`/agent-engine`.** `AgentEngineClient` invokes and resumes an agent,
   with streaming, and handles service-account tokens.
-- **`/slack`.** Slack platform helpers: `createSlackPlatformAdapter`,
-  `registerSlackChatHandlers`, `createSlackDeliveryBoundary`,
-  `splitSlackResponse`, `parseSlackReviewInterruptId`, and
-  `registerSlackAppHomeHandler`.
+- **`/slack`.** Slack platform helpers:
+  - `createSlackPlatformAdapter` — creates a Slack adapter with Agent View,
+    session titles, and default Web API timeouts.
+  - `registerSlackChatHandlers` — wires chat handlers, Slack delivery, review
+    ID parsing, and optional App Home in one call.
+  - `createSlackDeliveryBoundary` — delivers markdown in chunks and reconciles
+    delivery via Slack message metadata.
+  - `splitSlackResponse` — splits markdown within Slack's 12,000-character
+    limit at natural boundaries.
+  - `parseSlackReviewInterruptId` — extracts and validates the interrupt ID
+    from legacy JSON review action values.
+  - `registerSlackAppHomeHandler` — publishes an App Home view when a user
+    opens the Home tab.
 - **`/store`.** Thread and Chat SDK state storage in MongoDB, plus an in-memory
   thread store.
 - **`/testing`.** Fakes for tests that use the handlers.
