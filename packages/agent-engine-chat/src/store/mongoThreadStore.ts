@@ -25,7 +25,12 @@ import type {
   ThreadStore,
   TurnClaim,
 } from "./threadStore.js";
-import { CLAIM_LEASE_MS, threadKey } from "./threadStore.js";
+import {
+  CLAIM_LEASE_MS,
+  PENDING_REVIEW_FIELDS,
+  threadKey,
+  withoutPendingReview,
+} from "./threadStore.js";
 
 interface StoredThreadRecord extends ThreadRecord {
   _id: string;
@@ -217,6 +222,7 @@ export class MongoThreadStore implements ThreadStore {
             {
               $or: [
                 { pendingInterruptId: { $exists: false } },
+                { pendingReviewState: "uncertain" },
               ],
             },
             {
@@ -233,7 +239,12 @@ export class MongoThreadStore implements ThreadStore {
             inFlightStartedAt: claimedAt,
             updatedAt: claimedAt,
           },
-          $unset: { retentionState: "" },
+          $unset: {
+            retentionState: "",
+            ...Object.fromEntries(
+              PENDING_REVIEW_FIELDS.map((field) => [field, ""]),
+            ),
+          },
           $push: {
             recentEventIds: {
               $each: [eventId],
@@ -496,7 +507,7 @@ function turnConflictStatus(
   if (record.recentEventIds?.includes(eventId)) {
     return "duplicate";
   }
-  if (record.pendingInterruptId) {
+  if (record.pendingInterruptId && record.pendingReviewState !== "uncertain") {
     return "pending_review";
   }
   if (
@@ -529,7 +540,8 @@ function claimedRecord(
   eventId: string,
   claimedAt: Date,
 ): ThreadRecord {
-  const { retentionState: _discarded, ...record } = previous;
+  const { retentionState: _discarded, ...record } =
+    withoutPendingReview(previous);
   return {
     ...record,
     recentEventIds: [...(previous.recentEventIds ?? []), eventId].slice(

@@ -394,12 +394,6 @@ async function handlePendingReview(
   dependencies: ChatHandlerDependencies,
   claimedAt: Date,
 ): Promise<void> {
-  if (record.pendingReviewState === "uncertain") {
-    await dependencies.conversation.post(
-      (dependencies.messages ?? defaultAgentChatMessages).pendingReviewUncertain,
-    );
-    return;
-  }
   if (record.pendingReviewState === "resuming") {
     const reviewClaimExpired =
       !record.pendingReviewClaimedAt ||

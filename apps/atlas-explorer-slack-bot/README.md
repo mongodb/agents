@@ -389,7 +389,9 @@ text is blocked while review is pending.
 Both buttons continue the same session by sending a `resume_map` keyed by the
 pending interrupt IDs. The bot does not use the generic execution `/resume`
 endpoint. An unconfirmed resume is marked uncertain and is never
-automatically replayed; verify Atlas state before starting a new conversation.
+automatically replayed. Verify Atlas state, then reply in the thread. The next
+message from any allowlisted user drops the unresolved review and continues the
+same agent session. The old Approve and Reject buttons stop working.
 
 ## Session limit
 

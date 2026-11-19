@@ -17,6 +17,7 @@
 import {
   CLAIM_LEASE_MS,
   threadKey,
+  withoutPendingReview,
   type ThreadRecord,
   type ThreadStore,
   type TurnClaim,
@@ -80,7 +81,10 @@ export class MemoryThreadStore implements ThreadStore {
         record: structuredClone(existing),
       };
     }
-    if (existing?.pendingInterruptId) {
+    if (
+      existing?.pendingInterruptId &&
+      existing.pendingReviewState !== "uncertain"
+    ) {
       return {
         status: "pending_review",
         record: structuredClone(existing),
@@ -99,7 +103,7 @@ export class MemoryThreadStore implements ThreadStore {
     }
 
     const claimed: ThreadRecord = {
-      ...(existing ?? { threadId }),
+      ...(existing ? withoutPendingReview(existing) : { threadId }),
       threadId,
       recentEventIds: [
         ...(existing?.recentEventIds ?? []).filter(
