@@ -17,10 +17,12 @@ the Slack manifest and suggested prompts, and the webhook entrypoint.
 npm install @mongodb-js/agent-engine-chat
 ```
 
-Peer dependencies are installed automatically by npm 7 and later. Two
+Peer dependencies are installed automatically by npm 7 and later. Three
 optional ones are not. Install them only if you use the feature:
 
 ```bash
+# the /slack export
+npm install @chat-adapter/slack
 # the /testing export
 npm install --save-dev vitest
 # the embedded MongoDB the store can start for local runs
@@ -35,6 +37,9 @@ Each export is a separate subpath of the package.
   thread follow-ups, and Approve/Reject review cards to an agent.
 - **`/agent-engine`.** `AgentEngineClient` invokes and resumes an agent,
   with streaming, and handles service-account tokens.
+- **`/slack`.** Slack platform helpers: `createSlackPlatformAdapter`,
+  `createSlackDeliveryBoundary`, `splitSlackResponse`,
+  `parseSlackReviewInterruptId`, and `registerSlackAppHomeHandler`.
 - **`/store`.** Thread and Chat SDK state storage in MongoDB, plus an in-memory
   thread store.
 - **`/testing`.** Fakes for tests that use the handlers.
@@ -42,27 +47,38 @@ Each export is a separate subpath of the package.
 ## Wiring
 
 ```ts
-import { createSlackAdapter } from "@chat-adapter/slack";
 import { Chat } from "chat";
 
 import { registerChatHandlers } from "@mongodb-js/agent-engine-chat/chat";
 import { AgentEngineClient } from "@mongodb-js/agent-engine-chat/agent-engine";
-import { MongoStateAdapter, MongoThreadStore } from "@mongodb-js/agent-engine-chat/store";
+import {
+  createSlackDeliveryBoundary,
+  createSlackPlatformAdapter,
+  parseSlackReviewInterruptId,
+} from "@mongodb-js/agent-engine-chat/slack";
+import {
+  MongoStateAdapter,
+  MongoThreadStore,
+} from "@mongodb-js/agent-engine-chat/store";
 
 const uri = process.env.MONGODB_URI!;
 const databaseName = "my_agent_chat";
 
+const slackAdapter = createSlackPlatformAdapter({
+  botToken: process.env.SLACK_BOT_TOKEN!,
+  signingSecret: process.env.SLACK_SIGNING_SECRET!,
+  mode: "webhook",
+  displayName: "My Agent",
+});
+
 const bot = new Chat({
-  adapters: {
-    slack: createSlackAdapter({
-      botToken: process.env.SLACK_BOT_TOKEN!,
-      signingSecret: process.env.SLACK_SIGNING_SECRET!,
-      mode: "webhook",
-      userName: "My Agent",
-    }),
-  },
+  adapters: { slack: slackAdapter },
   state: new MongoStateAdapter({ uri, databaseName }),
   userName: "My Agent",
+});
+
+const delivery = createSlackDeliveryBoundary(slackAdapter, {
+  responseMetadataEvent: "my_agent_responded",
 });
 
 registerChatHandlers(bot, {
@@ -77,6 +93,12 @@ registerChatHandlers(bot, {
     },
   }),
   botName: "My Agent",
+  deliveryForAdapter: (adapter) =>
+    adapter.name === slackAdapter.name ? delivery : undefined,
+  reviewInterruptIdForAdapter: (adapter, value, threadId) =>
+    adapter.name === slackAdapter.name
+      ? parseSlackReviewInterruptId(value, threadId)
+      : value,
   store: await MongoThreadStore.connect(uri, databaseName),
 });
 

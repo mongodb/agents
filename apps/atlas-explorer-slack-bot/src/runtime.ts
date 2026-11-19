@@ -24,6 +24,7 @@ import {
   type HandlerLogger,
 } from "@mongodb-js/agent-engine-chat/chat";
 import { AgentEngineClient } from "@mongodb-js/agent-engine-chat/agent-engine";
+import { parseSlackReviewInterruptId } from "@mongodb-js/agent-engine-chat/slack";
 import {
   getSharedMongoConnection,
   MongoStateAdapter,
@@ -40,7 +41,6 @@ import {
 import {
   createSlackDeliveryBoundary,
   createSlackPlatformAdapter,
-  parseSlackReviewInterruptId,
   registerSlackPlatformHandlers,
 } from "./platforms/slack.js";
 

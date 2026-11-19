@@ -26,6 +26,13 @@ import {
 } from "@mongodb-js/atlas-agents-core/sync-skills";
 import { AgentEngineClient } from "@mongodb-js/agent-engine-chat/agent-engine";
 import { registerChatHandlers } from "@mongodb-js/agent-engine-chat/chat";
+import {
+  createSlackDeliveryBoundary,
+  createSlackPlatformAdapter,
+  parseSlackReviewInterruptId,
+  registerSlackAppHomeHandler,
+  splitSlackResponse,
+} from "@mongodb-js/agent-engine-chat/slack";
 import { MongoThreadStore } from "@mongodb-js/agent-engine-chat/store";
 import {
   createAgentEvalCli,
@@ -46,6 +53,11 @@ const exportsUnderTest = {
   syncSkills,
   AgentEngineClient,
   registerChatHandlers,
+  createSlackDeliveryBoundary,
+  createSlackPlatformAdapter,
+  parseSlackReviewInterruptId,
+  registerSlackAppHomeHandler,
+  splitSlackResponse,
   MongoThreadStore,
   buildAtlasExplorerAgentOptions,
   buildAtlasQueryInsightsAgentOptions,
