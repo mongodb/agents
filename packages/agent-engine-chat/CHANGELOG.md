@@ -1,5 +1,14 @@
 # @mongodb-js/agent-engine-chat
 
+## 0.1.4
+
+### Patch Changes
+
+- f8f542c: Add `registerSlackChatHandlers` to `@mongodb-js/agent-engine-chat/slack` to
+  wire Slack delivery, review interrupt parsing, and optional App Home handling
+  in one call, and derive the Agent Engine `client` label in
+  `registerChatHandlers` from `adapter.name`.
+
 ## 0.1.3
 
 ### Patch Changes
