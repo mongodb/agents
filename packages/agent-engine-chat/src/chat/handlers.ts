@@ -29,7 +29,6 @@ import { handleConversationMessage } from "./conversation.js";
 import {
   clientUserFromAuthor,
   platformActorId,
-  SLACK_CHAT_CLIENT,
 } from "./identity.js";
 import { handleReviewDecision } from "./review.js";
 import {
@@ -193,7 +192,7 @@ export function registerChatHandlers(
             event.adapter.name,
             event.user.userId,
           ),
-          client: SLACK_CHAT_CLIENT,
+          client: event.adapter.name,
           user: clientUserFromAuthor(event.adapter.name, event.user),
           decision:
             event.actionId === REVIEW_APPROVE_ACTION_ID
@@ -228,7 +227,7 @@ async function dispatchMessage(
       actorId: actorIdFor(thread, message),
       authorIsBot: message.author.isBot === true,
       text: message.text,
-      client: SLACK_CHAT_CLIENT,
+      client: thread.adapter.name,
       user: clientUserFromAuthor(thread.adapter.name, message.author),
     },
     {

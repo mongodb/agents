@@ -770,6 +770,85 @@ describe("registerChatHandlers", () => {
     expect(agent.resumeInputs[0]?.interruptId).toBe("interrupt-1");
   });
 
+  it("derives the Agent Engine client label from the adapter name on invoke and resume", async () => {
+    const teamsAdapter = createMockAdapter("teams", {
+      botUserId: "TB123",
+      isDM: () => true,
+    });
+    const teamsThreadId = "teams:19:abc:msg-1";
+    const multiBot = new Chat({
+      adapters: { teams: teamsAdapter },
+      concurrency: "concurrent",
+      logger: "silent",
+      state: createMockState(),
+      userName: BOT_NAME,
+    });
+    const multiAgent = new FakeAgentGateway();
+    multiAgent.invokeResult = completed;
+    multiAgent.resumeResult = completed;
+    const multiStore = new MemoryThreadStore();
+    registerChatHandlers(multiBot, {
+      agent: multiAgent,
+      botName: BOT_NAME,
+      store: multiStore,
+    });
+    await multiBot.initialize();
+
+    await multiBot.processMessage(
+      teamsAdapter,
+      teamsThreadId,
+      testMessage("teams-msg-1", teamsThreadId, "List projects"),
+    );
+
+    expect(multiAgent.invokeInputs[0]).toMatchObject({
+      actorId: "teams:U123",
+      client: "teams",
+      user: {
+        id: "U123",
+        username: "ada",
+        full_name: "Ada Lovelace",
+        actor_id: "teams:U123",
+      },
+    });
+
+    await multiStore.put({
+      threadId: teamsThreadId,
+      agentSessionId: "session-1",
+      pendingExecutionId: "execution-2",
+      pendingInterruptId: "interrupt-1",
+      pendingResumeSchema: { type: "object" },
+      pendingActionRequests: [
+        { name: "mongodb__insert_many", args: { count: 1 } },
+      ],
+      pendingRequestedByActorId: "teams:U123",
+      updatedAt: new Date(),
+    });
+
+    await multiBot.processAction(
+      {
+        actionId: REVIEW_APPROVE_ACTION_ID,
+        adapter: teamsAdapter,
+        messageId: "review-message",
+        raw: {},
+        threadId: teamsThreadId,
+        user: author(),
+        value: "interrupt-1",
+      },
+      undefined,
+    );
+
+    expect(multiAgent.resumeInputs[0]).toMatchObject({
+      actorId: "teams:U123",
+      client: "teams",
+      user: {
+        id: "U123",
+        username: "ada",
+        full_name: "Ada Lovelace",
+        actor_id: "teams:U123",
+      },
+    });
+  });
+
   it("keeps Chat SDK concurrency configured as concurrent", async () => {
     const first = testMessage(
       "message-1",
