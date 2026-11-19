@@ -1,6 +1,6 @@
 {
   "name": "@mongodb-js/atlas-agents-core",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Shared Agent Engine agent runtime: LLM selection, tool policy, and LangGraph middleware",
   "license": "Apache-2.0",
   "homepage": "https://github.com/mongodb/agents/tree/main/packages/atlas-agents-core#readme",
