@@ -175,6 +175,26 @@ export class MemoryThreadStore implements ThreadStore {
     return true;
   }
 
+  async renewPendingReview(
+    threadId: string,
+    interruptId: string,
+    renewedAt: Date,
+  ): Promise<boolean> {
+    const key = threadKey(threadId);
+    const current = this.records.get(key);
+    if (
+      current?.pendingInterruptId !== interruptId ||
+      current.pendingReviewState !== "resuming"
+    ) {
+      return false;
+    }
+    this.records.set(
+      key,
+      structuredClone({ ...current, pendingReviewClaimedAt: renewedAt }),
+    );
+    return true;
+  }
+
   async clearPendingDelivery(
     threadId: string,
     deliveryId: string,

@@ -388,6 +388,44 @@ describe("handleReviewDecision", () => {
     expect(conversation.reviewStatuses).toEqual(["uncertain"]);
   });
 
+  it("keeps a long-running resume claimed so it is not expired", async () => {
+    vi.useFakeTimers();
+    try {
+      await seedPendingReview(store);
+      let finish!: () => void;
+      const gate = new Promise<void>((resolve) => {
+        finish = resolve;
+      });
+      agent.resumeResult = completed;
+      agent.resumeStream = async () => {
+        await gate;
+        return completed;
+      };
+
+      const decision = handleReviewDecision(
+        {
+          threadId: THREAD_ID,
+          interruptId: "interrupt-1",
+          actorId: ACTOR_ID,
+          decision: "approve",
+        },
+        { agent, conversation, store, botName: BOT_NAME },
+      );
+      await vi.advanceTimersByTimeAsync(11 * 60 * 1_000);
+
+      const record = await store.get(THREAD_ID);
+      expect(record?.pendingReviewState).toBe("resuming");
+      expect(
+        Date.now() - (record?.pendingReviewClaimedAt?.getTime() ?? 0),
+      ).toBeLessThan(2 * 60 * 1_000);
+
+      finish();
+      await expect(decision).resolves.toBe("completed");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("shows a leading directory listing when resuming an existing session", async () => {
     await seedPendingReview(store);
     agent.resumeResult = completed;

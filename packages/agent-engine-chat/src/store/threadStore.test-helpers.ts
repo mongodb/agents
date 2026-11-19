@@ -71,6 +71,17 @@ export async function exercisesReviewClaim(
     pendingReviewState: "resuming",
   });
 
+  expect(
+    await store.renewPendingReview(
+      baseRecord.threadId,
+      "interrupt-1",
+      new Date("2026-09-08T12:05:00.000Z"),
+    ),
+  ).toBe(true);
+  await expect(store.get(baseRecord.threadId)).resolves.toMatchObject({
+    pendingReviewClaimedAt: new Date("2026-09-08T12:05:00.000Z"),
+  });
+
   await store.put({
     ...baseRecord,
     pendingExecutionId: "execution-2",
@@ -83,6 +94,13 @@ export async function exercisesReviewClaim(
       ...baseRecord,
       updatedAt: new Date("2026-09-08T12:02:01.000Z"),
     }),
+  ).toBe(false);
+  expect(
+    await store.renewPendingReview(
+      baseRecord.threadId,
+      "interrupt-1",
+      new Date("2026-09-08T12:05:00.000Z"),
+    ),
   ).toBe(false);
   expect(
     await store.claimPendingReview(
