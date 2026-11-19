@@ -105,13 +105,53 @@ registerSlackChatHandlers(bot, {
 export const POST = (request: Request) => bot.webhooks.slack(request);
 ```
 
-For multi-adapter bots or custom delivery wiring, call `registerChatHandlers`
-from `/chat` directly with the lower-level `/slack` primitives
-(`createSlackDeliveryBoundary`, `parseSlackReviewInterruptId`, and
-`registerSlackAppHomeHandler`).
-
 The Slack bot's [`runtime.ts`](../../apps/atlas-explorer-slack-bot/src/runtime.ts)
 shows the full version, with an allowlist, App Home view, and custom messages.
+
+### Multi-adapter or custom delivery
+
+For multi-adapter bots or custom delivery wiring, call `registerChatHandlers`
+from `/chat` directly and dispatch per adapter with the lower-level `/slack`
+helpers:
+
+```ts
+import { registerChatHandlers } from "@mongodb-js/agent-engine-chat/chat";
+import {
+  createSlackDeliveryBoundary,
+  parseSlackReviewInterruptId,
+  registerSlackAppHomeHandler,
+} from "@mongodb-js/agent-engine-chat/slack";
+
+const slackDelivery = createSlackDeliveryBoundary(slackAdapter, {
+  responseMetadataEvent: "my_agent_responded",
+});
+
+registerChatHandlers(bot, {
+  agent,
+  botName: "My Agent",
+  deliveryForAdapter: (adapter) => {
+    if (adapter.name === slackAdapter.name) {
+      return slackDelivery;
+    }
+    return undefined; // other adapters fall back to thread.post({ markdown })
+  },
+  reviewInterruptIdForAdapter: (adapter, value, threadId) =>
+    adapter.name === slackAdapter.name
+      ? parseSlackReviewInterruptId(value, threadId)
+      : value,
+  store,
+});
+
+registerSlackAppHomeHandler(bot, slackAdapter, () => ({
+  type: "home",
+  blocks: [
+    {
+      type: "section",
+      text: { type: "mrkdwn", text: "Welcome to My Agent." },
+    },
+  ],
+}));
+```
 
 ## Limit new sessions
 
