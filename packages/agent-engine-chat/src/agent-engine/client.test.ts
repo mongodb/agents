@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import { describe, expect, it, vi } from "vitest";
+import { createServer, type Server } from "node:http";
+import type { AddressInfo } from "node:net";
+
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   AgenticApiError,
@@ -1009,4 +1012,69 @@ describe("AgentEngineClient", () => {
       client.invoke({ message: "Hello", actorId: "slack:U123" }),
     ).rejects.toThrow(/invalid response/i);
   });
+});
+
+describe("request timeout on a stalled response", () => {
+  let server: Server | undefined;
+
+  afterEach(async () => {
+    server?.closeAllConnections();
+    await new Promise((resolve) => server?.close(resolve));
+    server = undefined;
+  });
+
+  async function stalledServer(): Promise<string> {
+    server = createServer((_request, response) => {
+      response.writeHead(200, {
+        "Content-Type": "text/event-stream",
+        "X-Session-ID": "session-1",
+      });
+      response.write(
+        `data: ${JSON.stringify({
+          chunk_type: "progress",
+          content: "Calling tool: mongodb__find...",
+          metadata: { phase: "tool_start" },
+        })}\n\n`,
+      );
+    });
+    await new Promise<void>((resolve) =>
+      server!.listen(0, "127.0.0.1", resolve),
+    );
+    return `http://127.0.0.1:${(server!.address() as AddressInfo).port}`;
+  }
+
+  it.each(["invokeStream", "resumeStream"] as const)(
+    "aborts %s when the stream stalls after the headers arrive",
+    async (method) => {
+      const client = new AgentEngineClient(
+        {
+          baseUrl: await stalledServer(),
+          invokeTarget: "local",
+        },
+        { timeoutMs: 300 },
+      );
+      const onProgress = vi.fn();
+
+      const request =
+        method === "invokeStream"
+          ? client.invokeStream(
+              { message: "List projects", actorId: "slack:U123" },
+              onProgress,
+            )
+          : client.resumeStream(
+              {
+                sessionId: "session-1",
+                actorId: "slack:U123",
+                interruptId: "interrupt-1",
+                decision: { type: "approve" },
+              },
+              onProgress,
+            );
+
+      await expect(request).rejects.toMatchObject({
+        name: "TimeoutError",
+      });
+      expect(onProgress).toHaveBeenCalledTimes(1);
+    },
+  );
 });
