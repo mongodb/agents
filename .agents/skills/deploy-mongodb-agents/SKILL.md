@@ -1,6 +1,6 @@
 ---
 name: deploy-mongodb-agents
-description: Run the steps to deploy Atlas Explorer or Atlas Query Insights with the agentengine and Atlas CLIs: create the MCP configuration, set platform secrets, build, deploy, and diagnose a failed or stuck deploy or new conversations that fail to start. Use when asked to deploy, redeploy, ship, set up credentials, or troubleshoot a failed deploy or conversations that fail to start. Not for changing agent code or tool policy; use atlas-agent-engine.
+description: "Run the steps to deploy Atlas Explorer or Atlas Query Insights with the agentengine and Atlas CLIs: create the MCP configuration, set platform secrets, build, deploy, and diagnose a failed or stuck deploy or new conversations that fail to start. Use when asked to deploy, redeploy, ship, set up credentials, or troubleshoot a failed deploy or conversations that fail to start. Not for changing agent code or tool policy; use atlas-agent-engine."
 ---
 
 # Deploy an Atlas agent to Agent Engine
