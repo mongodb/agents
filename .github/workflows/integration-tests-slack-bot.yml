@@ -58,7 +58,7 @@ jobs:
 
       - uses: ./.github/actions/setup-workspace
 
-      - name: Build agent bundle
+      - name: Build agent
         run: pnpm --filter atlas-explorer build
 
       - uses: ./.github/actions/install-agentengine-cli

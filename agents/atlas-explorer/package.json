@@ -11,17 +11,16 @@
     "atlas-explorer": "dist/agent_atlas_explorer/main.js"
   },
   "scripts": {
-    "build": "if command -v pnpm >/dev/null 2>&1 && test -d ../../packages/atlas-explorer-agent; then pnpm --filter @mongodb-js/atlas-explorer-agent build && esbuild src/agent_atlas_explorer/main.ts --bundle --platform=node --format=esm --banner:js=\"import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);\" --outfile=dist/agent_atlas_explorer/main.js --sourcemap --external:@langchain/core --external:@langchain/langgraph --external:@mongodb-js/agent-engine-runner-shared --external:@mongodb-js/agent-engine-sdk --external:@mongodb-js/agent-engine-sdk-langgraph --external:@mongodb-js/mcp-tools-assistant --external:langchain --external:zod --external:dotenv && cp dist/agent_atlas_explorer/main.js src/agent_atlas_explorer/main.bundle.js && cp dist/agent_atlas_explorer/main.js.map src/agent_atlas_explorer/main.bundle.js.map && atlas-explorer-agent sync-skills; else mkdir -p dist/agent_atlas_explorer && cp src/agent_atlas_explorer/main.bundle.js dist/agent_atlas_explorer/main.js && cp src/agent_atlas_explorer/main.bundle.js.map dist/agent_atlas_explorer/main.js.map; fi",
-    "pretest": "pnpm --filter @mongodb-js/atlas-explorer-agent build && pnpm --filter @repo/testing build",
+    "build": "tsc -p tsconfig.json && atlas-explorer-agent sync-skills",
+    "pretest": "pnpm --filter @repo/testing build",
     "test": "vitest run",
     "test:watch": "vitest",
-    "pretest:integration": "pnpm --filter @mongodb-js/atlas-explorer-agent build && pnpm --filter @repo/testing build",
+    "pretest:integration": "pnpm --filter @repo/testing build",
     "test:integration": "vitest run --config vitest.integration.config.ts",
-    "pretypecheck": "pnpm --filter @mongodb-js/atlas-explorer-agent build && pnpm --filter @repo/testing build",
+    "pretypecheck": "pnpm --filter @repo/testing build",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json --noEmit",
-    "prestart": "pnpm run build",
+    "prestart": "npm run build",
     "start": "node --enable-source-maps dist/agent_atlas_explorer/main.js",
-    "predev": "pnpm --filter @mongodb-js/atlas-explorer-agent build",
     "dev": "tsx watch src/agent_atlas_explorer/main.ts"
   },
   "dependencies": {
@@ -30,19 +29,15 @@
     "@mongodb-js/agent-engine-runner-shared": "0.11.6",
     "@mongodb-js/agent-engine-sdk-langgraph": "0.11.6",
     "@mongodb-js/agent-engine-sdk": "0.11.6",
+    "@mongodb-js/atlas-agents-core": "^0.1.4",
+    "@mongodb-js/atlas-explorer-agent": "^0.1.4",
     "@mongodb-js/mcp-tools-assistant": "3.0.5",
     "dotenv": "^16.4.5",
     "langchain": "^1.5.10",
     "zod": "4.4.3"
   },
-  "optionalDependencies": {
-    "@mongodb-js/atlas-explorer-agent": "file:../../packages/atlas-explorer-agent"
-  },
   "devDependencies": {
-    "@mongodb-js/atlas-agents-core": "file:../../packages/atlas-agents-core",
-    "@repo/testing": "file:../../packages/testing",
     "@types/node": "^25.0.0",
-    "esbuild": "^0.25.0",
     "tsx": "^4.16.0",
     "typescript": "^5.5.0",
     "vitest": "^4.1.11"

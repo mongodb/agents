@@ -10,8 +10,8 @@
   "scripts": {
     "prepare": "husky",
     "build:slack-bot": "pnpm --filter @repo/atlas-explorer-slack-bot... build",
-    "build:atlas-explorer": "pnpm --filter atlas-explorer... build",
-    "build:atlas-query-insights": "pnpm --filter atlas-query-insights... build",
+    "build:atlas-explorer": "pnpm --filter atlas-explorer build",
+    "build:atlas-query-insights": "pnpm --filter atlas-query-insights build",
     "test:slack-bot": "pnpm --filter @mongodb-js/agent-engine-chat test && pnpm --filter @repo/atlas-explorer-slack-bot test",
     "test:slack-bot:integration": "pnpm --filter @repo/atlas-explorer-slack-bot test:integration",
     "test:atlas-explorer": "pnpm --filter @mongodb-js/atlas-agents-core test && pnpm --filter @repo/testing test && pnpm --filter @mongodb-js/atlas-explorer-agent test && pnpm --filter atlas-explorer test",
@@ -25,6 +25,7 @@
   },
   "devDependencies": {
     "@changesets/cli": "3.0.3",
+    "@repo/testing": "workspace:*",
     "husky": "9.1.7"
   }
 }

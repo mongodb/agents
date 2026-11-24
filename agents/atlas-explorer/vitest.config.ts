@@ -17,11 +17,21 @@
 import { defineConfig } from "vitest/config";
 import { definePackageVitestConfig } from "../../vitest.shared.mts";
 
-export default defineConfig(
-  definePackageVitestConfig({
-    exclude: [
-      "**/node_modules/**",
-      "**/.git/**",
-    ],
-  }),
-);
+const base = definePackageVitestConfig({
+  exclude: [
+    "**/node_modules/**",
+    "**/.git/**",
+  ],
+});
+
+export default defineConfig({
+  ...base,
+  test: {
+    ...base.test,
+    server: {
+      deps: {
+        inline: ["@mongodb-js/atlas-explorer-agent"],
+      },
+    },
+  },
+});

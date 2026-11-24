@@ -12,7 +12,7 @@ platform checkpoints · read-only by default · runtime approval for writes
 ```
 agents/atlas-explorer/
 ├── agent.yaml                         # app, MCP, features, and required secret names
-├── package.json / tsconfig*.json      # TypeScript app, test config, and esbuild bundle
+├── package.json / tsconfig*.json      # TypeScript app and test config
 ├── vitest*.config.ts                  # unit and integration test configs
 ├── dev.yaml                           # local Agentic service ports
 ├── .env.example                       # copy to .env
@@ -33,14 +33,12 @@ the repository root with `--workspace atlas-explorer`. The root
 [`.agentengineignore`](../../.agentengineignore) lists what `agentengine build`
 leaves out of the uploaded source.
 
-Policy, prompts, LLM selection, and middleware live in
-[`@mongodb-js/atlas-explorer-agent`](../../packages/atlas-explorer-agent).
-`pnpm build` bundles that library into `dist/agent_atlas_explorer/main.js`
-so Agent Engine runs one file plus this app's npm dependencies, then runs
-`atlas-explorer-agent sync-skills` to generate `skills/` from that package. Run it before you deploy or run
-`agentengine dev up`. The `build`,
-`test`, `typecheck`, and `dev` scripts first build that library (and
-`@mongodb-js/atlas-agents-core` under it) through `pre*` hooks. See the
+Policy, prompts, LLM selection, and middleware live in the published
+[`@mongodb-js/atlas-explorer-agent`](../../packages/atlas-explorer-agent)
+and [`@mongodb-js/atlas-agents-core`](../../packages/atlas-agents-core)
+packages. `pnpm build` (or `npm run build`) compiles TypeScript into `dist/`
+and runs `atlas-explorer-agent sync-skills` to generate `skills/` from the
+package. Run it before you deploy or run `agentengine dev up`. See the
 [package README](../../packages/atlas-explorer-agent/README.md) for its exports.
 
 ## Configure
@@ -415,10 +413,7 @@ pnpm build
 agentengine dev up
 ```
 
-The dev container and the platform image install with npm and cannot see a
-pnpm workspace install. `pnpm build` writes a bundle the npm build copies
-into `dist`. After source changes, run `pnpm build`, then
-`agentengine dev restart`.
+After source changes, run `pnpm build`, then `agentengine dev restart`.
 
 Open the playground at http://localhost:3000. Stop the stack with
 `agentengine dev stop`.
