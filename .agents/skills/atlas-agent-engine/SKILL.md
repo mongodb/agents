@@ -30,7 +30,7 @@ packages/
 - **Behavior belongs in `packages/<name>-agent`**: system prompt, tool allowlists, approval and error middleware. `main.ts` should only assemble them.
 - **Shared behavior belongs in `packages/atlas-agents-core`.** Don't copy middleware between the two agents.
 - **Chat integration belongs in `packages/agent-engine-chat`.** It connects any agent in `agents/` to Slack or other Chat SDK platforms; `apps/atlas-explorer-slack-bot` is the Atlas Explorer Slack wrapper around it.
-- `pnpm build` bundles the library into `dist/agent_<name>/main.js` with esbuild, so the platform runs one file plus npm dependencies. It also copies that bundle to `src/agent_<name>/main.bundle.js`, which is git-ignored for the dev container, and runs the agent package's `sync-skills` command to generate `skills/`. Don't edit these generated files.
+- `pnpm build` (or `npm run build`) compiles TypeScript into `dist/` with `tsc` and runs the published agent package's `sync-skills` command to generate `skills/`. Don't edit these generated files.
 - Apps import each library's compiled `dist`. Scripts at the repo root and in each agent build the libraries first. If you run `vitest` or `tsc` directly, build them yourself.
 
 ## Rules
@@ -123,7 +123,7 @@ The canonical copy lives in each agent package (`packages/<agent>-agent/skills`)
 ```bash
 pnpm build                      # from the agent dir; required after source changes
 agentengine dev up              # Playground on http://localhost:3000
-agentengine dev restart         # after a rebuild; the dev container runs the bundle
+agentengine dev restart         # after source changes
 agentengine dev stop
 ```
 

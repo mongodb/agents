@@ -68,7 +68,7 @@ jobs:
 
       - uses: ./.github/actions/setup-workspace
 
-      - name: Build agent bundle
+      - name: Build agent
         run: pnpm --filter ${{ matrix.name }} build
 
       - uses: ./.github/actions/install-agentengine-cli

@@ -13,7 +13,7 @@ project and cluster scope · read-only MCP · MongoDB skills
 ```
 agents/atlas-query-insights/
 ├── agent.yaml                         # app, MCP, and required secret names
-├── package.json / tsconfig.json       # TypeScript app and esbuild bundle
+├── package.json / tsconfig.json       # TypeScript app config
 ├── dev.yaml                           # local Agentic service ports
 ├── .env.example                       # copy to .env
 ├── mcp-config.example.json            # copy to ignored local MCP config
@@ -30,10 +30,12 @@ Project memory settings live in the repository root
 `atlas-query-insights`. Run `agentengine` from this directory, or from the
 repository root with `--workspace atlas-query-insights`.
 
-Policy, prompts, and middleware live in
-[`@mongodb-js/atlas-query-insights-agent`](../../packages/atlas-query-insights-agent).
-`pnpm build` runs `atlas-query-insights-agent sync-skills`, which generates
-`skills/` from that package. Run it before you deploy or run `agentengine dev up`.
+Policy, prompts, and middleware live in the published
+[`@mongodb-js/atlas-query-insights-agent`](../../packages/atlas-query-insights-agent)
+and [`@mongodb-js/atlas-agents-core`](../../packages/atlas-agents-core)
+packages. `pnpm build` (or `npm run build`) compiles TypeScript into `dist/`
+and runs `atlas-query-insights-agent sync-skills`, which generates `skills/`
+from that package. Run it before you deploy or run `agentengine dev up`.
 
 ## Configure
 
@@ -261,9 +263,7 @@ pnpm build
 agentengine dev up
 ```
 
-The dev container can't see the monorepo packages, so it runs the bundle
-from `pnpm build` instead of rebuilding. After source changes, run
-`pnpm build`, then `agentengine dev restart`.
+After source changes, run `pnpm build`, then `agentengine dev restart`.
 
 Open the playground at http://localhost:3000. Stop the stack with
 `agentengine dev stop`.
