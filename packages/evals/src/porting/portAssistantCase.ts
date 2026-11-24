@@ -18,7 +18,7 @@ import { stringify, Document } from "yaml";
 import { z } from "zod";
 
 /**
- * Cases in `mongodb/ai-assistant` `evalCases/*.yml`, which the agents' eval
+ * Cases in the MongoDB Assistant eval suite, whose format the agents' eval
  * format is adapted from. Only the fields the port reads are described.
  */
 const SourceCaseSchema = z.looseObject({
@@ -67,7 +67,7 @@ export interface PortedKnowledgeCase {
 }
 
 /**
- * Turns one ai-assistant knowledge case into an eval case for the agents.
+ * Turns one MongoDB Assistant knowledge case into an eval case for the agents.
  *
  * - The case needs one user message and a reference answer.
  * - The agent must call `search_knowledge`, so the case always expects that

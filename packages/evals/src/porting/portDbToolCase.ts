@@ -35,7 +35,7 @@ const SourceToolCallSchema = z.looseObject({
   arguments: z.array(z.looseObject({ name: z.string() })).optional(),
 });
 
-/** Cases in `evalCases/mongodb_mcp_tools_db_read_only.yml` of ai-assistant. */
+/** Cases in the MongoDB Assistant read-only database tool suite. */
 const SourceDbToolCaseSchema = z.looseObject({
   name: z.string(),
   description: z.string().optional(),
@@ -83,7 +83,7 @@ export interface PortedDbToolCase {
 }
 
 /**
- * Turns one ai-assistant database tool case into an eval case for Atlas
+ * Turns one MongoDB Assistant database tool case into an eval case for Atlas
  * Explorer, in read-only mode.
  *
  * - Tool names become the names the agent sees: `list-databases` is
