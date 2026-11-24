@@ -60,7 +60,7 @@ describe("loadConfig", () => {
       },
       agentEngine: {
         baseUrl: "https://agentengine.mongodb.com",
-        invokeTarget: "gateway",
+        invokeTarget: "cloud",
         projectId: "project-1",
         serviceAccount: {
           clientId: "agp_sa_id_test",
@@ -76,6 +76,15 @@ describe("loadConfig", () => {
         databaseName: "atlas_explorer_slack",
       },
     });
+  });
+
+  it("treats the legacy 'gateway' value as the cloud target", () => {
+    const config = loadConfig(
+      { ...sharedEnv, SLACK_APP_TOKEN: "xapp-test", AGENTIC_INVOKE_TARGET: "gateway" },
+      "socket",
+    );
+
+    expect(config.agentEngine.invokeTarget).toBe("cloud");
   });
 
   describe("session limit", () => {

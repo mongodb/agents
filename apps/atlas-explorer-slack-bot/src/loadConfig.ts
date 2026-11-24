@@ -84,9 +84,11 @@ const environmentSchema = z
     AGENTIC_PROJECT_ID: optionalString,
     AGENTIC_WORKSPACE_ID: optionalString,
     AGENTIC_INVOKE_TARGET: z
-      .enum(["gateway", "local"])
+      .enum(["cloud", "local", "gateway"])
       .optional()
-      .default("gateway"),
+      .default("cloud")
+      // "gateway" is the pre-rename name for the same deployed-workspace target.
+      .transform((value) => (value === "gateway" ? "cloud" : value)),
     SLACK_SIGNING_SECRET: optionalString,
     MONGODB_URI: optionalString,
     SLACK_APP_TOKEN: optionalString,
@@ -168,8 +170,8 @@ export function loadConfig(
   const invokeTarget =
     parsed.AGENTIC_INVOKE_TARGET?.trim() === "local"
       ? "local"
-      : "gateway";
-  if (invokeTarget === "gateway") {
+      : "cloud";
+  if (invokeTarget === "cloud") {
     for (const variable of [
       "AGENTIC_SA_CLIENT_ID",
       "AGENTIC_SA_CLIENT_SECRET",
@@ -179,7 +181,7 @@ export function loadConfig(
       if (!parsed[variable]?.trim()) {
         issues.push({
           code: "custom",
-          message: "is required for the gateway target",
+          message: "is required for the cloud target",
           path: [variable],
         });
       }
@@ -237,7 +239,7 @@ export function loadConfig(
 
 function buildAgenticConfig(
   values: z.infer<typeof environmentSchema>,
-  invokeTarget: "gateway" | "local",
+  invokeTarget: "cloud" | "local",
 ): AgentEngineClientConfig {
   const baseUrl = (
     values.AGENTIC_BASE_URL ??

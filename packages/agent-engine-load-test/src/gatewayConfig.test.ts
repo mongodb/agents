@@ -30,7 +30,7 @@ describe("gatewayConfigFromEnv", () => {
       }),
     ).toEqual({
       baseUrl: "https://example.test",
-      invokeTarget: "gateway",
+      invokeTarget: "cloud",
       projectId: "project",
       workspaceId: "workspace",
       serviceAccount: { clientId: "id", clientSecret: "secret" },

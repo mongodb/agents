@@ -37,7 +37,7 @@ export function gatewayConfigFromEnv(
   );
   return {
     baseUrl,
-    invokeTarget: "gateway",
+    invokeTarget: "cloud",
     projectId,
     workspaceId,
     serviceAccount: { clientId, clientSecret },

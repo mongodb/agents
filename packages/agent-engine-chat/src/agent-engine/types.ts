@@ -22,7 +22,11 @@ interface AgenticClientBaseConfig {
 
 export type AgentEngineClientConfig =
   | (AgenticClientBaseConfig & {
-      invokeTarget: "gateway";
+      /**
+       * A deployed Agent Engine workspace. Named "cloud" rather than "gateway" so it is not
+       * confused with the LLM gateway, and so it reads as the opposite of a local dev instance.
+       */
+      invokeTarget: "cloud";
       projectId: string;
       serviceAccount: {
         clientId: string;

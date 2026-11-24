@@ -89,7 +89,7 @@ registerSlackChatHandlers(bot, {
   adapter: slackAdapter,
   agent: new AgentEngineClient({
     baseUrl: "https://agentengine.mongodb.com",
-    invokeTarget: "gateway",
+    invokeTarget: "cloud",
     projectId: process.env.AGENTIC_PROJECT_ID!,
     workspaceId: process.env.AGENTIC_WORKSPACE_ID!,
     serviceAccount: {

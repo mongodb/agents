@@ -254,13 +254,13 @@ Your Slack webhook URL is `$VERCEL_URL/api/webhooks/slack`.
    - `SLACK_BOT_TOKEN`
    - `SLACK_SIGNING_SECRET`
    - `CHAT_ALLOWED_USER_IDS` (for example, `slack:U0123456789`)
-   - `AGENTIC_INVOKE_TARGET` (`gateway`)
+   - `AGENTIC_INVOKE_TARGET` (`cloud`)
    - `AGENTIC_SA_CLIENT_ID`
    - `AGENTIC_SA_CLIENT_SECRET`
    - `AGENTIC_PROJECT_ID`
    - `AGENTIC_WORKSPACE_ID`
    - `MONGODB_URI`
-   - `AGENTIC_BASE_URL` (optional; defaults to the platform gateway)
+   - `AGENTIC_BASE_URL` (optional; defaults to the platform cloud endpoint)
    - `THREAD_STORE_DB` (optional; defaults to `atlas_explorer_slack`)
    - `SLACK_BOT_DISPLAY_NAME` (optional; overrides `slackBotConfig.name`)
    - `SESSION_LIMIT_PER_HOUR` (optional; defaults to `40`, see

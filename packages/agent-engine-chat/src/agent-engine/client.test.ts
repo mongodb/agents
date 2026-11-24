@@ -23,7 +23,7 @@ import {
 
 const config = {
   baseUrl: "https://agentic.example.test/",
-  invokeTarget: "gateway" as const,
+  invokeTarget: "cloud" as const,
   projectId: "project/id",
   serviceAccount: {
     clientId: "agp_sa_id_test",
