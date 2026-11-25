@@ -96,6 +96,65 @@ export async function exercisesReviewClaim(
   });
 }
 
+export async function exercisesUncertainReviewCompletion(
+  store: ThreadStore,
+): Promise<void> {
+  const pending: ThreadRecord = {
+    ...baseRecord,
+    pendingExecutionId: "execution-1",
+    pendingInterruptId: "interrupt-1",
+    pendingReviewState: "pending",
+    updatedAt: new Date("2026-09-08T12:00:00.000Z"),
+  };
+  await store.put(pending);
+
+  // A review nobody has claimed can't be replaced by a stray result.
+  expect(
+    await store.replaceClaimedReview("interrupt-1", {
+      ...baseRecord,
+      updatedAt: new Date("2026-09-08T12:00:30.000Z"),
+    }),
+  ).toBe(false);
+
+  const claimed = await store.claimPendingReview(
+    baseRecord.threadId,
+    "interrupt-1",
+    new Date("2026-09-08T12:01:00.000Z"),
+  );
+  expect(claimed).not.toBeNull();
+  const { pendingReviewClaimedAt: _claimedAt, ...unclaimed } = claimed!;
+  expect(
+    await store.replaceClaimedReview("interrupt-1", {
+      ...unclaimed,
+      pendingReviewState: "uncertain",
+      retentionState: "inactive",
+      updatedAt: new Date("2026-09-08T12:12:00.000Z"),
+    }),
+  ).toBe(true);
+  await expect(store.get(baseRecord.threadId)).resolves.toMatchObject({
+    pendingReviewState: "uncertain",
+    retentionState: "inactive",
+  });
+
+  expect(
+    await store.replaceClaimedReview("another-interrupt", {
+      ...baseRecord,
+      updatedAt: new Date("2026-09-08T12:12:30.000Z"),
+    }),
+  ).toBe(false);
+  expect(
+    await store.replaceClaimedReview("interrupt-1", {
+      ...baseRecord,
+      retentionState: "delivery_pending",
+      updatedAt: new Date("2026-09-08T12:13:00.000Z"),
+    }),
+  ).toBe(true);
+  const finished = await store.get(baseRecord.threadId);
+  expect(finished).toMatchObject({ retentionState: "delivery_pending" });
+  expect(finished).not.toHaveProperty("pendingInterruptId");
+  expect(finished).not.toHaveProperty("pendingReviewState");
+}
+
 export async function exercisesTurnClaim(
   store: ThreadStore,
 ): Promise<void> {
