@@ -22,7 +22,11 @@ import type {
   InvocationProgressHandler,
   InvocationResult,
 } from "../agent-engine/types.js";
-import type { ThreadRecord, ThreadStore } from "../store/threadStore.js";
+import {
+  CLAIM_LEASE_MS,
+  type ThreadRecord,
+  type ThreadStore,
+} from "../store/threadStore.js";
 import { buildReviewCard } from "./cards.js";
 import { defaultAgentChatMessages } from "./messages.js";
 import {
@@ -36,8 +40,6 @@ import type {
   ConversationSurface,
   HandlerLogger,
 } from "./types.js";
-
-const REVIEW_CLAIM_MAX_MS = 10 * 60 * 1_000;
 
 function reviewCardOptions(dependencies: ChatHandlerDependencies) {
   const messages = dependencies.messages ?? defaultAgentChatMessages;
@@ -402,7 +404,7 @@ async function handlePendingReview(
     const reviewClaimExpired =
       !record.pendingReviewClaimedAt ||
       claimedAt.getTime() - record.pendingReviewClaimedAt.getTime() >=
-        REVIEW_CLAIM_MAX_MS;
+        CLAIM_LEASE_MS;
     if (reviewClaimExpired && record.pendingInterruptId) {
       const { pendingReviewClaimedAt: _reviewClaimedAt, ...uncertainRecord } =
         record;
