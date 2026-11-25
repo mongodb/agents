@@ -85,6 +85,16 @@ export interface ThreadStore {
     interruptId: string,
     record: ThreadRecord,
   ): Promise<boolean>;
+  /**
+   * Refreshes `pendingReviewClaimedAt` while a claimed review is still
+   * resuming, so a live resume is not mistaken for a crashed one. Returns
+   * false if the review is no longer in the `resuming` state.
+   */
+  renewPendingReview(
+    threadId: string,
+    interruptId: string,
+    renewedAt: Date,
+  ): Promise<boolean>;
   claimPendingDelivery(
     threadId: string,
     deliveryId: string,
