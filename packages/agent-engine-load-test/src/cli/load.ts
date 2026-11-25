@@ -36,8 +36,8 @@ export async function runLoad(
 ): Promise<string> {
   loadEnvFile(path.join(packageRoot, ".env"));
   const config = gatewayConfigFromEnv(process.env);
-  if (config.invokeTarget !== "gateway") {
-    throw new Error("Load tests invoke the gateway, not a local agent");
+  if (config.invokeTarget !== "cloud") {
+    throw new Error("Load tests invoke the cloud target, not a local agent");
   }
   const scenario = buildScenario(
     options.scenario,

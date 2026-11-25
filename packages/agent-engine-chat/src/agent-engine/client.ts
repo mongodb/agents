@@ -79,7 +79,7 @@ export class AgentEngineClient {
     this.fetchFn = options.fetchFn ?? fetch;
     this.tokenProvider =
       options.tokenProvider ??
-      (config.invokeTarget === "gateway"
+      (config.invokeTarget === "cloud"
         ? new ServiceAccountTokenProvider(
             {
               baseUrl: config.baseUrl,
