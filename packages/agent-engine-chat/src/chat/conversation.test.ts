@@ -306,6 +306,46 @@ describe("handleConversationMessage", () => {
     ]);
   });
 
+  it("continues the same agent session when a reply follows a crashed resume", async () => {
+    const claimedAt = new Date("2026-09-08T12:00:00.000Z");
+    store = new MemoryThreadStore({ now: () => claimedAt.getTime() });
+    await seedPendingReview(store);
+    await store.put({
+      ...(await store.get(THREAD_ID))!,
+      pendingReviewState: "resuming",
+      pendingReviewClaimedAt: claimedAt,
+    });
+    agent.invokeResult = completed;
+    const send = (eventId: string, at: Date) =>
+      handleConversationMessage(
+        {
+          threadId: THREAD_ID,
+          eventId,
+          actorId: ACTOR_ID,
+          text: "Any update?",
+        },
+        { agent, conversation, store, botName: BOT_NAME, now: () => at },
+      );
+
+    await send("event-1", new Date(claimedAt.getTime() + CLAIM_LEASE_MS));
+    expect(agent.invokeInputs).toEqual([]);
+
+    await send("event-2", new Date(claimedAt.getTime() + CLAIM_LEASE_MS + 1_000));
+
+    expect(agent.invokeInputs).toEqual([
+      {
+        message: "Any update?",
+        actorId: ACTOR_ID,
+        sessionId: "session-1",
+      },
+    ]);
+    expect(conversation.agentResponses).toEqual([completed.response]);
+    const record = await store.get(THREAD_ID);
+    expect(record).toMatchObject({ agentSessionId: "session-1" });
+    expect(record).not.toHaveProperty("pendingInterruptId");
+    expect(record).not.toHaveProperty("pendingReviewState");
+  });
+
   it("keeps a resume newer than the lease busy", async () => {
     const claimedAt = new Date("2026-09-08T12:00:00.000Z");
     store = new MemoryThreadStore({ now: () => claimedAt.getTime() });

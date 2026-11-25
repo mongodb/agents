@@ -155,6 +155,76 @@ export async function exercisesUncertainReviewCompletion(
   expect(finished).not.toHaveProperty("pendingReviewState");
 }
 
+export async function exercisesUncertainReviewTurnClaim(
+  store: ThreadStore,
+): Promise<void> {
+  const uncertain: ThreadRecord = {
+    ...baseRecord,
+    pendingExecutionId: "execution-1",
+    pendingInterruptId: "interrupt-1",
+    pendingInterrupts: [{ id: "interrupt-1", actionRequests: [] }],
+    pendingResumeSchema: { type: "object" },
+    pendingActionRequests: [{ name: "insert", args: {} }],
+    pendingRequestedByActorId: "slack:U123",
+    pendingReviewState: "uncertain",
+    retentionState: "inactive",
+    recentEventIds: ["event-0"],
+    updatedAt: new Date("2026-09-08T12:00:00.000Z"),
+  };
+
+  // A review still resuming blocks the thread, but one marked uncertain doesn't.
+  await store.put({ ...uncertain, pendingReviewState: "resuming" });
+  expect(
+    (
+      await store.claimTurn(
+        baseRecord.threadId,
+        "event-1",
+        new Date("2026-09-08T12:01:00.000Z"),
+      )
+    ).status,
+  ).toBe("pending_review");
+
+  await store.put(uncertain);
+  const claim = await store.claimTurn(
+    baseRecord.threadId,
+    "event-1",
+    new Date("2026-09-08T12:01:00.000Z"),
+  );
+
+  expect(claim.status).toBe("claimed");
+  const stored = await store.get(baseRecord.threadId);
+  expect(stored).toMatchObject({
+    agentSessionId: "session-1",
+    inFlightEventId: "event-1",
+    recentEventIds: ["event-0", "event-1"],
+  });
+  for (const field of [
+    "pendingExecutionId",
+    "pendingInterruptId",
+    "pendingInterrupts",
+    "pendingResumeSchema",
+    "pendingActionRequests",
+    "pendingRequestedByActorId",
+    "pendingReviewState",
+    "pendingReviewClaimedAt",
+    "retentionState",
+  ]) {
+    expect(stored).not.toHaveProperty(field);
+  }
+  expect(claim).toMatchObject({
+    record: stored,
+    previousRecord: { pendingReviewState: "uncertain" },
+  });
+
+  // The review is gone, so a late result from its resume can't revive it.
+  expect(
+    await store.replaceClaimedReview("interrupt-1", {
+      ...baseRecord,
+      updatedAt: new Date("2026-09-08T12:02:00.000Z"),
+    }),
+  ).toBe(false);
+}
+
 export async function exercisesTurnClaim(
   store: ThreadStore,
 ): Promise<void> {
