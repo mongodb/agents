@@ -59,7 +59,7 @@ describe("loadConfig", () => {
         botToken: "xoxb-test",
       },
       agentEngine: {
-        baseUrl: "https://agentic-platform.mongodb.com",
+        baseUrl: "https://agentengine.mongodb.com",
         invokeTarget: "gateway",
         projectId: "project-1",
         serviceAccount: {
