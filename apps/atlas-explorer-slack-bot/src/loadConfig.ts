@@ -243,7 +243,7 @@ function buildAgenticConfig(
     values.AGENTIC_BASE_URL ??
     (invokeTarget === "local"
       ? "http://localhost:3000"
-      : "https://agentic-platform.mongodb.com")
+      : "https://agentengine.mongodb.com")
   ).replace(/\/+$/, "");
   if (invokeTarget === "local") {
     return { baseUrl, invokeTarget };

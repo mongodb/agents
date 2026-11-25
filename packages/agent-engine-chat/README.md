@@ -88,7 +88,7 @@ const bot = new Chat({
 registerSlackChatHandlers(bot, {
   adapter: slackAdapter,
   agent: new AgentEngineClient({
-    baseUrl: "https://agentic-platform.mongodb.com",
+    baseUrl: "https://agentengine.mongodb.com",
     invokeTarget: "gateway",
     projectId: process.env.AGENTIC_PROJECT_ID!,
     workspaceId: process.env.AGENTIC_WORKSPACE_ID!,
